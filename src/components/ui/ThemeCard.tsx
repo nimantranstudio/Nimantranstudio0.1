@@ -6,14 +6,13 @@ import clsx from 'clsx';
 
 interface ThemeCardProps {
     theme: Theme;
-    isSelected: boolean;
     onSelect: (id: string) => void;
 }
 
-export const ThemeCard = ({ theme, isSelected, onSelect }: ThemeCardProps) => {
+export const ThemeCard = ({ theme, onSelect }: ThemeCardProps) => {
     return (
         <div
-            className={clsx(styles.card, isSelected && styles.selected)}
+            className={styles.card}
             onClick={() => onSelect(theme.id)}
         >
             <div className={styles.imageWrapper}>
@@ -24,19 +23,21 @@ export const ThemeCard = ({ theme, isSelected, onSelect }: ThemeCardProps) => {
                     className={styles.image}
                     sizes="(max-width: 768px) 100vw, 33vw"
                 />
-                {isSelected && (
-                    <div className={styles.overlay}>
-                        <Check size={48} className={styles.checkIcon} />
+                {theme.tag && (
+                    <div className={styles.tag}>
+                        {theme.tag}
                     </div>
                 )}
             </div>
             <div className={styles.info}>
                 <h3 className={styles.name}>{theme.name}</h3>
-                <p className={styles.description}>{theme.description}</p>
-                <div className={styles.colors}>
-                    {theme.colors.map(color => (
-                        <span key={color} className={styles.colorDot} style={{ backgroundColor: color }} />
-                    ))}
+                <div className={styles.pricing}>
+                    <span className={styles.currentPrice}>₹1200</span>
+                    <span className={styles.originalPrice}>₹3800</span>
+                    <span className={styles.discount}>68% OFF</span>
+                </div>
+                <div className={styles.details}>
+                    Pack of 12 Assets
                 </div>
             </div>
         </div>

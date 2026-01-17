@@ -4,24 +4,29 @@ import { useRouter } from 'next/navigation';
 import { useWeddingStore } from '@/store/wedding-store';
 import { THEMES } from '@/lib/constants/themes';
 import { ThemeCard } from '@/components/ui/ThemeCard';
+import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import styles from './themes.module.css';
 
 export default function ThemesPage() {
     const router = useRouter();
-    const { selectedThemeId, setThemeId } = useWeddingStore();
+    const { setThemeId } = useWeddingStore();
 
-    const handleContinue = () => {
-        if (selectedThemeId) {
-            router.push('/details'); // Next step
-        }
+    const handleThemeSelect = (id: string) => {
+        router.push(`/themes/${id}`);
     };
 
     return (
         <div className={styles.page}>
             <header className={styles.header}>
                 <div className="container">
+                    <Breadcrumbs
+                        items={[
+                            { label: 'Home', href: '/' },
+                            { label: 'Themes', active: true },
+                        ]}
+                    />
                     <h1 className={styles.title}>Choose your wedding theme</h1>
-                    <p className={styles.subtitle}>Select a design that matches your style. You can customize the details later.</p>
+                    <p className={styles.subtitle}>Select a visual language that resonates with your family's style.</p>
                 </div>
             </header>
 
@@ -31,33 +36,11 @@ export default function ThemesPage() {
                         <ThemeCard
                             key={theme.id}
                             theme={theme}
-                            isSelected={selectedThemeId === theme.id}
-                            onSelect={setThemeId}
+                            onSelect={handleThemeSelect}
                         />
                     ))}
                 </div>
             </main>
-
-            <footer className={styles.footer}>
-                <div className="container">
-                    <div className={styles.bar}>
-                        <div className={styles.summary}>
-                            {selectedThemeId ? (
-                                <span>Selected: <strong>{THEMES.find(t => t.id === selectedThemeId)?.name}</strong></span>
-                            ) : (
-                                <span>Please select a theme</span>
-                            )}
-                        </div>
-                        <button
-                            className="btn btn-primary"
-                            disabled={!selectedThemeId}
-                            onClick={handleContinue}
-                        >
-                            Continue to Details
-                        </button>
-                    </div>
-                </div>
-            </footer>
         </div>
     );
 }

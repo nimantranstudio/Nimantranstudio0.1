@@ -1,20 +1,264 @@
+.previewPage {
+    min-height: 100vh;
+    padding-bottom: 5rem;
+    background-color: #fff;
+}
+
+.header {
+    padding: 2rem 0;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 2rem;
+}
+
+.previewHeaderTitle {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.previewHeaderSubtitle {
+    color: #666;
+    font-size: 1rem;
+}
+
+/* 2-Column Layout */
+.mainLayout {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 3rem;
+    align-items: flex-start;
+}
+
+@media (max-width: 1024px) {
+    .mainLayout {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Left Column: Grid */
+.leftColumn {
+    display: flex;
+    flex-direction: column;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    /* 3 columns in the left side of 2-col */
+    gap: 0.75rem;
+}
+
+@media (max-width: 768px) {
+    .grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Right Column: Summary & Info */
+.rightColumn {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    position: sticky;
+    top: 2rem;
+}
+
+.bundleTitle {
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 1.3;
+    margin-bottom: 0.5rem;
+    color: #111;
+}
+
+/* Summary Card (Dark Theme) */
+.summaryCard {
+    background-color: var(--secondary);
+    /* Mehendi Green */
+    color: #fff;
+    padding: 2.5rem;
+    border-radius: 24px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+.summaryHeader {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.summaryHeader h2 {
+    font-family: var(--font-serif);
+    font-size: 1.75rem;
+    font-weight: 500;
+}
+
+.detailsList {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    margin-bottom: 2.5rem;
+}
+
+.detailRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.detailLabel {
+    color: #9ca3af;
+    font-size: 0.9375rem;
+}
+
+.detailValue {
+    font-weight: 600;
+}
+
+.divider {
+    height: 1px;
+    background-color: rgba(255, 255, 255, 0.1);
+    margin: 1.5rem 0;
+}
+
+.priceSection {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.priceInfo {
+    display: flex;
+    flex-direction: column;
+}
+
+.priceTitle {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #d1d5db;
+}
+
+.priceSub {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 0.25rem;
+}
+
+.priceValue {
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.confirmBtn {
+    width: 100%;
+    background-color: #fff;
+    color: #0f1c16;
+    border: none;
+    padding: 1.25rem;
+    border-radius: 50px;
+    font-size: 1.125rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.confirmBtn:hover {
+    transform: translateY(-2px);
+    background-color: #f9fafb;
+}
+
+/* Info Blocks */
+.infoGrid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 1rem;
+}
+
+.infoBlock {
+    background-color: #f3f4f6;
+    padding: 1.25rem;
+    border-radius: 12px;
+}
+
+.infoBlockTitle {
+    font-weight: 700;
+    font-size: 0.8125rem;
+    margin-bottom: 0.5rem;
+    text-transform: none;
+}
+
+.infoBlockText {
+    font-size: 0.75rem;
+    color: #4b5563;
+    line-height: 1.5;
+}
+
+.helpBlock {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.helpItem {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+}
+
+.helpText {
+    font-size: 0.75rem;
+    color: #4b5563;
+    line-height: 1.4;
+}
+
+.paymentRow {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+.paymentBadges {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.cardIcon {
+    width: 32px;
+    height: 18px;
+    background-color: #d1d5db;
+    border-radius: 2px;
+}
+
+.secureLabel {
+    font-size: 0.625rem;
+    font-weight: 700;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Invitation Card Refinements for 2-col */
 .invitationCard {
     position: relative;
-    aspect-ratio: 9/16;
+    aspect-ratio: 3/4;
     width: 100%;
-    max-width: 400px;
     background-color: var(--theme-bg, #fff);
     border: 1px solid var(--border);
-    border-radius: 8px;
+    border-radius: 4px;
     overflow: hidden;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     text-align: center;
-    padding: 3rem;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    padding: 0.75rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     color: var(--theme-primary, var(--foreground));
+    transition: transform 0.2s;
 }
 
 .watermark {
@@ -26,15 +270,15 @@
     align-items: center;
     pointer-events: none;
     z-index: 5;
-    opacity: 0.15;
+    opacity: 0.1;
     transform: rotate(-30deg);
     white-space: nowrap;
 }
 
 .watermark span {
-    font-size: 2rem;
+    font-size: 1.5rem;
     font-weight: 900;
-    letter-spacing: 0.5rem;
+    letter-spacing: 0.2rem;
     text-transform: uppercase;
 }
 
@@ -44,104 +288,122 @@
     width: 100%;
 }
 
-.eyebrow {
-    font-size: 0.875rem;
+.cardEyebrow {
+    font-size: 0.5rem;
     text-transform: uppercase;
-    letter-spacing: 0.2em;
-    margin-bottom: 1.5rem;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.25rem;
 }
 
-.names {
+.cardNames {
     font-family: var(--font-serif);
-    font-size: 2.5rem;
+    font-size: 1rem;
     line-height: 1.2;
-    margin-bottom: 2rem;
+    margin-bottom: 0.5rem;
 }
 
-.divider {
-    width: 60px;
-    height: 2px;
+.cardDivider {
+    width: 20px;
+    height: 1px;
     background-color: var(--theme-primary);
-    margin: 0 auto 2rem;
+    margin: 0 auto 0.5rem;
 }
 
-.eventName {
+.cardEvent {
     font-family: var(--font-serif);
-    font-size: 1.75rem;
-    margin-bottom: 1.5rem;
-    font-style: italic;
-}
-
-.details {
-    font-weight: 500;
-    line-height: 1.6;
-}
-
-.venue {
-    margin-top: 1rem;
-    font-style: italic;
-    font-weight: 400;
-}
-
-.footer {
-    margin-top: 3rem;
     font-size: 0.75rem;
-    opacity: 0.8;
-    letter-spacing: 0.05em;
+    font-style: italic;
+    margin-bottom: 0.25rem;
 }
 
-/* Dashboard styles */
-.previewPage {
-    min-height: 100vh;
-    padding-bottom: 5rem;
-    background-color: var(--background);
+.cardDetails {
+    font-size: 0.625rem;
+    line-height: 1.3;
 }
 
-.header {
-    padding: 4rem 0 3rem;
-    text-align: center;
+.cardFooter {
+    margin-top: 0.75rem;
+    font-size: 0.4rem;
+    opacity: 0.7;
 }
 
-.grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 3rem;
-}
-
+/* Original sections (hidden or restructured) */
 .sectionTitle {
-    font-family: var(--font-serif);
-    font-size: 1.75rem;
-    margin: 3rem 0 1.5rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid var(--border);
+    display: none;
+    /* We use the bundle title instead */
 }
 
-.videoPlaceholder {
-    aspect-ratio: 16/9;
-    background-color: #000;
-    border-radius: var(--radius);
+.summaryBar {
+    display: none;
+    /* Hidden in 2-column layout */
+}
+
+/* Securing Bundle Overlay (Loading Screen) */
+.securingOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #FDFBF7;
+    /* Brand Ivory Background */
+    z-index: 9999;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    color: white;
     text-align: center;
     padding: 2rem;
 }
 
-.videoIcon {
-    margin-bottom: 1rem;
-    color: var(--primary);
+.securingTitle {
+    font-family: var(--font-serif);
+    font-size: 2.5rem;
+    color: #1A1A1A;
+    margin-bottom: 0.75rem;
+    font-weight: 500;
 }
 
-.summaryBar {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: white;
-    border-top: 1px solid var(--border);
-    padding: 1.5rem 0;
-    box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.05);
-    z-index: 20;
+.securingSubtitle {
+    color: #4B5563;
+    font-size: 1.125rem;
+    margin-bottom: 2.5rem;
+    font-family: var(--font-sans);
+}
+
+.spinner {
+    width: 56px;
+    height: 56px;
+    border: 4px solid rgba(46, 89, 74, 0.1);
+    border-top: 4px solid #2E594A;
+    /* Brand Secondary Green */
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-bottom: 3rem;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.cancelPayment {
+    color: #1A1A1A;
+    text-decoration: underline;
+    font-size: 1rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-sans);
+    transition: opacity 0.2s;
+    margin-top: 1rem;
+}
+
+.cancelPayment:hover {
+    opacity: 0.6;
 }

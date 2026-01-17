@@ -7,11 +7,61 @@ import styles from './details.module.css';
 import formStyles from '@/components/form/Form.module.css';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { clsx } from 'clsx';
+import { ArrowLeftRight } from 'lucide-react';
+import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
+import { THEMES } from '@/lib/constants/themes';
 
 export default function DetailsPage() {
     const router = useRouter();
-    const { formData, updateFormData, saveWedding } = useWeddingStore();
+    const { formData, updateFormData, saveWedding, selectedThemeId } = useWeddingStore();
     const [isSaving, setIsSaving] = useState(false);
+    const [saveError, setSaveError] = useState<string | null>(null);
+
+    const activeTheme = THEMES.find(t => t.id === selectedThemeId);
+    const themeName = activeTheme ? activeTheme.name : 'Rajputana'; // Fallback if no theme selected
+
+    const [isGroomFirst, setIsGroomFirst] = useState(true);
+
+    const groomNameField = (
+        <Input
+            key="groom-name"
+            label="Groom's Name"
+            value={formData.groomName}
+            onChange={(e) => updateFormData({ groomName: e.target.value })}
+            placeholder="First & Last Name"
+        />
+    );
+
+    const brideNameField = (
+        <Input
+            key="bride-name"
+            label="Bride's Name"
+            value={formData.brideName}
+            onChange={(e) => updateFormData({ brideName: e.target.value })}
+            placeholder="First & Last Name"
+        />
+    );
+
+    const groomParentsField = (
+        <Input
+            key="groom-parents"
+            label="Groom's Parents"
+            value={formData.groomParents || ''}
+            onChange={(e) => updateFormData({ groomParents: e.target.value })}
+            placeholder="e.g. Mr. & Mrs. Sharma"
+        />
+    );
+
+    const brideParentsField = (
+        <Input
+            key="bride-parents"
+            label="Bride's Parents"
+            value={formData.brideParents || ''}
+            onChange={(e) => updateFormData({ brideParents: e.target.value })}
+            placeholder="e.g. Mr. & Mrs. Patel"
+        />
+    );
 
     const handleNext = async () => {
         // Basic validation check before moving
@@ -21,13 +71,20 @@ export default function DetailsPage() {
         }
 
         setIsSaving(true);
-        const result = await saveWedding();
-        setIsSaving(false);
-
-        if (result.success) {
+        setSaveError(null);
+        try {
+            const result = await saveWedding();
+            if (!result.success) {
+                console.warn("Background save failed:", result.error);
+                setSaveError("Couldn't save to database, but you can still preview!");
+            }
+        } catch (err) {
+            console.error("Save error:", err);
+            setSaveError("Connection issue, but preview is ready.");
+        } finally {
+            setIsSaving(false);
+            // Always navigate to preview
             router.push('/preview');
-        } else {
-            alert("Failed to save details: " + (result.error || "Unknown error"));
         }
     };
 
@@ -35,6 +92,14 @@ export default function DetailsPage() {
         <div className={styles.page}>
             <header className={styles.header}>
                 <div className="container">
+                    <Breadcrumbs
+                        items={[
+                            { label: 'Home', href: '/' },
+                            { label: 'Themes', href: '/themes' },
+                            { label: themeName, href: `/themes/${selectedThemeId || 'rajputana'}` },
+                            { label: 'wedding details', active: true },
+                        ]}
+                    />
                     <h1 className={styles.title}>Fill your wedding details</h1>
                     <p className={styles.subtitle}>Enter the details once, and we'll generate everything for you.</p>
                 </div>
@@ -46,33 +111,36 @@ export default function DetailsPage() {
                     <div className={styles.formColumn}>
 
                         {/* Couple Details */}
-                        <section className={formStyles.section}>
-                            <h2 className={formStyles.sectionTitle}>Couple Details</h2>
+                        <section className={clsx(formStyles.section, styles.swapSection)}>
+                            <div className={styles.sectionHeader}>
+                                <h2 className={styles.sectionTitle}>Couple Details</h2>
+                                <button
+                                    className={clsx(styles.sectionSwapBtn, styles.primarySwap)}
+                                    type="button"
+                                    onClick={() => setIsGroomFirst(!isGroomFirst)}
+                                    title="Swap Positions"
+                                >
+                                    <ArrowLeftRight size={18} />
+                                    <span>Swap Order</span>
+                                </button>
+                            </div>
+
                             <div className={formStyles.grid}>
-                                <Input
-                                    label="Groom's Name"
-                                    value={formData.groomName}
-                                    onChange={(e) => updateFormData({ groomName: e.target.value })}
-                                    placeholder="First & Last Name"
-                                />
-                                <Input
-                                    label="Bride's Name"
-                                    value={formData.brideName}
-                                    onChange={(e) => updateFormData({ brideName: e.target.value })}
-                                    placeholder="First & Last Name"
-                                />
-                                <Input
-                                    label="Groom's Parents"
-                                    value={formData.groomParents || ''}
-                                    onChange={(e) => updateFormData({ groomParents: e.target.value })}
-                                    placeholder="e.g. Mr. & Mrs. Sharma"
-                                />
-                                <Input
-                                    label="Bride's Parents"
-                                    value={formData.brideParents || ''}
-                                    onChange={(e) => updateFormData({ brideParents: e.target.value })}
-                                    placeholder="e.g. Mr. & Mrs. Patel"
-                                />
+                                {isGroomFirst ? (
+                                    <>
+                                        {groomNameField}
+                                        {brideNameField}
+                                        {groomParentsField}
+                                        {brideParentsField}
+                                    </>
+                                ) : (
+                                    <>
+                                        {brideNameField}
+                                        {groomNameField}
+                                        {brideParentsField}
+                                        {groomParentsField}
+                                    </>
+                                )}
                             </div>
                         </section>
 
@@ -99,33 +167,16 @@ export default function DetailsPage() {
                         </section>
 
                     </div>
-
-                    {/* Preview Placeholder Column (Sticky) */}
-                    <div className={styles.previewColumn}>
-                        <div className={styles.stickyPreview}>
-                            <h3>Live Preview</h3>
-                            <p style={{ fontSize: '0.875rem', color: '#666', marginBottom: '1rem' }}>
-                                See your changes update in real-time.
-                            </p>
-
-                            <div className={styles.previewCard}>
-                                <div className={styles.previewContent}>
-                                    <p className={styles.previewEyebrow}>The Wedding of</p>
-                                    <h2 className={styles.previewNames}>
-                                        {formData.groomName || 'Groom'} <br /> & <br /> {formData.brideName || 'Bride'}
-                                    </h2>
-                                    <div className={styles.previewDate}>
-                                        {formData.events[0]?.date || 'Date'} • {formData.events[0]?.venue || 'Venue'}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </main>
 
             <footer className={styles.footer}>
-                <div className="container" style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <div className={clsx("container", styles.footerContainer)}>
+                    {saveError && (
+                        <div style={{ marginRight: '1rem', color: '#E55B5B', fontSize: '0.875rem', alignSelf: 'center' }}>
+                            {saveError}
+                        </div>
+                    )}
                     <button className="btn btn-primary" onClick={handleNext} disabled={isSaving}>
                         {isSaving ? 'Saving...' : 'Generate Previews'}
                     </button>

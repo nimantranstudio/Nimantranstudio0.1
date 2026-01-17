@@ -10,6 +10,9 @@ export const metadata: Metadata = {
   description: "One form. One click. Your entire wedding invitation bundle ready for WhatsApp.",
 };
 
+import { Navbar } from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -18,7 +21,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.variable} ${playfair.variable}`}>
+        <Navbar />
         {children}
+        <Footer />
       </body>
     </html>
   );

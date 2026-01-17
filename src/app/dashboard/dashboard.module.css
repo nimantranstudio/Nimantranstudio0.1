@@ -121,6 +121,14 @@
     display: flex;
 }
 
+.statIconPrimary {
+    color: var(--primary);
+}
+
+.statIconDanger {
+    color: #E55B5B;
+}
+
 .statLabel {
     font-size: 0.875rem;
     color: var(--muted-foreground);
@@ -176,9 +184,12 @@
 }
 
 .table td {
-    padding: 1.25rem 2rem;
-    border-bottom: 1px solid var(--border);
     font-size: 0.9375rem;
+}
+
+.dateCell {
+    font-size: 0.8rem;
+    color: #888;
 }
 
 .statusYes {

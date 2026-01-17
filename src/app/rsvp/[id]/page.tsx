@@ -4,6 +4,8 @@ import styles from './rsvp.module.css';
 import { RSVPForm } from './RSVPForm';
 import { notFound } from 'next/navigation';
 
+export const dynamic = 'force-dynamic';
+
 export default async function RSVPPage({
     params,
 }: {

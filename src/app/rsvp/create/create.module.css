@@ -1,0 +1,192 @@
+.page {
+    min-height: 100vh;
+    background-color: #FDFBF7;
+    padding: 6rem 0;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 4rem;
+}
+
+.title {
+    font-family: var(--font-serif);
+    font-size: 3rem;
+    color: #1B5E20;
+    margin-bottom: 0.75rem;
+}
+
+.subtitle {
+    font-size: 1.25rem;
+    color: var(--muted-foreground);
+}
+
+.formCard {
+    background: white;
+    max-width: 900px;
+    margin: 0 auto 3rem;
+    border-radius: 2rem;
+    padding: 4rem;
+    box-shadow: 0 4px 40px rgba(0, 0, 0, 0.02);
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+}
+
+.fieldFull {
+    width: 100%;
+}
+
+.row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+}
+
+.label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #999;
+    letter-spacing: 0.05em;
+    margin-bottom: 1rem;
+}
+
+.input {
+    width: 100%;
+    border: none;
+    border-bottom: 1px solid #E0E0E0;
+    padding: 0.75rem 0;
+    font-size: 1.5rem;
+    color: #333;
+    outline: none;
+    transition: border-color 0.3s ease;
+}
+
+.input:focus {
+    border-bottom-color: #1B5E20;
+}
+
+.input::placeholder {
+    color: #D0D0D0;
+}
+
+.toggleRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+}
+
+.toggleLabelGroup {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.toggleLabel {
+    font-size: 1.25rem;
+    color: #1B5E20;
+    font-weight: 500;
+}
+
+.infoIcon {
+    width: 18px;
+    height: 18px;
+    border: 1px solid #D0D0D0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    color: #999;
+    cursor: help;
+}
+
+.toggle {
+    width: 48px;
+    height: 24px;
+    background-color: #E0E0E0;
+    border-radius: 100px;
+    border: none;
+    position: relative;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.toggle.active {
+    background-color: #1B5E20;
+}
+
+.toggleThumb {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: 16px;
+    height: 16px;
+    background-color: white;
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+}
+
+.toggle.active .toggleThumb {
+    transform: translateX(24px);
+}
+
+.actions {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+}
+
+.createButton {
+    background-color: #1B5E20;
+    color: white;
+    border: none;
+    padding: 1.25rem 4rem;
+    border-radius: 100px;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    box-shadow: 0 10px 20px rgba(27, 94, 32, 0.2);
+    transition: all 0.3s ease;
+}
+
+.createButton:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 15px 30px rgba(27, 94, 32, 0.3);
+    background-color: #144617;
+}
+
+.cancelLink {
+    text-decoration: none;
+    color: #999;
+    font-size: 0.875rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    transition: color 0.3s ease;
+}
+
+.cancelLink:hover {
+    color: #666;
+}
+
+@media (max-width: 768px) {
+    .formCard {
+        padding: 2.5rem 1.5rem;
+    }
+
+    .row {
+        grid-template-columns: 1fr;
+    }
+
+    .title {
+        font-size: 2.25rem;
+    }
+}

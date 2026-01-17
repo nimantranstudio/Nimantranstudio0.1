@@ -12,8 +12,8 @@ export const EventRepeater = () => {
 
             {formData.events.map((event, index) => (
                 <div key={event.id} className={styles.repeaterItem}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                        <h3 style={{ fontSize: '1.1rem', fontWeight: 600 }}>Event #{index + 1}</h3>
+                    <div className={styles.itemHeader}>
+                        <h3 className={styles.itemTitle}>Event #{index + 1}</h3>
                         {formData.events.length > 1 && (
                             <button
                                 onClick={() => removeEvent(event.id)}
@@ -55,7 +55,7 @@ export const EventRepeater = () => {
             ))}
 
             <button onClick={addEvent} className={`btn ${styles.addBtn}`}>
-                <Plus size={18} style={{ marginRight: '8px' }} /> Add Another Event
+                <Plus size={18} className={styles.btnIcon} /> Add Another Event
             </button>
         </div>
     );

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+export const dynamic = 'force-dynamic';
 import { WeddingFormSchema } from '@/lib/schemas/wedding-form';
 
 export async function POST(req: Request) {
@@ -41,8 +42,20 @@ export async function POST(req: Request) {
 
         return NextResponse.json({ success: true, wedding });
     } catch (error: any) {
+        if (error.name === 'ZodError') {
+            const issues = error.issues.map((i: any) => `${i.path.join('.')}: ${i.message}`).join(', ');
+            return NextResponse.json({ success: false, error: `Validation failed: ${issues}` }, { status: 400 });
+        }
+
         console.error('Error creating wedding:', error);
-        return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+
+        // Handle common Prisma or connection errors
+        let userMessage = error.message;
+        if (error.message.includes('Prisma') || error.message.includes('Can\'t reach database')) {
+            userMessage = "Database connection issue. Please ensure your database is running.";
+        }
+
+        return NextResponse.json({ success: false, error: userMessage }, { status: 500 });
     }
 }
 

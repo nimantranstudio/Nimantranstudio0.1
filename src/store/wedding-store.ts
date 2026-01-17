@@ -73,20 +73,36 @@ export const useWeddingStore = create<WeddingState>()(
 
             saveWedding: async () => {
                 const { formData, selectedThemeId } = get();
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout
+
                 try {
                     const response = await fetch('/api/wedding', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ formData, selectedThemeId }),
+                        signal: controller.signal,
                     });
+
+                    clearTimeout(timeoutId);
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        return { success: false, error: errorData.error || `Server error (${response.status})` };
+                    }
+
                     const result = await response.json();
                     if (result.success && result.wedding?.id) {
                         set({ lastSavedWeddingId: result.wedding.id });
                     }
                     return result;
                 } catch (error: any) {
+                    clearTimeout(timeoutId);
+                    if (error.name === 'AbortError') {
+                        return { success: false, error: 'Request timed out. Please try again.' };
+                    }
                     console.error('Failed to save wedding:', error);
-                    return { success: false, error: error.message };
+                    return { success: false, error: error.message || 'Network error' };
                 }
             },
         }),

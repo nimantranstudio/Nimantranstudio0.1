@@ -13,6 +13,7 @@ import {
     Share2
 } from 'lucide-react';
 import styles from '../dashboard.module.css';
+import { clsx } from 'clsx';
 
 interface RSVP {
     id: string;
@@ -140,7 +141,7 @@ export default function DashboardPage() {
                                                 </div>
                                             ) : '-'}
                                         </td>
-                                        <td style={{ fontSize: '0.8rem', color: '#888' }}>
+                                        <td className={styles.dateCell}>
                                             {new Date(rsvp.createdAt).toLocaleDateString()}
                                         </td>
                                     </tr>
@@ -162,7 +163,9 @@ export default function DashboardPage() {
 function StatCard({ icon, label, value, color }: { icon: any, label: string, value: any, color?: string }) {
     return (
         <div className={styles.statCard}>
-            <div className={styles.statIcon} style={{ color: color || 'var(--primary)' }}>{icon}</div>
+            <div className={clsx(styles.statIcon, color === '#E55B5B' ? styles.statIconDanger : styles.statIconPrimary)}>
+                {icon}
+            </div>
             <div>
                 <div className={styles.statLabel}>{label}</div>
                 <div className={styles.statValue}>{value}</div>
