@@ -1,0 +1,75 @@
+.card {
+    border-radius: var(--radius);
+    overflow: hidden;
+    background-color: #fff;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+}
+
+.selected {
+    border-color: var(--primary);
+    ring: 2px solid var(--primary);
+}
+
+.imageWrapper {
+    position: relative;
+    aspect-ratio: 3/4;
+    /* Standard card aspect ratio */
+    width: 100%;
+}
+
+.image {
+    object-fit: cover;
+}
+
+.overlay {
+    position: absolute;
+    inset: 0;
+    background-color: rgba(212, 175, 55, 0.4);
+    /* Gold overlay */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.checkIcon {
+    color: white;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.info {
+    padding: 1.5rem;
+}
+
+.name {
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+    color: var(--foreground);
+}
+
+.description {
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+    margin-bottom: 1rem;
+    line-height: 1.4;
+}
+
+.colors {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.colorDot {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}

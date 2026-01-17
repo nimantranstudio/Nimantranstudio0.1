@@ -1,0 +1,251 @@
+.dashboard {
+    min-height: 100vh;
+    background-color: #F8F9FA;
+    padding-bottom: 5rem;
+}
+
+.loading {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-serif);
+    font-size: 1.5rem;
+    color: var(--muted-foreground);
+}
+
+.header {
+    background-color: white;
+    border-bottom: 1px solid var(--border);
+    padding: 3rem 0;
+    margin-bottom: 3rem;
+}
+
+.headerTop {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 3rem;
+    gap: 2rem;
+}
+
+.title {
+    font-size: 2.25rem;
+    font-family: var(--font-serif);
+}
+
+.shareBox {
+    background-color: var(--muted);
+    padding: 1.5rem;
+    border-radius: var(--radius);
+    max-width: 450px;
+    width: 100%;
+}
+
+.shareLabel {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.75rem;
+    color: var(--muted-foreground);
+}
+
+.shareInput {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.shareInput input {
+    flex: 1;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 0.875rem;
+    background: white;
+    color: #666;
+}
+
+.copyBtn {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0 0.75rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: all 0.2s;
+}
+
+.copyBtn:hover {
+    background-color: var(--muted);
+    border-color: var(--primary);
+}
+
+.waBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 0.75rem;
+    background-color: #25D366;
+    color: white;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.statsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+.statCard {
+    background: white;
+    padding: 1.5rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.statIcon {
+    background-color: rgba(212, 175, 55, 0.1);
+    padding: 0.75rem;
+    border-radius: 50%;
+    display: flex;
+}
+
+.statLabel {
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+    margin-bottom: 0.25rem;
+}
+
+.statValue {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--foreground);
+}
+
+.tableSection {
+    background: white;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    overflow: hidden;
+}
+
+.tableHeader {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.badge {
+    background-color: var(--muted);
+    padding: 0.25rem 0.75rem;
+    border-radius: 100px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.tableWrapper {
+    overflow-x: auto;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.table th {
+    padding: 1rem 2rem;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+    border-bottom: 1px solid var(--border);
+    background: #FAFAFA;
+}
+
+.table td {
+    padding: 1.25rem 2rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.9375rem;
+}
+
+.statusYes {
+    color: #2E594A;
+    background-color: rgba(46, 89, 74, 0.1);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.statusNo {
+    color: #E55B5B;
+    background-color: rgba(229, 91, 91, 0.1);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.messageCell {
+    position: relative;
+}
+
+.messageTooltip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--primary);
+    cursor: help;
+    font-size: 0.875rem;
+}
+
+.tooltipText {
+    visibility: hidden;
+    width: 200px;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 1rem;
+    position: absolute;
+    z-index: 100;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -100px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 0.8rem;
+    line-height: 1.4;
+}
+
+.messageTooltip:hover .tooltipText {
+    visibility: visible;
+    opacity: 1;
+}
+
+.empty {
+    text-align: center;
+    padding: 5rem !important;
+    color: var(--muted-foreground);
+    font-style: italic;
+}
+
+@media (max-width: 768px) {
+    .headerTop {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}

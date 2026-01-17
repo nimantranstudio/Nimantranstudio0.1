@@ -1,33 +1,53 @@
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
-html,
-body {
-  max-width: 100vw;
-  overflow-x: hidden;
-}
-
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  /* Core Palette - Indian Wedding Premium */
+  --background: #FDFBF7; /* Cream/Ivory */
+  --foreground: #1A1A1A; /* Soft Black */
+  
+  /* Primary - Royal Gold/Mustard */
+  --primary: #D4AF37;
+  --primary-foreground: #FFFFFF;
+  
+  /* Secondary - Deep Green (Mehendi) */
+  --secondary: #2E594A;
+  --secondary-foreground: #FFFFFF;
+  
+  /* Accent - Terracotta/Red (Sindoor) */
+  --accent: #E55B5B;
+  --accent-foreground: #FFFFFF;
+  
+  /* Neutral scale */
+  --muted: #F2F0E9;
+  --muted-foreground: #666666;
+  --border: #E6E2D6;
+  
+  /* Font Families */
+  --font-serif: 'Playfair Display', 'Merriweather', serif;
+  --font-sans: 'Inter', system-ui, sans-serif;
+  
+  /* Spacing */
+  --radius: 0.5rem;
+  --container-width: 1200px;
 }
 
 * {
   box-sizing: border-box;
-  padding: 0;
   margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  font-family: var(--font-sans);
+  background-color: var(--background);
+  color: var(--foreground);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  line-height: 1.2;
 }
 
 a {
@@ -35,8 +55,40 @@ a {
   text-decoration: none;
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
+.container {
+  max-width: var(--container-width);
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius);
+  font-weight: 500;
+  transition: opacity 0.2s;
+  cursor: pointer;
+  border: none;
+  font-family: var(--font-sans);
+}
+
+.btn:hover {
+  opacity: 0.9;
+}
+
+.btn-primary {
+  background-color: var(--secondary); /* Using Green as primary action color for calmness */
+  color: var(--secondary-foreground);
+}
+
+.btn-secondary {
+  background-color: var(--muted);
+  color: var(--foreground);
+}
+
+.btn-outline {
+  background-color: transparent;
+  border: 1px solid var(--border);
 }
