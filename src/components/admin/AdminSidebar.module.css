@@ -5,114 +5,193 @@
     border-right: 1px solid #eef0f3;
     display: flex;
     flex-direction: column;
-    position: fixed;
-    left: 0;
-    top: 0;
-    z-index: 100;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    flex-shrink: 0;
+    overflow: hidden;
+    position: relative;
+    z-index: 1001;
+}
+
+.sidebar.collapsed {
+    width: 72px;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    min-height: 72px;
+    border-bottom: 1px solid #f9fafb;
+}
+
+.collapsed .header {
+    justify-content: center;
+    padding: 1rem 0;
 }
 
 .logoArea {
-    padding: 1.5rem;
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    margin-bottom: 1rem;
+    overflow: hidden;
 }
 
 .logoIcon {
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    min-width: 36px;
+    height: 36px;
     background: #6366f1;
-    /* Indigo-500 equivalent */
     color: white;
-    border-radius: 8px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 700;
-    font-size: 1.2rem;
+    font-weight: 800;
+    font-size: 1.25rem;
+    box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.2);
 }
 
 .logoText {
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     font-weight: 700;
-    color: #1f2937;
+    color: #111827;
     font-family: var(--font-serif, serif);
+    white-space: nowrap;
+}
+
+.toggleBtn {
+    background: #f8fafc;
+    border: 1px solid #f1f5f9;
+    color: #64748b;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.toggleBtn:hover {
+    background: #6366f1;
+    color: white;
+    transform: scale(1.05);
 }
 
 .nav {
     flex: 1;
-    padding: 0 1rem;
+    padding: 1rem 0.75rem;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    overflow-y: auto;
+}
+
+.nav::-webkit-scrollbar {
+    width: 4px;
+}
+
+.nav::-webkit-scrollbar-thumb {
+    background: #f1f5f9;
+    border-radius: 10px;
 }
 
 .navItem {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 1rem;
     padding: 0.75rem 1rem;
-    border-radius: 8px;
-    color: #6b7280;
+    border-radius: 10px;
+    color: #64748b;
     text-decoration: none;
     font-size: 0.95rem;
-    font-weight: 500;
+    font-weight: 600;
     transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.collapsed .navItem {
+    padding: 0.75rem;
+    justify-content: center;
+    width: 44px;
+    margin: 0 auto;
+}
+
+.navItem span {
+    transition: opacity 0.2s;
+}
+
+.collapsed .navItem span {
+    display: none;
 }
 
 .navItem:hover {
-    background: #f3f4f6;
-    color: #111827;
+    background: #f8fafc;
+    color: #6366f1;
 }
 
 .navItem.active {
-    background: #e0e7ff;
-    /* Indigo-50 */
-    color: #4f46e5;
-    /* Indigo-600 */
+    background: #6366f1;
+    color: white;
+    box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.2);
 }
 
 .sectionTitle {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: #9ca3af;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #94a3b8;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin: 1.5rem 1rem 0.5rem;
+    letter-spacing: 0.1em;
+    margin: 1.5rem 1.25rem 0.5rem;
+}
+
+.collapsed .sectionTitle {
+    display: none;
 }
 
 .userProfile {
-    padding: 1rem 1.5rem;
-    border-top: 1px solid #eef0f3;
+    padding: 1.25rem 1rem;
+    border-top: 1px solid #f8fafc;
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 0.75rem;
+    background: #fcfdfe;
+}
+
+.collapsed .userProfile {
+    justify-content: center;
+    padding: 1.25rem 0;
 }
 
 .avatar {
     width: 40px;
+    min-width: 40px;
     height: 40px;
-    border-radius: 50%;
-    background: #e5e7eb;
+    border-radius: 12px;
+    background: #e2e8f0;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #4b5563;
+    color: #475569;
 }
 
 .userInfo {
     display: flex;
     flex-direction: column;
+    overflow: hidden;
 }
 
 .userName {
     font-size: 0.9rem;
-    font-weight: 600;
-    color: #1f2937;
+    font-weight: 700;
+    color: #1e293b;
+    white-space: nowrap;
 }
 
 .userRole {
-    font-size: 0.8rem;
-    color: #6b7280;
+    font-size: 0.75rem;
+    color: #64748b;
+    white-space: nowrap;
 }

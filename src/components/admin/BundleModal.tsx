@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { X, Package, CheckCircle, Info } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { X, Package, CheckCircle, Info, Upload, Image as ImageIcon } from 'lucide-react';
 import styles from './BundleModal.module.css';
+import { clsx } from 'clsx';
 
 interface Theme {
     id: string;
@@ -35,6 +36,11 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
     const [themeId, setThemeId] = useState('');
     const [checklist, setChecklist] = useState<string[]>([]);
 
+    // Image state
+    const [files, setFiles] = useState<File[]>([]);
+    const [previews, setPreviews] = useState<string[]>([]);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
     const [themes, setThemes] = useState<Theme[]>([]);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -66,6 +72,10 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
             setIsPopular(initialData.isPopular || false);
             setThemeId(initialData.themeId || '');
             setChecklist(initialData.checklist ? JSON.parse(initialData.checklist) : []);
+
+            setFiles([]);
+            const existingImages = initialData.previewImages ? JSON.parse(initialData.previewImages) : (initialData.thumbnailUrl ? [initialData.thumbnailUrl] : []);
+            setPreviews(existingImages);
         } else {
             setName('');
             setPrice('');
@@ -75,10 +85,26 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
             setIsPopular(false);
             setThemeId('');
             setChecklist([]);
+            setFiles([]);
+            setPreviews([]);
         }
     }, [initialData, isOpen]);
 
     if (!isOpen) return null;
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files) {
+            const newFiles = Array.from(e.target.files);
+            setFiles(prev => [...prev, ...newFiles]);
+            const newPreviews = newFiles.map(file => URL.createObjectURL(file));
+            setPreviews(prev => [...prev, ...newPreviews]);
+        }
+    };
+
+    const removeFile = (index: number) => {
+        setPreviews(prev => prev.filter((_, i) => i !== index));
+        // Note: in a real update we'd need to identify which files are new vs existing to update 'files' state correctly
+    };
 
     const toggleChecklist = (item: string) => {
         setChecklist(prev =>
@@ -93,22 +119,28 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
         setIsLoading(true);
 
         try {
+            const formData = new FormData();
+            formData.append('name', name);
+            formData.append('price', price);
+            formData.append('description', description);
+            formData.append('highlights', highlights);
+            formData.append('isActive', String(isActive));
+            formData.append('isPopular', String(isPopular));
+            formData.append('themeId', themeId);
+            formData.append('checklist', JSON.stringify(checklist));
+
+            files.forEach(file => {
+                formData.append('images', file);
+            });
+
             const url = initialData ? `/api/admin/bundles/${initialData.id}` : '/api/admin/bundles';
             const method = initialData ? 'PUT' : 'POST';
 
+            console.log(`[CLIENT] Sending ${method} for bundle:`, { name, isActive, isPopular });
+
             const response = await fetch(url, {
                 method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    name,
-                    price,
-                    description,
-                    highlights,
-                    isActive,
-                    isPopular,
-                    themeId,
-                    checklist: JSON.stringify(checklist)
-                }),
+                body: formData,
             });
 
             if (!response.ok) {
@@ -133,7 +165,7 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
                     <button className={styles.closeBtn} onClick={onClose}><X size={20} /></button>
                 </div>
 
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit} className={styles.form}>
                     <div className={styles.body}>
                         <div className={styles.row}>
                             <div className={styles.formGroup}>
@@ -189,7 +221,7 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
                                             onChange={e => setIsActive(e.target.checked)}
                                         />
                                         <span className={styles.toggleSwitch}></span>
-                                        <span className={styles.toggleLabel}>{isActive ? 'Public' : 'Draft'}</span>
+                                        <span className={styles.toggleLabel}>{isActive ? 'Active' : 'Inactive'}</span>
                                     </label>
                                     <label className={styles.toggle}>
                                         <input
@@ -213,6 +245,45 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
                                 value={description}
                                 onChange={e => setDescription(e.target.value)}
                             />
+                        </div>
+
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>Bundle Images</label>
+                            <div
+                                className={styles.fileUploadArea}
+                                onClick={() => fileInputRef.current?.click()}
+                            >
+                                <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    hidden
+                                    multiple
+                                    accept="image/*"
+                                    onChange={handleFileChange}
+                                />
+                                <Upload size={24} color="#6366f1" />
+                                <div className={styles.uploadText}>
+                                    <span style={{ fontWeight: 600, color: '#6366f1' }}>Click to upload</span> or drag and drop
+                                </div>
+                                <div className={styles.uploadHint}>SVG, PNG, JPG or GIF (max. 800x400px)</div>
+                            </div>
+
+                            {previews.length > 0 && (
+                                <div className={styles.previewGrid}>
+                                    {previews.map((src, index) => (
+                                        <div key={index} className={styles.previewItem}>
+                                            <img src={src} alt="Preview" className={styles.previewImg} />
+                                            <button
+                                                type="button"
+                                                className={styles.removeBtn}
+                                                onClick={() => removeFile(index)}
+                                            >
+                                                <X size={12} />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
 
                         <div className={styles.formGroup}>

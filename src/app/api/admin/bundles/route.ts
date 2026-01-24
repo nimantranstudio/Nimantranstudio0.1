@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { writeFile, mkdir } from 'fs/promises';
+import path from 'path';
 
 export async function GET() {
     try {
@@ -20,54 +22,56 @@ export async function POST(request: NextRequest) {
         const { getPrisma } = await import('@/lib/prisma');
         const prisma = getPrisma();
 
-        const data = await request.json();
+        const formData = await request.formData();
 
-        // Seeding logic
-        if (data.seed) {
-            const count = await prisma.bundle.count();
-            if (count > 0) return NextResponse.json({ message: 'Bundles already seeded' });
+        const name = formData.get('name') as string;
+        const price = formData.get('price') as string;
+        const description = formData.get('description') as string;
+        const highlights = formData.get('highlights') as string;
+        const checklist = formData.get('checklist') as string;
 
-            const theme = await prisma.theme.findFirst();
+        // Force convert to boolean correctly
+        const isActive = formData.get('isActive') === 'true';
+        const isPopular = formData.get('isPopular') === 'true';
 
-            const defaultBundles = [
-                {
-                    name: "WhatsApp Essentials",
-                    price: "999",
-                    description: "Perfect for digital sharing with friends & family",
-                    isActive: true,
-                    themeId: theme?.id || null,
-                    checklist: JSON.stringify(["Image Invitations", "Video Invitations", "RSVP Link"]),
-                    highlights: "• Ready in 2-5 Minutes\n• Optimized for WhatsApp\n• No Watermark",
-                    isPopular: false
-                },
-                {
-                    name: "WhatsApp + Posters",
-                    price: "1999",
-                    description: "Digital invites + venue-ready welcome boards",
-                    isActive: true,
-                    themeId: theme?.id || null,
-                    checklist: JSON.stringify(["Image Invitations", "Video Invitations", "RSVP Link", "Printable Posters"]),
-                    highlights: "• Everything in Essentials\n• High-Res Print PDF\n• A3 & A4 Dimensions",
-                    isPopular: true
-                }
-            ];
+        const themeId = formData.get('themeId') as string;
+        const files = formData.getAll('images') as File[];
 
-            await prisma.bundle.createMany({ data: defaultBundles });
-            return NextResponse.json({ success: true, message: 'Default bundles seeded' });
+        if (!name) {
+            return NextResponse.json({ error: 'Name is required' }, { status: 400 });
         }
 
-        // Standard Create Logic
-        const { name, price, description, highlights, checklist, isActive, themeId, isPopular } = data;
+        const savedImagePaths: string[] = [];
+        const uploadDir = path.join(process.cwd(), 'public/Image/bundle');
+
+        try {
+            await mkdir(uploadDir, { recursive: true });
+        } catch (e) { }
+
+        for (const file of files) {
+            if (file && typeof file !== 'string') {
+                const bytes = await file.arrayBuffer();
+                const buffer = Buffer.from(bytes);
+                const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+                const filename = file.name.replace(/\.[^/.]+$/, "") + '-' + uniqueSuffix + path.extname(file.name);
+                const filepath = path.join(uploadDir, filename);
+                await writeFile(filepath, buffer);
+                savedImagePaths.push(`/Image/bundle/${filename}`);
+            }
+        }
+
         const bundle = await prisma.bundle.create({
             data: {
                 name,
                 price: String(price),
                 description,
                 highlights,
-                checklist: typeof checklist === 'string' ? checklist : JSON.stringify(checklist),
-                isActive: isActive !== undefined ? isActive : true,
-                isPopular: !!isPopular,
+                checklist,
+                isActive,
+                isPopular,
                 themeId: themeId || null,
+                thumbnailUrl: savedImagePaths.length > 0 ? savedImagePaths[0] : null,
+                previewImages: JSON.stringify(savedImagePaths),
             }
         });
 

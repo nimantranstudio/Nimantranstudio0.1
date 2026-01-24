@@ -1,9 +1,10 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { clsx } from 'clsx';
-import { LayoutDashboard, Palette, Package, ShoppingCart, Settings, User } from 'lucide-react';
+import { LayoutDashboard, Palette, Package, ShoppingCart, Settings, User, ChevronLeft, Menu } from 'lucide-react';
 import styles from './AdminSidebar.module.css';
 
 const MENU_ITEMS = [
@@ -15,12 +16,24 @@ const MENU_ITEMS = [
 
 export function AdminSidebar() {
     const pathname = usePathname();
+    const [isCollapsed, setIsCollapsed] = useState(false);
 
     return (
-        <aside className={styles.sidebar}>
-            <div className={styles.logoArea}>
-                <div className={styles.logoIcon}>N</div>
-                <span className={styles.logoText}>Nimantran</span>
+        <aside className={clsx(styles.sidebar, isCollapsed && styles.collapsed)}>
+            <div className={styles.header}>
+                {!isCollapsed && (
+                    <div className={styles.logoArea}>
+                        <div className={styles.logoIcon}>N</div>
+                        <span className={styles.logoText}>Nimantran</span>
+                    </div>
+                )}
+                <button
+                    className={styles.toggleBtn}
+                    onClick={() => setIsCollapsed(!isCollapsed)}
+                    title={isCollapsed ? "Expand" : "Collapse"}
+                >
+                    {isCollapsed ? <Menu size={18} /> : <ChevronLeft size={18} />}
+                </button>
             </div>
 
             <nav className={styles.nav}>
@@ -29,9 +42,10 @@ export function AdminSidebar() {
                         key={item.href}
                         href={item.href}
                         className={clsx(styles.navItem, pathname === item.href && styles.active)}
+                        title={isCollapsed ? item.name : ""}
                     >
                         <item.icon size={20} />
-                        {item.name}
+                        <span>{item.name}</span>
                     </Link>
                 ))}
 
@@ -39,9 +53,10 @@ export function AdminSidebar() {
                 <Link
                     href="/admin/settings"
                     className={clsx(styles.navItem, pathname === '/admin/settings' && styles.active)}
+                    title={isCollapsed ? "Settings" : ""}
                 >
                     <Settings size={20} />
-                    Settings
+                    <span>Settings</span>
                 </Link>
             </nav>
 
@@ -49,10 +64,12 @@ export function AdminSidebar() {
                 <div className={styles.avatar}>
                     <User size={20} />
                 </div>
-                <div className={styles.userInfo}>
-                    <span className={styles.userName}>Admin User</span>
-                    <span className={styles.userRole}>Super Admin</span>
-                </div>
+                {!isCollapsed && (
+                    <div className={styles.userInfo}>
+                        <span className={styles.userName}>Admin User</span>
+                        <span className={styles.userRole}>Super Admin</span>
+                    </div>
+                )}
             </div>
         </aside>
     );

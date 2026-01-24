@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
+import RootWrapper from "@/components/layout/RootWrapper";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair" });
@@ -10,9 +11,6 @@ export const metadata: Metadata = {
   description: "One form. One click. Your entire wedding invitation bundle ready for WhatsApp.",
 };
 
-import { Navbar } from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -21,9 +19,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} ${playfair.variable}`} suppressHydrationWarning>
-        <Navbar />
-        {children}
-        <Footer />
+        <RootWrapper>{children}</RootWrapper>
       </body>
     </html>
   );

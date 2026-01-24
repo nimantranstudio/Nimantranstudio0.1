@@ -113,7 +113,7 @@ export function ThemeModal({ isOpen, onClose, onSuccess, initialData }: ThemeMod
                     <button className={styles.closeBtn} onClick={onClose}><X size={20} /></button>
                 </div>
 
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit} className={styles.form}>
                     <div className={styles.body}>
                         <div className={styles.row}>
                             <div className={clsx(styles.formGroup, styles.col)}>

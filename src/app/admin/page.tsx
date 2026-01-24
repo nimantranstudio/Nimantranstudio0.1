@@ -39,8 +39,8 @@ export default function AdminDashboard() {
     }
 
     return (
-        <div>
-            <h1 style={{ fontSize: '1.8rem', fontWeight: '700', color: '#111827', marginBottom: '0.5rem' }}>Overview</h1>
+        <div style={{ padding: '0.5rem' }}>
+            <h1 style={{ fontSize: '1.8rem', fontWeight: '800', color: '#111827', marginBottom: '0.5rem' }}>Admin Dashboard</h1>
             <p style={{ color: '#6b7280', marginBottom: '2rem' }}>Here is what's happening at Nimantran Studio.</p>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
