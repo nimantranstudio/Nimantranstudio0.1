@@ -125,10 +125,24 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
 
 exports.Prisma.UserScalarFieldEnum = {
   id: 'id',
+  mobileNumber: 'mobileNumber',
   email: 'email',
   name: 'name',
+  isMobileVerified: 'isMobileVerified',
+  status: 'status',
+  role: 'role',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
+};
+
+exports.Prisma.OTPRequestScalarFieldEnum = {
+  id: 'id',
+  mobileNumber: 'mobileNumber',
+  otpHash: 'otpHash',
+  expiresAt: 'expiresAt',
+  isUsed: 'isUsed',
+  attemptCount: 'attemptCount',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.BundleScalarFieldEnum = {
@@ -233,6 +247,7 @@ exports.Prisma.NullsOrder = {
 
 exports.Prisma.ModelName = {
   User: 'User',
+  OTPRequest: 'OTPRequest',
   Bundle: 'Bundle',
   Order: 'Order',
   Theme: 'Theme',

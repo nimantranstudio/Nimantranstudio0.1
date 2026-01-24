@@ -9,13 +9,27 @@ datasource db {
 }
 
 model User {
-  id        String    @id @default(cuid())
-  email     String    @unique
-  name      String?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  weddings  Wedding[]
-  orders    Order[]
+  id               String    @id @default(cuid())
+  mobileNumber     String    @unique
+  email            String?   @unique
+  name             String?
+  isMobileVerified Boolean   @default(false)
+  status           String    @default("active")
+  role             String    @default("user") // "user" or "admin"
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  weddings         Wedding[]
+  orders           Order[]
+}
+
+model OTPRequest {
+  id           String   @id @default(cuid())
+  mobileNumber String
+  otpHash      String
+  expiresAt    DateTime
+  isUsed       Boolean  @default(false)
+  attemptCount Int      @default(0)
+  createdAt    DateTime @default(now())
 }
 
 model Bundle {
