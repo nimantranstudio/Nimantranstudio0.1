@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import styles from '@/app/page.module.css';
 
 const FEATURES = [
     {
@@ -23,27 +24,15 @@ const FEATURES = [
 
 export const FeaturesSection = () => {
     return (
-        <section style={{ padding: '8rem 0', backgroundColor: '#345244', color: '#fff' }}>
+        <section className={styles.featuresDark}>
             <div className="container">
-                <div style={{ textAlign: 'center', marginBottom: '6rem' }}>
-                    <h2 style={{
-                        fontSize: '3rem',
-                        marginBottom: '1rem',
-                        fontFamily: 'var(--font-serif)',
-                        color: '#fff'
-                    }}>
+                <div className={styles.featuresDarkHeader}>
+                    <h2 className={styles.featuresDarkTitle}>
                         Designed for the Indian Wedding
                     </h2>
                 </div>
 
-                <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-                    gap: '4rem',
-                    maxWidth: '1200px',
-                    margin: '0 auto',
-                    textAlign: 'center'
-                }}>
+                <div className={styles.featuresDarkGrid}>
                     {FEATURES.map((f, i) => (
                         <motion.div
                             key={f.title}
@@ -52,21 +41,10 @@ export const FeaturesSection = () => {
                             viewport={{ once: true }}
                             transition={{ duration: 0.6, delay: i * 0.1 }}
                         >
-                            <h3 style={{
-                                fontSize: '1.25rem',
-                                fontWeight: 600,
-                                marginBottom: '1rem',
-                                color: '#fff'
-                            }}>
+                            <h3 className={styles.featuresDarkItemTitle}>
                                 {f.title}
                             </h3>
-                            <p style={{
-                                fontSize: '1rem',
-                                color: '#aaa',
-                                lineHeight: '1.6',
-                                maxWidth: '250px',
-                                margin: '0 auto'
-                            }}>
+                            <p className={styles.featuresDarkItemDesc}>
                                 {f.desc}
                             </p>
                         </motion.div>

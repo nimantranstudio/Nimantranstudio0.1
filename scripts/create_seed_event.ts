@@ -9,7 +9,8 @@ async function main() {
     // Create a wedding (required parent)
     const wedding = await prisma.wedding.create({
         data: {
-            ownerId: 'test-user-1',
+            owner: { connect: { id: 'test-user-1' } },
+            themeId: 'theme-1',
             groomName: 'Rahul',
             brideName: 'Anjalee',
             groomParents: 'Mr. & Mrs. Sharma',
