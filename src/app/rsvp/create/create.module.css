@@ -1,84 +1,85 @@
-.page {
+/* Dashboard Layout Matches */
+.container {
+    display: flex;
     min-height: 100vh;
     background-color: #FDFBF7;
-    padding: 6rem 0;
+}
+
+.main {
+    flex: 1;
+    padding: 2.5rem 3rem;
+    overflow-y: auto;
+}
+
+/* Breadcrumb Styles */
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-bottom: 1rem;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid #E2E8F0;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.breadcrumbLink {
+    color: #888;
+}
+
+.separator {
+    color: #ccc;
+}
+
+.activeBreadcrumb {
+    color: #333;
+    font-weight: 600;
+}
+
+.page {
+    /* min-height: 100vh; Removed to fit in flex container */
+    background-color: transparent;
+    /* Changed from var(--background) */
+    padding: 0;
+    /* Removing padding as .main handles it */
 }
 
 .header {
     text-align: center;
-    margin-bottom: 4rem;
+    margin-bottom: 3rem;
+    padding: 1.5rem 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
 }
 
 .title {
     font-family: var(--font-serif);
     font-size: 3rem;
-    color: #1B5E20;
+    color: var(--secondary);
     margin-bottom: 0.75rem;
 }
 
 .subtitle {
-    font-size: 1.25rem;
+    font-size: 1.125rem;
     color: var(--muted-foreground);
 }
 
-.formCard {
-    background: white;
-    max-width: 900px;
-    margin: 0 auto 3rem;
-    border-radius: 2rem;
-    padding: 4rem;
-    box-shadow: 0 4px 40px rgba(0, 0, 0, 0.02);
-}
-
-.form {
-    display: flex;
-    flex-direction: column;
-    gap: 3rem;
+.formContainer {
+    max-width: 800px;
+    margin: 0 auto;
 }
 
 .fieldFull {
-    width: 100%;
-}
-
-.row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 3rem;
-}
-
-.label {
-    display: block;
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: #999;
-    letter-spacing: 0.05em;
-    margin-bottom: 1rem;
-}
-
-.input {
-    width: 100%;
-    border: none;
-    border-bottom: 1px solid #E0E0E0;
-    padding: 0.75rem 0;
-    font-size: 1.5rem;
-    color: #333;
-    outline: none;
-    transition: border-color 0.3s ease;
-}
-
-.input:focus {
-    border-bottom-color: #1B5E20;
-}
-
-.input::placeholder {
-    color: #D0D0D0;
+    grid-column: 1 / -1;
 }
 
 .toggleRow {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 1rem;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border);
 }
 
 .toggleLabelGroup {
@@ -88,28 +89,20 @@
 }
 
 .toggleLabel {
-    font-size: 1.25rem;
-    color: #1B5E20;
+    font-size: 1.125rem;
+    color: var(--foreground);
     font-weight: 500;
 }
 
 .infoIcon {
-    width: 18px;
-    height: 18px;
-    border: 1px solid #D0D0D0;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.75rem;
-    color: #999;
+    color: var(--muted-foreground);
     cursor: help;
 }
 
 .toggle {
     width: 48px;
     height: 24px;
-    background-color: #E0E0E0;
+    background-color: var(--border);
     border-radius: 100px;
     border: none;
     position: relative;
@@ -118,75 +111,54 @@
 }
 
 .toggle.active {
-    background-color: #1B5E20;
+    background-color: var(--secondary);
 }
 
 .toggleThumb {
     position: absolute;
-    top: 4px;
+    top: 3px;
     left: 4px;
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
     background-color: white;
     border-radius: 50%;
     transition: transform 0.3s ease;
 }
 
 .toggle.active .toggleThumb {
-    transform: translateX(24px);
+    transform: translateX(22px);
 }
 
 .actions {
-    text-align: center;
+    margin-top: 3rem;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2rem;
+    gap: 1.5rem;
 }
 
 .createButton {
-    background-color: #1B5E20;
-    color: white;
-    border: none;
-    padding: 1.25rem 4rem;
-    border-radius: 100px;
-    font-size: 1rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    cursor: pointer;
-    box-shadow: 0 10px 20px rgba(27, 94, 32, 0.2);
-    transition: all 0.3s ease;
-}
-
-.createButton:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 15px 30px rgba(27, 94, 32, 0.3);
-    background-color: #144617;
+    min-width: 250px;
 }
 
 .cancelLink {
     text-decoration: none;
-    color: #999;
+    color: var(--muted-foreground);
     font-size: 0.875rem;
     font-weight: 500;
-    letter-spacing: 0.05em;
-    transition: color 0.3s ease;
+    transition: color 0.2s;
 }
 
 .cancelLink:hover {
-    color: #666;
+    color: var(--foreground);
 }
 
 @media (max-width: 768px) {
-    .formCard {
-        padding: 2.5rem 1.5rem;
-    }
-
-    .row {
-        grid-template-columns: 1fr;
-    }
-
     .title {
-        font-size: 2.25rem;
+        font-size: 2.5rem;
+    }
+
+    .page {
+        padding: 4rem 0;
     }
 }

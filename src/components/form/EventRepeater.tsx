@@ -33,6 +33,12 @@ export const EventRepeater = () => {
                             onChange={(e) => updateEvent(event.id, { name: e.target.value })}
                         />
                         <Input
+                            label="Welcome Message"
+                            placeholder="e.g. Join us for an evening of music and dance"
+                            value={event.description || ''}
+                            onChange={(e) => updateEvent(event.id, { description: e.target.value })}
+                        />
+                        <Input
                             label="Venue"
                             placeholder="e.g. Grand Hotel"
                             value={event.venue}

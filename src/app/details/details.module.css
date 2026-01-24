@@ -6,11 +6,11 @@
 }
 
 .header {
-    padding: 3rem 0;
+    padding: 1.5rem 0;
     background-color: var(--background);
     border-bottom: 1px solid var(--border);
     margin-bottom: 2rem;
-    text-align: center;
+    text-align: left;
 }
 
 .title {
@@ -22,12 +22,51 @@
     color: var(--muted-foreground);
 }
 
+/* Layout */
 .layout {
-    display: flex;
-    justify-content: center;
-    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 3rem;
+    padding-bottom: 6rem;
 }
 
+@media (min-width: 1024px) {
+    .layout {
+        grid-template-columns: 450px 1fr;
+        /* Fixed width for image preview, rest for form */
+        align-items: start;
+    }
+}
+
+/* Image Grid Column */
+.imageCol {
+    position: sticky;
+    top: 2rem;
+}
+
+.imageGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+}
+
+.imageCard {
+    aspect-ratio: 3/4;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s;
+    background-color: #f0f0f0;
+    /* Fallback */
+}
+
+.imageCard:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Form Column */
 .formColumn {
     width: 100%;
     max-width: 800px;
@@ -61,7 +100,7 @@
     background: none;
     border: 1px solid var(--border);
     padding: 0.5rem 1rem;
-    border-radius: 20px;
+    border-radius: 100px;
     font-size: 0.8125rem;
     font-weight: 500;
     cursor: pointer;

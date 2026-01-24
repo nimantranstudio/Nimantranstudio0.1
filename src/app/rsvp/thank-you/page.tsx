@@ -19,7 +19,7 @@ export default function ThankYouPage() {
                     <p className={styles.footerText}>
                         Planning your own wedding?
                     </p>
-                    <Link href="/" className={`${styles.ctaBtn} btn btn-outline`}>
+                    <Link href="/" className="btn btn-secondary">
                         Create Your Invitation Today
                     </Link>
                 </div>

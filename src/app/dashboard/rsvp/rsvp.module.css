@@ -1,0 +1,153 @@
+.container {
+    display: flex;
+    min-height: 100vh;
+    background-color: #FDFBF7;
+}
+
+.main {
+    flex: 1;
+    padding: 2.5rem 3rem;
+    overflow-y: auto;
+}
+
+.header {
+    margin-bottom: 2rem;
+}
+
+.title {
+    font-family: var(--font-serif);
+    font-size: 2rem;
+    color: #333;
+    font-weight: 600;
+}
+
+.contentCard {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #E6E2D6;
+    padding: 2.5rem;
+    max-width: 800px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+}
+
+.sectionTitle {
+    font-family: var(--font-serif);
+    font-size: 1.5rem;
+    color: #333;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 1rem;
+}
+
+.formGroup {
+    margin-bottom: 1.5rem;
+}
+
+.label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #333;
+    font-weight: 600;
+}
+
+.input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #E6E2D6;
+    border-radius: 6px;
+    font-size: 1rem;
+    outline: none;
+    transition: all 0.2s;
+    background-color: #FAFAF8;
+}
+
+.input:focus {
+    border-color: #1B5E20;
+    background-color: white;
+    box-shadow: 0 0 0 3px rgba(27, 94, 32, 0.05);
+}
+
+.row {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.col {
+    flex: 1;
+}
+
+.toggleRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #eee;
+}
+
+.toggleLabel {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+    color: #333;
+    font-weight: 500;
+}
+
+.infoIcon {
+    color: #999;
+}
+
+.toggleSwitch {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    background-color: #ccc;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.toggleSwitch[aria-checked="true"] {
+    background-color: #2E594A;
+}
+
+.toggleThumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    background-color: white;
+    border-radius: 50%;
+    transition: transform 0.3s;
+}
+
+.toggleSwitch[aria-checked="true"] .toggleThumb {
+    transform: translateX(20px);
+}
+
+.submitBtn {
+    margin-top: 3rem;
+    background-color: #2E594A;
+    color: white;
+    padding: 0.875rem 2rem;
+    border-radius: 100px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 200px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.submitBtn:hover {
+    background-color: #1B5E20;
+    transform: translateY(-1px);
+}

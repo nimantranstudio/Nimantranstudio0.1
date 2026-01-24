@@ -91,15 +91,24 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
 
     return (
         <div className={styles.page}>
+            {/* Header with Breadcrumb and Separator */}
+            <header style={{
+                borderBottom: '1px solid var(--border)',
+                backgroundColor: 'var(--background)',
+                marginBottom: '2rem'
+            }}>
+                <div className="container" style={{ padding: '1.5rem 0' }}>
+                    <Breadcrumbs
+                        items={[
+                            { label: 'Home', href: '/' },
+                            { label: 'Themes', href: '/themes' },
+                            { label: theme.name, active: true },
+                        ]}
+                    />
+                </div>
+            </header>
+
             <div className="container">
-                {/* Breadcrumb */}
-                <Breadcrumbs
-                    items={[
-                        { label: 'Home', href: '/' },
-                        { label: 'Themes', href: '/themes' },
-                        { label: theme.name, active: true },
-                    ]}
-                />
 
                 <div className={styles.layout}>
                     {/* Left Column: Asset Grid */}
@@ -176,10 +185,10 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
                         </div>
 
                         <div className={styles.actions}>
-                            <button onClick={handleCreateNow} className={styles.btnPrimary}>
+                            <button onClick={handleCreateNow} className="btn btn-primary">
                                 Create Now
                             </button>
-                            <button className={styles.btnSecondary}>
+                            <button className="btn btn-secondary">
                                 <Share2 size={18} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
                                 Share
                             </button>

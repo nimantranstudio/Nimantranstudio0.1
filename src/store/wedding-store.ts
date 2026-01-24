@@ -7,12 +7,17 @@ interface WeddingState {
     formData: WeddingFormData;
     lastSavedWeddingId: string | null;
 
+    isAuthenticated: boolean;
+    userPhone: string | null;
+
     setThemeId: (id: string) => void;
     updateFormData: (data: Partial<WeddingFormData>) => void;
-    addEvent: () => void;
+    addEvent: (event?: Partial<WeddingFormData['events'][0]>) => void;
     removeEvent: (id: string) => void;
     updateEvent: (id: string, eventData: Partial<WeddingFormData['events'][0]>) => void;
     saveWedding: () => Promise<{ success: boolean; wedding?: any; error?: string }>;
+    login: (phone: string) => void;
+    logout: () => void;
 }
 
 const INITIAL_FORM_DATA: WeddingFormData = {
@@ -32,14 +37,19 @@ export const useWeddingStore = create<WeddingState>()(
             selectedThemeId: null,
             formData: INITIAL_FORM_DATA,
             lastSavedWeddingId: null,
+            isAuthenticated: false,
+            userPhone: null,
 
             setThemeId: (id) => set({ selectedThemeId: id }),
+
+            login: (phone) => set({ isAuthenticated: true, userPhone: phone }),
+            logout: () => set({ isAuthenticated: false, userPhone: null }),
 
             updateFormData: (data) => set((state) => ({
                 formData: { ...state.formData, ...data },
             })),
 
-            addEvent: () => set((state) => ({
+            addEvent: (event?: Partial<WeddingFormData['events'][0]>) => set((state) => ({
                 formData: {
                     ...state.formData,
                     events: [
@@ -50,6 +60,8 @@ export const useWeddingStore = create<WeddingState>()(
                             date: '',
                             time: '',
                             venue: '',
+                            guests: [],
+                            ...event
                         },
                     ],
                 },
@@ -92,8 +104,36 @@ export const useWeddingStore = create<WeddingState>()(
                     }
 
                     const result = await response.json();
-                    if (result.success && result.wedding?.id) {
-                        set({ lastSavedWeddingId: result.wedding.id });
+                    if (result.success && result.wedding) {
+                        const backendWedding = result.wedding;
+                        set({ lastSavedWeddingId: backendWedding.id });
+
+                        // Sync backend events (with real DB IDs) back to local store
+                        // ensuring the Dashboard links match the Database records
+                        if (backendWedding.events && Array.isArray(backendWedding.events)) {
+                            const syncedEvents = backendWedding.events.map((evt: any) => ({
+                                id: evt.id, // THE CRITICAL DB ID
+                                name: evt.name,
+                                date: evt.date,
+                                time: evt.time,
+                                venue: evt.venue,
+                                mapLink: evt.mapLink,
+                                description: evt.description,
+                                eventType: evt.eventType,
+                                rsvpDeadline: evt.rsvpDeadline,
+                                allowCompanions: evt.allowCompanions,
+                                collectDietary: evt.collectDietary,
+                                maxGuests: evt.maxGuests,
+                                guests: [] // Guests are separate in DB, for now reset or keep empty as this is 'creating' phase
+                            }));
+
+                            set((state) => ({
+                                formData: {
+                                    ...state.formData,
+                                    events: syncedEvents
+                                }
+                            }));
+                        }
                     }
                     return result;
                 } catch (error: any) {

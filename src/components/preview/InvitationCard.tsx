@@ -1,6 +1,7 @@
 'use client';
 
-import { WeddingEvent, Theme } from '@/types/wedding';
+import { WeddingEvent } from '@/lib/schemas/wedding-form';
+import { Theme } from '@/lib/constants/themes';
 import styles from './Preview.module.css';
 import { Play } from 'lucide-react';
 

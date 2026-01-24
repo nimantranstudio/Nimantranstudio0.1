@@ -1,6 +1,7 @@
 'use client';
 
 import { useWeddingStore } from '@/store/wedding-store';
+import Image from 'next/image';
 import { Input } from '@/components/form/Input';
 import { EventRepeater } from '@/components/form/EventRepeater';
 import styles from './details.module.css';
@@ -12,14 +13,19 @@ import { ArrowLeftRight } from 'lucide-react';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { THEMES } from '@/lib/constants/themes';
 
+import { LoginModal } from '@/components/auth/LoginModal';
+
+// ... existing imports
+
 export default function DetailsPage() {
     const router = useRouter();
     const { formData, updateFormData, saveWedding, selectedThemeId } = useWeddingStore();
     const [isSaving, setIsSaving] = useState(false);
     const [saveError, setSaveError] = useState<string | null>(null);
+    const [showLoginModal, setShowLoginModal] = useState(false);
 
     const activeTheme = THEMES.find(t => t.id === selectedThemeId);
-    const themeName = activeTheme ? activeTheme.name : 'Rajputana'; // Fallback if no theme selected
+    const themeName = activeTheme ? activeTheme.name : 'Rajputana';
 
     const [isGroomFirst, setIsGroomFirst] = useState(true);
 
@@ -64,11 +70,20 @@ export default function DetailsPage() {
     );
 
     const handleNext = async () => {
-        // Basic validation check before moving
+        // Basic validation check
         if (!formData.groomName || !formData.brideName) {
             alert("Please enter names for the Bride and Groom.");
             return;
         }
+
+        // Show Login Modal instead of direct save/push
+        setShowLoginModal(true);
+    };
+
+    const handleLoginSuccess = async (phone: string) => {
+        setShowLoginModal(false);
+        // Set logged in state
+        useWeddingStore.getState().login(phone);
 
         setIsSaving(true);
         setSaveError(null);
@@ -83,10 +98,25 @@ export default function DetailsPage() {
             setSaveError("Connection issue, but preview is ready.");
         } finally {
             setIsSaving(false);
-            // Always navigate to preview
             router.push('/preview');
         }
     };
+
+
+    const assets = [
+        { name: "Wedding poster", image: "wedding-poster.png" },
+        { name: "Wedding", image: "wedding-invite.png" },
+        { name: "Wedding video", image: "video-thumb.png" },
+        { name: "Sangeet", image: "sangeet-invite.png" },
+        { name: "Mehendi", image: "mehendi-invite.png" },
+        { name: "Haldi", image: "haldi-invite.png" },
+        { name: "Sangeet Poster", image: "sangeet-poster.png" },
+        { name: "Mehendi Poster", image: "mehendi-poster.png" },
+        { name: "Haldi Poster", image: "haldi-poster.png" },
+        { name: "Save The Date", image: "save-the-date.png" },
+        { name: "Initials", image: "initials.png" },
+        { name: "Thank you card", image: "thank-you.png" },
+    ];
 
     return (
         <div className={styles.page}>
@@ -100,15 +130,62 @@ export default function DetailsPage() {
                             { label: 'wedding details', active: true },
                         ]}
                     />
-                    <h1 className={styles.title}>Fill your wedding details</h1>
-                    <p className={styles.subtitle}>Enter the details once, and we'll generate everything for you.</p>
                 </div>
             </header>
 
             <main className="container">
                 <div className={styles.layout}>
+
+                    {/* Left Column: Theme Images */}
+                    <div className={styles.imageCol}>
+                        <div className={styles.imageGrid}>
+                            {assets.map((asset, index) => (
+                                <div
+                                    key={index}
+                                    className={styles.imageCard}
+                                    style={{
+                                        backgroundColor: activeTheme?.colors[0] || '#eee',
+                                        color: activeTheme?.colors[2] || '#333'
+                                    }}
+                                >
+                                    {/* Fallback Text/Placeholder */}
+                                    <div style={{
+                                        position: 'absolute',
+                                        inset: 0,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        padding: '0.25rem',
+                                        fontSize: '0.6rem',
+                                        textAlign: 'center',
+                                        fontWeight: 600,
+                                        zIndex: 1
+                                    }}>
+                                        {asset.name}
+                                    </div>
+
+                                    {/* Actual Image if available */}
+                                    {selectedThemeId && (
+                                        <Image
+                                            src={`/assets/themes/${selectedThemeId}/${asset.image}`}
+                                            alt={asset.name}
+                                            fill
+                                            style={{ objectFit: 'cover', zIndex: 2 }}
+                                            onError={(e) => {
+                                                const target = e.target as HTMLImageElement;
+                                                target.style.display = 'none';
+                                            }}
+                                        />
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
                     {/* Form Column */}
                     <div className={styles.formColumn}>
+                        <h1 className={styles.title} style={{ marginBottom: '0.5rem' }}>Fill your wedding details</h1>
+                        <p className={styles.subtitle} style={{ marginBottom: '2rem' }}>Enter the details once, and we'll generate everything for you.</p>
 
                         {/* Couple Details */}
                         <section className={clsx(formStyles.section, styles.swapSection)}>
@@ -182,6 +259,12 @@ export default function DetailsPage() {
                     </button>
                 </div>
             </footer>
-        </div>
+
+            <LoginModal
+                isOpen={showLoginModal}
+                onClose={() => setShowLoginModal(false)}
+                onSuccess={handleLoginSuccess}
+            />
+        </div >
     );
 }

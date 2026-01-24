@@ -2,8 +2,9 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, X } from 'lucide-react';
-import { useState } from 'react';
+import { useWeddingStore } from '@/store/wedding-store';
+import { Menu, X, User } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import styles from './Navbar.module.css';
 import { clsx } from 'clsx';
 
@@ -18,9 +19,19 @@ const NAV_LINKS = [
 export const Navbar = () => {
     const pathname = usePathname();
     const [isOpen, setIsOpen] = useState(false);
+    const { isAuthenticated } = useWeddingStore();
+    const [hasMounted, setHasMounted] = useState(false);
 
-    // Don't show header on RSVP page to keep it focused
-    if (pathname?.startsWith('/rsvp/')) return null;
+    useEffect(() => {
+        setHasMounted(true);
+    }, []);
+
+    // Don't show header on specific focused RSVP pages (like voting/detail)
+    // but keep it for creation/management
+    // Don't show header on public RSVP pages (the invitation link)
+    // accessible via /rsvp/[id]
+    const isHidden = pathname?.startsWith('/rsvp/');
+
 
     return (
         <nav className={styles.navbar}>
@@ -31,18 +42,29 @@ export const Navbar = () => {
 
                 {/* Desktop Nav */}
                 <div className={styles.desktopNav}>
-                    {NAV_LINKS.map((link) => (
-                        <Link
-                            key={link.href}
-                            href={link.href}
-                            className={clsx(styles.navLink, pathname === link.href && styles.active)}
-                        >
-                            {link.name}
-                        </Link>
-                    ))}
-                    <Link href="/login" className="btn btn-primary">
-                        LOGIN
-                    </Link>
+                    <div className={styles.navLinks}>
+                        {NAV_LINKS.map((link) => (
+                            <Link
+                                key={link.href}
+                                href={link.href}
+                                className={clsx(styles.navLink, pathname === link.href && styles.active)}
+                            >
+                                {link.name}
+                            </Link>
+                        ))}
+                    </div>
+
+                    <div className={styles.authAction}>
+                        {hasMounted && isAuthenticated ? (
+                            <Link href="/dashboard" className="btn btn-secondary" style={{ padding: '0.6rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <User size={20} />
+                            </Link>
+                        ) : (
+                            <Link href="/login" className="btn btn-secondary">
+                                Login
+                            </Link>
+                        )}
+                    </div>
                 </div>
 
                 {/* Mobile Toggle */}
@@ -64,9 +86,15 @@ export const Navbar = () => {
                             {link.name}
                         </Link>
                     ))}
-                    <Link href="/login" className={clsx("btn btn-primary", styles.mobileBtn)} onClick={() => setIsOpen(false)}>
-                        LOGIN
-                    </Link>
+                    {hasMounted && isAuthenticated ? (
+                        <Link href="/dashboard" className={clsx("btn btn-secondary", styles.mobileBtn)} onClick={() => setIsOpen(false)}>
+                            <User size={18} style={{ marginRight: '0.5rem' }} /> Dashboard
+                        </Link>
+                    ) : (
+                        <Link href="/login" className={clsx("btn btn-secondary", styles.mobileBtn)} onClick={() => setIsOpen(false)}>
+                            Login
+                        </Link>
+                    )}
                 </div>
             )}
         </nav>

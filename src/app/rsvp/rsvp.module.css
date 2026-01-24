@@ -5,8 +5,16 @@
     /* Ivory background */
 }
 
+.header {
+    padding: 1.5rem 0;
+    background-color: var(--background);
+    border-bottom: 1px solid var(--border);
+}
+
 .hero {
     padding: 10rem 0;
+    position: relative;
+    overflow: hidden;
 }
 
 .heroGrid {
@@ -17,7 +25,7 @@
 }
 
 .title {
-    font-size: 5rem;
+    font-size: 3.5rem;
     color: #1B5E20;
     /* Deep green */
     font-family: var(--font-serif);
@@ -26,7 +34,7 @@
 }
 
 .subtitle {
-    font-size: 1.5rem;
+    font-size: 1.125rem;
     color: var(--muted-foreground);
     line-height: 1.6;
     margin-bottom: 4rem;
@@ -73,7 +81,7 @@
 }
 
 .featureItem p {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     color: #4A5D44;
     /* Muted olive/green */
     line-height: 1.4;
@@ -120,6 +128,29 @@
 .process {
     padding: 8rem 0;
     background-color: white;
+}
+
+.sectionTitle {
+    font-size: 3rem;
+    color: #1B5E20;
+    font-family: var(--font-serif);
+    text-align: center;
+    margin-bottom: 4rem;
+    line-height: 1.2;
+    position: relative;
+    padding-bottom: 1.5rem;
+}
+
+.sectionTitle::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 3px;
+    background-color: #C2A769;
+    /* Gold */
 }
 
 .processGrid {

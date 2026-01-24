@@ -1,29 +1,31 @@
 :root {
   /* Core Palette - Indian Wedding Premium */
-  --background: #FDFBF7; /* Cream/Ivory */
-  --foreground: #1A1A1A; /* Soft Black */
-  
+  --background: #FDFBF7;
+  /* Cream/Ivory */
+  --foreground: #1A1A1A;
+  /* Soft Black */
+
   /* Primary - Royal Gold/Mustard */
   --primary: #D4AF37;
   --primary-foreground: #FFFFFF;
-  
+
   /* Secondary - Deep Green (Mehendi) */
   --secondary: #2E594A;
   --secondary-foreground: #FFFFFF;
-  
+
   /* Accent - Terracotta/Red (Sindoor) */
   --accent: #E55B5B;
   --accent-foreground: #FFFFFF;
-  
+
   /* Neutral scale */
   --muted: #F2F0E9;
   --muted-foreground: #666666;
   --border: #E6E2D6;
-  
+
   /* Font Families */
   --font-serif: 'Playfair Display', 'Merriweather', serif;
   --font-sans: 'Inter', system-ui, sans-serif;
-  
+
   /* Spacing */
   --radius: 0.5rem;
   --container-width: 1200px;
@@ -35,7 +37,8 @@
   padding: 0;
 }
 
-html, body {
+html,
+body {
   height: 100%;
   font-family: var(--font-sans);
   background-color: var(--background);
@@ -44,7 +47,12 @@ html, body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-serif);
   font-weight: 600;
   line-height: 1.2;
@@ -65,30 +73,58 @@ a {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.75rem 1.5rem;
-  border-radius: var(--radius);
-  font-weight: 500;
-  transition: opacity 0.2s;
+  padding: 0.875rem 2rem;
+  border-radius: 100px;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  letter-spacing: 0.02em;
+  transition: all 0.2s ease;
   cursor: pointer;
   border: none;
   font-family: var(--font-sans);
+  text-decoration: none;
 }
 
 .btn:hover {
-  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.btn:active {
+  transform: translateY(0);
 }
 
 .btn-primary {
-  background-color: var(--secondary); /* Using Green as primary action color for calmness */
+  background-color: var(--secondary);
   color: var(--secondary-foreground);
+  box-shadow: 0 4px 14px rgba(46, 89, 74, 0.25);
+}
+
+.btn-primary:hover {
+  background-color: #24463a;
+  box-shadow: 0 6px 20px rgba(46, 89, 74, 0.3);
 }
 
 .btn-secondary {
+  background-color: transparent;
+  color: var(--secondary);
+  border: 1px solid var(--secondary);
+  box-shadow: none;
+}
+
+.btn-secondary:hover {
   background-color: var(--muted);
-  color: var(--foreground);
+  transform: none;
+  box-shadow: none;
 }
 
 .btn-outline {
   background-color: transparent;
   border: 1px solid var(--border);
+  color: var(--muted-foreground);
+}
+
+.btn-outline:hover {
+  border-color: var(--secondary);
+  color: var(--secondary);
 }

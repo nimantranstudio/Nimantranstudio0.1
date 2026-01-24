@@ -1,262 +1,221 @@
-.dashboard {
+.dashboardContainer {
+    display: flex;
     min-height: 100vh;
-    background-color: #F8F9FA;
-    padding-bottom: 5rem;
+    background-color: #FDFBF7;
+    /* Ivory background */
 }
 
-.loading {
-    height: 100vh;
+/* Sidebar */
+.sidebar {
+    width: 280px;
+    background: white;
+    border-right: 1px solid #E6E2D6;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: var(--font-serif);
-    font-size: 1.5rem;
-    color: var(--muted-foreground);
+    flex-direction: column;
+    padding: 2rem 0;
+    flex-shrink: 0;
 }
 
-.header {
-    background-color: white;
-    border-bottom: 1px solid var(--border);
-    padding: 3rem 0;
+.brand {
+    padding: 0 2rem;
     margin-bottom: 3rem;
-}
-
-.headerTop {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 3rem;
-    gap: 2rem;
-}
-
-.title {
-    font-size: 2.25rem;
     font-family: var(--font-serif);
+    font-size: 1.25rem;
+    color: #1B5E20;
+    font-weight: 700;
 }
 
-.shareBox {
-    background-color: var(--muted);
-    padding: 1.5rem;
-    border-radius: var(--radius);
-    max-width: 450px;
-    width: 100%;
-}
-
-.shareLabel {
-    display: block;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 0.75rem;
-    color: var(--muted-foreground);
-}
-
-.shareInput {
+.nav {
     display: flex;
+    flex-direction: column;
     gap: 0.5rem;
-    margin-bottom: 1rem;
-}
-
-.shareInput input {
     flex: 1;
-    padding: 0.5rem 1rem;
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    font-size: 0.875rem;
-    background: white;
+}
+
+.navItem {
+    padding: 0.875rem 2rem;
     color: #666;
-}
-
-.copyBtn {
-    background: white;
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 0 0.75rem;
+    font-size: 0.9375rem;
     cursor: pointer;
-    display: flex;
-    align-items: center;
     transition: all 0.2s;
+    text-decoration: none;
+    font-weight: 500;
 }
 
-.copyBtn:hover {
-    background-color: var(--muted);
-    border-color: var(--primary);
+.navItem:hover {
+    background-color: #FDFBF7;
+    color: #1B5E20;
 }
 
-.waBtn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    width: 100%;
-    padding: 0.75rem;
-    background-color: #25D366;
-    color: white;
-    border-radius: 4px;
-    font-weight: 600;
-    font-size: 0.875rem;
+.navItem.active {
+    background-color: #FDFBF7;
+    /* Highlight active item roughly like screenshot */
+    color: #1B5E20;
+    border-right: 3px solid #1B5E20;
 }
 
-.statsGrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1.5rem;
-}
-
-.statCard {
-    background: white;
-    padding: 1.5rem;
-    border-radius: var(--radius);
-    border: 1px solid var(--border);
+.userProfile {
+    padding: 1.5rem 2rem;
+    border-top: 1px solid #E6E2D6;
     display: flex;
     align-items: center;
     gap: 1rem;
 }
 
-.statIcon {
-    background-color: rgba(212, 175, 55, 0.1);
-    padding: 0.75rem;
+.avatar {
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
+    background-color: #E55B5B;
+    /* Reddish tone from screenshot */
+    color: white;
     display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 1.125rem;
 }
 
-.statIconPrimary {
-    color: var(--primary);
+.userInfo {
+    display: flex;
+    flex-direction: column;
 }
 
-.statIconDanger {
-    color: #E55B5B;
+.userName {
+    font-weight: 600;
+    color: #333;
+    font-size: 0.9375rem;
 }
 
-.statLabel {
-    font-size: 0.875rem;
-    color: var(--muted-foreground);
-    margin-bottom: 0.25rem;
+.userRole {
+    font-size: 0.75rem;
+    color: #888;
 }
 
-.statValue {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: var(--foreground);
+/* Main Content */
+.main {
+    flex: 1;
+    padding: 2.5rem 3rem;
+    overflow-y: auto;
 }
 
-.tableSection {
-    background: white;
-    border-radius: var(--radius);
-    border: 1px solid var(--border);
-    overflow: hidden;
-}
-
-.tableHeader {
-    padding: 1.5rem 2rem;
-    border-bottom: 1px solid var(--border);
+.header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-bottom: 3rem;
 }
 
-.badge {
-    background-color: var(--muted);
+.title {
+    font-family: var(--font-serif);
+    font-size: 2.5rem;
+    color: #333;
+    font-weight: 600;
+}
+
+.createButton {
+    background-color: #2E594A;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    /* Slightly squarer than pill buttons for admin UI, closer to screenshot */
+    font-size: 0.875rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+}
+
+/* Event Card */
+.card {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #E6E2D6;
+    /* Subtle border */
+    padding: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+}
+
+.cardContent h2 {
+    font-family: var(--font-serif);
+    color: #1B5E20;
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.cardDetails {
+    color: #666;
+    font-size: 0.9375rem;
+    margin-bottom: 0.75rem;
+}
+
+.statusBadge {
+    display: inline-block;
+    background-color: #F2F0E9;
+    /* Muted background */
+    color: #666;
     padding: 0.25rem 0.75rem;
     border-radius: 100px;
     font-size: 0.75rem;
     font-weight: 600;
 }
 
-.tableWrapper {
-    overflow-x: auto;
+.cardActions {
+    display: flex;
+    gap: 1rem;
 }
 
-.table {
-    width: 100%;
-    border-collapse: collapse;
-    text-align: left;
-}
-
-.table th {
-    padding: 1rem 2rem;
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    color: var(--muted-foreground);
-    border-bottom: 1px solid var(--border);
-    background: #FAFAFA;
-}
-
-.table td {
-    font-size: 0.9375rem;
-}
-
-.dateCell {
-    font-size: 0.8rem;
-    color: #888;
-}
-
-.statusYes {
-    color: #2E594A;
-    background-color: rgba(46, 89, 74, 0.1);
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    font-weight: 600;
-}
-
-.statusNo {
-    color: #E55B5B;
-    background-color: rgba(229, 91, 91, 0.1);
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    font-weight: 600;
-}
-
-.messageCell {
-    position: relative;
-}
-
-.messageTooltip {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    color: var(--primary);
-    cursor: help;
-    font-size: 0.875rem;
-}
-
-.tooltipText {
-    visibility: hidden;
-    width: 200px;
-    background-color: #333;
-    color: #fff;
-    text-align: center;
+.btnActionOutline {
+    background: white;
+    border: 1px solid #333;
+    color: #333;
+    padding: 0.6rem 1.25rem;
     border-radius: 6px;
-    padding: 1rem;
-    position: absolute;
-    z-index: 100;
-    bottom: 125%;
-    left: 50%;
-    margin-left: -100px;
-    opacity: 0;
-    transition: opacity 0.3s;
-    font-size: 0.8rem;
-    line-height: 1.4;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
 }
 
-.messageTooltip:hover .tooltipText {
-    visibility: visible;
-    opacity: 1;
+.btnActionPrimary {
+    background: #2E594A;
+    border: none;
+    color: white;
+    padding: 0.6rem 1.25rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
 }
 
-.empty {
-    text-align: center;
-    padding: 5rem !important;
-    color: var(--muted-foreground);
-    font-style: italic;
+.btnActionPrimary:hover {
+    background-color: var(--primary-foreground);
+    transform: translateY(-1px);
 }
 
-@media (max-width: 768px) {
-    .headerTop {
-        flex-direction: column;
-        align-items: stretch;
-    }
+.sidebarFooter {
+    padding: 1.5rem;
+    border-top: 1px solid var(--border);
+    margin-top: auto;
+}
+
+.logoutBtn {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: none;
+    border: none;
+    color: #ef4444;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 0.5rem;
+    transition: all 0.2s;
+}
+
+.logoutBtn:hover {
+    background-color: #fee2e2;
 }

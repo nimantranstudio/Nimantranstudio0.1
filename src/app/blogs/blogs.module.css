@@ -1,0 +1,148 @@
+.page {
+    /* Match the ivory feel from reference */
+    background-color: #FDFBF7;
+    padding: 0 0 8rem;
+    min-height: 100vh;
+}
+
+.header {
+    text-align: left;
+    margin-bottom: 4rem;
+    padding: 1.5rem 0;
+    border-bottom: 1px solid var(--border);
+    background-color: var(--background);
+}
+
+.hero {
+    text-align: center;
+    margin-bottom: 6rem;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.title {
+    font-family: var(--font-playfair);
+    font-size: 5.5rem;
+    color: var(--secondary);
+    margin-bottom: 2rem;
+    font-weight: 500;
+    line-height: 1.1;
+}
+
+.subtitle {
+    font-family: var(--font-inter);
+    font-size: 1.5rem;
+    color: #666;
+    line-height: 1.5;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 3rem;
+    align-items: flex-start;
+}
+
+.card {
+    display: flex;
+    flex-direction: column;
+}
+
+.imageWrapper {
+    position: relative;
+    aspect-ratio: 4/3;
+    margin-bottom: 2rem;
+    overflow: hidden;
+    border-radius: 2.5rem;
+    /* Large rounded corners from reference */
+}
+
+.image {
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.card:hover .image {
+    transform: scale(1.05);
+}
+
+.meta {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-family: var(--font-inter);
+}
+
+.category {
+    color: #B58E58;
+    /* Gold/Tan color from reference */
+}
+
+.separator {
+    color: #DDD;
+}
+
+.date {
+    color: #999;
+}
+
+.blogTitle {
+    font-family: var(--font-playfair);
+    font-size: 2.25rem;
+    color: #1A1A1A;
+    line-height: 1.2;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+.excerpt {
+    font-family: var(--font-inter);
+    font-size: 1.125rem;
+    color: #666;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+}
+
+.readMore {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 800;
+    color: var(--secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    text-decoration: none;
+    transition: gap 0.2s ease;
+}
+
+.readMore:hover {
+    gap: 0.75rem;
+}
+
+@media (max-width: 1024px) {
+    .grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .page {
+        padding: 6rem 0;
+    }
+
+    .title {
+        font-size: 3rem;
+    }
+
+    .grid {
+        grid-template-columns: 1fr;
+        gap: 4rem;
+    }
+}

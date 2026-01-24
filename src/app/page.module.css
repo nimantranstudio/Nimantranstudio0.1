@@ -13,9 +13,9 @@
 .motif {
   position: absolute;
   pointer-events: none;
-  opacity: 0.15;
+  opacity: 0.35;
   z-index: 0;
-  color: var(--secondary);
+  color: var(--primary);
 }
 
 .motif1 {
@@ -221,8 +221,6 @@
 }
 
 .bundleImage {
-  width: 100%;
-  height: auto;
   border-radius: 1.5rem;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
 }
@@ -279,60 +277,6 @@
   margin-bottom: 5rem;
 }
 
-.showcaseCard {
-  background: white;
-  border-radius: 1rem;
-  overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.showcaseCard:hover {
-  transform: translateY(-10px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-}
-
-.showcaseImageWrapper {
-  aspect-ratio: 4/5;
-  overflow: hidden;
-}
-
-.showcaseImage {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.5s ease;
-}
-
-.showcaseCard:hover .showcaseImage {
-  transform: scale(1.05);
-}
-
-.showcaseInfo {
-  padding: 2rem 1.5rem;
-}
-
-.showcaseInfo h3 {
-  font-size: 1.5rem;
-  margin-bottom: 0.75rem;
-  color: var(--foreground);
-  font-family: var(--font-serif);
-}
-
-.viewLink {
-  text-transform: uppercase;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  color: var(--muted-foreground);
-  border-bottom: 1px solid transparent;
-  transition: all 0.2s;
-}
-
-.showcaseCard:hover .viewLink {
-  color: var(--primary);
-  border-color: var(--primary);
-}
 
 .showcaseActions {
   display: flex;
@@ -391,7 +335,7 @@
 
 .featureItem {
   padding-left: 2rem;
-  border-left: 3px solid #E55B5B;
+  border-left: 3px solid #D4AF37;
   /* Accent bar */
 }
 
@@ -467,5 +411,113 @@
   .faqContent p {
     font-size: 1rem;
     text-align: left;
+  }
+}
+
+/* RSVP Section Styles */
+.rsvp {
+  padding: 8rem 0;
+  background-color: #FDFBF7;
+  /* Ivory/Cream background */
+  position: relative;
+  overflow: hidden;
+}
+
+.rsvpGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
+}
+
+.rsvpContent {
+  color: var(--foreground);
+}
+
+.rsvpTitle {
+  font-size: 3.5rem;
+  font-family: var(--font-serif), serif;
+  margin-bottom: 2rem;
+  color: #1B5E20;
+  /* Deep Green */
+  line-height: 1.1;
+}
+
+.rsvpDescription {
+  font-size: 1.125rem;
+  color: var(--muted-foreground);
+  line-height: 1.6;
+  margin-bottom: 3rem;
+  max-width: 500px;
+}
+
+.rsvpList {
+  display: grid;
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.rsvpItem {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 1.25rem;
+  color: #444;
+}
+
+.rsvpBtn {
+  background-color: #1B5E20;
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 50px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  border: none;
+  font-size: 0.875rem;
+  margin-top: 1rem;
+  transition: opacity 0.3s ease;
+}
+
+.rsvpBtn:hover {
+  opacity: 0.9;
+  background-color: #144418;
+}
+
+.checkIcon {
+  color: var(--secondary);
+  flex-shrink: 0;
+}
+
+.rsvpImageWrapper {
+  position: relative;
+  border-radius: 1.5rem;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 991px) {
+  .rsvpGrid {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+
+  .rsvpContent {
+    order: 2;
+    text-align: center;
+  }
+
+  .rsvpDescription,
+  .rsvpList {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .rsvpImageWrapper {
+    order: 1;
+  }
+
+  .rsvpList {
+    text-align: left;
+    max-width: 400px;
   }
 }

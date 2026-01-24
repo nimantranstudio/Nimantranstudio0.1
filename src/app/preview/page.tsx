@@ -67,8 +67,6 @@ export default function PreviewPage() {
                             { label: 'preview', active: true },
                         ]}
                     />
-                    <h1 className={styles.previewHeaderTitle}>Your Wedding Bundle is Ready!</h1>
-                    <p className={styles.previewHeaderSubtitle}>Generated automatically from your details. Ready for high-res delivery.</p>
                 </div>
             </header>
 
@@ -99,6 +97,22 @@ export default function PreviewPage() {
                     {/* Right Column: Title and Summary Card */}
                     <div className={styles.rightColumn}>
                         <div>
+                            <h1 className={styles.previewHeaderTitle} style={{
+                                fontSize: '2rem',
+                                marginBottom: '0.5rem',
+                                color: '#1a4d2e',
+                                lineHeight: 1.2
+                            }}>
+                                Your Wedding Bundle is Ready!
+                            </h1>
+                            <p className={styles.previewHeaderSubtitle} style={{
+                                fontSize: '0.9rem',
+                                color: '#666',
+                                marginBottom: '1.5rem'
+                            }}>
+                                Generated automatically from your details. Ready for high-res delivery.
+                            </p>
+
                             <h2 className={styles.bundleTitle}>
                                 {theme.name} theme invitation bundle complete pack of 12
                             </h2>

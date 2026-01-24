@@ -1,97 +1,82 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import styles from "./page.module.css";
-import { ArrowRight } from "lucide-react";
+import Image from "next/image";
+import { ArrowRight, Check } from "lucide-react";
 import { clsx } from 'clsx';
 import { motion } from "framer-motion";
+import { THEMES } from "@/lib/constants/themes";
+import { ThemeCard } from "@/components/ui/ThemeCard";
+import { FloatingHearts } from "@/components/ui/FloatingHearts";
+import { useWeddingStore } from "@/store/wedding-store";
 
-const fadeIn = {
-  initial: { opacity: 0, y: 20 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.6 }
-};
 
-const staggerContainer = {
-  initial: {},
-  animate: {
-    transition: {
-      staggerChildren: 0.1
-    }
-  }
-};
+// ... existing imports
 
 export default function Home() {
+  const router = useRouter();
+  const { isAuthenticated } = useWeddingStore();
+
+  const handleThemeSelect = (id: string) => {
+    router.push(`/themes/${id}`);
+  };
+
+  const handleCreateRSVP = () => {
+    if (isAuthenticated) {
+      router.push('/dashboard/rsvp');
+    } else {
+      router.push('/login?redirect=/dashboard/rsvp');
+    }
+  };
+
   return (
     <main className={styles.main}>
-      {/* Hero Section */}
+      {/* ... Hero Section ... */}
       <section className={styles.hero}>
-        {/* Floating Motifs */}
-        <motion.div
-          className={clsx(styles.motif, styles.motif1)}
-          animate={{ y: [0, -20, 0], rotate: [0, 5, 0] }}
-          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-        >
-          <svg viewBox="0 0 100 100" fill="currentColor"><path d="M50 0C60 30 90 40 100 50C90 60 60 70 50 100C40 70 10 60 0 50C10 40 40 30 50 0Z" /></svg>
-        </motion.div>
-        <motion.div
-          className={clsx(styles.motif, styles.motif2)}
-          animate={{ y: [0, 20, 0], rotate: [0, -5, 0] }}
-          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-        >
-          <svg viewBox="0 0 100 100" fill="currentColor"><path d="M50 0C60 30 90 40 100 50C90 60 60 70 50 100C40 70 10 60 0 50C10 40 40 30 50 0Z" /></svg>
-        </motion.div>
-        <motion.div
-          className={clsx(styles.motif, styles.motif3)}
-          animate={{ y: [0, -15, 0], rotate: [0, 10, 0] }}
-          transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
-        >
-          <svg viewBox="0 0 100 100" fill="currentColor"><path d="M50 0C60 30 90 40 100 50C90 60 60 70 50 100C40 70 10 60 0 50C10 40 40 30 50 0Z" /></svg>
-        </motion.div>
-        <motion.div
-          className={clsx(styles.motif, styles.motif4)}
-          animate={{ y: [0, 25, 0], rotate: [0, -10, 0] }}
-          transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
-        >
-          <svg viewBox="0 0 100 100" fill="currentColor"><path d="M50 0C60 30 90 40 100 50C90 60 60 70 50 100C40 70 10 60 0 50C10 40 40 30 50 0Z" /></svg>
-        </motion.div>
-        <motion.div
-          className={clsx(styles.motif, styles.motif5)}
-          animate={{ y: [0, -10, 0], x: [0, 5, 0] }}
-          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-        >
-          <svg viewBox="0 0 100 100" fill="currentColor"><path d="M50 0C60 30 90 40 100 50C90 60 60 70 50 100C40 70 10 60 0 50C10 40 40 30 50 0Z" /></svg>
-        </motion.div>
-        <motion.div
-          className={clsx(styles.motif, styles.motif6)}
-          animate={{ y: [0, 15, 0], rotate: [0, 15, 0] }}
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-        >
-          <svg viewBox="0 0 100 100" fill="currentColor"><path d="M50 0C60 30 90 40 100 50C90 60 60 70 50 100C40 70 10 60 0 50C10 40 40 30 50 0Z" /></svg>
-        </motion.div>
+        <FloatingHearts />
+        {/* ... Motifs ... */}
 
         <div className="container">
-          <motion.div
-            className={styles.heroContent}
-            initial="initial"
-            animate="animate"
-            variants={staggerContainer}
-          >
-            <motion.h1 className={styles.title} variants={fadeIn}>
-              Created with a click, <br />sent with love.
+          <div className={styles.heroContent}>
+            {/* ... Title & Subtitle ... */}
+
+            <motion.h1
+              className={styles.title}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+            >
+              Created with a click, <br />
+              <span style={{ color: 'var(--secondary)' }}>sent with love. (Updated)</span>
             </motion.h1>
-            <motion.p className={styles.subtitle} variants={fadeIn}>
-              Helping beyond invitations, with love. One form, one click, your entire wedding bundle ready for WhatsApp.
+            <motion.p
+              className={styles.subtitle}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+            >
+              One form. One click. Your entire wedding invitation bundle ready for WhatsApp.
             </motion.p>
-            <motion.div className={styles.actions} variants={fadeIn}>
+
+            <motion.div
+              className={styles.actions}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+            >
               <Link href="/themes" className="btn btn-primary">
                 Create Your Invitation Bundle <ArrowRight size={18} className={styles.heroIcon} />
               </Link>
-              <Link href="/themes" className={clsx("btn btn-outline", styles.secondaryBtn)}>
+              <button
+                onClick={handleCreateRSVP}
+                className={clsx("btn btn-secondary", styles.secondaryBtn)}
+              >
                 Create RSVP Event
-              </Link>
+              </button>
             </motion.div>
-          </motion.div>
+          </div>
         </div>
       </section>
 
@@ -103,23 +88,25 @@ export default function Home() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
           >
             A simple process for busy weddings
           </motion.h2>
-          <motion.div
-            className={styles.steps}
-            variants={staggerContainer}
-            initial="initial"
-            whileInView="animate"
-            viewport={{ once: true }}
-          >
+          <div className={styles.steps}>
             {["Choose Theme", "Fill Details", "Preview All", "Share & Love"].map((step, i) => (
-              <motion.div key={step} className={styles.step} variants={fadeIn}>
+              <motion.div
+                key={step}
+                className={styles.step}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: i * 0.1 }}
+              >
                 <span className={styles.stepNum}>0{i + 1}</span>
                 <h3>{step}</h3>
               </motion.div>
             ))}
-          </motion.div>
+          </div>
         </div>
       </section>
 
@@ -139,8 +126,16 @@ export default function Home() {
                 No more repeated requests. No more design mismatches. One bundle to handle every single event of your celebration.
               </p>
               <ul className={styles.bundleList}>
-                {["SAVE THE DATE", "ENGAGEMENT", "HALDI", "MEHNDI", "SANGEET", "WEDDING", "RECEPTION", "WELCOME POSTER", "THANK YOU CARD"].map((item) => (
-                  <li key={item}>{item}</li>
+                {["SAVE THE DATE", "ENGAGEMENT", "HALDI", "MEHNDI", "SANGEET", "WEDDING", "RECEPTION", "WELCOME POSTER", "THANK YOU CARD"].map((item, i) => (
+                  <motion.li
+                    key={item}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.6, delay: i * 0.05 }}
+                  >
+                    {item}
+                  </motion.li>
                 ))}
               </ul>
             </motion.div>
@@ -151,47 +146,66 @@ export default function Home() {
               viewport={{ once: true }}
               transition={{ duration: 0.8 }}
             >
-              <img src="/bundle-mockup.jpg" alt="Wedding Bundle Preview" className={styles.bundleImage} />
+              <img
+                src="/bundle-mockup.jpg"
+                alt="Wedding Bundle Preview"
+                className={styles.bundleImage}
+                style={{ width: '100%', height: 'auto', objectFit: 'cover' }}
+              />
             </motion.div>
           </div>
         </div>
       </section>
 
+
+
+
+
+
+
       {/* Theme Showcase Section */}
       <section className={styles.showcase}>
         <div className="container">
           <div className={styles.showcaseHeader}>
-            <h2 className={styles.showcaseTitle}>Choose your wedding theme</h2>
-            <p className={styles.showcaseSubtitle}>Select a visual language that resonates with your family's style.</p>
+            <motion.h2
+              className={styles.showcaseTitle}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8 }}
+            >
+              Choose your wedding theme
+            </motion.h2>
+            <motion.p
+              className={styles.showcaseSubtitle}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+            >
+              Select a visual language that resonates with your family's style.
+            </motion.p>
           </div>
 
-          <motion.div
-            className={styles.showcaseGrid}
-            variants={staggerContainer}
-            initial="initial"
-            whileInView="animate"
-            viewport={{ once: true }}
-          >
-            {[
-              { id: 'rajputana', name: 'Royal Rajputana', img: '/theme-rajputana.png' },
-              { id: 'emerald', name: 'Emerald Forest', img: '/theme-emerald.png' },
-              { id: 'gold', name: 'Classic Gold', img: '/theme-gold.png' },
-              { id: 'sand', name: 'Minimal Sand', img: '/theme-sand.png' }
-            ].map((theme) => (
-              <motion.div key={theme.id} className={styles.showcaseCard} variants={fadeIn}>
-                <div className={styles.showcaseImageWrapper}>
-                  <img src={theme.img} alt={theme.name} className={styles.showcaseImage} />
-                </div>
-                <div className={styles.showcaseInfo}>
-                  <h3>{theme.name}</h3>
-                  <Link href="/themes" className={styles.viewLink}>VIEW THEME</Link>
-                </div>
+          <div className={styles.showcaseGrid}>
+            {THEMES.slice(0, 4).map((theme, i) => (
+              <motion.div
+                key={theme.id}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: i * 0.1 }}
+              >
+                <ThemeCard
+                  theme={theme}
+                  onSelect={handleThemeSelect}
+                />
               </motion.div>
             ))}
-          </motion.div>
+          </div>
 
           <div className={styles.showcaseActions}>
-            <Link href="/themes" className="btn btn-outline">
+            <Link href="/themes" className="btn btn-secondary">
               BROWSE ALL THEMES
             </Link>
           </div>
@@ -202,25 +216,26 @@ export default function Home() {
       <section className={styles.features}>
         <div className="container">
           <h2 className={styles.featuresTitle}>Designed for the Indian Wedding</h2>
-          <motion.div
-            className={styles.featuresGrid}
-            variants={staggerContainer}
-            initial="initial"
-            whileInView="animate"
-            viewport={{ once: true }}
-          >
+          <div className={styles.featuresGrid}>
             {[
               { title: "One-time form", desc: "Save hours of stress. Enter names, dates, and venues once. We handle the rest." },
               { title: "Consistent design", desc: "Your Haldi, Mehndi, and Wedding invites will speak the same visual language." },
               { title: "WhatsApp-ready", desc: "Optimized sizes and formats for perfect sharing with family and guests." },
               { title: "Family-approved", desc: "Colors and fonts chosen to feel respectful, traditional, and premium." }
-            ].map((f) => (
-              <motion.div key={f.title} className={styles.featureItem} variants={fadeIn}>
+            ].map((f, i) => (
+              <motion.div
+                key={f.title}
+                className={styles.featureItem}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: i * 0.1 }}
+              >
                 <h3>{f.title}</h3>
                 <p>{f.desc}</p>
               </motion.div>
             ))}
-          </motion.div>
+          </div>
         </div>
       </section>
 

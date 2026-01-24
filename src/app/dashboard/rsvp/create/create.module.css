@@ -1,0 +1,214 @@
+/* Dashboard Layout Matches */
+.container {
+    display: flex;
+    min-height: 100vh;
+    background-color: #FDFBF7;
+}
+
+.main {
+    flex: 1;
+    padding: 2.5rem 3rem;
+    overflow-y: auto;
+}
+
+/* Breadcrumb Styles */
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-bottom: 1rem;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid #E2E8F0;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.breadcrumbLink {
+    color: #888;
+}
+
+.separator {
+    color: #ccc;
+}
+
+.activeBreadcrumb {
+    color: #333;
+    font-weight: 600;
+}
+
+.page {
+    /* min-height: 100vh; Removed to fit in flex container */
+    background-color: transparent;
+    /* Changed from var(--background) */
+    padding: 0;
+    /* Removing padding as .main handles it */
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding: 1.5rem 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+}
+
+.title {
+    font-family: var(--font-serif);
+    font-size: 3rem;
+    color: var(--secondary);
+    margin-bottom: 0.75rem;
+}
+
+.subtitle {
+    font-size: 1.125rem;
+    color: var(--muted-foreground);
+}
+
+.formContainer {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.fieldFull {
+    grid-column: 1 / -1;
+}
+
+.toggleRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border);
+}
+
+.toggleLabelGroup {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.toggleLabel {
+    font-size: 1.125rem;
+    color: var(--foreground);
+    font-weight: 500;
+}
+
+.infoIcon {
+    color: var(--muted-foreground);
+    cursor: help;
+}
+
+.toggle {
+    width: 48px;
+    height: 24px;
+    background-color: var(--border);
+    border-radius: 100px;
+    border: none;
+    position: relative;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.toggle.active {
+    background-color: var(--secondary);
+}
+
+.toggleThumb {
+    position: absolute;
+    top: 3px;
+    left: 4px;
+    width: 18px;
+    height: 18px;
+    background-color: white;
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+}
+
+.toggle.active .toggleThumb {
+    transform: translateX(22px);
+}
+
+.actions {
+    margin-top: 3rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.createButton {
+    min-width: 250px;
+}
+
+.cancelLink {
+    text-decoration: none;
+    color: var(--muted-foreground);
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.cancelLink:hover {
+    color: var(--foreground);
+}
+
+@media (max-width: 768px) {
+    .title {
+        font-size: 2.5rem;
+    }
+
+    .page {
+        padding: 4rem 0;
+    }
+}
+
+/* New Form Styles */
+.formGrid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+
+@media (min-width: 640px) {
+    .formGrid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.fullWidth {
+    grid-column: 1 / -1;
+}
+
+.label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--foreground);
+    margin-bottom: 0.5rem;
+}
+
+.select,
+.textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    font-size: 1rem;
+    color: #333;
+    background: white;
+    font-family: inherit;
+    transition: border-color 0.2s;
+}
+
+.select:focus,
+.textarea:focus {
+    outline: none;
+    border-color: #1B5E20;
+    box-shadow: 0 0 0 3px rgba(27, 94, 32, 0.1);
+}
+
+.textarea {
+    min-height: 120px;
+    resize: vertical;
+}

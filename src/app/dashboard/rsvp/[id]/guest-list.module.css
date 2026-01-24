@@ -1,0 +1,248 @@
+.container {
+    display: flex;
+    min-height: 100vh;
+    background-color: #FDFBF7;
+}
+
+.main {
+    flex: 1;
+    padding: 2rem;
+    overflow-y: auto;
+}
+
+.header {
+    margin-bottom: 2rem;
+}
+
+.headerTop {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.title {
+    font-size: 2rem;
+    font-family: var(--font-serif);
+    color: #1B5E20;
+    margin: 0;
+}
+
+.eventMeta {
+    display: flex;
+    gap: 1.5rem;
+    color: #666;
+    font-size: 0.9rem;
+    margin-left: 2.5rem;
+    /* Align with title (24px icon + gap) */
+}
+
+.metaItem {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Stats Grid */
+.statsGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.statCard {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 1rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    position: relative;
+    border: 1px solid #eee;
+}
+
+.statLabel {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #888;
+    letter-spacing: 0.05em;
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+}
+
+.statValue {
+    font-size: 2.5rem;
+    font-family: var(--font-serif);
+    color: #1B5E20;
+    line-height: 1;
+    margin-bottom: 0.5rem;
+}
+
+.statDesc {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+
+
+/* Guest List Section */
+.listContainer {
+    background: white;
+    border-radius: 1.5rem;
+    padding: 2rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+}
+
+.listHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    gap: 1rem;
+    flex-wrap: wrap;
+    /* Handle smaller screens */
+}
+
+.listTitle {
+    font-size: 1.5rem;
+    font-family: var(--font-serif);
+    color: #1B5E20;
+    margin: 0;
+    margin-right: auto;
+    /* Push controls to right */
+}
+
+.tableControls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.searchContainer {
+    position: relative;
+    width: 250px;
+}
+
+.searchInput {
+    width: 100%;
+    padding: 0.75rem 1rem 0.75rem 2.5rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 2rem;
+    font-size: 0.9rem;
+    outline: none;
+    background: #fdfdfd;
+}
+
+.searchIcon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999;
+}
+
+.btnWhatsapp {
+    background-color: #E0F2F1;
+    /* Light teal bg from screenshot */
+    color: #00695C;
+    /* Dark teal text */
+    border: 1px solid #B2DFDB;
+    padding: 0.6rem 1.25rem;
+    border-radius: 2rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.btnExport {
+    background-color: white;
+    color: #333;
+    border: 1px solid #e0e0e0;
+    padding: 0.6rem 1.25rem;
+    border-radius: 2rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.countBadge {
+    background: #FDF1DC;
+    /* Light gold bg */
+    color: #8B4513;
+    padding: 0.4rem 1rem;
+    border-radius: 1rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+/* Table */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table th {
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #888;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.table td {
+    padding: 1.5rem 0;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 1rem;
+    color: #333;
+}
+
+.guestName {
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+.statusBadge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.statusYes {
+    background-color: #E6F4EA;
+    color: #1E7E34;
+}
+
+.statusNo {
+    background-color: #FCE8E6;
+    color: #C53030;
+}
+
+.statusPending {
+    background-color: #FFF7E6;
+    color: #B7791F;
+}
+
+.pax {
+    font-weight: 500;
+}
+
+.dietary {
+    font-size: 0.85rem;
+    color: #666;
+    letter-spacing: 0.02em;
+}

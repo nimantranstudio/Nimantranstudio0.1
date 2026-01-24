@@ -17,7 +17,10 @@ export async function POST(
                 guestName: body.guestName,
                 adultCount: parseInt(body.adultCount) || 1,
                 childCount: parseInt(body.childCount) || 0,
-                attending: body.attending === 'yes',
+                attending: body.status === 'attending',
+                status: body.status || 'pending',
+                phone: body.phone,
+                dietary: body.dietary,
                 message: body.message,
             },
         });
