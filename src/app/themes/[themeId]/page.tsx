@@ -4,14 +4,15 @@ import { use } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { ChevronRight, ChevronDown, CheckCircle, Smartphone, Headphones, ShieldCheck, Share2, X, ChevronLeft } from 'lucide-react';
+import { ChevronRight, ChevronDown, CheckCircle, Smartphone, Headphones, ShieldCheck, Share2, X, ChevronLeft, Clock, Printer, Languages, Download } from 'lucide-react';
 import { THEMES } from '@/lib/constants/themes';
 import { useWeddingStore } from '@/store/wedding-store';
 import { ThemeCard } from '@/components/ui/ThemeCard';
 import styles from './theme-detail.module.css';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import clsx from 'clsx';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
+import { motion } from 'framer-motion';
 
 export default function ThemeDetailPage({ params }: { params: Promise<{ themeId: string }> }) {
     const { themeId } = use(params);
@@ -25,6 +26,93 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
 
     // Preview Overlay state
     const [previewIndex, setPreviewIndex] = useState<number | null>(null);
+
+    // Pricing Plans
+    const PLANS = {
+        essentials: {
+            id: 'essentials',
+            label: 'WhatsApp Essentials',
+            desc: 'Perfect for digital-only invites',
+            price: '999',
+            originalPrice: '2500',
+            features: [
+                "12 Unique Rajputana Wedding Designs",
+                "High-Resolution JPEG/PNG Formats",
+                "Optimized for WhatsApp & Social Media",
+                "Ready in 2-5 Minutes",
+                "Supports Hindi, English, Marathi",
+                "No Watermark",
+                "Delivery: Immediate download via dashboard after successful checkout."
+            ]
+        },
+        posters: {
+            id: 'posters',
+            label: 'WhatsApp + Posters',
+            desc: 'Digital invites plus print-ready posters',
+            price: '1,999',
+            originalPrice: '4500',
+            features: [
+                "Everything in WhatsApp Essentials",
+                "A3 & A4 Print-Ready PDF Files",
+                "High-Resolution CMYK for Printing",
+                "Suitable for Wedding Venue Signage",
+                "Standard Print Dimensions Included",
+                "Priority Printing Support"
+            ]
+        },
+        complete: {
+            id: 'complete',
+            label: 'Complete Wedding Suite',
+            desc: 'The ultimate bundle for all your needs',
+            price: '3,499',
+            originalPrice: '7500',
+            features: [
+                "Everything in WhatsApp + Posters",
+                "All 12+ Wedding Event Designs (Sangeet, Haldi, etc.)",
+                "Complete Stationery Suite",
+                "Source Files Included",
+                "Dedicated Designer Support"
+            ]
+        }
+    };
+
+    const [selectedPlan, setSelectedPlan] = useState<keyof typeof PLANS>('complete');
+    const [selectedAssetIndex, setSelectedAssetIndex] = useState(0);
+    const [activeSlide, setActiveSlide] = useState(0);
+    const [showStickyBar, setShowStickyBar] = useState(false);
+
+    // Track scroll for sticky bar
+    useEffect(() => {
+        const handleScroll = () => {
+            const scrollY = window.scrollY;
+            const threshold = 600; // Approx height of top section
+            setShowStickyBar(scrollY > threshold);
+        };
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    const carouselRef = useRef<HTMLDivElement>(null);
+
+    // Handle carousel scroll for dots
+    const handleCarouselScroll = (e: React.UIEvent<HTMLDivElement>) => {
+        const scrollLeft = e.currentTarget.scrollLeft;
+        const width = e.currentTarget.offsetWidth;
+        // Improved logic:
+        const index = Math.round(scrollLeft / width);
+        setActiveSlide(index);
+    };
+
+    const scrollToSlide = (index: number) => {
+        if (carouselRef.current) {
+            const width = carouselRef.current.offsetWidth;
+            carouselRef.current.scrollTo({
+                left: width * index,
+                behavior: 'smooth'
+            });
+            setActiveSlide(index);
+        }
+    };
 
     if (!theme) {
         return (
@@ -110,88 +198,212 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
 
             <div className="container">
 
+                {/* Mobile Carousel */}
+                <div
+                    className={clsx(styles.mobileCarousel, styles.mobileOnly)}
+                    onScroll={handleCarouselScroll}
+                    ref={carouselRef}
+                >
+                    {assets.map((asset, index) => (
+                        <div key={index} className={styles.carouselItem} onClick={() => setPreviewIndex(index)}>
+                            <Image
+                                src={`/assets/themes/${themeId}/${asset.image}`}
+                                alt={asset.name}
+                                fill
+                                style={{ objectFit: 'cover' }}
+                            />
+                            <div style={{
+                                position: 'absolute',
+                                bottom: '10px',
+                                right: '10px',
+                                background: 'rgba(0,0,0,0.6)',
+                                color: 'white',
+                                padding: '4px 8px',
+                                borderRadius: '4px',
+                                fontSize: '0.7rem'
+                            }}>
+                                Swipe to view
+                            </div>
+                        </div>
+                    ))}
+                </div>
+                {/* Carousel Dots - Mobile */}
+                <div className={clsx(styles.carouselDots, styles.mobileOnly)}>
+                    {assets.slice(0, 5).map((_, i) => (
+                        <div
+                            key={i}
+                            className={clsx(styles.dot, activeSlide === i && styles.activeDot)}
+                            onClick={() => scrollToSlide(i)}
+                            style={{ cursor: 'pointer' }}
+                        />
+                    ))}
+                </div>
+
                 <div className={styles.layout}>
-                    {/* Left Column: Asset Grid */}
-                    <div className={styles.assetGrid}>
-                        {assets.map((asset, index) => {
-                            const isSpecialTheme = ['rajputana', 'modern-minimal'].includes(themeId);
-                            return (
+                    {/* Left Column: Asset Grid Refactored (Desktop) */}
+                    <div className={clsx(styles.galleryContainer, styles.desktopOnly)}>
+                        {/* Main Image */}
+                        <div
+                            className={styles.mainImageWrapper}
+                            onClick={() => setPreviewIndex(selectedAssetIndex)}
+                            style={{ background: theme.colors[0] }}
+                        >
+                            <Image
+                                src={`/assets/themes/${themeId}/${assets[selectedAssetIndex].image}`}
+                                alt={assets[selectedAssetIndex].name}
+                                fill
+                                style={{
+                                    objectFit: 'contain',
+                                    padding: '1rem',
+                                    zIndex: 2
+                                }}
+                                priority
+                                onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    target.style.display = 'none';
+                                }}
+                            />
+                            <div style={{
+                                position: 'absolute',
+                                bottom: '1rem',
+                                left: '50%',
+                                transform: 'translateX(-50%)',
+                                background: 'rgba(0,0,0,0.6)',
+                                color: 'white',
+                                padding: '0.25rem 0.75rem',
+                                borderRadius: '100px',
+                                fontSize: '0.75rem',
+                                backdropFilter: 'blur(4px)',
+                                zIndex: 3
+                            }}>
+                                {assets[selectedAssetIndex].name}
+                            </div>
+                        </div>
+
+                        {/* Desktop Dots Indicator */}
+                        <div className={clsx(styles.carouselDots, styles.desktopOnly)} style={{ margin: '0.5rem 0' }}>
+                            {assets.slice(0, 5).map((_, i) => (
+                                <div
+                                    key={i}
+                                    className={clsx(styles.dot, (selectedAssetIndex % 5) === i && styles.activeDot)}
+                                    // Make desktop dots clickable too
+                                    onClick={() => setSelectedAssetIndex(i)}
+                                    style={{ cursor: 'pointer' }}
+                                />
+                            ))}
+                        </div>
+
+                        {/* Thumbnails */}
+                        <div className={styles.thumbnailList}>
+                            {assets.map((asset, index) => (
                                 <div
                                     key={index}
-                                    className={styles.assetCard}
-                                    onClick={() => setPreviewIndex(index)}
-                                    style={{
-                                        cursor: 'pointer',
-                                        background: theme.colors[0],
-                                        color: theme.colors[2] || 'white',
-                                        position: 'relative'
-                                    }}
-                                >
-                                    <div style={{
-                                        position: 'absolute',
-                                        inset: 0,
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        padding: '1rem',
-                                        textAlign: 'center',
-                                        fontWeight: '600',
-                                        fontSize: '0.875rem',
-                                        zIndex: 1
-                                    }}>
-                                        {asset.name}
-                                    </div>
-
-                                    {isSpecialTheme && (
-                                        <Image
-                                            src={`/assets/themes/${themeId}/${asset.image}`}
-                                            alt={asset.name}
-                                            fill
-                                            style={{
-                                                objectFit: 'cover',
-                                                borderRadius: '4px',
-                                                zIndex: 2
-                                            }}
-                                            onError={(e) => {
-                                                // If image is missing, hide it so the styled placeholder shows
-                                                const target = e.target as HTMLImageElement;
-                                                target.style.display = 'none';
-                                            }}
-                                        />
+                                    className={clsx(
+                                        styles.thumbnailItem,
+                                        selectedAssetIndex === index ? styles.thumbnailItemActive : styles.thumbnailItemInactive
                                     )}
+                                    onClick={() => setSelectedAssetIndex(index)}
+                                    style={{ background: theme.colors[0] }}
+                                >
+                                    <Image
+                                        src={`/assets/themes/${themeId}/${asset.image}`}
+                                        alt={asset.name}
+                                        fill
+                                        style={{ objectFit: 'cover' }}
+                                    />
                                 </div>
-                            );
-                        })}
+                            ))}
+                        </div>
                     </div>
 
                     {/* Right Column: Content */}
                     <div className={styles.contentCol}>
-                        <h1 className={styles.title}>
-                            {theme.name} theme invitation bundle complete pack of 12
-                        </h1>
-                        <p className={styles.description}>
-                            Celebrate your special day with the {theme.name} Video, a modern and minimal digital invite that beautifully captures the spirit of your traditions. Make your wedding announcement as joyful as the celebration itself with this unique, stylish evite.
-                        </p>
+                        <div>
+                            <h1 className={styles.title} style={{ marginBottom: '0.5rem' }}>
+                                {theme.name} Theme Invitation Bundle
+                            </h1>
+                            <p className={styles.description} style={{ marginBottom: '0.25rem', opacity: 0.8 }}>
+                                Complete pack of 12 wedding designs
+                            </p>
+                            <hr style={{ border: 'none', borderTop: '1px solid #E5E7EB', margin: '0 0 0.75rem 0' }} />
 
-                        <ul className={styles.features}>
-                            <li className={styles.featureItem}>Just fill your basic details one time ( Supports Hindi English, Marathi )</li>
-                            <li className={styles.featureItem}>Get instant bundle in 2 - 5 minutes</li>
-                            <li className={styles.featureItem}>Ready to download and shared on WhatsApp</li>
-                        </ul>
+                            {/* Package Selector (Universal) */}
+                            <div className={styles.stackedSelectorContainer}>
+                                <h3 className={styles.sectionLabel}>SELECT PACKAGE</h3>
+                                <div className={styles.stackedSelector}>
+                                    {(Object.values(PLANS) as Array<typeof PLANS['essentials']>).map((plan) => (
+                                        <div
+                                            key={plan.id}
+                                            className={clsx(styles.stackedOption, selectedPlan === plan.id && styles.stackedOptionActive)}
+                                            onClick={() => setSelectedPlan(plan.id as keyof typeof PLANS)}
+                                        >
+                                            <div className={styles.optionInfo}>
+                                                <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                                                    <span className={styles.optionLabel}>{plan.label}</span>
+                                                    {plan.id === 'posters' && (
+                                                        <span className={styles.bestSellerBadge}>
+                                                            Best Seller
+                                                        </span>
+                                                    )}
+                                                    {selectedPlan === plan.id && <CheckCircle size={16} fill="#C5A065" color="white" />}
+                                                </div>
+                                                <span className={styles.optionDesc}>{plan.desc}</span>
+                                            </div>
+                                            <div className={styles.optionPrice}>
+                                                ₹{plan.price}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+
+
+
 
                         <div className={styles.pricing}>
-                            <span className={styles.currentPrice}>Rs 1200</span>
-                            <span className={styles.originalPrice}>Rs 3800</span>
+                            <span className={styles.currentPrice}>₹ {PLANS[selectedPlan].price}</span>
+                            <span className={styles.originalPrice}>₹ {PLANS[selectedPlan].originalPrice}</span>
+                            {(() => {
+                                const price = parseInt(PLANS[selectedPlan].price.replace(/,/g, ''));
+                                const original = parseInt(PLANS[selectedPlan].originalPrice.replace(/,/g, ''));
+                                const discount = Math.round(((original - price) / original) * 100);
+                                return (
+                                    <span className={styles.discountBadge}>
+                                        {discount}% OFF
+                                    </span>
+                                );
+                            })()}
                         </div>
 
                         <div className={styles.actions}>
-                            <button onClick={handleCreateNow} className="btn btn-primary">
+                            <button onClick={handleCreateNow} className="btn btn-primary" style={{ flex: 1 }}>
                                 Create Now
                             </button>
-                            <button className="btn btn-secondary">
-                                <Share2 size={18} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
-                                Share
+                            <button className={styles.iconBtn}>
+                                <Share2 size={24} />
                             </button>
+                        </div>
+
+                        {/* Value Highlights (Universal) */}
+                        <div className={styles.valueHighlights}>
+                            <div className={styles.highlightItem}>
+                                <div className={styles.highlightIcon}><Clock size={20} /></div>
+                                <span>Ready in 2–5<br />minutes</span>
+                            </div>
+                            <div className={styles.highlightItem}>
+                                <div className={styles.highlightIcon}><Smartphone size={20} /></div>
+                                <span>WhatsApp &<br />Print Ready</span>
+                            </div>
+                            <div className={styles.highlightItem}>
+                                <div className={styles.highlightIcon}><Languages size={24} /></div>
+                                <span>Hindi, English,<br />Marathi</span>
+                            </div>
+                            <div className={styles.highlightItem}>
+                                <div className={styles.highlightIcon}><Download size={24} /></div>
+                                <span>Instant<br />Download</span>
+                            </div>
                         </div>
 
                         <div className={styles.accordions}>
@@ -201,7 +413,11 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
                                 </button>
                                 {openAccordion === 'what-you-get' && (
                                     <div className={styles.accordionContent}>
-                                        A complete digital bundle including high-resolution images for all events and a cinematic video invitation optimized for WhatsApp sharing.
+                                        <ul style={{ listStyleType: 'disc', paddingLeft: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                            {PLANS[selectedPlan].features.map((feature, i) => (
+                                                <li key={i}>{feature}</li>
+                                            ))}
+                                        </ul>
                                     </div>
                                 )}
                             </div>
@@ -211,7 +427,12 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
                                 </button>
                                 {openAccordion === 'highlights' && (
                                     <div className={styles.accordionContent}>
-                                        Premium typography, royal motifs, and culturally sensitive design elements crafted for a grand Indian wedding experience.
+                                        <p style={{ marginBottom: '1rem' }}>
+                                            Premium typography, royal motifs, and culturally sensitive design elements crafted for a grand Indian wedding experience.
+                                        </p>
+                                        <p>
+                                            This bundle captures the grandeur of Rajputana culture. Each element is crafted with royal precision, ensuring your wedding invitation stands out as a masterpiece.
+                                        </p>
                                     </div>
                                 )}
                             </div>
@@ -221,7 +442,20 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
                                 </button>
                                 {openAccordion === 'faq' && (
                                     <div className={styles.accordionContent}>
-                                        Our FAQ section covers everything from customization options to delivery times and file formats.
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                            <div>
+                                                <p style={{ fontWeight: 600, marginBottom: '0.25rem', color: '#1a1a1a' }}>How long does it take to get my designs?</p>
+                                                <p style={{ color: '#666', fontSize: '0.9rem' }}>Our automated system ensures your designs are ready in 2–5 minutes after payment. You can download them instantly from your dashboard.</p>
+                                            </div>
+                                            <div>
+                                                <p style={{ fontWeight: 600, marginBottom: '0.25rem', color: '#1a1a1a' }}>Can I customize the text in Hindi?</p>
+                                                <p style={{ color: '#666', fontSize: '0.9rem' }}>Yes! Our templates fully support Hindi, English, and Marathi characters. You can add your custom text in the editor.</p>
+                                            </div>
+                                            <div>
+                                                <p style={{ fontWeight: 600, marginBottom: '0.25rem', color: '#1a1a1a' }}>What happens if I lose my download link?</p>
+                                                <p style={{ color: '#666', fontSize: '0.9rem' }}>Don't worry! You can log in to your account anytime to access your purchase history and re-download your files.</p>
+                                            </div>
+                                        </div>
                                     </div>
                                 )}
                             </div>
@@ -317,6 +551,17 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
                     </div>
                 </div>
             )}
+
+            {/* Sticky Bottom Bar */}
+            <div className={clsx(styles.stickyBottomBar, showStickyBar && styles.stickyVisible, styles.mobileOnly)}>
+                <div className={styles.stickyInfo}>
+                    <span className={styles.stickyLabel}>{PLANS[selectedPlan].label}</span>
+                    <span className={styles.stickyPrice}>₹{PLANS[selectedPlan].price}</span>
+                </div>
+                <button onClick={handleCreateNow} className={clsx("btn btn-primary", styles.stickyBtn)}>
+                    Create Now
+                </button>
+            </div>
         </div>
     );
 }

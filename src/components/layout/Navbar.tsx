@@ -13,7 +13,7 @@ const NAV_LINKS = [
     { name: 'Themes', href: '/themes' },
     { name: 'RSVP', href: '/rsvp' },
     { name: 'Products', href: '/products' },
-    { name: 'Blogs', href: '/blogs' },
+    // { name: 'Blogs', href: '/blogs' },
 ];
 
 export const Navbar = () => {

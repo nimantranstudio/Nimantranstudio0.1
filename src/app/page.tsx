@@ -4,12 +4,16 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import styles from "./page.module.css";
 import Image from "next/image";
-import { ArrowRight, Check } from "lucide-react";
+import { ArrowRight, Check, Sparkles, Heart, Smartphone, Users, CreditCard, Clock, Printer, Languages, ShieldCheck } from "lucide-react";
 import { clsx } from 'clsx';
 import { motion } from "framer-motion";
 import { THEMES } from "@/lib/constants/themes";
 import { ThemeCard } from "@/components/ui/ThemeCard";
 import { FloatingHearts } from "@/components/ui/FloatingHearts";
+import { CurvedBackground } from "@/components/ui/CurvedBackground";
+import { PricingSection } from "@/components/home/PricingSection";
+import { FeaturesSection } from "@/components/home/FeaturesSection";
+import { CTASection } from "@/components/home/CTASection";
 import { useWeddingStore } from "@/store/wedding-store";
 
 
@@ -35,6 +39,7 @@ export default function Home() {
     <main className={styles.main}>
       {/* ... Hero Section ... */}
       <section className={styles.hero}>
+        <CurvedBackground />
         <FloatingHearts />
         {/* ... Motifs ... */}
 
@@ -42,14 +47,27 @@ export default function Home() {
           <div className={styles.heroContent}>
             {/* ... Title & Subtitle ... */}
 
+            <motion.div
+              className={styles.trustedBadge}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+            >
+              <Sparkles size={18} fill="#D4AF37" color="#D4AF37" />
+              <span>TRUSTED BY 1,000+ INDIAN WEDDINGS</span>
+            </motion.div>
+
             <motion.h1
               className={styles.title}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
             >
-              Created with a click, <br />
-              <span style={{ color: 'var(--secondary)' }}>sent with love. (Updated)</span>
+              <span style={{ display: 'block' }}>Everything your wedding needs</span>
+              <span style={{ fontSize: '0.6em', display: 'block', marginTop: '15px', fontWeight: 500, lineHeight: '1.4' }}>
+                <span style={{ display: 'block' }}>A beautifully designed theme bundle,</span>
+                <span style={{ display: 'block' }}>ready instantly with one click.</span>
+              </span>
             </motion.h1>
             <motion.p
               className={styles.subtitle}
@@ -57,7 +75,7 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
             >
-              One form. One click. Your entire wedding invitation bundle ready for WhatsApp.
+              From WhatsApp invites to print-ready boards. No follow-ups. No confusion.
             </motion.p>
 
             <motion.div
@@ -76,6 +94,27 @@ export default function Home() {
                 Create RSVP Event
               </button>
             </motion.div>
+
+            <motion.div
+              className={styles.trustIndicators}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.6 }}
+            >
+              {[
+                { icon: Clock, text: "Delivered in 2–5 minutes" },
+                { icon: Printer, text: "WhatsApp & Print ready" },
+                { icon: Languages, text: "Hindi • English • Marathi" },
+                { icon: ShieldCheck, text: "No watermark • One-time pay" }
+              ].map((item, i) => (
+                <div key={i} className={styles.trustItem}>
+                  <div className={styles.trustIcon}>
+                    <item.icon size={24} strokeWidth={1.5} />
+                  </div>
+                  <span>{item.text}</span>
+                </div>
+              ))}
+            </motion.div>
           </div>
         </div>
       </section>
@@ -93,17 +132,46 @@ export default function Home() {
             A simple process for busy weddings
           </motion.h2>
           <div className={styles.steps}>
-            {["Choose Theme", "Fill Details", "Preview All", "Share & Love"].map((step, i) => (
+            {[
+              {
+                title: "Choose Theme",
+                icon: Sparkles,
+                desc: "Select from our curated Indian designs."
+              },
+              {
+                title: "Fill Details",
+                icon: Heart,
+                desc: "Enter your wedding details once."
+              },
+              {
+                title: "Preview All",
+                icon: Smartphone,
+                desc: "See everything generated instantly."
+              },
+              {
+                title: "Pay & Generate",
+                icon: CreditCard,
+                desc: "Make a single secure payment to unlock all high-quality assets."
+              },
+              {
+                title: "Share & Love",
+                icon: Users,
+                desc: "Pay securely and share via WhatsApp."
+              }
+            ].map((step, i) => (
               <motion.div
-                key={step}
+                key={step.title}
                 className={styles.step}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: i * 0.1 }}
               >
-                <span className={styles.stepNum}>0{i + 1}</span>
-                <h3>{step}</h3>
+                <div className={styles.stepIconWrapper}>
+                  <step.icon size={24} strokeWidth={1.5} color="#D4AF37" />
+                </div>
+                <h3>{step.title}</h3>
+                <p>{step.desc}</p>
               </motion.div>
             ))}
           </div>
@@ -147,8 +215,8 @@ export default function Home() {
               transition={{ duration: 0.8 }}
             >
               <img
-                src="/bundle-mockup.jpg"
-                alt="Wedding Bundle Preview"
+                src="/wedding-bundle-suite.jpg"
+                alt="Complete Wedding Invitation Suite"
                 className={styles.bundleImage}
                 style={{ width: '100%', height: 'auto', objectFit: 'cover' }}
               />
@@ -212,32 +280,16 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Indian Wedding Features Section */}
-      <section className={styles.features}>
-        <div className="container">
-          <h2 className={styles.featuresTitle}>Designed for the Indian Wedding</h2>
-          <div className={styles.featuresGrid}>
-            {[
-              { title: "One-time form", desc: "Save hours of stress. Enter names, dates, and venues once. We handle the rest." },
-              { title: "Consistent design", desc: "Your Haldi, Mehndi, and Wedding invites will speak the same visual language." },
-              { title: "WhatsApp-ready", desc: "Optimized sizes and formats for perfect sharing with family and guests." },
-              { title: "Family-approved", desc: "Colors and fonts chosen to feel respectful, traditional, and premium." }
-            ].map((f, i) => (
-              <motion.div
-                key={f.title}
-                className={styles.featureItem}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: i * 0.1 }}
-              >
-                <h3>{f.title}</h3>
-                <p>{f.desc}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* New Features Section (Dark) */}
+      <FeaturesSection />
+
+      {/* New Pricing Section */}
+      <PricingSection />
+
+
+
+      {/* Bottom CTA Section */}
+      <CTASection />
 
       {/* FAQ/About Section */}
       <section className={styles.faq}>

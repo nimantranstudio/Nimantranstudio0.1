@@ -1,21 +1,10 @@
 import { PrismaClient } from '@prisma/client'
-import { Pool } from 'pg'
-import { PrismaPg } from '@prisma/adapter-pg'
 
 const prismaClientSingleton = () => {
     // Only initialize adapter on the server side
     if (typeof window !== 'undefined') return null as any;
 
-    const connectionString = process.env.DATABASE_URL;
-
-    if (!connectionString) {
-        console.warn("DATABASE_URL is not defined. Prisma may fail to connect.");
-        return new PrismaClient();
-    }
-
-    const pool = new Pool({ connectionString });
-    const adapter = new PrismaPg(pool);
-    return new PrismaClient({ adapter });
+    return new PrismaClient();
 }
 
 declare global {
