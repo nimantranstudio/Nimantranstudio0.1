@@ -21,12 +21,6 @@ export function AdminSidebar() {
     return (
         <aside className={clsx(styles.sidebar, isCollapsed && styles.collapsed)}>
             <div className={styles.header}>
-                {!isCollapsed && (
-                    <div className={styles.logoArea}>
-                        <div className={styles.logoIcon}>N</div>
-                        <span className={styles.logoText}>Nimantran</span>
-                    </div>
-                )}
                 <button
                     className={styles.toggleBtn}
                     onClick={() => setIsCollapsed(!isCollapsed)}
