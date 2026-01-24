@@ -1,0 +1,120 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/client"
+}
+
+datasource db {
+  provider = "sqlserver"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String    @id @default(cuid())
+  email     String    @unique
+  name      String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  weddings  Wedding[]
+  orders    Order[]
+}
+
+model Bundle {
+  id            String   @id @default(cuid())
+  name          String
+  subtitle      String?
+  price         String
+  features      String?  @db.NVarChar(Max)
+  printables    String?  @db.NVarChar(Max)
+  isPopular     Boolean  @default(false)
+  theme         String   @default("default")
+  description   String?  @db.NVarChar(Max)
+  highlights    String?  @db.NVarChar(Max)
+  checklist     String?  @db.NVarChar(Max)
+  isActive      Boolean  @default(true)
+  themeId       String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  previewImages String?  @db.NVarChar(Max)
+  thumbnailUrl  String?
+  themeRef      Theme?   @relation(fields: [themeId], references: [id])
+  orders        Order[]
+}
+
+model Order {
+  id          String   @id @default(cuid())
+  userId      String
+  bundleId    String
+  totalAmount Float
+  status      String   @default("pending")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  bundle      Bundle   @relation(fields: [bundleId], references: [id])
+  user        User     @relation(fields: [userId], references: [id])
+}
+
+model Theme {
+  id            String    @id @default(cuid())
+  name          String
+  description   String?
+  thumbnailUrl  String?
+  previewImages String?
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  bundles       Bundle[]
+  weddings      Wedding[]
+}
+
+model Wedding {
+  id                String    @id @default(cuid())
+  ownerId           String
+  themeId           String
+  groomName         String
+  brideName         String
+  groomParents      String?
+  brideParents      String?
+  rsvpContact       String?
+  rsvpDeadline      DateTime?
+  invitationMessage String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  events            Event[]
+  rsvps             RSVP[]
+  owner             User      @relation(fields: [ownerId], references: [id])
+  theme             Theme     @relation(fields: [themeId], references: [id])
+}
+
+model Event {
+  id              String   @id @default(cuid())
+  weddingId       String
+  name            String
+  date            String
+  time            String
+  venue           String
+  mapLink         String?
+  description     String?
+  eventType       String?
+  rsvpDeadline    String?
+  allowCompanions Boolean  @default(true)
+  collectDietary  Boolean  @default(false)
+  maxGuests       Int      @default(4)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  wedding         Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+}
+
+model RSVP {
+  id         String   @id @default(cuid())
+  weddingId  String
+  guestName  String
+  phone      String?
+  adultCount Int      @default(1)
+  childCount Int      @default(0)
+  attending  Boolean  @default(true)
+  status     String   @default("pending")
+  dietary    String?
+  message    String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  wedding    Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+}
