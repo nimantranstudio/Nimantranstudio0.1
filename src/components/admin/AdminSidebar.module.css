@@ -1,6 +1,7 @@
 .sidebar {
     width: 260px;
-    height: 100vh;
+    height: calc(100vh - 80px);
+    /* Adjusted for Navbar height */
     background: #ffffff;
     border-right: 1px solid #eef0f3;
     display: flex;
@@ -9,7 +10,7 @@
     flex-shrink: 0;
     overflow: hidden;
     position: relative;
-    z-index: 1001;
+    z-index: 10;
 }
 
 .sidebar.collapsed {
@@ -19,10 +20,9 @@
 .header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-end;
     padding: 1rem;
-    min-height: 72px;
-    border-bottom: 1px solid #f9fafb;
+    min-height: 56px;
 }
 
 .collapsed .header {
