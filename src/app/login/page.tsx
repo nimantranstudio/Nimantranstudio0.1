@@ -49,8 +49,6 @@ function LoginForm() {
                     <>
                         {/* Header Section */}
                         <div style={{ marginBottom: '2rem' }}>
-                            {/* Logo placeholder if needed, using text for now or existing global logo if available */}
-                            {/* <div className={styles.logoPlaceholder}>A</div> */}
                         </div>
 
                         <h1 className={styles.title}>Welcome to Nimantranstudio</h1>
