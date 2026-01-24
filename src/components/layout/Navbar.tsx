@@ -1,10 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useWeddingStore } from '@/store/wedding-store';
-import { Menu, X, User } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { Menu, X, User, LogOut, LayoutDashboard, ChevronDown } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
 import styles from './Navbar.module.css';
 import { clsx } from 'clsx';
 
@@ -18,20 +18,40 @@ const NAV_LINKS = [
 
 export const Navbar = () => {
     const pathname = usePathname();
-    const [isOpen, setIsOpen] = useState(false);
-    const { isAuthenticated } = useWeddingStore();
+    const router = useRouter();
+    const [isOpen, setIsOpen] = useState(false); // Mobile Menu
+    const [isProfileOpen, setIsProfileOpen] = useState(false); // Profile Dropdown
+
+    const { isAuthenticated, isAdmin, userPhone, logout } = useWeddingStore();
     const [hasMounted, setHasMounted] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         setHasMounted(true);
+
+        // Click outside listener for dropdown
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsProfileOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    // Don't show header on specific focused RSVP pages (like voting/detail)
-    // but keep it for creation/management
-    // Don't show header on public RSVP pages (the invitation link)
-    // accessible via /rsvp/[id]
-    const isHidden = pathname?.startsWith('/rsvp/');
+    const handleLogout = () => {
+        logout();
+        setIsProfileOpen(false);
+        router.push('/');
+    };
 
+    // User Display Name Logic
+    const getDisplayName = () => {
+        if (isAdmin) return 'NSAdmin';
+        if (userPhone && userPhone.length >= 10) return userPhone;
+        return 'Guest User';
+    };
 
     return (
         <nav className={styles.navbar}>
@@ -56,9 +76,35 @@ export const Navbar = () => {
 
                     <div className={styles.authAction}>
                         {hasMounted && isAuthenticated ? (
-                            <Link href="/dashboard" className="btn btn-secondary" style={{ padding: '0.6rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                <User size={20} />
-                            </Link>
+                            <div className={styles.profileDropdown} ref={dropdownRef}>
+                                <button
+                                    className={clsx(styles.profileBtn, isProfileOpen && styles.active)}
+                                    onClick={() => setIsProfileOpen(!isProfileOpen)}
+                                >
+                                    <User size={20} />
+                                </button>
+
+                                {isProfileOpen && (
+                                    <div className={styles.dropdownMenu}>
+                                        <div className={styles.dropdownHeader}>
+                                            <span className={styles.userName}>Hi, {getDisplayName()}</span>
+                                            <span className={styles.userRole}>{isAdmin ? 'Administrator' : 'User Account'}</span>
+                                        </div>
+                                        <Link
+                                            href={isAdmin ? "/admin" : "/dashboard"}
+                                            className={styles.dropdownItem}
+                                            onClick={() => setIsProfileOpen(false)}
+                                        >
+                                            <LayoutDashboard size={16} />
+                                            {isAdmin ? 'Admin Panel' : 'Dashboard'}
+                                        </Link>
+                                        <button onClick={handleLogout} className={clsx(styles.dropdownItem, styles.logout)}>
+                                            <LogOut size={16} />
+                                            Logout
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
                         ) : (
                             <Link href="/login" className="btn btn-secondary">
                                 Login
@@ -87,9 +133,27 @@ export const Navbar = () => {
                         </Link>
                     ))}
                     {hasMounted && isAuthenticated ? (
-                        <Link href="/dashboard" className={clsx("btn btn-secondary", styles.mobileBtn)} onClick={() => setIsOpen(false)}>
-                            <User size={18} style={{ marginRight: '0.5rem' }} /> Dashboard
-                        </Link>
+                        <>
+                            <div style={{ padding: '1rem', borderTop: '1px solid #eee', marginTop: '0.5rem' }}>
+                                <div style={{ fontWeight: '600', marginBottom: '0.5rem' }}>Hi, {getDisplayName()}</div>
+                                <Link
+                                    href={isAdmin ? "/admin" : "/dashboard"}
+                                    className={clsx("btn btn-secondary", styles.mobileBtn)}
+                                    onClick={() => setIsOpen(false)}
+                                    style={{ marginBottom: '0.5rem' }}
+                                >
+                                    <LayoutDashboard size={18} style={{ marginRight: '0.5rem' }} />
+                                    {isAdmin ? "Admin Panel" : "Dashboard"}
+                                </Link>
+                                <button
+                                    onClick={() => { handleLogout(); setIsOpen(false); }}
+                                    className={clsx("btn btn-secondary", styles.mobileBtn)}
+                                    style={{ background: '#ffebee', color: '#c62828', border: '1px solid #ffcdd2' }}
+                                >
+                                    <LogOut size={18} style={{ marginRight: '0.5rem' }} /> Logout
+                                </button>
+                            </div>
+                        </>
                     ) : (
                         <Link href="/login" className={clsx("btn btn-secondary", styles.mobileBtn)} onClick={() => setIsOpen(false)}>
                             Login

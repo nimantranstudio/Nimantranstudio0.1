@@ -8,6 +8,7 @@ interface WeddingState {
     lastSavedWeddingId: string | null;
 
     isAuthenticated: boolean;
+    isAdmin: boolean;
     userPhone: string | null;
 
     setThemeId: (id: string) => void;
@@ -16,7 +17,7 @@ interface WeddingState {
     removeEvent: (id: string) => void;
     updateEvent: (id: string, eventData: Partial<WeddingFormData['events'][0]>) => void;
     saveWedding: () => Promise<{ success: boolean; wedding?: any; error?: string }>;
-    login: (phone: string) => void;
+    login: (phone: string, isAdmin?: boolean) => void;
     logout: () => void;
 }
 
@@ -38,12 +39,13 @@ export const useWeddingStore = create<WeddingState>()(
             formData: INITIAL_FORM_DATA,
             lastSavedWeddingId: null,
             isAuthenticated: false,
+            isAdmin: false,
             userPhone: null,
 
             setThemeId: (id) => set({ selectedThemeId: id }),
 
-            login: (phone) => set({ isAuthenticated: true, userPhone: phone }),
-            logout: () => set({ isAuthenticated: false, userPhone: null }),
+            login: (phone, isAdmin = false) => set({ isAuthenticated: true, userPhone: phone, isAdmin }),
+            logout: () => set({ isAuthenticated: false, userPhone: null, isAdmin: false }),
 
             updateFormData: (data) => set((state) => ({
                 formData: { ...state.formData, ...data },

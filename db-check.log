@@ -1,0 +1,4 @@
+Connection SUCCESSFUL!
+Using URL: sqlserver://localhost;database=nimantran;integratedSecurity=true;trustServerCertificate=true;
+CREATE SUCCESS: Theme ID cmks9iea2000038moksi6i90s
+Final Theme count: 1

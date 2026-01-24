@@ -1,33 +1,17 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient } from '@prisma/client';
 
-const prismaClientSingleton = () => {
-    // Only initialize adapter on the server side
-    if (typeof window !== 'undefined') return null as any;
+const globalForPrisma = global as unknown as { prisma: PrismaClient };
 
-    return new PrismaClient();
-}
-
-declare global {
-    var prisma: undefined | ReturnType<typeof prismaClientSingleton>
-}
-
-// Lazy getter for Prisma instance
-const getPrisma = () => {
-    if (typeof window !== 'undefined') return null as any;
-
-    if (!(globalThis as any).prisma) {
-        (globalThis as any).prisma = prismaClientSingleton();
+export const getPrisma = () => {
+    if (!globalForPrisma.prisma) {
+        globalForPrisma.prisma = new PrismaClient({
+            datasourceUrl: process.env.DATABASE_URL,
+            log: ['query', 'info', 'warn', 'error'],
+        });
     }
-    return (globalThis as any).prisma;
+    return globalForPrisma.prisma;
+};
+
+if (process.env.NODE_ENV !== 'production') {
+    // Keep the instance alive in dev
 }
-
-// Proxy to handle lazy access
-const prisma = new Proxy({} as PrismaClient, {
-    get: (target, prop) => {
-        const instance = getPrisma();
-        if (!instance) return undefined;
-        return (instance as any)[prop];
-    }
-});
-
-export default prisma
