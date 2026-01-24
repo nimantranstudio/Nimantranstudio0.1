@@ -5,7 +5,8 @@ export async function GET() {
         const { getPrisma } = await import('@/lib/prisma');
         const prisma = getPrisma();
         const bundles = await prisma.bundle.findMany({
-            orderBy: { createdAt: 'asc' }
+            include: { themeRef: true },
+            orderBy: { createdAt: 'desc' }
         });
         return NextResponse.json({ bundles });
     } catch (error: any) {
@@ -21,95 +22,56 @@ export async function POST(request: NextRequest) {
 
         const data = await request.json();
 
-        // Basic seeding logic if data is empty and we just want default bundles
+        // Seeding logic
         if (data.seed) {
             const count = await prisma.bundle.count();
-            if (count > 0) {
-                return NextResponse.json({ message: 'Bundles already seeded' });
-            }
+            if (count > 0) return NextResponse.json({ message: 'Bundles already seeded' });
+
+            const theme = await prisma.theme.findFirst();
 
             const defaultBundles = [
                 {
                     name: "WhatsApp Essentials",
-                    subtitle: "Perfect for digital sharing with friends & family",
-                    price: "₹999 only",
-                    features: JSON.stringify([
-                        "Covers any 6 wedding events",
-                        "Image invites (mobile-optimized)",
-                        "Short video invites (WhatsApp ready)",
-                        "RSVP link with live guest count",
-                        "Share instantly with one click"
-                    ]),
-                    printables: JSON.stringify([]),
-                    isPopular: false,
-                    theme: "default"
+                    price: "999",
+                    description: "Perfect for digital sharing with friends & family",
+                    isActive: true,
+                    themeId: theme?.id || null,
+                    checklist: JSON.stringify(["Image Invitations", "Video Invitations", "RSVP Link"]),
+                    highlights: "• Ready in 2-5 Minutes\n• Optimized for WhatsApp\n• No Watermark",
+                    isPopular: false
                 },
                 {
                     name: "WhatsApp + Posters",
-                    subtitle: "Digital invites + venue-ready welcome boards",
-                    price: "₹1,999",
-                    features: JSON.stringify([
-                        "Everything in WhatsApp Essentials",
-                        "Covers any 9 wedding events",
-                        "Image + Video invitations",
-                        "Printable welcome posters",
-                        "Advanced RSVP & guest tracking"
-                    ]),
-                    printables: JSON.stringify([
-                        "Welcome Board – A1 (24×36 in)",
-                        "Haldi Welcome – A2",
-                        "Mehndi Welcome – A2",
-                        "Sangeet Welcome – A2"
-                    ]),
-                    isPopular: true,
-                    theme: "gold"
-                },
-                {
-                    name: "Complete Wedding Suite",
-                    subtitle: "For families who want everything perfectly coordinated",
-                    price: "₹3,499",
-                    features: JSON.stringify([
-                        "Everything from Essentials + Posters",
-                        "Covers all 12 wedding events",
-                        "Complete wedding stationery set",
-                        "Priority support",
-                        "Custom illustration / motif"
-                    ]),
-                    printables: JSON.stringify([
-                        "Save the Date • RSVP Card",
-                        "Main Invite • Thank You",
-                        "Welcome Board • Menu Card",
-                        "Table Nos • Program Schedule",
-                        "Gift Table Sign"
-                    ]),
-                    isPopular: false,
-                    theme: "default"
+                    price: "1999",
+                    description: "Digital invites + venue-ready welcome boards",
+                    isActive: true,
+                    themeId: theme?.id || null,
+                    checklist: JSON.stringify(["Image Invitations", "Video Invitations", "RSVP Link", "Printable Posters"]),
+                    highlights: "• Everything in Essentials\n• High-Res Print PDF\n• A3 & A4 Dimensions",
+                    isPopular: true
                 }
             ];
 
-            await prisma.bundle.createMany({
-                data: defaultBundles
-            });
-
+            await prisma.bundle.createMany({ data: defaultBundles });
             return NextResponse.json({ success: true, message: 'Default bundles seeded' });
         }
 
         // Standard Create Logic
-        const { name, price, subtitle, features, printables, isPopular, theme } = data;
+        const { name, price, description, highlights, checklist, isActive, themeId, isPopular } = data;
         const bundle = await prisma.bundle.create({
             data: {
                 name,
-                price,
-                subtitle,
-                features: typeof features === 'string' ? features : JSON.stringify(features),
-                printables: typeof printables === 'string' ? printables : JSON.stringify(printables),
+                price: String(price),
+                description,
+                highlights,
+                checklist: typeof checklist === 'string' ? checklist : JSON.stringify(checklist),
+                isActive: isActive !== undefined ? isActive : true,
                 isPopular: !!isPopular,
-                theme: theme || 'default'
+                themeId: themeId || null,
             }
         });
 
         return NextResponse.json({ success: true, bundle });
-
     } catch (error: any) {
         console.error('Error in /api/admin/bundles:', error);
         return NextResponse.json({ error: error.message }, { status: 500 });

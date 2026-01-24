@@ -22,10 +22,21 @@ model Bundle {
   name        String
   subtitle    String?
   price       String
-  features    String   @db.NVarChar(Max) // Use Max for SQL Server JSON strings if large
+  features    String?  @db.NVarChar(Max)
   printables  String?  @db.NVarChar(Max)
   isPopular   Boolean  @default(false)
-  theme       String   @default("default")
+  theme       String   @default("default") // Keep for SQL constraint compatibility
+  
+  // NEW FIELDS FOR FORM
+  description String?  @db.NVarChar(Max)
+  highlights  String?  @db.NVarChar(Max)
+  checklist   String?  @db.NVarChar(Max) // JSON for checkboxes
+  isActive    Boolean  @default(true)
+  
+  // RELATION
+  themeId     String?
+  themeRef    Theme?   @relation(fields: [themeId], references: [id])
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   orders      Order[]
@@ -53,6 +64,7 @@ model Theme {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   weddings      Wedding[] // Relation to weddings using this theme
+  bundles       Bundle[] // Relation to bundles using this theme
 }
 
 model Wedding {
