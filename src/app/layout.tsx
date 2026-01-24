@@ -20,11 +20,9 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} ${playfair.variable}`} suppressHydrationWarning>
-        <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
           <Navbar />
-          <div style={{ flex: 1, minHeight: 0, position: 'relative' }}>
-            <RootWrapper>{children}</RootWrapper>
-          </div>
+          <RootWrapper>{children}</RootWrapper>
         </div>
       </body>
     </html>

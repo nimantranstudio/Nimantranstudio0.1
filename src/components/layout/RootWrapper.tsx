@@ -8,12 +8,18 @@ export default function RootWrapper({ children }: { children: React.ReactNode })
     const isAdmin = pathname?.startsWith('/admin');
 
     if (isAdmin) {
-        return <div style={{ height: '100%', width: '100%' }}>{children}</div>;
+        return (
+            <main style={{ flex: 1, minHeight: 0 }}>
+                {children}
+            </main>
+        );
     }
 
     return (
-        <div style={{ height: '100%', width: '100%', overflowY: 'auto' }}>
-            <main>{children}</main>
+        <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+            <main style={{ flex: 1 }}>
+                {children}
+            </main>
             <Footer />
         </div>
     );

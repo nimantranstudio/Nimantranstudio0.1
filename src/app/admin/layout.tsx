@@ -6,14 +6,13 @@ export default function AdminLayout({
     children: React.ReactNode;
 }) {
     return (
-        <div style={{ display: 'flex', height: '100%', width: '100%', overflow: 'hidden', background: '#f9fafb' }}>
+        <div style={{ display: 'flex', height: 'calc(100vh - 80px)', background: '#f9fafb' }}>
             <AdminSidebar />
             <main style={{
                 flex: 1,
                 overflowY: 'auto',
                 padding: '2rem',
-                position: 'relative',
-                height: '100%'
+                position: 'relative'
             }}>
                 {children}
             </main>
