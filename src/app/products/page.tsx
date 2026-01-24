@@ -2,7 +2,7 @@
 
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import styles from './products.module.css';
-import { clsx } from 'clsx';
+import clsx from 'clsx';
 import { Check } from 'lucide-react';
 
 const PLANS = [

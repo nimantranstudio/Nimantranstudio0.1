@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import styles from "./page.module.css";
+import styles from "./home.module.css";
 import Image from "next/image";
 import { ArrowRight, Check, Sparkles, Heart, Smartphone, Users, CreditCard, Clock, Printer, Languages, ShieldCheck } from "lucide-react";
-import { clsx } from 'clsx';
+import clsx from 'clsx';
 import { motion } from "framer-motion";
 import { THEMES } from "@/lib/constants/themes";
 import { ThemeCard } from "@/components/ui/ThemeCard";

@@ -6,7 +6,7 @@ import { InvitationCard } from '@/components/preview/InvitationCard';
 import styles from '@/components/preview/Preview.module.css';
 import { ChevronLeft, Headphones, Play } from 'lucide-react';
 import Link from 'next/link';
-import { clsx } from 'clsx';
+import clsx from 'clsx';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { useState } from 'react';
 

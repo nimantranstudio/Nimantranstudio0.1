@@ -13,7 +13,7 @@ import {
     Share2
 } from 'lucide-react';
 import styles from '../dashboard.module.css';
-import { clsx } from 'clsx';
+import clsx from 'clsx';
 
 interface RSVP {
     id: string;

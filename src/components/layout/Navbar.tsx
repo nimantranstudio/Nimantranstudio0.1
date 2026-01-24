@@ -6,7 +6,7 @@ import { useWeddingStore } from '@/store/wedding-store';
 import { Menu, X, User } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import styles from './Navbar.module.css';
-import { clsx } from 'clsx';
+import clsx from 'clsx';
 
 const NAV_LINKS = [
     { name: 'Home', href: '/' },

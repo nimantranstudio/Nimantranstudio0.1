@@ -3,8 +3,8 @@
 import { motion } from 'framer-motion';
 import { Check, ChevronDown, ChevronUp, Star } from 'lucide-react';
 import React, { useState } from 'react';
-import styles from '@/app/page.module.css';
-import { clsx } from 'clsx';
+import styles from '@/app/home.module.css';
+import clsx from 'clsx';
 
 const PRICING_PLANS = [
     {

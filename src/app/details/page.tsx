@@ -8,7 +8,7 @@ import styles from './details.module.css';
 import formStyles from '@/components/form/Form.module.css';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { clsx } from 'clsx';
+import clsx from 'clsx';
 import { ArrowLeftRight } from 'lucide-react';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { THEMES } from '@/lib/constants/themes';

@@ -5,7 +5,7 @@ import styles from './create.module.css';
 import { Input } from '@/components/form/Input';
 import formStyles from '@/components/form/Form.module.css';
 import { Info, LogOut } from 'lucide-react';
-import { clsx } from 'clsx';
+import clsx from 'clsx';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useWeddingStore } from '@/store/wedding-store';

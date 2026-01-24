@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import styles from '@/app/page.module.css';
+import styles from '@/app/home.module.css';
 
 const FEATURES = [
     {
