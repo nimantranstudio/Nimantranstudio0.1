@@ -1,7 +1,6 @@
 .sidebar {
     width: 260px;
-    height: calc(100vh - 80px);
-    /* Adjusted for Navbar height */
+    height: 100%;
     background: #ffffff;
     border-right: 1px solid #eef0f3;
     display: flex;
