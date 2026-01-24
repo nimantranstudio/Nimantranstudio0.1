@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Check, ChevronDown, ChevronUp, Star } from 'lucide-react';
 import React, { useState } from 'react';
 import styles from '@/app/page.module.css';
+import { clsx } from 'clsx';
 
 const PRICING_PLANS = [
     {
@@ -77,25 +78,18 @@ export const PricingSection = () => {
     };
 
     return (
-        <section style={{ padding: '8rem 0', backgroundColor: '#fff' }}>
+        <section className={styles.pricingSection}>
             <div className="container">
-                <div style={{ textAlign: 'center', marginBottom: '5rem' }}>
-                    <h2 style={{ fontSize: '3rem', color: '#1a1a1a', marginBottom: '1rem', fontFamily: 'var(--font-serif)' }}>
+                <div className={styles.pricingHeader}>
+                    <h2 className={styles.pricingTitle}>
                         Choose what fits your celebration
                     </h2>
-                    <p style={{ fontSize: '1.25rem', color: '#666' }}>
+                    <p className={styles.pricingSubtitle}>
                         Transparent pricing. No hidden fees.
                     </p>
                 </div>
 
-                <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
-                    gap: '2rem',
-                    maxWidth: '1280px',
-                    margin: '0 auto',
-                    alignItems: 'start'
-                }}>
+                <div className={styles.pricingGrid}>
                     {PRICING_PLANS.map((plan, i) => (
                         <motion.div
                             key={plan.title}
@@ -103,79 +97,39 @@ export const PricingSection = () => {
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ duration: 0.5, delay: i * 0.1 }}
-                            style={{
-                                position: 'relative',
-                                border: plan.isPopular ? '2px solid #D4AF37' : '1px solid #e5e5e5', // Gold border for popular
-                                borderRadius: '1.5rem',
-                                padding: '2.5rem',
-                                backgroundColor: '#fff',
-                                boxShadow: plan.isPopular ? '0 20px 40px rgba(0,0,0,0.08)' : '0 10px 30px rgba(0,0,0,0.03)',
-                                transform: plan.isPopular ? 'scale(1.02)' : 'scale(1)',
-                                zIndex: plan.isPopular ? 2 : 1,
-                                display: 'flex',
-                                flexDirection: 'column',
-                                height: '100%' // Ensure full height
-                            }}
+                            className={clsx(styles.pricingCard, plan.isPopular && styles.pricingCardPopular)}
                         >
                             {plan.isPopular && (
-                                <div style={{
-                                    position: 'absolute',
-                                    top: '-18px',
-                                    left: '50%',
-                                    transform: 'translateX(-50%)',
-                                    background: '#D4AF37',
-                                    color: 'white',
-                                    padding: '0.5rem 1.5rem',
-                                    fontSize: '0.75rem',
-                                    fontWeight: 700,
-                                    borderRadius: '100px',
-                                    letterSpacing: '0.05em',
-                                    whiteSpace: 'nowrap',
-                                    boxShadow: '0 4px 10px rgba(212, 175, 55, 0.4)',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '0.5rem'
-                                }}>
+                                <div className={styles.popularBadge}>
                                     <Star size={12} fill="currentColor" /> MOST POPULAR – BEST VALUE
                                 </div>
                             )}
 
                             {/* Header */}
-                            <div style={{ marginBottom: '2rem' }}>
-                                <h3 style={{ fontSize: '1.75rem', fontWeight: 700, marginBottom: '0.5rem', color: '#1a1a1a', fontFamily: 'var(--font-serif)' }}>
+                            <div className={styles.pricingCardHeader}>
+                                <h3 className={styles.pricingCardTitle}>
                                     {plan.title}
                                 </h3>
-                                <p style={{ color: '#666', fontSize: '0.875rem', lineHeight: '1.5' }}>
+                                <p className={styles.pricingCardDescription}>
                                     {plan.subtitle}
                                 </p>
                             </div>
 
                             {/* Price */}
-                            <div style={{ marginBottom: '2rem' }}>
-                                <div style={{ fontSize: '2.5rem', fontWeight: 800, color: '#1a1a1a', lineHeight: 1 }}>
+                            <div className={styles.pricingPriceBox}>
+                                <div className={styles.pricingPrice}>
                                     {plan.price}
                                 </div>
-                                <div style={{ fontSize: '0.9rem', color: '#888', marginTop: '0.5rem' }}>
+                                <div className={styles.pricingSubPrice}>
                                     {plan.subPrice}
                                 </div>
                             </div>
 
                             {/* Features */}
-                            <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 2rem 0' }}>
+                            <ul className={styles.pricingFeaturesList}>
                                 {plan.features.map((feature, idx) => (
-                                    <li key={idx} style={{
-                                        display: 'flex',
-                                        alignItems: 'flex-start',
-                                        gap: '0.75rem',
-                                        marginBottom: '1rem',
-                                        color: '#333',
-                                        fontSize: '0.9rem', // Reduced from 1rem
-                                        lineHeight: '1.5'
-                                    }}>
-                                        <div style={{
-                                            marginTop: '2px',
-                                            color: plan.theme === 'gold' ? '#D4AF37' : '#22C55E'
-                                        }}>
+                                    <li key={idx} className={styles.pricingFeatureItem}>
+                                        <div className={clsx(styles.checkIconWrapper, plan.theme === 'gold' ? styles.checkIconGold : styles.checkIconGreen)}>
                                             <Check size={18} strokeWidth={2.5} />
                                         </div>
                                         {feature}
@@ -185,44 +139,14 @@ export const PricingSection = () => {
 
                             {/* Printables Box */}
                             {plan.printables && (
-                                <div style={{
-                                    backgroundColor: 'transparent',
-                                    marginBottom: '2rem'
-                                }}>
-                                    <h4 style={{
-                                        color: '#D4AF37',
-                                        fontSize: '0.75rem',
-                                        fontWeight: 800,
-                                        textTransform: 'uppercase',
-                                        letterSpacing: '0.05em',
-                                        marginBottom: '1rem'
-                                    }}>
+                                <div className={styles.pricingPrintables}>
+                                    <h4 className={styles.pricingPrintablesTitle}>
                                         Included Printables:
                                     </h4>
-                                    <ul style={{
-                                        display: 'grid',
-                                        gridTemplateColumns: '1fr 1fr',
-                                        gap: '0.75rem 1.5rem',
-                                        listStyle: 'none',
-                                        padding: 0,
-                                        margin: 0
-                                    }}>
+                                    <ul className={styles.pricingPrintablesList}>
                                         {plan.printables.map((item, idx) => (
-                                            <li key={idx} style={{
-                                                fontSize: '0.8rem', // Reduced from 0.9rem
-                                                color: '#555',
-                                                position: 'relative',
-                                                paddingLeft: '0.75rem'
-                                            }}>
-                                                <span style={{
-                                                    position: 'absolute',
-                                                    left: 0,
-                                                    top: '0.4em',
-                                                    width: '4px',
-                                                    height: '4px',
-                                                    borderRadius: '50%',
-                                                    backgroundColor: '#D4AF37'
-                                                }}></span>
+                                            <li key={idx} className={styles.pricingPrintableItem}>
+                                                <span className={styles.pricingPrintableDot}></span>
                                                 {item}
                                             </li>
                                         ))}
@@ -233,19 +157,7 @@ export const PricingSection = () => {
                             {/* Dropdown Link */}
                             <div
                                 onClick={() => toggleDropdown(i)}
-                                style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'space-between',
-                                    cursor: 'pointer',
-                                    padding: '1rem 0',
-                                    borderTop: '1px solid #f0f0f0',
-                                    marginBottom: '1.5rem',
-                                    color: '#666',
-                                    fontSize: '1rem',
-                                    fontWeight: 600,
-                                    marginTop: 'auto' // Push to bottom
-                                }}
+                                className={styles.pricingDropdownToggle}
                             >
                                 What exactly you'll receive
                                 {openDropdown === i ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
@@ -255,37 +167,19 @@ export const PricingSection = () => {
                                 <motion.div
                                     initial={{ height: 0, opacity: 0 }}
                                     animate={{ height: 'auto', opacity: 1 }}
-                                    style={{
-                                        fontSize: '0.95rem',
-                                        color: '#666',
-                                        marginBottom: '2rem',
-                                        overflow: 'hidden',
-                                        lineHeight: '1.6'
-                                    }}
+                                    className={styles.pricingDropdownContent}
                                 >
                                     Detailed list of deliverables including file formats, resolutions, and delivery timelines for each item in this package.
                                 </motion.div>
                             )}
 
                             {/* Button */}
-                            <button style={{
-                                width: '100%',
-                                padding: '1.25rem',
-                                borderRadius: '0.75rem',
-                                border: 'none',
-                                backgroundColor: plan.theme === 'gold' ? '#D4AF37' : '#111827',
-                                color: '#fff',
-                                fontSize: '1rem',
-                                fontWeight: 700,
-                                cursor: 'pointer',
-                                transition: 'all 0.2s ease',
-                                boxShadow: plan.theme === 'gold' ? '0 10px 20px rgba(212, 175, 55, 0.2)' : '0 10px 20px rgba(0,0,0,0.1)'
-                            }}>
+                            <button className={clsx(styles.pricingButton, plan.theme === 'gold' ? styles.pricingButtonGold : styles.pricingButtonDark)}>
                                 {plan.buttonText}
                             </button>
 
                             {/* Footer Text */}
-                            <div style={{ textAlign: 'center', marginTop: '1rem', fontSize: '0.8rem', color: '#999' }}>
+                            <div className={styles.pricingFooterText}>
                                 {plan.isPopular ? "Perfect balance of digital + venue decor" : i === 0 ? "Ideal if you don't need printed material" : "No last-minute print tension"}
                             </div>
                         </motion.div>

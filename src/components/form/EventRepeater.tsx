@@ -60,7 +60,7 @@ export const EventRepeater = () => {
                 </div>
             ))}
 
-            <button onClick={addEvent} className={`btn ${styles.addBtn}`}>
+            <button onClick={() => addEvent()} className={`btn ${styles.addBtn}`}>
                 <Plus size={18} className={styles.btnIcon} /> Add Another Event
             </button>
         </div>

@@ -685,3 +685,271 @@
     font-size: 2.5rem;
   }
 }
+/* Pricing Section */
+.pricingSection {
+  padding: 8rem 0;
+  background-color: #fff;
+}
+
+.pricingHeader {
+  text-align: center;
+  margin-bottom: 5rem;
+}
+
+.pricingTitle {
+  font-size: 3rem;
+  color: #1a1a1a;
+  margin-bottom: 1rem;
+  font-family: var(--font-serif);
+}
+
+.pricingSubtitle {
+  font-size: 1.25rem;
+  color: #666;
+}
+
+.pricingGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 2rem;
+  max-width: 1280px;
+  margin: 0 auto;
+  align-items: start;
+}
+
+.pricingCard {
+  position: relative;
+  border: 1px solid #e5e5e5;
+  border-radius: 1.5rem;
+  padding: 2.5rem;
+  background-color: #fff;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+  transform: scale(1);
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.pricingCardPopular {
+  border: 2px solid #D4AF37;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+  transform: scale(1.02);
+  z-index: 2;
+}
+
+.popularBadge {
+  position: absolute;
+  top: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #D4AF37;
+  color: white;
+  padding: 0.5rem 1.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 100px;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  box-shadow: 0 4px 10px rgba(212, 175, 55, 0.4);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pricingCardHeader {
+  margin-bottom: 2rem;
+}
+
+.pricingCardTitle {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: #1a1a1a;
+  font-family: var(--font-serif);
+}
+
+.pricingCardDescription {
+  color: #666;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.pricingPriceBox {
+  margin-bottom: 2rem;
+}
+
+.pricingPrice {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #1a1a1a;
+  line-height: 1;
+}
+
+.pricingSubPrice {
+  font-size: 0.9rem;
+  color: #888;
+  margin-top: 0.5rem;
+}
+
+.pricingFeaturesList {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 2rem 0;
+}
+
+.pricingFeatureItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  color: #333;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.checkIconWrapper {
+  margin-top: 2px;
+}
+
+.checkIconGold {
+  color: #D4AF37;
+}
+
+.checkIconGreen {
+  color: #22C55E;
+}
+
+.pricingPrintables {
+  background-color: transparent;
+  margin-bottom: 2rem;
+}
+
+.pricingPrintablesTitle {
+  color: #D4AF37;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 1rem;
+}
+
+.pricingPrintablesList {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem 1.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.pricingPrintableItem {
+  font-size: 0.8rem;
+  color: #555;
+  position: relative;
+  padding-left: 0.75rem;
+}
+
+.pricingPrintableDot {
+  position: absolute;
+  left: 0;
+  top: 0.4em;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: #D4AF37;
+}
+
+.pricingDropdownToggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  padding: 1rem 0;
+  border-top: 1px solid #f0f0f0;
+  margin-bottom: 1.5rem;
+  color: #666;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-top: auto;
+}
+
+.pricingDropdownContent {
+  font-size: 0.95rem;
+  color: #666;
+  margin-bottom: 2rem;
+  overflow: hidden;
+  line-height: 1.6;
+}
+
+.pricingButton {
+  width: 100%;
+  padding: 1.25rem;
+  border-radius: 0.75rem;
+  border: none;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pricingButtonGold {
+  background-color: #D4AF37;
+  box-shadow: 0 10px 20px rgba(212, 175, 55, 0.2);
+}
+
+.pricingButtonDark {
+  background-color: #111827;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.pricingFooterText {
+  text-align: center;
+  margin-top: 1rem;
+  font-size: 0.8rem;
+  color: #999;
+}
+
+/* Features Section Dark */
+.featuresDark {
+  padding: 8rem 0;
+  background-color: #345244;
+  color: #fff;
+}
+
+.featuresDarkHeader {
+  text-align: center;
+  margin-bottom: 6rem;
+}
+
+.featuresDarkTitle {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  font-family: var(--font-serif);
+  color: #fff;
+}
+
+.featuresDarkGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 4rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.featuresDarkItemTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #fff;
+}
+
+.featuresDarkItemDesc {
+  font-size: 1rem;
+  color: #aaa;
+  line-height: 1.6;
+  max-width: 250px;
+  margin: 0 auto;
+}
