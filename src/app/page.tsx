@@ -7,7 +7,6 @@ import Image from "next/image";
 import { ArrowRight, Check, Sparkles, Heart, Smartphone, Users, CreditCard, Clock, Printer, Languages, ShieldCheck } from "lucide-react";
 import { clsx } from 'clsx';
 import { motion } from "framer-motion";
-import { THEMES } from "@/lib/constants/themes";
 import { ThemeCard } from "@/components/ui/ThemeCard";
 import { FloatingHearts } from "@/components/ui/FloatingHearts";
 import { CurvedBackground } from "@/components/ui/CurvedBackground";
@@ -15,13 +14,32 @@ import { PricingSection } from "@/components/home/PricingSection";
 import { FeaturesSection } from "@/components/home/FeaturesSection";
 import { CTASection } from "@/components/home/CTASection";
 import { useWeddingStore } from "@/store/wedding-store";
-
-
-// ... existing imports
+import { useState, useEffect } from "react";
+import type { Theme } from "@/lib/constants/themes";
 
 export default function Home() {
   const router = useRouter();
   const { isAuthenticated } = useWeddingStore();
+  const [themes, setThemes] = useState<Theme[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchThemes = async () => {
+      try {
+        const res = await fetch('/api/themes');
+        const data = await res.json();
+        if (data.themes) {
+          setThemes(data.themes);
+        }
+      } catch (error) {
+        console.error('Failed to fetch themes:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchThemes();
+  }, []);
 
   const handleThemeSelect = (id: string) => {
     router.push(`/themes/${id}`);
@@ -225,12 +243,6 @@ export default function Home() {
         </div>
       </section>
 
-
-
-
-
-
-
       {/* Theme Showcase Section */}
       <section className={styles.showcase}>
         <div className="container">
@@ -256,20 +268,26 @@ export default function Home() {
           </div>
 
           <div className={styles.showcaseGrid}>
-            {THEMES.slice(0, 4).map((theme, i) => (
-              <motion.div
-                key={theme.id}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: i * 0.1 }}
-              >
-                <ThemeCard
-                  theme={theme}
-                  onSelect={handleThemeSelect}
-                />
-              </motion.div>
-            ))}
+            {loading ? (
+              <div style={{ color: '#6b7280', gridColumn: '1/-1', textAlign: 'center' }}>Loading themes...</div>
+            ) : themes.length > 0 ? (
+              themes.slice(0, 4).map((theme, i) => (
+                <motion.div
+                  key={theme.id}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: i * 0.1 }}
+                >
+                  <ThemeCard
+                    theme={theme}
+                    onSelect={handleThemeSelect}
+                  />
+                </motion.div>
+              ))
+            ) : (
+              <div style={{ color: '#6b7280', gridColumn: '1/-1', textAlign: 'center' }}>No themes available at the moment.</div>
+            )}
           </div>
 
           <div className={styles.showcaseActions}>
@@ -285,8 +303,6 @@ export default function Home() {
 
       {/* New Pricing Section */}
       <PricingSection />
-
-
 
       {/* Bottom CTA Section */}
       <CTASection />

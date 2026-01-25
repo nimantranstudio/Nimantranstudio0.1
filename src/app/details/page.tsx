@@ -7,11 +7,11 @@ import { EventRepeater } from '@/components/form/EventRepeater';
 import styles from './details.module.css';
 import formStyles from '@/components/form/Form.module.css';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { clsx } from 'clsx';
 import { ArrowLeftRight } from 'lucide-react';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
-import { THEMES } from '@/lib/constants/themes';
+import type { Theme } from '@/lib/constants/themes';
 
 import { LoginModal } from '@/components/auth/LoginModal';
 
@@ -24,8 +24,26 @@ export default function DetailsPage() {
     const [saveError, setSaveError] = useState<string | null>(null);
     const [showLoginModal, setShowLoginModal] = useState(false);
 
-    const activeTheme = THEMES.find(t => t.id === selectedThemeId);
-    const themeName = activeTheme ? activeTheme.name : 'Rajputana';
+    const [activeTheme, setActiveTheme] = useState<Theme | null>(null);
+
+    useEffect(() => {
+        if (!selectedThemeId) return;
+
+        async function fetchTheme() {
+            try {
+                const res = await fetch(`/api/themes/${selectedThemeId}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setActiveTheme(data.theme);
+                }
+            } catch (error) {
+                console.error("Failed to fetch theme", error);
+            }
+        }
+        fetchTheme();
+    }, [selectedThemeId]);
+
+    const themeName = activeTheme ? activeTheme.name : 'Choose Theme';
 
     const [isGroomFirst, setIsGroomFirst] = useState(true);
 
@@ -126,7 +144,7 @@ export default function DetailsPage() {
                         items={[
                             { label: 'Home', href: '/' },
                             { label: 'Themes', href: '/themes' },
-                            { label: themeName, href: `/themes/${selectedThemeId || 'rajputana'}` },
+                            { label: themeName, href: `/themes/${selectedThemeId}` },
                             { label: 'wedding details', active: true },
                         ]}
                     />
@@ -139,46 +157,54 @@ export default function DetailsPage() {
                     {/* Left Column: Theme Images */}
                     <div className={styles.imageCol}>
                         <div className={styles.imageGrid}>
-                            {assets.map((asset, index) => (
-                                <div
-                                    key={index}
-                                    className={styles.imageCard}
-                                    style={{
-                                        backgroundColor: activeTheme?.colors[0] || '#eee',
-                                        color: activeTheme?.colors[2] || '#333'
-                                    }}
-                                >
-                                    {/* Fallback Text/Placeholder */}
-                                    <div style={{
-                                        position: 'absolute',
-                                        inset: 0,
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        padding: '0.25rem',
-                                        fontSize: '0.6rem',
-                                        textAlign: 'center',
-                                        fontWeight: 600,
-                                        zIndex: 1
-                                    }}>
-                                        {asset.name}
-                                    </div>
-
-                                    {/* Actual Image if available */}
-                                    {selectedThemeId && (
-                                        <Image
-                                            src={`/assets/themes/${selectedThemeId}/${asset.image}`}
-                                            alt={asset.name}
-                                            fill
-                                            style={{ objectFit: 'cover', zIndex: 2 }}
-                                            onError={(e) => {
-                                                const target = e.target as HTMLImageElement;
-                                                target.style.display = 'none';
+                            {activeTheme ? (
+                                (activeTheme.previewImages || []).length > 0 ? (
+                                    activeTheme.previewImages.map((imgUrl, index) => (
+                                        <div
+                                            key={index}
+                                            className={styles.imageCard}
+                                            style={{
+                                                backgroundColor: activeTheme.colors[0] || '#eee',
+                                                color: activeTheme.colors[2] || '#333'
                                             }}
-                                        />
-                                    )}
-                                </div>
-                            ))}
+                                        >
+                                            <div style={{
+                                                position: 'absolute',
+                                                zIndex: 1,
+                                                bottom: '5px',
+                                                left: '5px',
+                                                background: 'rgba(0,0,0,0.5)',
+                                                color: 'white',
+                                                fontSize: '0.6rem',
+                                                padding: '2px 4px',
+                                                borderRadius: '2px'
+                                            }}>
+                                                Design {index + 1}
+                                            </div>
+
+                                            <Image
+                                                src={imgUrl}
+                                                alt={`Theme Design ${index + 1}`}
+                                                fill
+                                                style={{ objectFit: 'cover', zIndex: 2 }}
+                                                onError={(e) => {
+                                                    const target = e.target as HTMLImageElement;
+                                                    target.style.display = 'none';
+                                                }}
+                                            />
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className={styles.imageCard} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '200px' }}>
+                                        <p style={{ fontSize: '0.8rem', color: '#666' }}>No preview images available for this theme.</p>
+                                    </div>
+                                )
+                            ) : (
+                                // Loading Skeleton
+                                Array(6).fill(0).map((_, i) => (
+                                    <div key={i} className={styles.imageCard} style={{ backgroundColor: '#f0f0f0' }}></div>
+                                ))
+                            )}
                         </div>
                     </div>
 

@@ -23,9 +23,11 @@ export const ThemeCard = ({ theme, onSelect }: ThemeCardProps) => {
                     className={styles.image}
                     sizes="(max-width: 768px) 100vw, 33vw"
                 />
-                {theme.tag && (
-                    <div className={styles.tag}>
-                        {theme.tag}
+                {(theme.tag || theme.isBestSeller || theme.isPopular) && (
+                    <div className={styles.tag} style={{
+                        background: theme.isBestSeller ? '#F59E0B' : (theme.isPopular ? '#EF4444' : 'rgba(0,0,0,0.6)')
+                    }}>
+                        {theme.isBestSeller ? 'BEST SELLER' : (theme.isPopular ? 'POPULAR' : theme.tag)}
                     </div>
                 )}
             </div>

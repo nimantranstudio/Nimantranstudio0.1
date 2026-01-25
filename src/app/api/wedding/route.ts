@@ -23,7 +23,7 @@ export async function POST(req: Request) {
             data: {
                 ownerId: finalUserId,
                 // Default to 'rajputana' if themeId is missing (e.g. created via dashboard directly)
-                themeId: selectedThemeId || 'rajputana',
+                themeId: selectedThemeId,
                 groomName: validatedData.groomName || '',
                 brideName: validatedData.brideName || '',
                 groomParents: validatedData.groomParents || '',

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { ChevronRight, ChevronDown, CheckCircle, Smartphone, Headphones, ShieldCheck, Share2, X, ChevronLeft, Clock, Printer, Languages, Download } from 'lucide-react';
-import { THEMES } from '@/lib/constants/themes';
+import type { Theme } from '@/lib/constants/themes';
 import { useWeddingStore } from '@/store/wedding-store';
 import { ThemeCard } from '@/components/ui/ThemeCard';
 import styles from './theme-detail.module.css';
@@ -19,7 +19,28 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
     const router = useRouter();
     const { setThemeId } = useWeddingStore();
 
-    const theme = THEMES.find(t => t.id === themeId);
+    const [theme, setTheme] = useState<Theme | null>(null);
+    const [recommendations, setRecommendations] = useState<Theme[]>([]);
+
+    useEffect(() => {
+        async function fetchData() {
+            try {
+                // Fetch all themes to find current one and recommendations
+                // Optimized approach would be parallel or separate endpoints
+                const res = await fetch('/api/themes');
+                if (res.ok) {
+                    const data = await res.json();
+                    const allThemes: Theme[] = data.themes || [];
+                    const foundTheme = allThemes.find(t => t.id === themeId);
+                    setTheme(foundTheme || null);
+                    setRecommendations(allThemes.filter(t => t.id !== themeId).slice(0, 4));
+                }
+            } catch (error) {
+                console.error("Failed to fetch themes", error);
+            }
+        }
+        fetchData();
+    }, [themeId]);
 
     // Accordion state
     const [openAccordion, setOpenAccordion] = useState<string | null>('what-you-get');
@@ -114,35 +135,25 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
         }
     };
 
-    if (!theme) {
-        return (
-            <div className="container" style={{ padding: '10rem 0', textAlign: 'center' }}>
-                <h1>Theme not found</h1>
-                <Link href="/themes" className="btn btn-primary" style={{ marginTop: '2rem' }}>
-                    Back to Themes
-                </Link>
-            </div>
-        );
-    }
+
 
     const handleCreateNow = () => {
+        if (!theme) return;
         setThemeId(theme.id);
         router.push('/details');
     };
 
-    const assets = [
-        { name: "Wedding poster", image: "wedding-poster.png" },
-        { name: "Wedding", image: "wedding-invite.png" },
-        { name: "Wedding video", image: "video-thumb.png" },
-        { name: "Sangeet", image: "sangeet-invite.png" },
-        { name: "Mehendi", image: "mehendi-invite.png" },
-        { name: "Haldi", image: "haldi-invite.png" },
-        { name: "Sangeet Poster", image: "sangeet-poster.png" },
-        { name: "Mehendi Poster", image: "mehendi-poster.png" },
-        { name: "Haldi Poster", image: "haldi-poster.png" },
-        { name: "Save The Date", image: "save-the-date.png" },
-        { name: "Initials", image: "initials.png" },
-        { name: "Thank you card", image: "thank-you.png" },
+    // Use theme.previewImages or fallback to empty array
+    const imageList = (theme && theme.previewImages && theme.previewImages.length > 0)
+        ? theme.previewImages
+        : [];
+
+    // Create a normalized assets structure for rendering
+    const assets = imageList.length > 0 ? imageList.map((img, i) => ({
+        name: `Design ${i + 1}`,
+        image: img // Store full URL here
+    })) : [
+        { name: "No Preview", image: theme?.thumbnail || '/placeholder-theme.jpg' }
     ];
 
     const toggleAccordion = (id: string) => {
@@ -175,7 +186,18 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [previewIndex]);
 
-    const recommendations = THEMES.filter(t => t.id !== themeId).slice(0, 4);
+    if (!theme) {
+        return (
+            <div className="container" style={{ padding: '10rem 0', textAlign: 'center' }}>
+                <h1>Theme not found</h1>
+                <Link href="/themes" className="btn btn-primary" style={{ marginTop: '2rem' }}>
+                    Back to Themes
+                </Link>
+            </div>
+        );
+    }
+
+    // const recommendations = THEMES.filter(t => t.id !== themeId).slice(0, 4);
 
     return (
         <div className={styles.page}>
@@ -207,7 +229,7 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
                     {assets.map((asset, index) => (
                         <div key={index} className={styles.carouselItem} onClick={() => setPreviewIndex(index)}>
                             <Image
-                                src={`/assets/themes/${themeId}/${asset.image}`}
+                                src={asset.image}
                                 alt={asset.name}
                                 fill
                                 style={{ objectFit: 'cover' }}
@@ -249,7 +271,7 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
                             style={{ background: theme.colors[0] }}
                         >
                             <Image
-                                src={`/assets/themes/${themeId}/${assets[selectedAssetIndex].image}`}
+                                src={assets[selectedAssetIndex].image}
                                 alt={assets[selectedAssetIndex].name}
                                 fill
                                 style={{
@@ -306,7 +328,7 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
                                     style={{ background: theme.colors[0] }}
                                 >
                                     <Image
-                                        src={`/assets/themes/${themeId}/${asset.image}`}
+                                        src={asset.image}
                                         alt={asset.name}
                                         fill
                                         style={{ objectFit: 'cover' }}
@@ -319,8 +341,8 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
                     {/* Right Column: Content */}
                     <div className={styles.contentCol}>
                         <div>
-                            <h1 className={styles.title} style={{ marginBottom: '0.5rem' }}>
-                                {theme.name} Theme Invitation Bundle
+                            <h1 className={styles.title} style={{ marginBottom: '0.25rem' }}>
+                                {theme.name} | {theme.bundleName || 'Theme Invitation Bundle'}
                             </h1>
                             <p className={styles.description} style={{ marginBottom: '0.25rem', opacity: 0.8 }}>
                                 Complete pack of 12 wedding designs
@@ -521,7 +543,7 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
                                 {assets[previewIndex].name}
                             </div>
                             <Image
-                                src={`/assets/themes/${themeId}/${assets[previewIndex].image}`}
+                                src={assets[previewIndex].image}
                                 alt={assets[previewIndex].name}
                                 fill
                                 style={{ objectFit: 'contain', zIndex: 2 }}

@@ -27,6 +27,8 @@ export async function POST(request: NextRequest) {
         const name = formData.get('name') as string;
         const description = formData.get('description') as string || '';
         const isActive = formData.get('isActive') === 'true';
+        const isBestSeller = formData.get('isBestSeller') === 'true';
+        const isPopular = formData.get('isPopular') === 'true';
         const files = formData.getAll('images') as File[];
 
         console.log('Creating theme:', name);

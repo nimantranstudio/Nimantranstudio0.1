@@ -13,6 +13,8 @@ interface ThemeModalProps {
         name: string;
         description?: string;
         isActive: boolean;
+        isBestSeller: boolean;
+        isPopular: boolean;
         thumbnailUrl: string;
         previewImages?: string;
     } | null;
@@ -22,6 +24,8 @@ export function ThemeModal({ isOpen, onClose, onSuccess, initialData }: ThemeMod
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [isActive, setIsActive] = useState(true);
+    const [isBestSeller, setIsBestSeller] = useState(false);
+    const [isPopular, setIsPopular] = useState(false);
     const [files, setFiles] = useState<File[]>([]);
     const [previews, setPreviews] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -33,6 +37,8 @@ export function ThemeModal({ isOpen, onClose, onSuccess, initialData }: ThemeMod
             setName(initialData.name);
             setDescription(initialData.description || '');
             setIsActive(initialData.isActive);
+            setIsBestSeller(initialData.isBestSeller);
+            setIsPopular(initialData.isPopular);
             setFiles([]);
             const existingImages = initialData.previewImages ? JSON.parse(initialData.previewImages) : [initialData.thumbnailUrl];
             setPreviews(existingImages);
@@ -40,6 +46,8 @@ export function ThemeModal({ isOpen, onClose, onSuccess, initialData }: ThemeMod
             setName('');
             setDescription('');
             setIsActive(true);
+            setIsBestSeller(false);
+            setIsPopular(false);
             setFiles([]);
             setPreviews([]);
         }
@@ -74,6 +82,8 @@ export function ThemeModal({ isOpen, onClose, onSuccess, initialData }: ThemeMod
             formData.append('name', name);
             formData.append('description', description);
             formData.append('isActive', String(isActive));
+            formData.append('isBestSeller', String(isBestSeller));
+            formData.append('isPopular', String(isPopular));
 
             files.forEach(file => {
                 formData.append('images', file);
@@ -139,6 +149,35 @@ export function ThemeModal({ isOpen, onClose, onSuccess, initialData }: ThemeMod
                                     <span className={styles.toggleSwitch}></span>
                                     <span className={styles.toggleLabel}>{isActive ? 'Active' : 'Inactive'}</span>
                                 </label>
+                            </div>
+                        </div>
+
+                        <div className={styles.row}>
+                            <div className={styles.formGroup}>
+                                <label className={styles.label}>Tags</label>
+                                <div style={{ display: 'flex', gap: '1rem' }}>
+                                    <label className={styles.toggle}>
+                                        <input
+                                            type="checkbox"
+                                            className={styles.toggleInput}
+                                            checked={isBestSeller}
+                                            onChange={e => setIsBestSeller(e.target.checked)}
+                                        />
+                                        <span className={styles.toggleSwitch}></span>
+                                        <span className={styles.toggleLabel}>Best Seller</span>
+                                    </label>
+
+                                    <label className={styles.toggle}>
+                                        <input
+                                            type="checkbox"
+                                            className={styles.toggleInput}
+                                            checked={isPopular}
+                                            onChange={e => setIsPopular(e.target.checked)}
+                                        />
+                                        <span className={styles.toggleSwitch}></span>
+                                        <span className={styles.toggleLabel}>Popular</span>
+                                    </label>
+                                </div>
                             </div>
                         </div>
 

@@ -1,14 +1,14 @@
 'use client';
 
 import { useWeddingStore } from '@/store/wedding-store';
-import { THEMES } from '@/lib/constants/themes';
+import type { Theme } from '@/lib/constants/themes';
 import { InvitationCard } from '@/components/preview/InvitationCard';
 import styles from '@/components/preview/Preview.module.css';
 import { ChevronLeft, Headphones, Play } from 'lucide-react';
 import Link from 'next/link';
 import { clsx } from 'clsx';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const ALL_ASSETS = [
     { id: 'poster', name: "Wedding poster", type: 'image' },
@@ -28,13 +28,39 @@ const ALL_ASSETS = [
 export default function PreviewPage() {
     const { formData, selectedThemeId } = useWeddingStore();
     const [isSecuring, setIsSecuring] = useState(false);
-    const theme = THEMES.find(t => t.id === selectedThemeId) || THEMES[0];
+    const [theme, setTheme] = useState<Theme | null>(null);
+
+    useEffect(() => {
+        async function fetchTheme() {
+            if (!selectedThemeId) return;
+            try {
+                const res = await fetch(`/api/themes/${selectedThemeId}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setTheme(data.theme);
+                }
+            } catch (error) {
+                console.error("Failed to fetch theme", error);
+            }
+        }
+        fetchTheme();
+    }, [selectedThemeId]);
 
     const handleCheckout = () => {
         setIsSecuring(true);
         // Simulate potential redirect after some time
         // setTimeout(() => setIsSecuring(false), 5000);
     };
+
+    if (!theme) {
+        return (
+            <div className={styles.previewPage}>
+                <div className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh', color: '#666' }}>
+                    <div>Loading theme details...</div>
+                </div>
+            </div>
+        );
+    }
 
     if (isSecuring) {
         return (
@@ -62,7 +88,7 @@ export default function PreviewPage() {
                         items={[
                             { label: 'Home', href: '/' },
                             { label: 'Themes', href: '/themes' },
-                            { label: theme.name, href: `/themes/${selectedThemeId || 'rajputana'}` },
+                            { label: theme.name, href: `/themes/${selectedThemeId}` },
                             { label: 'wedding details', href: '/details' },
                             { label: 'preview', active: true },
                         ]}
@@ -75,22 +101,31 @@ export default function PreviewPage() {
                     {/* Left Column: 12-Card Grid */}
                     <div className={styles.leftColumn}>
                         <div className={styles.grid}>
-                            {ALL_ASSETS.map((asset) => {
-                                const event = formData.events.find(e => e.name.toLowerCase() === asset.name.toLowerCase()) ||
-                                    (asset.id === 'wedding' ? formData.events[0] : null);
-
-                                return (
+                            {(theme.previewImages && theme.previewImages.length > 0) ? (
+                                theme.previewImages.map((imgUrl, index) => (
                                     <InvitationCard
-                                        key={asset.id}
-                                        event={event || { id: asset.id, name: asset.name, date: '', time: '', venue: '' }}
+                                        key={index}
+                                        event={{
+                                            id: `design-${index}`,
+                                            name: `Design ${index + 1}`,
+                                            date: '',
+                                            time: '',
+                                            venue: ''
+                                        }}
                                         theme={theme}
                                         groomName={formData.groomName}
                                         brideName={formData.brideName}
-                                        isPlaceholder={!event}
-                                        type={asset.type as 'image' | 'video'}
+                                        isPlaceholder={true} // Since we don't have event types mapping yet
+                                        type='image'
+                                        customImage={imgUrl} // Pass custom image from theme
                                     />
-                                );
-                            })}
+                                ))
+                            ) : (
+                                // Fallback if no preview images
+                                <div className={styles.noPreviews} style={{ gridColumn: '1/-1', textAlign: 'center', padding: '2rem', color: '#666' }}>
+                                    No preview images available for this theme.
+                                </div>
+                            )}
                         </div>
                     </div>
 

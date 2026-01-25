@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma';
-import { THEMES } from '@/lib/constants/themes';
+// import { THEMES } from '@/lib/constants/themes';
 import styles from './rsvp.module.css';
 import { RSVPForm } from './RSVPForm';
 import { notFound } from 'next/navigation';
@@ -30,10 +30,14 @@ export default async function RSVPPage({
         events: [event]
     };
 
-    const theme = THEMES.find(t => t.id === wedding.themeId) || THEMES[0];
+    const dbTheme = await prisma.theme.findUnique({
+        where: { id: wedding.themeId }
+    });
+
+    const themeColors = ['#D4AF37', '#800000', '#F5E6BE']; // Default placeholder colors
 
     return (
-        <div className={styles.page} style={{ '--theme-bg': theme.colors[0], '--theme-primary': theme.colors[1] } as any}>
+        <div className={styles.page} style={{ '--theme-bg': themeColors[0], '--theme-primary': themeColors[1] } as any}>
             <RSVPForm wedding={wedding} />
         </div>
     );

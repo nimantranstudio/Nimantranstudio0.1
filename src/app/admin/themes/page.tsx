@@ -11,6 +11,8 @@ interface Theme {
     thumbnailUrl: string;
     description?: string;
     isActive: boolean;
+    isBestSeller: boolean;
+    isPopular: boolean;
     previewImages?: string;
 }
 

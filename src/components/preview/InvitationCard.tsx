@@ -4,6 +4,7 @@ import { WeddingEvent } from '@/lib/schemas/wedding-form';
 import { Theme } from '@/lib/constants/themes';
 import styles from './Preview.module.css';
 import { Play } from 'lucide-react';
+import Image from 'next/image';
 
 interface InvitationCardProps {
     event: WeddingEvent;
@@ -12,9 +13,10 @@ interface InvitationCardProps {
     brideName: string;
     isPlaceholder?: boolean;
     type?: 'image' | 'video';
+    customImage?: string;
 }
 
-export const InvitationCard = ({ event, theme, groomName, brideName, isPlaceholder, type }: InvitationCardProps) => {
+export const InvitationCard = ({ event, theme, groomName, brideName, isPlaceholder, type, customImage }: InvitationCardProps) => {
     return (
         <div className={styles.invitationCard} style={{ '--theme-primary': theme.colors[1], '--theme-bg': theme.colors[0] } as any}>
             {/* Watermark Overlay */}
@@ -23,6 +25,15 @@ export const InvitationCard = ({ event, theme, groomName, brideName, isPlacehold
                 <span>NimantranStudio</span>
                 <span>NimantranStudio</span>
             </div>
+
+            {customImage && (
+                <Image
+                    src={customImage}
+                    alt={event.name}
+                    fill
+                    style={{ objectFit: 'cover', zIndex: 0 }}
+                />
+            )}
 
             {type === 'video' && (
                 <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.1)', zIndex: 10 }}>
