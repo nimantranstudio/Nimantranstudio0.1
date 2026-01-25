@@ -4,6 +4,8 @@ import { WeddingFormData, DEFAULT_EVENTS } from '@/lib/schemas/wedding-form';
 
 interface WeddingState {
     selectedThemeId: string | null;
+    selectedPlan: string | null;
+    bundleImages: string[];
     formData: WeddingFormData;
     lastSavedWeddingId: string | null;
 
@@ -12,6 +14,7 @@ interface WeddingState {
     userPhone: string | null;
 
     setThemeId: (id: string) => void;
+    setBundleData: (plan: string, images: string[]) => void;
     updateFormData: (data: Partial<WeddingFormData>) => void;
     addEvent: (event?: Partial<WeddingFormData['events'][0]>) => void;
     removeEvent: (id: string) => void;
@@ -26,6 +29,11 @@ const INITIAL_FORM_DATA: WeddingFormData = {
     brideName: '',
     groomParents: '',
     brideParents: '',
+    primaryDate: '',
+    timezone: 'Asia/Kolkata',
+    defaultVenueName: '',
+    defaultVenueAddress: '',
+    globalTagline: '',
     events: DEFAULT_EVENTS,
     rsvpContact: '',
     rsvpDeadline: '',
@@ -36,6 +44,8 @@ export const useWeddingStore = create<WeddingState>()(
     persist(
         (set, get) => ({
             selectedThemeId: null,
+            selectedPlan: null,
+            bundleImages: [],
             formData: INITIAL_FORM_DATA,
             lastSavedWeddingId: null,
             isAuthenticated: false,
@@ -43,6 +53,7 @@ export const useWeddingStore = create<WeddingState>()(
             userPhone: null,
 
             setThemeId: (id) => set({ selectedThemeId: id }),
+            setBundleData: (plan, images) => set({ selectedPlan: plan, bundleImages: images }),
 
             login: (phone, isAdmin = false) => set({ isAuthenticated: true, userPhone: phone, isAdmin }),
             logout: () => set({ isAuthenticated: false, userPhone: null, isAdmin: false }),

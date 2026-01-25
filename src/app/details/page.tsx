@@ -9,9 +9,10 @@ import formStyles from '@/components/form/Form.module.css';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { clsx } from 'clsx';
-import { ArrowLeftRight } from 'lucide-react';
+import { ArrowLeftRight, CheckCircle, ChevronDown, Sun, Music, Leaf, Circle, Wine, MoreHorizontal, Clock, Info, ShieldCheck, MapPin, Calendar, Users, AlertCircle } from 'lucide-react';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import type { Theme } from '@/lib/constants/themes';
+import { DEFAULT_EVENTS, type WeddingEvent } from '@/lib/schemas/wedding-form';
 
 import { LoginModal } from '@/components/auth/LoginModal';
 
@@ -19,7 +20,8 @@ import { LoginModal } from '@/components/auth/LoginModal';
 
 export default function DetailsPage() {
     const router = useRouter();
-    const { formData, updateFormData, saveWedding, selectedThemeId } = useWeddingStore();
+    const { formData, updateFormData, saveWedding, selectedThemeId, bundleImages, selectedPlan } = useWeddingStore();
+    const [step, setStep] = useState(1); // 1: Couple, 2: Events, 3: Timeline, 4: Summary/Architecture
     const [isSaving, setIsSaving] = useState(false);
     const [saveError, setSaveError] = useState<string | null>(null);
     const [showLoginModal, setShowLoginModal] = useState(false);
@@ -87,20 +89,8 @@ export default function DetailsPage() {
         />
     );
 
-    const handleNext = async () => {
-        // Basic validation check
-        if (!formData.groomName || !formData.brideName) {
-            alert("Please enter names for the Bride and Groom.");
-            return;
-        }
-
-        // Show Login Modal instead of direct save/push
-        setShowLoginModal(true);
-    };
-
     const handleLoginSuccess = async (phone: string) => {
         setShowLoginModal(false);
-        // Set logged in state
         useWeddingStore.getState().login(phone);
 
         setIsSaving(true);
@@ -108,11 +98,9 @@ export default function DetailsPage() {
         try {
             const result = await saveWedding();
             if (!result.success) {
-                console.warn("Background save failed:", result.error);
-                setSaveError("Couldn't save to database, but you can still preview!");
+                setSaveError("Background save failed, but you can still preview!");
             }
         } catch (err) {
-            console.error("Save error:", err);
             setSaveError("Connection issue, but preview is ready.");
         } finally {
             setIsSaving(false);
@@ -120,20 +108,39 @@ export default function DetailsPage() {
         }
     };
 
+    const handleNext = async () => {
+        if (step === 1) {
+            if (!formData.groomName || !formData.brideName || !formData.primaryDate) {
+                alert("Please fill in basic details and wedding date.");
+                return;
+            }
+            // Smart Inheritance logic is usually handled when adding events, 
+            // but we can ensure it here if events were already selected
+            setStep(2);
+        } else if (step === 2) {
+            if (!formData.events || formData.events.length === 0) {
+                alert("Please select at least one event.");
+                return;
+            }
+            setStep(3);
+        } else if (step === 3) {
+            setStep(4);
+        } else {
+            // Final step: Summary -> Login and Save
+            setShowLoginModal(true);
+        }
+    };
 
-    const assets = [
-        { name: "Wedding poster", image: "wedding-poster.png" },
-        { name: "Wedding", image: "wedding-invite.png" },
-        { name: "Wedding video", image: "video-thumb.png" },
-        { name: "Sangeet", image: "sangeet-invite.png" },
-        { name: "Mehendi", image: "mehendi-invite.png" },
-        { name: "Haldi", image: "haldi-invite.png" },
-        { name: "Sangeet Poster", image: "sangeet-poster.png" },
-        { name: "Mehendi Poster", image: "mehendi-poster.png" },
-        { name: "Haldi Poster", image: "haldi-poster.png" },
-        { name: "Save The Date", image: "save-the-date.png" },
-        { name: "Initials", image: "initials.png" },
-        { name: "Thank you card", image: "thank-you.png" },
+    const handleBack = () => {
+        if (step > 1) setStep(step - 1);
+        else router.back();
+    };
+
+    const STEPS = [
+        { id: 1, label: 'THE COUPLE', icon: '❤️' },
+        { id: 2, label: 'PICK EVENTS', icon: '📋' },
+        { id: 3, label: 'TIMELINE', icon: '📅' },
+        { id: 4, label: 'ARCHITECTURE', icon: '🏛️' },
     ];
 
     return (
@@ -144,7 +151,7 @@ export default function DetailsPage() {
                         items={[
                             { label: 'Home', href: '/' },
                             { label: 'Themes', href: '/themes' },
-                            { label: themeName, href: `/themes/${selectedThemeId}` },
+                            { label: `${themeName}${selectedPlan ? ` (${selectedPlan})` : ''}`, href: `/themes/${selectedThemeId}` },
                             { label: 'wedding details', active: true },
                         ]}
                     />
@@ -152,136 +159,106 @@ export default function DetailsPage() {
             </header>
 
             <main className="container">
-                <div className={styles.layout}>
-
-                    {/* Left Column: Theme Images */}
-                    <div className={styles.imageCol}>
-                        <div className={styles.imageGrid}>
-                            {activeTheme ? (
-                                (activeTheme.previewImages || []).length > 0 ? (
-                                    activeTheme.previewImages.map((imgUrl, index) => (
-                                        <div
-                                            key={index}
-                                            className={styles.imageCard}
-                                            style={{
-                                                backgroundColor: activeTheme.colors[0] || '#eee',
-                                                color: activeTheme.colors[2] || '#333'
-                                            }}
-                                        >
-                                            <div style={{
-                                                position: 'absolute',
-                                                zIndex: 1,
-                                                bottom: '5px',
-                                                left: '5px',
-                                                background: 'rgba(0,0,0,0.5)',
-                                                color: 'white',
-                                                fontSize: '0.6rem',
-                                                padding: '2px 4px',
-                                                borderRadius: '2px'
-                                            }}>
-                                                Design {index + 1}
-                                            </div>
-
-                                            <Image
-                                                src={imgUrl}
-                                                alt={`Theme Design ${index + 1}`}
-                                                fill
-                                                style={{ objectFit: 'cover', zIndex: 2 }}
-                                                onError={(e) => {
-                                                    const target = e.target as HTMLImageElement;
-                                                    target.style.display = 'none';
-                                                }}
-                                            />
-                                        </div>
-                                    ))
-                                ) : (
-                                    <div className={styles.imageCard} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '200px' }}>
-                                        <p style={{ fontSize: '0.8rem', color: '#666' }}>No preview images available for this theme.</p>
-                                    </div>
-                                )
-                            ) : (
-                                // Loading Skeleton
-                                Array(6).fill(0).map((_, i) => (
-                                    <div key={i} className={styles.imageCard} style={{ backgroundColor: '#f0f0f0' }}></div>
-                                ))
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Form Column */}
-                    <div className={styles.formColumn}>
-                        <h1 className={styles.title} style={{ marginBottom: '0.5rem' }}>Fill your wedding details</h1>
-                        <p className={styles.subtitle} style={{ marginBottom: '2rem' }}>Enter the details once, and we'll generate everything for you.</p>
-
-                        {/* Couple Details */}
-                        <section className={clsx(formStyles.section, styles.swapSection)}>
-                            <div className={styles.sectionHeader}>
-                                <h2 className={styles.sectionTitle}>Couple Details</h2>
-                                <button
-                                    className={clsx(styles.sectionSwapBtn, styles.primarySwap)}
-                                    type="button"
-                                    onClick={() => setIsGroomFirst(!isGroomFirst)}
-                                    title="Swap Positions"
-                                >
-                                    <ArrowLeftRight size={18} />
-                                    <span>Swap Order</span>
-                                </button>
+                <div className={styles.wizardHeader}>
+                    <div className={styles.stepIndicator}>
+                        {STEPS.map((s, i) => (
+                            <div key={s.id} className={clsx(styles.stepItem, step === s.id && styles.stepActive, step > s.id && styles.stepDone)}>
+                                <div className={styles.stepIcon}>{s.icon}</div>
+                                <span className={styles.stepLabel}>{s.label}</span>
+                                {i < STEPS.length - 1 && <div className={styles.stepLine} />}
                             </div>
+                        ))}
+                    </div>
+                </div>
 
+                <div className={styles.wizardContainer}>
+                    {step === 1 && (
+                        <div className={styles.wizardCard}>
                             <div className={formStyles.grid}>
                                 {isGroomFirst ? (
                                     <>
                                         {groomNameField}
                                         {brideNameField}
-                                        {groomParentsField}
-                                        {brideParentsField}
                                     </>
                                 ) : (
                                     <>
                                         {brideNameField}
                                         {groomNameField}
-                                        {brideParentsField}
-                                        {groomParentsField}
                                     </>
                                 )}
-                            </div>
-                        </section>
-
-                        {/* Events Section */}
-                        <EventRepeater />
-
-                        {/* Additional Info */}
-                        <section className={formStyles.section}>
-                            <h2 className={formStyles.sectionTitle}>Additional Details</h2>
-                            <div className={formStyles.grid}>
                                 <Input
-                                    label="RSVP Contact Number"
-                                    value={formData.rsvpContact || ''}
-                                    onChange={(e) => updateFormData({ rsvpContact: e.target.value })}
-                                    placeholder="+91 9876543210"
-                                />
-                                <Input
-                                    label="RSVP Deadline"
+                                    label="Primary Wedding Date"
                                     type="date"
-                                    value={formData.rsvpDeadline || ''}
-                                    onChange={(e) => updateFormData({ rsvpDeadline: e.target.value })}
+                                    value={formData.primaryDate || ''}
+                                    onChange={(e) => updateFormData({ primaryDate: e.target.value })}
                                 />
+                                <Input
+                                    label="Timezone"
+                                    value={formData.timezone || 'Asia/Kolkata'}
+                                    disabled
+                                />
+                                <div className={styles.venueSection}>
+                                    <h3 className={styles.venueHeading}>DEFAULT VENUE</h3>
+                                    <div className={formStyles.grid}>
+                                        <Input
+                                            label="Venue Name"
+                                            value={formData.defaultVenueName || ''}
+                                            onChange={(e) => updateFormData({ defaultVenueName: e.target.value })}
+                                            placeholder="The Grand Palace"
+                                        />
+                                        <Input
+                                            label="Full Address"
+                                            value={formData.defaultVenueAddress || ''}
+                                            onChange={(e) => updateFormData({ defaultVenueAddress: e.target.value })}
+                                            placeholder="123 Royal Road, Jaipur"
+                                        />
+                                    </div>
+                                </div>
+                                <div style={{ gridColumn: 'span 2' }}>
+                                    <Input
+                                        label="Global Invitation Tagline"
+                                        value={formData.globalTagline || ''}
+                                        onChange={(e) => updateFormData({ globalTagline: e.target.value })}
+                                        placeholder="Together with their families"
+                                        type="textarea"
+                                    />
+                                </div>
                             </div>
-                        </section>
+                        </div>
+                    )}
 
-                    </div>
+                    {step === 2 && (
+                        <div className={styles.wizardCard}>
+                            <PickEventsStep />
+                        </div>
+                    )}
+
+                    {step === 3 && (
+                        <div className={styles.wizardCard}>
+                            <TimelineStep />
+                        </div>
+                    )}
+
+                    {step === 4 && (
+                        <div className={styles.wizardCard}>
+                            <ArchitectureSummary />
+                        </div>
+                    )}
                 </div>
             </main>
 
             <footer className={styles.footer}>
                 <div className={clsx("container", styles.footerContainer)}>
+                    <button className="btn btn-secondary" onClick={handleBack}>
+                        {step === 1 ? 'Previous' : 'Previous'}
+                    </button>
                     {saveError && (
-                        <div style={{ marginRight: '1rem', color: '#E55B5B', fontSize: '0.875rem', alignSelf: 'center' }}>
+                        <div style={{ color: '#E55B5B', fontSize: '0.875rem' }}>
                             {saveError}
                         </div>
                     )}
                     <button className="btn btn-primary" onClick={handleNext} disabled={isSaving}>
-                        {isSaving ? 'Saving...' : 'Generate Previews'}
+                        {step === 4 ? (isSaving ? 'Generating...' : 'Finalize & Preview') : 'Next Step →'}
                     </button>
                 </div>
             </footer>
@@ -293,4 +270,221 @@ export default function DetailsPage() {
             />
         </div >
     );
+
+    // --- Sub Components ---
+
+    function PickEventsStep() {
+        const toggleEvent = (event: typeof DEFAULT_EVENTS[0]) => {
+            const currentEvents = formData.events || [];
+            const exists = currentEvents.find(e => e.id === event.id);
+
+            if (exists) {
+                updateFormData({
+                    events: currentEvents.filter(e => e.id !== event.id)
+                });
+            } else {
+                // Smart Inheritance
+                const newEvent = {
+                    ...event,
+                    date: formData.primaryDate || '',
+                    venue: formData.defaultVenueName || '',
+                    tagline: formData.globalTagline || '',
+                    isCustomVenue: false
+                };
+                updateFormData({
+                    events: [...currentEvents, newEvent]
+                });
+            }
+        };
+
+        const eventIcons: Record<string, any> = {
+            haldi: Sun,
+            mehendi: Leaf,
+            sangeet: Music,
+            wedding: Circle,
+            reception: Wine
+        };
+
+        return (
+            <div>
+                <h2 className={styles.wizardTitle}>Select the functions you are having:</h2>
+                <div className={styles.eventGrid}>
+                    {DEFAULT_EVENTS.map(evt => {
+                        const Icon = eventIcons[evt.id] || MoreHorizontal;
+                        const isActive = formData.events?.some(e => e.id === evt.id);
+                        return (
+                            <div
+                                key={evt.id}
+                                className={clsx(styles.eventOption, isActive && styles.eventOptionActive)}
+                                onClick={() => toggleEvent(evt)}
+                            >
+                                <Icon size={32} color={isActive ? '#E11D48' : '#9CA3AF'} />
+                                <span className={styles.eventLabel}>{evt.name}</span>
+                                {isActive && (
+                                    <div style={{ position: 'absolute', top: '-8px', right: '-8px' }}>
+                                        <CheckCircle size={20} fill="#E11D48" color="white" />
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
+                    <div className={styles.eventOption}>
+                        <MoreHorizontal size={32} color="#9CA3AF" />
+                        <span className={styles.eventLabel}>OTHER</span>
+                    </div>
+                </div>
+
+                <div className={styles.smartInfo}>
+                    <Info size={18} color="#2563EB" />
+                    <div>
+                        <p style={{ fontWeight: 600, color: '#1E3A8A', margin: 0 }}>Smart Inheritance Active</p>
+                        <p style={{ fontSize: '0.8125rem', color: '#1E40AF', margin: '4px 0 0' }}>
+                            Any events you select here will automatically inherit the bride/groom names, venue, and primary wedding date you set in the first step. You'll only need to specify times!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    function TimelineStep() {
+        const [activeEventId, setActiveEventId] = useState(formData.events?.[0]?.id || '');
+        const currentEvents = formData.events || [];
+        const activeEvent = currentEvents.find(e => e.id === activeEventId) || currentEvents[0];
+
+        const updateActiveEvent = (data: Partial<typeof currentEvents[0]>) => {
+            updateFormData({
+                events: currentEvents.map(e => e.id === activeEventId ? { ...e, ...data } : e)
+            });
+        };
+
+        if (currentEvents.length === 0) return <div>Please go back and select events.</div>;
+
+        return (
+            <div className={styles.timelineLayout}>
+                <div className={styles.timelineSidebar}>
+                    {currentEvents.map(e => (
+                        <div
+                            key={e.id}
+                            className={clsx(styles.timelineItem, activeEventId === e.id && styles.timelineItemActive)}
+                            onClick={() => setActiveEventId(e.id)}
+                        >
+                            <div style={{ fontWeight: 600 }}>{e.name}</div>
+                            <div style={{ fontSize: '0.75rem', opacity: 0.8 }}>{e.date || formData.primaryDate}</div>
+                        </div>
+                    ))}
+                </div>
+
+                <div className={styles.timelineContent}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                        <h2 style={{ fontSize: '1.5rem', margin: 0 }}>{activeEvent.name} Settings</h2>
+                        <span style={{ fontSize: '0.75rem', background: '#E5E7EB', padding: '2px 8px', borderRadius: '100px' }}>EVT-{activeEvent.id.toUpperCase()}</span>
+                    </div>
+
+                    <div className={formStyles.grid}>
+                        <Input
+                            label="Override Date?"
+                            type="date"
+                            value={activeEvent.date || ''}
+                            onChange={(e) => updateActiveEvent({ date: e.target.value })}
+                            helperText={`Default: ${formData.primaryDate}`}
+                        />
+                        <div style={{ display: 'flex', gap: '1rem' }}>
+                            <Input
+                                label="Start Time"
+                                type="time"
+                                value={activeEvent.time || ''}
+                                onChange={(e) => updateActiveEvent({ time: e.target.value })}
+                                style={{ flex: 1 }}
+                            />
+                            <Input
+                                label="End Time"
+                                type="time"
+                                value={activeEvent.endTime || ''}
+                                onChange={(e) => updateActiveEvent({ endTime: e.target.value })}
+                                style={{ flex: 1 }}
+                            />
+                        </div>
+                        <div style={{ gridColumn: 'span 2' }}>
+                            <Input
+                                label="Custom Event Tagline"
+                                value={activeEvent.tagline || ''}
+                                onChange={(e) => updateActiveEvent({ tagline: e.target.value })}
+                                placeholder={formData.globalTagline}
+                                helperText="Inherits from global tagline if left empty."
+                            />
+                        </div>
+
+                        <div style={{ gridColumn: 'span 2', padding: '1rem', background: 'white', borderRadius: '12px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                                <span style={{ fontWeight: 600, fontSize: '0.875rem' }}>VENUE LOGIC</span>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                                    <span style={{ fontSize: '0.75rem' }}>Custom Venue?</span>
+                                    <input
+                                        type="checkbox"
+                                        checked={activeEvent.isCustomVenue}
+                                        onChange={(e) => updateActiveEvent({ isCustomVenue: e.target.checked })}
+                                    />
+                                </label>
+                            </div>
+                            {activeEvent.isCustomVenue ? (
+                                <Input
+                                    label="Custom Venue for this Event"
+                                    value={activeEvent.venue || ''}
+                                    onChange={(e) => updateActiveEvent({ venue: e.target.value })}
+                                    placeholder="Enter specific venue name"
+                                />
+                            ) : (
+                                <p style={{ fontSize: '0.8125rem', color: '#666', fontStyle: 'italic', margin: 0 }}>
+                                    Inheriting from Global: {formData.defaultVenueName || 'Not Set'}
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    function ArchitectureSummary() {
+        return (
+            <div className={styles.summaryScroll}>
+                <div className={styles.summaryHeader}>
+                    <ShieldCheck size={28} color="#059669" />
+                    <h2 style={{ margin: 0 }}>Global Wedding Identity</h2>
+                </div>
+
+                <div className={styles.summaryList}>
+                    <div className={styles.summaryItem}>
+                        <Users size={18} />
+                        <span>{formData.brideName} & {formData.groomName}</span>
+                    </div>
+                    <div className={styles.summaryItem}>
+                        <Calendar size={18} />
+                        <span>{formData.primaryDate} (Default Date)</span>
+                    </div>
+                    <div className={styles.summaryItem}>
+                        <MapPin size={18} />
+                        <span>{formData.defaultVenueName} (Default Venue)</span>
+                    </div>
+                </div>
+
+                <div className={styles.eventsTimeline}>
+                    {(formData.events || []).map((e, i) => (
+                        <div key={e.id} className={styles.summaryEventCard}>
+                            <div className={styles.eventTimeInfo}>
+                                <div style={{ fontWeight: 700 }}>{e.name}</div>
+                                <div style={{ fontSize: '0.875rem', color: '#666' }}>
+                                    {e.date || formData.primaryDate} @ {e.time || 'TBD'}
+                                </div>
+                            </div>
+                            <div className={styles.inheritanceBadge}>
+                                {!e.date && !e.isCustomVenue ? 'INHERITED' : 'CUSTOMIZED'}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+    }
 }

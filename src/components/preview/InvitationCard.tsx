@@ -18,7 +18,7 @@ interface InvitationCardProps {
 
 export const InvitationCard = ({ event, theme, groomName, brideName, isPlaceholder, type, customImage }: InvitationCardProps) => {
     return (
-        <div className={styles.invitationCard} style={{ '--theme-primary': theme.colors[1], '--theme-bg': theme.colors[0] } as any}>
+        <div className={styles.invitationCard} style={{ '--theme-primary': theme.colors[1] } as any}>
             {/* Watermark Overlay */}
             <div className={styles.watermark}>
                 <span>NimantranStudio</span>

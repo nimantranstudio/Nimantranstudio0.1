@@ -2,11 +2,14 @@ import { z } from 'zod';
 
 export const EventSchema = z.object({
     id: z.string(),
-    name: z.string().optional(), // Relaxed for draft saving
+    name: z.string().optional(),
     date: z.string().optional(),
     time: z.string().optional(),
+    endTime: z.string().optional(),
     venue: z.string().optional(),
+    isCustomVenue: z.boolean().default(false).optional(),
     mapLink: z.string().nullable().optional(),
+    tagline: z.string().nullable().optional(),
     description: z.string().nullable().optional(),
     eventType: z.string().nullable().optional(),
     rsvpDeadline: z.string().nullable().optional(),
@@ -23,11 +26,16 @@ export const EventSchema = z.object({
 });
 
 export const WeddingFormSchema = z.object({
-    // Couple Details - Optional for standalone/draft usage
+    // Step 1: Couple Details
     groomName: z.string().optional(),
     brideName: z.string().optional(),
     groomParents: z.string().optional(),
     brideParents: z.string().optional(),
+    primaryDate: z.string().optional(),
+    timezone: z.string().default('Asia/Kolkata').optional(),
+    defaultVenueName: z.string().optional(),
+    defaultVenueAddress: z.string().optional(),
+    globalTagline: z.string().optional(),
 
     // Events
     events: z.array(EventSchema).optional(),
@@ -45,20 +53,9 @@ export type WeddingFormData = z.infer<typeof WeddingFormSchema>;
 export type WeddingEvent = z.infer<typeof EventSchema>;
 
 export const DEFAULT_EVENTS: WeddingEvent[] = [
-    {
-        id: 'evt_1',
-        name: 'Wedding Ceremony',
-        date: '',
-        time: '',
-        venue: '',
-        description: 'Join us as we tie the knot!',
-    },
-    {
-        id: 'evt_2',
-        name: 'Reception',
-        date: '',
-        time: '',
-        venue: '',
-        description: 'Celebrate with us over dinner and dancing.',
-    }
+    { id: 'haldi', name: 'Haldi', date: '', time: '', endTime: '', venue: '', description: 'Yellow vibes only!', tagline: '', isCustomVenue: false },
+    { id: 'mehendi', name: 'Mehendi', date: '', time: '', endTime: '', venue: '', description: 'Art on hands.', tagline: '', isCustomVenue: false },
+    { id: 'sangeet', name: 'Sangeet', date: '', time: '', endTime: '', venue: '', description: 'Night of music and dance.', tagline: '', isCustomVenue: false },
+    { id: 'wedding', name: 'Wedding', date: '', time: '', endTime: '', venue: '', description: 'The big day.', tagline: '', isCustomVenue: false },
+    { id: 'reception', name: 'Reception', date: '', time: '', endTime: '', venue: '', description: 'Dinner and celebration.', tagline: '', isCustomVenue: false },
 ];

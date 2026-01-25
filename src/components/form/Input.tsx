@@ -1,13 +1,14 @@
 import clsx from 'clsx';
 import styles from './Form.module.css';
 
-interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+interface InputProps extends React.InputHTMLAttributes<HTMLInputElement | HTMLTextAreaElement> {
     label: string;
     error?: string;
     helperText?: string;
+    type?: string;
 }
 
-export const Input = ({ label, error, helperText, className, id, ...props }: InputProps) => {
+export const Input = ({ label, error, helperText, className, id, type, ...props }: InputProps) => {
     const inputId = id || label.toLowerCase().replace(/\s+/g, '-');
 
     return (
@@ -15,11 +16,23 @@ export const Input = ({ label, error, helperText, className, id, ...props }: Inp
             <label htmlFor={inputId} className={styles.label}>
                 {label}
             </label>
-            <input
-                id={inputId}
-                className={clsx(styles.input, error && styles.inputError, className)}
-                {...props}
-            />
+            {type === 'textarea' ? (
+                <textarea
+                    id={inputId}
+                    className={clsx(styles.input, styles.textarea, error && styles.inputError, className)}
+                    rows={4}
+                    {...(props as React.TextareaHTMLAttributes<HTMLTextAreaElement>)}
+                    value={props.value ?? ''}
+                />
+            ) : (
+                <input
+                    id={inputId}
+                    type={type}
+                    className={clsx(styles.input, error && styles.inputError, className)}
+                    {...(props as React.InputHTMLAttributes<HTMLInputElement>)}
+                    value={props.value ?? ''}
+                />
+            )}
             {helperText && !error && <span className={styles.helper}>{helperText}</span>}
             {error && <span className={styles.error}>{error}</span>}
         </div>

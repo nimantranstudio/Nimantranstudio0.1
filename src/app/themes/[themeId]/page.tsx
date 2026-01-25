@@ -17,7 +17,7 @@ import { motion } from 'framer-motion';
 export default function ThemeDetailPage({ params }: { params: Promise<{ themeId: string }> }) {
     const { themeId } = use(params);
     const router = useRouter();
-    const { setThemeId } = useWeddingStore();
+    const { setThemeId, setBundleData } = useWeddingStore();
 
     const [theme, setTheme] = useState<Theme | null>(null);
     const [recommendations, setRecommendations] = useState<Theme[]>([]);
@@ -153,7 +153,17 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
     const handleCreateNow = () => {
         if (!theme) return;
         setThemeId(theme.id);
+        setBundleData(selectedPlan, imageList);
         router.push('/details');
+    };
+
+    const handleShare = () => {
+        const url = window.location.href;
+        navigator.clipboard.writeText(url).then(() => {
+            alert('Theme link copied to clipboard!');
+        }).catch(err => {
+            console.error('Failed to copy link: ', err);
+        });
     };
 
     const formatPrice = (price: string | number) => {
@@ -329,7 +339,6 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
                         <div
                             className={styles.mainImageWrapper}
                             onClick={() => setPreviewIndex(selectedAssetIndex)}
-                            style={{ background: theme.colors[0] }}
                         >
                             <Image
                                 src={assets[selectedAssetIndex].image}
@@ -337,7 +346,6 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
                                 fill
                                 style={{
                                     objectFit: 'contain',
-                                    padding: '1rem',
                                     zIndex: 2
                                 }}
                                 priority
@@ -386,7 +394,6 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
                                         selectedAssetIndex === index ? styles.thumbnailItemActive : styles.thumbnailItemInactive
                                     )}
                                     onClick={() => setSelectedAssetIndex(index)}
-                                    style={{ background: theme.colors[0] }}
                                 >
                                     <Image
                                         src={asset.image}
@@ -464,7 +471,7 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
                             <button onClick={handleCreateNow} className="btn btn-primary" style={{ flex: 1 }}>
                                 Create Now
                             </button>
-                            <button className={styles.iconBtn}>
+                            <button className={styles.iconBtn} onClick={handleShare} title="Share Theme">
                                 <Share2 size={24} />
                             </button>
                         </div>
@@ -478,10 +485,6 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
                             <div className={styles.highlightItem}>
                                 <div className={styles.highlightIcon}><Smartphone size={20} /></div>
                                 <span>WhatsApp &<br />Print Ready</span>
-                            </div>
-                            <div className={styles.highlightItem}>
-                                <div className={styles.highlightIcon}><Languages size={24} /></div>
-                                <span>Hindi, English,<br />Marathi</span>
                             </div>
                             <div className={styles.highlightItem}>
                                 <div className={styles.highlightIcon}><Download size={24} /></div>
@@ -549,10 +552,6 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
                                                 <p style={{ color: '#666', fontSize: '0.9rem' }}>Our automated system ensures your designs are ready in 2–5 minutes after payment. You can download them instantly from your dashboard.</p>
                                             </div>
                                             <div>
-                                                <p style={{ fontWeight: 600, marginBottom: '0.25rem', color: '#1a1a1a' }}>Can I customize the text in Hindi?</p>
-                                                <p style={{ color: '#666', fontSize: '0.9rem' }}>Yes! Our templates fully support Hindi, English, and Marathi characters. You can add your custom text in the editor.</p>
-                                            </div>
-                                            <div>
                                                 <p style={{ fontWeight: 600, marginBottom: '0.25rem', color: '#1a1a1a' }}>What happens if I lose my download link?</p>
                                                 <p style={{ color: '#666', fontSize: '0.9rem' }}>Don't worry! You can log in to your account anytime to access your purchase history and re-download your files.</p>
                                             </div>
@@ -611,16 +610,7 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
                             <span>Close</span>
                         </button>
 
-                        <div className={styles.previewImageWrapper} style={{ background: theme.colors[0], borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-                            <div style={{
-                                color: theme.colors[2] || 'white',
-                                fontSize: '2rem',
-                                fontWeight: '700',
-                                textAlign: 'center',
-                                padding: '2rem'
-                            }}>
-                                {assets[previewIndex].name}
-                            </div>
+                        <div className={styles.previewImageWrapper} style={{ borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
                             <Image
                                 src={assets[previewIndex].image}
                                 alt={assets[previewIndex].name}
