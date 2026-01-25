@@ -1,4 +1,4 @@
-import prisma from '@/lib/prisma';
+import { prisma } from '@/lib/prisma';
 import { THEMES } from '@/lib/constants/themes';
 import styles from './rsvp.module.css';
 import { RSVPForm } from './RSVPForm';

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
+import { prisma } from '@/lib/prisma';
 export const dynamic = 'force-dynamic';
 import { WeddingFormSchema } from '@/lib/schemas/wedding-form';
 
@@ -82,7 +82,8 @@ async function getOrCreateGuestUser() {
         user = await prisma.user.create({
             data: {
                 email: guestEmail,
-                name: 'Guest User'
+                name: 'Guest User',
+                mobileNumber: '0000000000'
             }
         });
     }

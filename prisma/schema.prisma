@@ -20,6 +20,8 @@ model User {
   updatedAt        DateTime  @updatedAt
   weddings         Wedding[]
   orders           Order[]
+
+  @@map("User")
 }
 
 model OTPRequest {
@@ -30,6 +32,8 @@ model OTPRequest {
   isUsed       Boolean  @default(false)
   attemptCount Int      @default(0)
   createdAt    DateTime @default(now())
+
+  @@map("OTPRequest")
 }
 
 model Bundle {
@@ -52,6 +56,8 @@ model Bundle {
   thumbnailUrl  String?
   themeRef      Theme?   @relation(fields: [themeId], references: [id])
   orders        Order[]
+
+  @@map("Bundle")
 }
 
 model Order {
@@ -64,6 +70,8 @@ model Order {
   updatedAt   DateTime @updatedAt
   bundle      Bundle   @relation(fields: [bundleId], references: [id])
   user        User     @relation(fields: [userId], references: [id])
+
+  @@map("Order")
 }
 
 model Theme {
@@ -77,6 +85,8 @@ model Theme {
   updatedAt     DateTime  @updatedAt
   bundles       Bundle[]
   weddings      Wedding[]
+
+  @@map("Theme")
 }
 
 model Wedding {
@@ -96,6 +106,8 @@ model Wedding {
   rsvps             RSVP[]
   owner             User      @relation(fields: [ownerId], references: [id])
   theme             Theme     @relation(fields: [themeId], references: [id])
+
+  @@map("Wedding")
 }
 
 model Event {
@@ -115,6 +127,8 @@ model Event {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   wedding         Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+
+  @@map("Event")
 }
 
 model RSVP {
@@ -131,4 +145,6 @@ model RSVP {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
   wedding    Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+
+  @@map("RSVP")
 }

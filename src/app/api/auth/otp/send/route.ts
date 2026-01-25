@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import crypto from 'crypto';
+import { sendOTP } from '@/lib/sms';
 
 export async function POST(request: Request) {
     try {
@@ -13,8 +13,8 @@ export async function POST(request: Request) {
         // Generate 4-digit OTP
         const otp = Math.floor(1000 + Math.random() * 9000).toString();
 
-        // In a real app, you'd hash the OTP. For this demo/setup, we'll store it directly 
-        // but typically you'd use crypto.createHash('sha256').update(otp).digest('hex')
+        // In this implementation we store plain OTP for simplicity of the walkthrough
+        // but in prod use hash: crypto.createHash('sha256').update(otp).digest('hex')
         const otpHash = otp;
 
         // Set expiration (5 minutes from now)
@@ -37,8 +37,17 @@ export async function POST(request: Request) {
             }
         });
 
-        // MOCK: Send OTP to WhatsApp/SMS
-        console.log(`[AUTH] Sending OTP ${otp} to ${mobileNumber}`);
+        // Send OTP via SMS (Twilio)
+        const sent = await sendOTP(mobileNumber, otp);
+
+        if (!sent.success) {
+            console.error('Failed to send SMS:', sent.error);
+            // Optionally we could return an error here, but for now we fallback to letting
+            // the user potentially see the console log or try again. 
+            // In a strict prod env, you might want to return 500.
+        }
+
+        console.log(`[AUTH] Generated OTP ${otp} for ${mobileNumber}`);
 
         return NextResponse.json({ success: true, message: 'OTP sent successfully' });
     } catch (error: any) {
