@@ -1,13 +1,21 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { X, Package, CheckCircle, Info, Upload, Image as ImageIcon } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { X, Package, CheckCircle, Info, Upload, Image as ImageIcon, AlertCircle } from 'lucide-react';
 import styles from './BundleModal.module.css';
 import { clsx } from 'clsx';
 
 interface Theme {
     id: string;
     name: string;
+}
+
+interface PackageModel {
+    id: string;
+    name: string;
+    level: number;
+    price: number;
+    allowedItems: string;
 }
 
 interface BundleModalProps {
@@ -17,101 +25,121 @@ interface BundleModalProps {
     initialData?: any | null;
 }
 
-const CHECKLIST_ITEMS = [
-    "Image Invitations",
-    "Video Invitations",
-    "RSVP Link",
-    "Guest Manager",
-    "Printable Posters",
-    "Complete Stationery"
-];
-
 export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleModalProps) {
     const [name, setName] = useState('');
     const [price, setPrice] = useState('');
     const [description, setDescription] = useState('');
-    const [highlights, setHighlights] = useState('');
     const [isActive, setIsActive] = useState(true);
     const [isPopular, setIsPopular] = useState(false);
     const [themeId, setThemeId] = useState('');
-    const [checklist, setChecklist] = useState<string[]>([]);
-
-    // Image state
-    const [files, setFiles] = useState<File[]>([]);
-    const [previews, setPreviews] = useState<string[]>([]);
-    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [tierPrices, setTierPrices] = useState<{ [key: string]: string }>({});
+    const [itemFiles, setItemFiles] = useState<{ [key: string]: File }>({});
+    const [itemPreviews, setItemPreviews] = useState<{ [key: string]: string }>({});
 
     const [themes, setThemes] = useState<Theme[]>([]);
+    const [packages, setPackages] = useState<PackageModel[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        const fetchThemes = async () => {
+        const fetchData = async () => {
+            if (!isOpen) return;
+            setIsLoading(true);
+            setError(null);
             try {
-                const res = await fetch('/api/admin/themes');
-                if (res.ok) {
-                    const data = await res.json();
+                const [themesRes, packagesRes] = await Promise.all([
+                    fetch('/api/admin/themes'),
+                    fetch('/api/admin/packages')
+                ]);
+
+                if (themesRes.ok) {
+                    const data = await themesRes.json();
                     setThemes(data.themes || []);
                 }
-            } catch (error) {
-                console.error("Failed to fetch themes", error);
+
+                if (packagesRes.ok) {
+                    const data = await packagesRes.json();
+                    if (data.packages && data.packages.length > 0) {
+                        setPackages(data.packages);
+                    } else if (data.error) {
+                        setError(data.error);
+                    } else {
+                        setPackages([]);
+                    }
+                } else {
+                    const errData = await packagesRes.json().catch(() => ({}));
+                    setError(errData.error || `HTTP ${packagesRes.status}`);
+                }
+            } catch (err: any) {
+                setError(err.message || "Network Error");
+            } finally {
+                setIsLoading(false);
             }
         };
 
-        if (isOpen) {
-            fetchThemes();
-        }
+        fetchData();
     }, [isOpen]);
 
     useEffect(() => {
         if (initialData) {
-            setName(initialData.name);
-            setPrice(initialData.price);
+            setName(initialData.name || '');
+            setPrice(initialData.price || '');
             setDescription(initialData.description || '');
-            setHighlights(initialData.highlights || '');
-            setIsActive(initialData.isActive);
+            setIsActive(initialData.isActive ?? true);
             setIsPopular(initialData.isPopular || false);
             setThemeId(initialData.themeId || '');
-            setChecklist(initialData.checklist ? JSON.parse(initialData.checklist) : []);
 
-            setFiles([]);
-            const existingImages = initialData.previewImages ? JSON.parse(initialData.previewImages) : (initialData.thumbnailUrl ? [initialData.thumbnailUrl] : []);
-            setPreviews(existingImages);
+            setTierPrices({
+                'WhatsApp Essentials': initialData.whatsappPrice ? String(initialData.whatsappPrice) : '',
+                'WhatsApp + Posters': initialData.printablePrice ? String(initialData.printablePrice) : '',
+                'Complete Wedding Suite': initialData.completePrice ? String(initialData.completePrice) : ''
+            });
+
+            if (initialData.itemImages) {
+                try {
+                    const existingItemImages = JSON.parse(initialData.itemImages);
+                    setItemPreviews(existingItemImages);
+                } catch (e) {
+                    console.error("Failed to parse itemImages", e);
+                }
+            } else {
+                setItemPreviews({});
+            }
+            setItemFiles({});
         } else {
             setName('');
             setPrice('');
             setDescription('');
-            setHighlights('');
             setIsActive(true);
             setIsPopular(false);
-            setThemeId('');
-            setChecklist([]);
-            setFiles([]);
-            setPreviews([]);
+            setTierPrices({});
+            setItemFiles({});
+            setItemPreviews({});
         }
     }, [initialData, isOpen]);
 
     if (!isOpen) return null;
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files) {
-            const newFiles = Array.from(e.target.files);
-            setFiles(prev => [...prev, ...newFiles]);
-            const newPreviews = newFiles.map(file => URL.createObjectURL(file));
-            setPreviews(prev => [...prev, ...newPreviews]);
-        }
+    const handleTierPriceChange = (packageName: string, value: string) => {
+        setTierPrices(prev => ({ ...prev, [packageName]: value }));
     };
 
-    const removeFile = (index: number) => {
-        setPreviews(prev => prev.filter((_, i) => i !== index));
-        // Note: in a real update we'd need to identify which files are new vs existing to update 'files' state correctly
+    const handleItemFileChange = (itemName: string, file: File) => {
+        setItemFiles(prev => ({ ...prev, [itemName]: file }));
+        setItemPreviews(prev => ({ ...prev, [itemName]: URL.createObjectURL(file) }));
     };
 
-    const toggleChecklist = (item: string) => {
-        setChecklist(prev =>
-            prev.includes(item)
-                ? prev.filter(i => i !== item)
-                : [...prev, item]
-        );
+    const removeItemFile = (itemName: string) => {
+        setItemFiles(prev => {
+            const next = { ...prev };
+            delete next[itemName];
+            return next;
+        });
+        setItemPreviews(prev => {
+            const next = { ...prev };
+            delete next[itemName];
+            return next;
+        });
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -121,22 +149,21 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
         try {
             const formData = new FormData();
             formData.append('name', name);
-            formData.append('price', price);
+            formData.append('price', price || "0");
             formData.append('description', description);
-            formData.append('highlights', highlights);
             formData.append('isActive', String(isActive));
             formData.append('isPopular', String(isPopular));
             formData.append('themeId', themeId);
-            formData.append('checklist', JSON.stringify(checklist));
+            formData.append('tierPrices', JSON.stringify(tierPrices));
 
-            files.forEach(file => {
-                formData.append('images', file);
+            Object.entries(itemFiles).forEach(([name, file]) => {
+                formData.append(`itemFile_${name}`, file);
             });
+
+            formData.append('existingItemImages', JSON.stringify(itemPreviews));
 
             const url = initialData ? `/api/admin/bundles/${initialData.id}` : '/api/admin/bundles';
             const method = initialData ? 'PUT' : 'POST';
-
-            console.log(`[CLIENT] Sending ${method} for bundle:`, { name, isActive, isPopular });
 
             const response = await fetch(url, {
                 method,
@@ -195,21 +222,59 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
                         </div>
 
                         <div className={styles.row}>
-                            <div className={styles.formGroup}>
-                                <label className={styles.label}>Price (INR)</label>
-                                <div className={styles.priceInputWrapper}>
-                                    <span className={styles.currencyPrefix}>₹</span>
-                                    <input
-                                        type="text"
-                                        className={styles.input}
-                                        style={{ paddingLeft: '2rem' }}
-                                        placeholder="0"
-                                        value={price}
-                                        onChange={e => setPrice(e.target.value)}
-                                        required
-                                    />
+                            <div className={styles.formGroup} style={{ gridColumn: 'span 2' }}>
+                                <label className={styles.label}>Pricing by Package</label>
+                                <div className={styles.pricingContainer}>
+                                    {packages.length > 0 ? (
+                                        packages.map(p => (
+                                            <div key={p.id} className={styles.packagePricingRow}>
+                                                <span className={styles.packageName}>{p.name}</span>
+                                                <div className={styles.priceInputWrapper}>
+                                                    <span className={styles.currencyPrefix}>₹</span>
+                                                    <input
+                                                        type="text"
+                                                        className={styles.input}
+                                                        style={{ paddingLeft: '1.8rem' }}
+                                                        placeholder={String(p.price)}
+                                                        value={tierPrices[p.name] || ''}
+                                                        onChange={e => handleTierPriceChange(p.name, e.target.value)}
+                                                    />
+                                                </div>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className={styles.emptyPackages}>
+                                            {isLoading ? (
+                                                <div className={styles.loaderContainer}>
+                                                    <div className={styles.spinner}></div>
+                                                    Fetching package definitions...
+                                                </div>
+                                            ) : (
+                                                <div className={styles.errorContainer}>
+                                                    {error ? (
+                                                        <>
+                                                            <AlertCircle size={24} color="#ef4444" />
+                                                            <p className={styles.errorText}>{error}</p>
+                                                        </>
+                                                    ) : (
+                                                        <p>No active packages found in database.</p>
+                                                    )}
+                                                    <button
+                                                        type="button"
+                                                        className={styles.retryBtn}
+                                                        onClick={() => window.location.reload()}
+                                                    >
+                                                        Retry Connection
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
+                        </div>
+
+                        <div className={styles.row}>
                             <div className={styles.formGroup}>
                                 <label className={styles.label}>Status</label>
                                 <div className={styles.toggles}>
@@ -247,71 +312,49 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
                             />
                         </div>
 
-                        <div className={styles.formGroup}>
-                            <label className={styles.label}>Bundle Images</label>
-                            <div
-                                className={styles.fileUploadArea}
-                                onClick={() => fileInputRef.current?.click()}
-                            >
-                                <input
-                                    type="file"
-                                    ref={fileInputRef}
-                                    hidden
-                                    multiple
-                                    accept="image/*"
-                                    onChange={handleFileChange}
-                                />
-                                <Upload size={24} color="#6366f1" />
-                                <div className={styles.uploadText}>
-                                    <span style={{ fontWeight: 600, color: '#6366f1' }}>Click to upload</span> or drag and drop
+                        {packages.length > 0 && (
+                            <div className={styles.formGroup}>
+                                <label className={styles.label}>Item-wise Invite Uploads (All Tiers)</label>
+                                <div className={styles.itemUploadGrid}>
+                                    {(() => {
+                                        const allItemsSet = new Set<string>();
+                                        packages.forEach(p => {
+                                            try {
+                                                const items = JSON.parse(p.allowedItems);
+                                                items.forEach((item: string) => allItemsSet.add(item));
+                                            } catch (e) { }
+                                        });
+                                        const allUniqueItems = Array.from(allItemsSet);
+
+                                        return allUniqueItems.map((item: string) => (
+                                            <div key={item} className={styles.itemUploadField}>
+                                                <span className={styles.itemName}>{item}</span>
+                                                <div className={styles.itemUploadControls}>
+                                                    {itemPreviews[item] ? (
+                                                        <div className={styles.itemPreviewWrapper}>
+                                                            <img src={itemPreviews[item]} alt={item} className={styles.itemPreview} />
+                                                            <button type="button" className={styles.itemRemoveBtn} onClick={() => removeItemFile(item)}>
+                                                                <X size={10} />
+                                                            </button>
+                                                        </div>
+                                                    ) : (
+                                                        <label className={styles.itemUploadBtn}>
+                                                            <Upload size={14} />
+                                                            <input
+                                                                type="file"
+                                                                hidden
+                                                                accept="image/*"
+                                                                onChange={(e) => e.target.files?.[0] && handleItemFileChange(item, e.target.files[0])}
+                                                            />
+                                                        </label>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ));
+                                    })()}
                                 </div>
-                                <div className={styles.uploadHint}>SVG, PNG, JPG or GIF (max. 800x400px)</div>
                             </div>
-
-                            {previews.length > 0 && (
-                                <div className={styles.previewGrid}>
-                                    {previews.map((src, index) => (
-                                        <div key={index} className={styles.previewItem}>
-                                            <img src={src} alt="Preview" className={styles.previewImg} />
-                                            <button
-                                                type="button"
-                                                className={styles.removeBtn}
-                                                onClick={() => removeFile(index)}
-                                            >
-                                                <X size={12} />
-                                            </button>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-
-                        <div className={styles.formGroup}>
-                            <label className={styles.label}>"What You Get" Checklist</label>
-                            <div className={styles.checklistGrid}>
-                                {CHECKLIST_ITEMS.map(item => (
-                                    <label key={item} className={styles.checkItem}>
-                                        <input
-                                            type="checkbox"
-                                            checked={checklist.includes(item)}
-                                            onChange={() => toggleChecklist(item)}
-                                        />
-                                        <span>{item}</span>
-                                    </label>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div className={styles.formGroup}>
-                            <label className={styles.label}>Product Highlights (Bullet Points)</label>
-                            <textarea
-                                className={styles.textarea}
-                                style={{ height: '100px' }}
-                                placeholder="• 4K Video Quality&#10;• 24/7 Guest Support&#10;• Premium Typography"
-                                value={highlights}
-                                onChange={e => setHighlights(e.target.value)}
-                            />
-                        </div>
+                        )}
                     </div>
 
                     <div className={styles.footer}>

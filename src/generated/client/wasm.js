@@ -125,14 +125,14 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
 
 exports.Prisma.UserScalarFieldEnum = {
   id: 'id',
-  mobileNumber: 'mobileNumber',
   email: 'email',
   name: 'name',
-  isMobileVerified: 'isMobileVerified',
-  status: 'status',
-  role: 'role',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  isMobileVerified: 'isMobileVerified',
+  mobileNumber: 'mobileNumber',
+  role: 'role',
+  status: 'status'
 };
 
 exports.Prisma.OTPRequestScalarFieldEnum = {
@@ -148,21 +148,19 @@ exports.Prisma.OTPRequestScalarFieldEnum = {
 exports.Prisma.BundleScalarFieldEnum = {
   id: 'id',
   name: 'name',
-  subtitle: 'subtitle',
-  price: 'price',
-  features: 'features',
-  printables: 'printables',
+  whatsappPrice: 'whatsappPrice',
+  printablePrice: 'printablePrice',
+  completePrice: 'completePrice',
   isPopular: 'isPopular',
   theme: 'theme',
   description: 'description',
-  highlights: 'highlights',
-  checklist: 'checklist',
   isActive: 'isActive',
   themeId: 'themeId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   previewImages: 'previewImages',
-  thumbnailUrl: 'thumbnailUrl'
+  thumbnailUrl: 'thumbnailUrl',
+  itemImages: 'itemImages'
 };
 
 exports.Prisma.OrderScalarFieldEnum = {
@@ -181,11 +179,11 @@ exports.Prisma.ThemeScalarFieldEnum = {
   description: 'description',
   thumbnailUrl: 'thumbnailUrl',
   previewImages: 'previewImages',
-  isBestSeller: 'isBestSeller',
-  isPopular: 'isPopular',
   isActive: 'isActive',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  isBestSeller: 'isBestSeller',
+  isPopular: 'isPopular'
 };
 
 exports.Prisma.WeddingScalarFieldEnum = {
@@ -236,6 +234,19 @@ exports.Prisma.RSVPScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.PackageScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  price: 'price',
+  level: 'level',
+  allowedItems: 'allowedItems',
+  isActive: 'isActive',
+  whatYouGet: 'whatYouGet',
+  productHighlights: 'productHighlights',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -255,7 +266,8 @@ exports.Prisma.ModelName = {
   Theme: 'Theme',
   Wedding: 'Wedding',
   Event: 'Event',
-  RSVP: 'RSVP'
+  RSVP: 'RSVP',
+  Package: 'Package'
 };
 
 /**

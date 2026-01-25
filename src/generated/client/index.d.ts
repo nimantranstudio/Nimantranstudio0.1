@@ -53,6 +53,11 @@ export type Event = $Result.DefaultSelection<Prisma.$EventPayload>
  * 
  */
 export type RSVP = $Result.DefaultSelection<Prisma.$RSVPPayload>
+/**
+ * Model Package
+ * 
+ */
+export type Package = $Result.DefaultSelection<Prisma.$PackagePayload>
 
 /**
  * ##  Prisma Client ʲˢ
@@ -256,6 +261,16 @@ export class PrismaClient<
     * ```
     */
   get rSVP(): Prisma.RSVPDelegate<ExtArgs>;
+
+  /**
+   * `prisma.package`: Exposes CRUD operations for the **Package** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Packages
+    * const packages = await prisma.package.findMany()
+    * ```
+    */
+  get package(): Prisma.PackageDelegate<ExtArgs>;
 }
 
 export namespace Prisma {
@@ -704,7 +719,8 @@ export namespace Prisma {
     Theme: 'Theme',
     Wedding: 'Wedding',
     Event: 'Event',
-    RSVP: 'RSVP'
+    RSVP: 'RSVP',
+    Package: 'Package'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -720,7 +736,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "user" | "oTPRequest" | "bundle" | "order" | "theme" | "wedding" | "event" | "rSVP"
+      modelProps: "user" | "oTPRequest" | "bundle" | "order" | "theme" | "wedding" | "event" | "rSVP" | "package"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1252,6 +1268,72 @@ export namespace Prisma {
           }
         }
       }
+      Package: {
+        payload: Prisma.$PackagePayload<ExtArgs>
+        fields: Prisma.PackageFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.PackageFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PackagePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.PackageFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PackagePayload>
+          }
+          findFirst: {
+            args: Prisma.PackageFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PackagePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.PackageFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PackagePayload>
+          }
+          findMany: {
+            args: Prisma.PackageFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PackagePayload>[]
+          }
+          create: {
+            args: Prisma.PackageCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PackagePayload>
+          }
+          createMany: {
+            args: Prisma.PackageCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.PackageDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PackagePayload>
+          }
+          update: {
+            args: Prisma.PackageUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PackagePayload>
+          }
+          deleteMany: {
+            args: Prisma.PackageDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.PackageUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.PackageUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PackagePayload>
+          }
+          aggregate: {
+            args: Prisma.PackageAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregatePackage>
+          }
+          groupBy: {
+            args: Prisma.PackageGroupByArgs<ExtArgs>
+            result: $Utils.Optional<PackageGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.PackageCountArgs<ExtArgs>
+            result: $Utils.Optional<PackageCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -1413,13 +1495,13 @@ export namespace Prisma {
    */
 
   export type UserCountOutputType = {
-    weddings: number
     orders: number
+    weddings: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    weddings?: boolean | UserCountOutputTypeCountWeddingsArgs
     orders?: boolean | UserCountOutputTypeCountOrdersArgs
+    weddings?: boolean | UserCountOutputTypeCountWeddingsArgs
   }
 
   // Custom InputTypes
@@ -1436,15 +1518,15 @@ export namespace Prisma {
   /**
    * UserCountOutputType without action
    */
-  export type UserCountOutputTypeCountWeddingsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: WeddingWhereInput
+  export type UserCountOutputTypeCountOrdersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: OrderWhereInput
   }
 
   /**
    * UserCountOutputType without action
    */
-  export type UserCountOutputTypeCountOrdersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: OrderWhereInput
+  export type UserCountOutputTypeCountWeddingsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: WeddingWhereInput
   }
 
 
@@ -1575,76 +1657,76 @@ export namespace Prisma {
 
   export type UserMinAggregateOutputType = {
     id: string | null
-    mobileNumber: string | null
     email: string | null
     name: string | null
-    isMobileVerified: boolean | null
-    status: string | null
-    role: string | null
     createdAt: Date | null
     updatedAt: Date | null
+    isMobileVerified: boolean | null
+    mobileNumber: string | null
+    role: string | null
+    status: string | null
   }
 
   export type UserMaxAggregateOutputType = {
     id: string | null
-    mobileNumber: string | null
     email: string | null
     name: string | null
-    isMobileVerified: boolean | null
-    status: string | null
-    role: string | null
     createdAt: Date | null
     updatedAt: Date | null
+    isMobileVerified: boolean | null
+    mobileNumber: string | null
+    role: string | null
+    status: string | null
   }
 
   export type UserCountAggregateOutputType = {
     id: number
-    mobileNumber: number
     email: number
     name: number
-    isMobileVerified: number
-    status: number
-    role: number
     createdAt: number
     updatedAt: number
+    isMobileVerified: number
+    mobileNumber: number
+    role: number
+    status: number
     _all: number
   }
 
 
   export type UserMinAggregateInputType = {
     id?: true
-    mobileNumber?: true
     email?: true
     name?: true
-    isMobileVerified?: true
-    status?: true
-    role?: true
     createdAt?: true
     updatedAt?: true
+    isMobileVerified?: true
+    mobileNumber?: true
+    role?: true
+    status?: true
   }
 
   export type UserMaxAggregateInputType = {
     id?: true
-    mobileNumber?: true
     email?: true
     name?: true
-    isMobileVerified?: true
-    status?: true
-    role?: true
     createdAt?: true
     updatedAt?: true
+    isMobileVerified?: true
+    mobileNumber?: true
+    role?: true
+    status?: true
   }
 
   export type UserCountAggregateInputType = {
     id?: true
-    mobileNumber?: true
     email?: true
     name?: true
-    isMobileVerified?: true
-    status?: true
-    role?: true
     createdAt?: true
     updatedAt?: true
+    isMobileVerified?: true
+    mobileNumber?: true
+    role?: true
+    status?: true
     _all?: true
   }
 
@@ -1722,14 +1804,14 @@ export namespace Prisma {
 
   export type UserGroupByOutputType = {
     id: string
-    mobileNumber: string
     email: string | null
     name: string | null
-    isMobileVerified: boolean
-    status: string
-    role: string
     createdAt: Date
     updatedAt: Date
+    isMobileVerified: boolean
+    mobileNumber: string
+    role: string
+    status: string
     _count: UserCountAggregateOutputType | null
     _min: UserMinAggregateOutputType | null
     _max: UserMaxAggregateOutputType | null
@@ -1751,54 +1833,54 @@ export namespace Prisma {
 
   export type UserSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    mobileNumber?: boolean
     email?: boolean
     name?: boolean
-    isMobileVerified?: boolean
-    status?: boolean
-    role?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    weddings?: boolean | User$weddingsArgs<ExtArgs>
+    isMobileVerified?: boolean
+    mobileNumber?: boolean
+    role?: boolean
+    status?: boolean
     orders?: boolean | User$ordersArgs<ExtArgs>
+    weddings?: boolean | User$weddingsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
 
   export type UserSelectScalar = {
     id?: boolean
-    mobileNumber?: boolean
     email?: boolean
     name?: boolean
-    isMobileVerified?: boolean
-    status?: boolean
-    role?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    isMobileVerified?: boolean
+    mobileNumber?: boolean
+    role?: boolean
+    status?: boolean
   }
 
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    weddings?: boolean | User$weddingsArgs<ExtArgs>
     orders?: boolean | User$ordersArgs<ExtArgs>
+    weddings?: boolean | User$weddingsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
 
   export type $UserPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "User"
     objects: {
-      weddings: Prisma.$WeddingPayload<ExtArgs>[]
       orders: Prisma.$OrderPayload<ExtArgs>[]
+      weddings: Prisma.$WeddingPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
-      mobileNumber: string
       email: string | null
       name: string | null
-      isMobileVerified: boolean
-      status: string
-      role: string
       createdAt: Date
       updatedAt: Date
+      isMobileVerified: boolean
+      mobileNumber: string
+      role: string
+      status: string
     }, ExtArgs["result"]["user"]>
     composites: {}
   }
@@ -2139,8 +2221,8 @@ export namespace Prisma {
    */
   export interface Prisma__UserClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    weddings<T extends User$weddingsArgs<ExtArgs> = {}>(args?: Subset<T, User$weddingsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WeddingPayload<ExtArgs>, T, "findMany"> | Null>
     orders<T extends User$ordersArgs<ExtArgs> = {}>(args?: Subset<T, User$ordersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OrderPayload<ExtArgs>, T, "findMany"> | Null>
+    weddings<T extends User$weddingsArgs<ExtArgs> = {}>(args?: Subset<T, User$weddingsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WeddingPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2171,14 +2253,14 @@ export namespace Prisma {
    */ 
   interface UserFieldRefs {
     readonly id: FieldRef<"User", 'String'>
-    readonly mobileNumber: FieldRef<"User", 'String'>
     readonly email: FieldRef<"User", 'String'>
     readonly name: FieldRef<"User", 'String'>
-    readonly isMobileVerified: FieldRef<"User", 'Boolean'>
-    readonly status: FieldRef<"User", 'String'>
-    readonly role: FieldRef<"User", 'String'>
     readonly createdAt: FieldRef<"User", 'DateTime'>
     readonly updatedAt: FieldRef<"User", 'DateTime'>
+    readonly isMobileVerified: FieldRef<"User", 'Boolean'>
+    readonly mobileNumber: FieldRef<"User", 'String'>
+    readonly role: FieldRef<"User", 'String'>
+    readonly status: FieldRef<"User", 'String'>
   }
     
 
@@ -2477,26 +2559,6 @@ export namespace Prisma {
   }
 
   /**
-   * User.weddings
-   */
-  export type User$weddingsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Wedding
-     */
-    select?: WeddingSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: WeddingInclude<ExtArgs> | null
-    where?: WeddingWhereInput
-    orderBy?: WeddingOrderByWithRelationInput | WeddingOrderByWithRelationInput[]
-    cursor?: WeddingWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: WeddingScalarFieldEnum | WeddingScalarFieldEnum[]
-  }
-
-  /**
    * User.orders
    */
   export type User$ordersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2514,6 +2576,26 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: OrderScalarFieldEnum | OrderScalarFieldEnum[]
+  }
+
+  /**
+   * User.weddings
+   */
+  export type User$weddingsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Wedding
+     */
+    select?: WeddingSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WeddingInclude<ExtArgs> | null
+    where?: WeddingWhereInput
+    orderBy?: WeddingOrderByWithRelationInput | WeddingOrderByWithRelationInput[]
+    cursor?: WeddingWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: WeddingScalarFieldEnum | WeddingScalarFieldEnum[]
   }
 
   /**
@@ -3424,130 +3506,144 @@ export namespace Prisma {
 
   export type AggregateBundle = {
     _count: BundleCountAggregateOutputType | null
+    _avg: BundleAvgAggregateOutputType | null
+    _sum: BundleSumAggregateOutputType | null
     _min: BundleMinAggregateOutputType | null
     _max: BundleMaxAggregateOutputType | null
+  }
+
+  export type BundleAvgAggregateOutputType = {
+    whatsappPrice: number | null
+    printablePrice: number | null
+    completePrice: number | null
+  }
+
+  export type BundleSumAggregateOutputType = {
+    whatsappPrice: number | null
+    printablePrice: number | null
+    completePrice: number | null
   }
 
   export type BundleMinAggregateOutputType = {
     id: string | null
     name: string | null
-    subtitle: string | null
-    price: string | null
-    features: string | null
-    printables: string | null
+    whatsappPrice: number | null
+    printablePrice: number | null
+    completePrice: number | null
     isPopular: boolean | null
     theme: string | null
     description: string | null
-    highlights: string | null
-    checklist: string | null
     isActive: boolean | null
     themeId: string | null
     createdAt: Date | null
     updatedAt: Date | null
     previewImages: string | null
     thumbnailUrl: string | null
+    itemImages: string | null
   }
 
   export type BundleMaxAggregateOutputType = {
     id: string | null
     name: string | null
-    subtitle: string | null
-    price: string | null
-    features: string | null
-    printables: string | null
+    whatsappPrice: number | null
+    printablePrice: number | null
+    completePrice: number | null
     isPopular: boolean | null
     theme: string | null
     description: string | null
-    highlights: string | null
-    checklist: string | null
     isActive: boolean | null
     themeId: string | null
     createdAt: Date | null
     updatedAt: Date | null
     previewImages: string | null
     thumbnailUrl: string | null
+    itemImages: string | null
   }
 
   export type BundleCountAggregateOutputType = {
     id: number
     name: number
-    subtitle: number
-    price: number
-    features: number
-    printables: number
+    whatsappPrice: number
+    printablePrice: number
+    completePrice: number
     isPopular: number
     theme: number
     description: number
-    highlights: number
-    checklist: number
     isActive: number
     themeId: number
     createdAt: number
     updatedAt: number
     previewImages: number
     thumbnailUrl: number
+    itemImages: number
     _all: number
   }
 
 
+  export type BundleAvgAggregateInputType = {
+    whatsappPrice?: true
+    printablePrice?: true
+    completePrice?: true
+  }
+
+  export type BundleSumAggregateInputType = {
+    whatsappPrice?: true
+    printablePrice?: true
+    completePrice?: true
+  }
+
   export type BundleMinAggregateInputType = {
     id?: true
     name?: true
-    subtitle?: true
-    price?: true
-    features?: true
-    printables?: true
+    whatsappPrice?: true
+    printablePrice?: true
+    completePrice?: true
     isPopular?: true
     theme?: true
     description?: true
-    highlights?: true
-    checklist?: true
     isActive?: true
     themeId?: true
     createdAt?: true
     updatedAt?: true
     previewImages?: true
     thumbnailUrl?: true
+    itemImages?: true
   }
 
   export type BundleMaxAggregateInputType = {
     id?: true
     name?: true
-    subtitle?: true
-    price?: true
-    features?: true
-    printables?: true
+    whatsappPrice?: true
+    printablePrice?: true
+    completePrice?: true
     isPopular?: true
     theme?: true
     description?: true
-    highlights?: true
-    checklist?: true
     isActive?: true
     themeId?: true
     createdAt?: true
     updatedAt?: true
     previewImages?: true
     thumbnailUrl?: true
+    itemImages?: true
   }
 
   export type BundleCountAggregateInputType = {
     id?: true
     name?: true
-    subtitle?: true
-    price?: true
-    features?: true
-    printables?: true
+    whatsappPrice?: true
+    printablePrice?: true
+    completePrice?: true
     isPopular?: true
     theme?: true
     description?: true
-    highlights?: true
-    checklist?: true
     isActive?: true
     themeId?: true
     createdAt?: true
     updatedAt?: true
     previewImages?: true
     thumbnailUrl?: true
+    itemImages?: true
     _all?: true
   }
 
@@ -3589,6 +3685,18 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
+     * Select which fields to average
+    **/
+    _avg?: BundleAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: BundleSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
      * Select which fields to find the minimum value
     **/
     _min?: BundleMinAggregateInputType
@@ -3619,6 +3727,8 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: BundleCountAggregateInputType | true
+    _avg?: BundleAvgAggregateInputType
+    _sum?: BundleSumAggregateInputType
     _min?: BundleMinAggregateInputType
     _max?: BundleMaxAggregateInputType
   }
@@ -3626,22 +3736,22 @@ export namespace Prisma {
   export type BundleGroupByOutputType = {
     id: string
     name: string
-    subtitle: string | null
-    price: string
-    features: string | null
-    printables: string | null
+    whatsappPrice: number
+    printablePrice: number
+    completePrice: number
     isPopular: boolean
     theme: string
     description: string | null
-    highlights: string | null
-    checklist: string | null
     isActive: boolean
     themeId: string | null
     createdAt: Date
     updatedAt: Date
     previewImages: string | null
     thumbnailUrl: string | null
+    itemImages: string | null
     _count: BundleCountAggregateOutputType | null
+    _avg: BundleAvgAggregateOutputType | null
+    _sum: BundleSumAggregateOutputType | null
     _min: BundleMinAggregateOutputType | null
     _max: BundleMaxAggregateOutputType | null
   }
@@ -3663,21 +3773,19 @@ export namespace Prisma {
   export type BundleSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
-    subtitle?: boolean
-    price?: boolean
-    features?: boolean
-    printables?: boolean
+    whatsappPrice?: boolean
+    printablePrice?: boolean
+    completePrice?: boolean
     isPopular?: boolean
     theme?: boolean
     description?: boolean
-    highlights?: boolean
-    checklist?: boolean
     isActive?: boolean
     themeId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     previewImages?: boolean
     thumbnailUrl?: boolean
+    itemImages?: boolean
     themeRef?: boolean | Bundle$themeRefArgs<ExtArgs>
     orders?: boolean | Bundle$ordersArgs<ExtArgs>
     _count?: boolean | BundleCountOutputTypeDefaultArgs<ExtArgs>
@@ -3687,21 +3795,19 @@ export namespace Prisma {
   export type BundleSelectScalar = {
     id?: boolean
     name?: boolean
-    subtitle?: boolean
-    price?: boolean
-    features?: boolean
-    printables?: boolean
+    whatsappPrice?: boolean
+    printablePrice?: boolean
+    completePrice?: boolean
     isPopular?: boolean
     theme?: boolean
     description?: boolean
-    highlights?: boolean
-    checklist?: boolean
     isActive?: boolean
     themeId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     previewImages?: boolean
     thumbnailUrl?: boolean
+    itemImages?: boolean
   }
 
   export type BundleInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3719,21 +3825,19 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       name: string
-      subtitle: string | null
-      price: string
-      features: string | null
-      printables: string | null
+      whatsappPrice: number
+      printablePrice: number
+      completePrice: number
       isPopular: boolean
       theme: string
       description: string | null
-      highlights: string | null
-      checklist: string | null
       isActive: boolean
       themeId: string | null
       createdAt: Date
       updatedAt: Date
       previewImages: string | null
       thumbnailUrl: string | null
+      itemImages: string | null
     }, ExtArgs["result"]["bundle"]>
     composites: {}
   }
@@ -4107,21 +4211,19 @@ export namespace Prisma {
   interface BundleFieldRefs {
     readonly id: FieldRef<"Bundle", 'String'>
     readonly name: FieldRef<"Bundle", 'String'>
-    readonly subtitle: FieldRef<"Bundle", 'String'>
-    readonly price: FieldRef<"Bundle", 'String'>
-    readonly features: FieldRef<"Bundle", 'String'>
-    readonly printables: FieldRef<"Bundle", 'String'>
+    readonly whatsappPrice: FieldRef<"Bundle", 'Int'>
+    readonly printablePrice: FieldRef<"Bundle", 'Int'>
+    readonly completePrice: FieldRef<"Bundle", 'Int'>
     readonly isPopular: FieldRef<"Bundle", 'Boolean'>
     readonly theme: FieldRef<"Bundle", 'String'>
     readonly description: FieldRef<"Bundle", 'String'>
-    readonly highlights: FieldRef<"Bundle", 'String'>
-    readonly checklist: FieldRef<"Bundle", 'String'>
     readonly isActive: FieldRef<"Bundle", 'Boolean'>
     readonly themeId: FieldRef<"Bundle", 'String'>
     readonly createdAt: FieldRef<"Bundle", 'DateTime'>
     readonly updatedAt: FieldRef<"Bundle", 'DateTime'>
     readonly previewImages: FieldRef<"Bundle", 'String'>
     readonly thumbnailUrl: FieldRef<"Bundle", 'String'>
+    readonly itemImages: FieldRef<"Bundle", 'String'>
   }
     
 
@@ -5423,11 +5525,11 @@ export namespace Prisma {
     description: string | null
     thumbnailUrl: string | null
     previewImages: string | null
-    isBestSeller: boolean | null
-    isPopular: boolean | null
     isActive: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
+    isBestSeller: boolean | null
+    isPopular: boolean | null
   }
 
   export type ThemeMaxAggregateOutputType = {
@@ -5436,11 +5538,11 @@ export namespace Prisma {
     description: string | null
     thumbnailUrl: string | null
     previewImages: string | null
-    isBestSeller: boolean | null
-    isPopular: boolean | null
     isActive: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
+    isBestSeller: boolean | null
+    isPopular: boolean | null
   }
 
   export type ThemeCountAggregateOutputType = {
@@ -5449,11 +5551,11 @@ export namespace Prisma {
     description: number
     thumbnailUrl: number
     previewImages: number
-    isBestSeller: number
-    isPopular: number
     isActive: number
     createdAt: number
     updatedAt: number
+    isBestSeller: number
+    isPopular: number
     _all: number
   }
 
@@ -5464,11 +5566,11 @@ export namespace Prisma {
     description?: true
     thumbnailUrl?: true
     previewImages?: true
-    isBestSeller?: true
-    isPopular?: true
     isActive?: true
     createdAt?: true
     updatedAt?: true
+    isBestSeller?: true
+    isPopular?: true
   }
 
   export type ThemeMaxAggregateInputType = {
@@ -5477,11 +5579,11 @@ export namespace Prisma {
     description?: true
     thumbnailUrl?: true
     previewImages?: true
-    isBestSeller?: true
-    isPopular?: true
     isActive?: true
     createdAt?: true
     updatedAt?: true
+    isBestSeller?: true
+    isPopular?: true
   }
 
   export type ThemeCountAggregateInputType = {
@@ -5490,11 +5592,11 @@ export namespace Prisma {
     description?: true
     thumbnailUrl?: true
     previewImages?: true
-    isBestSeller?: true
-    isPopular?: true
     isActive?: true
     createdAt?: true
     updatedAt?: true
+    isBestSeller?: true
+    isPopular?: true
     _all?: true
   }
 
@@ -5576,11 +5678,11 @@ export namespace Prisma {
     description: string | null
     thumbnailUrl: string | null
     previewImages: string | null
-    isBestSeller: boolean
-    isPopular: boolean
     isActive: boolean
     createdAt: Date
     updatedAt: Date
+    isBestSeller: boolean
+    isPopular: boolean
     _count: ThemeCountAggregateOutputType | null
     _min: ThemeMinAggregateOutputType | null
     _max: ThemeMaxAggregateOutputType | null
@@ -5606,11 +5708,11 @@ export namespace Prisma {
     description?: boolean
     thumbnailUrl?: boolean
     previewImages?: boolean
-    isBestSeller?: boolean
-    isPopular?: boolean
     isActive?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    isBestSeller?: boolean
+    isPopular?: boolean
     bundles?: boolean | Theme$bundlesArgs<ExtArgs>
     weddings?: boolean | Theme$weddingsArgs<ExtArgs>
     _count?: boolean | ThemeCountOutputTypeDefaultArgs<ExtArgs>
@@ -5623,11 +5725,11 @@ export namespace Prisma {
     description?: boolean
     thumbnailUrl?: boolean
     previewImages?: boolean
-    isBestSeller?: boolean
-    isPopular?: boolean
     isActive?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    isBestSeller?: boolean
+    isPopular?: boolean
   }
 
   export type ThemeInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -5648,11 +5750,11 @@ export namespace Prisma {
       description: string | null
       thumbnailUrl: string | null
       previewImages: string | null
-      isBestSeller: boolean
-      isPopular: boolean
       isActive: boolean
       createdAt: Date
       updatedAt: Date
+      isBestSeller: boolean
+      isPopular: boolean
     }, ExtArgs["result"]["theme"]>
     composites: {}
   }
@@ -6029,11 +6131,11 @@ export namespace Prisma {
     readonly description: FieldRef<"Theme", 'String'>
     readonly thumbnailUrl: FieldRef<"Theme", 'String'>
     readonly previewImages: FieldRef<"Theme", 'String'>
-    readonly isBestSeller: FieldRef<"Theme", 'Boolean'>
-    readonly isPopular: FieldRef<"Theme", 'Boolean'>
     readonly isActive: FieldRef<"Theme", 'Boolean'>
     readonly createdAt: FieldRef<"Theme", 'DateTime'>
     readonly updatedAt: FieldRef<"Theme", 'DateTime'>
+    readonly isBestSeller: FieldRef<"Theme", 'Boolean'>
+    readonly isPopular: FieldRef<"Theme", 'Boolean'>
   }
     
 
@@ -9411,6 +9513,930 @@ export namespace Prisma {
 
 
   /**
+   * Model Package
+   */
+
+  export type AggregatePackage = {
+    _count: PackageCountAggregateOutputType | null
+    _avg: PackageAvgAggregateOutputType | null
+    _sum: PackageSumAggregateOutputType | null
+    _min: PackageMinAggregateOutputType | null
+    _max: PackageMaxAggregateOutputType | null
+  }
+
+  export type PackageAvgAggregateOutputType = {
+    price: number | null
+    level: number | null
+  }
+
+  export type PackageSumAggregateOutputType = {
+    price: number | null
+    level: number | null
+  }
+
+  export type PackageMinAggregateOutputType = {
+    id: string | null
+    name: string | null
+    price: number | null
+    level: number | null
+    allowedItems: string | null
+    isActive: boolean | null
+    whatYouGet: string | null
+    productHighlights: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type PackageMaxAggregateOutputType = {
+    id: string | null
+    name: string | null
+    price: number | null
+    level: number | null
+    allowedItems: string | null
+    isActive: boolean | null
+    whatYouGet: string | null
+    productHighlights: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type PackageCountAggregateOutputType = {
+    id: number
+    name: number
+    price: number
+    level: number
+    allowedItems: number
+    isActive: number
+    whatYouGet: number
+    productHighlights: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type PackageAvgAggregateInputType = {
+    price?: true
+    level?: true
+  }
+
+  export type PackageSumAggregateInputType = {
+    price?: true
+    level?: true
+  }
+
+  export type PackageMinAggregateInputType = {
+    id?: true
+    name?: true
+    price?: true
+    level?: true
+    allowedItems?: true
+    isActive?: true
+    whatYouGet?: true
+    productHighlights?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type PackageMaxAggregateInputType = {
+    id?: true
+    name?: true
+    price?: true
+    level?: true
+    allowedItems?: true
+    isActive?: true
+    whatYouGet?: true
+    productHighlights?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type PackageCountAggregateInputType = {
+    id?: true
+    name?: true
+    price?: true
+    level?: true
+    allowedItems?: true
+    isActive?: true
+    whatYouGet?: true
+    productHighlights?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type PackageAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Package to aggregate.
+     */
+    where?: PackageWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Packages to fetch.
+     */
+    orderBy?: PackageOrderByWithRelationInput | PackageOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: PackageWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Packages from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Packages.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Packages
+    **/
+    _count?: true | PackageCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: PackageAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: PackageSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: PackageMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: PackageMaxAggregateInputType
+  }
+
+  export type GetPackageAggregateType<T extends PackageAggregateArgs> = {
+        [P in keyof T & keyof AggregatePackage]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregatePackage[P]>
+      : GetScalarType<T[P], AggregatePackage[P]>
+  }
+
+
+
+
+  export type PackageGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PackageWhereInput
+    orderBy?: PackageOrderByWithAggregationInput | PackageOrderByWithAggregationInput[]
+    by: PackageScalarFieldEnum[] | PackageScalarFieldEnum
+    having?: PackageScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: PackageCountAggregateInputType | true
+    _avg?: PackageAvgAggregateInputType
+    _sum?: PackageSumAggregateInputType
+    _min?: PackageMinAggregateInputType
+    _max?: PackageMaxAggregateInputType
+  }
+
+  export type PackageGroupByOutputType = {
+    id: string
+    name: string
+    price: number
+    level: number
+    allowedItems: string
+    isActive: boolean
+    whatYouGet: string | null
+    productHighlights: string | null
+    createdAt: Date
+    updatedAt: Date
+    _count: PackageCountAggregateOutputType | null
+    _avg: PackageAvgAggregateOutputType | null
+    _sum: PackageSumAggregateOutputType | null
+    _min: PackageMinAggregateOutputType | null
+    _max: PackageMaxAggregateOutputType | null
+  }
+
+  type GetPackageGroupByPayload<T extends PackageGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<PackageGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof PackageGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], PackageGroupByOutputType[P]>
+            : GetScalarType<T[P], PackageGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type PackageSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    name?: boolean
+    price?: boolean
+    level?: boolean
+    allowedItems?: boolean
+    isActive?: boolean
+    whatYouGet?: boolean
+    productHighlights?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["package"]>
+
+
+  export type PackageSelectScalar = {
+    id?: boolean
+    name?: boolean
+    price?: boolean
+    level?: boolean
+    allowedItems?: boolean
+    isActive?: boolean
+    whatYouGet?: boolean
+    productHighlights?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+
+  export type $PackagePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Package"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      name: string
+      price: number
+      level: number
+      allowedItems: string
+      isActive: boolean
+      whatYouGet: string | null
+      productHighlights: string | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["package"]>
+    composites: {}
+  }
+
+  type PackageGetPayload<S extends boolean | null | undefined | PackageDefaultArgs> = $Result.GetResult<Prisma.$PackagePayload, S>
+
+  type PackageCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<PackageFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: PackageCountAggregateInputType | true
+    }
+
+  export interface PackageDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Package'], meta: { name: 'Package' } }
+    /**
+     * Find zero or one Package that matches the filter.
+     * @param {PackageFindUniqueArgs} args - Arguments to find a Package
+     * @example
+     * // Get one Package
+     * const package = await prisma.package.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends PackageFindUniqueArgs>(args: SelectSubset<T, PackageFindUniqueArgs<ExtArgs>>): Prisma__PackageClient<$Result.GetResult<Prisma.$PackagePayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one Package that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {PackageFindUniqueOrThrowArgs} args - Arguments to find a Package
+     * @example
+     * // Get one Package
+     * const package = await prisma.package.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends PackageFindUniqueOrThrowArgs>(args: SelectSubset<T, PackageFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PackageClient<$Result.GetResult<Prisma.$PackagePayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first Package that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PackageFindFirstArgs} args - Arguments to find a Package
+     * @example
+     * // Get one Package
+     * const package = await prisma.package.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends PackageFindFirstArgs>(args?: SelectSubset<T, PackageFindFirstArgs<ExtArgs>>): Prisma__PackageClient<$Result.GetResult<Prisma.$PackagePayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first Package that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PackageFindFirstOrThrowArgs} args - Arguments to find a Package
+     * @example
+     * // Get one Package
+     * const package = await prisma.package.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends PackageFindFirstOrThrowArgs>(args?: SelectSubset<T, PackageFindFirstOrThrowArgs<ExtArgs>>): Prisma__PackageClient<$Result.GetResult<Prisma.$PackagePayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more Packages that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PackageFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Packages
+     * const packages = await prisma.package.findMany()
+     * 
+     * // Get first 10 Packages
+     * const packages = await prisma.package.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const packageWithIdOnly = await prisma.package.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends PackageFindManyArgs>(args?: SelectSubset<T, PackageFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PackagePayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a Package.
+     * @param {PackageCreateArgs} args - Arguments to create a Package.
+     * @example
+     * // Create one Package
+     * const Package = await prisma.package.create({
+     *   data: {
+     *     // ... data to create a Package
+     *   }
+     * })
+     * 
+     */
+    create<T extends PackageCreateArgs>(args: SelectSubset<T, PackageCreateArgs<ExtArgs>>): Prisma__PackageClient<$Result.GetResult<Prisma.$PackagePayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many Packages.
+     * @param {PackageCreateManyArgs} args - Arguments to create many Packages.
+     * @example
+     * // Create many Packages
+     * const package = await prisma.package.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends PackageCreateManyArgs>(args?: SelectSubset<T, PackageCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a Package.
+     * @param {PackageDeleteArgs} args - Arguments to delete one Package.
+     * @example
+     * // Delete one Package
+     * const Package = await prisma.package.delete({
+     *   where: {
+     *     // ... filter to delete one Package
+     *   }
+     * })
+     * 
+     */
+    delete<T extends PackageDeleteArgs>(args: SelectSubset<T, PackageDeleteArgs<ExtArgs>>): Prisma__PackageClient<$Result.GetResult<Prisma.$PackagePayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one Package.
+     * @param {PackageUpdateArgs} args - Arguments to update one Package.
+     * @example
+     * // Update one Package
+     * const package = await prisma.package.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends PackageUpdateArgs>(args: SelectSubset<T, PackageUpdateArgs<ExtArgs>>): Prisma__PackageClient<$Result.GetResult<Prisma.$PackagePayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more Packages.
+     * @param {PackageDeleteManyArgs} args - Arguments to filter Packages to delete.
+     * @example
+     * // Delete a few Packages
+     * const { count } = await prisma.package.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends PackageDeleteManyArgs>(args?: SelectSubset<T, PackageDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Packages.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PackageUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Packages
+     * const package = await prisma.package.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends PackageUpdateManyArgs>(args: SelectSubset<T, PackageUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one Package.
+     * @param {PackageUpsertArgs} args - Arguments to update or create a Package.
+     * @example
+     * // Update or create a Package
+     * const package = await prisma.package.upsert({
+     *   create: {
+     *     // ... data to create a Package
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Package we want to update
+     *   }
+     * })
+     */
+    upsert<T extends PackageUpsertArgs>(args: SelectSubset<T, PackageUpsertArgs<ExtArgs>>): Prisma__PackageClient<$Result.GetResult<Prisma.$PackagePayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of Packages.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PackageCountArgs} args - Arguments to filter Packages to count.
+     * @example
+     * // Count the number of Packages
+     * const count = await prisma.package.count({
+     *   where: {
+     *     // ... the filter for the Packages we want to count
+     *   }
+     * })
+    **/
+    count<T extends PackageCountArgs>(
+      args?: Subset<T, PackageCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], PackageCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Package.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PackageAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends PackageAggregateArgs>(args: Subset<T, PackageAggregateArgs>): Prisma.PrismaPromise<GetPackageAggregateType<T>>
+
+    /**
+     * Group by Package.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PackageGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends PackageGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: PackageGroupByArgs['orderBy'] }
+        : { orderBy?: PackageGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, PackageGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPackageGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Package model
+   */
+  readonly fields: PackageFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Package.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__PackageClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Package model
+   */ 
+  interface PackageFieldRefs {
+    readonly id: FieldRef<"Package", 'String'>
+    readonly name: FieldRef<"Package", 'String'>
+    readonly price: FieldRef<"Package", 'Int'>
+    readonly level: FieldRef<"Package", 'Int'>
+    readonly allowedItems: FieldRef<"Package", 'String'>
+    readonly isActive: FieldRef<"Package", 'Boolean'>
+    readonly whatYouGet: FieldRef<"Package", 'String'>
+    readonly productHighlights: FieldRef<"Package", 'String'>
+    readonly createdAt: FieldRef<"Package", 'DateTime'>
+    readonly updatedAt: FieldRef<"Package", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Package findUnique
+   */
+  export type PackageFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Package
+     */
+    select?: PackageSelect<ExtArgs> | null
+    /**
+     * Filter, which Package to fetch.
+     */
+    where: PackageWhereUniqueInput
+  }
+
+  /**
+   * Package findUniqueOrThrow
+   */
+  export type PackageFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Package
+     */
+    select?: PackageSelect<ExtArgs> | null
+    /**
+     * Filter, which Package to fetch.
+     */
+    where: PackageWhereUniqueInput
+  }
+
+  /**
+   * Package findFirst
+   */
+  export type PackageFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Package
+     */
+    select?: PackageSelect<ExtArgs> | null
+    /**
+     * Filter, which Package to fetch.
+     */
+    where?: PackageWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Packages to fetch.
+     */
+    orderBy?: PackageOrderByWithRelationInput | PackageOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Packages.
+     */
+    cursor?: PackageWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Packages from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Packages.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Packages.
+     */
+    distinct?: PackageScalarFieldEnum | PackageScalarFieldEnum[]
+  }
+
+  /**
+   * Package findFirstOrThrow
+   */
+  export type PackageFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Package
+     */
+    select?: PackageSelect<ExtArgs> | null
+    /**
+     * Filter, which Package to fetch.
+     */
+    where?: PackageWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Packages to fetch.
+     */
+    orderBy?: PackageOrderByWithRelationInput | PackageOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Packages.
+     */
+    cursor?: PackageWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Packages from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Packages.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Packages.
+     */
+    distinct?: PackageScalarFieldEnum | PackageScalarFieldEnum[]
+  }
+
+  /**
+   * Package findMany
+   */
+  export type PackageFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Package
+     */
+    select?: PackageSelect<ExtArgs> | null
+    /**
+     * Filter, which Packages to fetch.
+     */
+    where?: PackageWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Packages to fetch.
+     */
+    orderBy?: PackageOrderByWithRelationInput | PackageOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Packages.
+     */
+    cursor?: PackageWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Packages from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Packages.
+     */
+    skip?: number
+    distinct?: PackageScalarFieldEnum | PackageScalarFieldEnum[]
+  }
+
+  /**
+   * Package create
+   */
+  export type PackageCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Package
+     */
+    select?: PackageSelect<ExtArgs> | null
+    /**
+     * The data needed to create a Package.
+     */
+    data: XOR<PackageCreateInput, PackageUncheckedCreateInput>
+  }
+
+  /**
+   * Package createMany
+   */
+  export type PackageCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Packages.
+     */
+    data: PackageCreateManyInput | PackageCreateManyInput[]
+  }
+
+  /**
+   * Package update
+   */
+  export type PackageUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Package
+     */
+    select?: PackageSelect<ExtArgs> | null
+    /**
+     * The data needed to update a Package.
+     */
+    data: XOR<PackageUpdateInput, PackageUncheckedUpdateInput>
+    /**
+     * Choose, which Package to update.
+     */
+    where: PackageWhereUniqueInput
+  }
+
+  /**
+   * Package updateMany
+   */
+  export type PackageUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Packages.
+     */
+    data: XOR<PackageUpdateManyMutationInput, PackageUncheckedUpdateManyInput>
+    /**
+     * Filter which Packages to update
+     */
+    where?: PackageWhereInput
+  }
+
+  /**
+   * Package upsert
+   */
+  export type PackageUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Package
+     */
+    select?: PackageSelect<ExtArgs> | null
+    /**
+     * The filter to search for the Package to update in case it exists.
+     */
+    where: PackageWhereUniqueInput
+    /**
+     * In case the Package found by the `where` argument doesn't exist, create a new Package with this data.
+     */
+    create: XOR<PackageCreateInput, PackageUncheckedCreateInput>
+    /**
+     * In case the Package was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<PackageUpdateInput, PackageUncheckedUpdateInput>
+  }
+
+  /**
+   * Package delete
+   */
+  export type PackageDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Package
+     */
+    select?: PackageSelect<ExtArgs> | null
+    /**
+     * Filter which Package to delete.
+     */
+    where: PackageWhereUniqueInput
+  }
+
+  /**
+   * Package deleteMany
+   */
+  export type PackageDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Packages to delete
+     */
+    where?: PackageWhereInput
+  }
+
+  /**
+   * Package without action
+   */
+  export type PackageDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Package
+     */
+    select?: PackageSelect<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -9427,14 +10453,14 @@ export namespace Prisma {
 
   export const UserScalarFieldEnum: {
     id: 'id',
-    mobileNumber: 'mobileNumber',
     email: 'email',
     name: 'name',
-    isMobileVerified: 'isMobileVerified',
-    status: 'status',
-    role: 'role',
     createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
+    updatedAt: 'updatedAt',
+    isMobileVerified: 'isMobileVerified',
+    mobileNumber: 'mobileNumber',
+    role: 'role',
+    status: 'status'
   };
 
   export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
@@ -9456,21 +10482,19 @@ export namespace Prisma {
   export const BundleScalarFieldEnum: {
     id: 'id',
     name: 'name',
-    subtitle: 'subtitle',
-    price: 'price',
-    features: 'features',
-    printables: 'printables',
+    whatsappPrice: 'whatsappPrice',
+    printablePrice: 'printablePrice',
+    completePrice: 'completePrice',
     isPopular: 'isPopular',
     theme: 'theme',
     description: 'description',
-    highlights: 'highlights',
-    checklist: 'checklist',
     isActive: 'isActive',
     themeId: 'themeId',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
     previewImages: 'previewImages',
-    thumbnailUrl: 'thumbnailUrl'
+    thumbnailUrl: 'thumbnailUrl',
+    itemImages: 'itemImages'
   };
 
   export type BundleScalarFieldEnum = (typeof BundleScalarFieldEnum)[keyof typeof BundleScalarFieldEnum]
@@ -9495,11 +10519,11 @@ export namespace Prisma {
     description: 'description',
     thumbnailUrl: 'thumbnailUrl',
     previewImages: 'previewImages',
-    isBestSeller: 'isBestSeller',
-    isPopular: 'isPopular',
     isActive: 'isActive',
     createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
+    updatedAt: 'updatedAt',
+    isBestSeller: 'isBestSeller',
+    isPopular: 'isPopular'
   };
 
   export type ThemeScalarFieldEnum = (typeof ThemeScalarFieldEnum)[keyof typeof ThemeScalarFieldEnum]
@@ -9562,6 +10586,22 @@ export namespace Prisma {
   export type RSVPScalarFieldEnum = (typeof RSVPScalarFieldEnum)[keyof typeof RSVPScalarFieldEnum]
 
 
+  export const PackageScalarFieldEnum: {
+    id: 'id',
+    name: 'name',
+    price: 'price',
+    level: 'level',
+    allowedItems: 'allowedItems',
+    isActive: 'isActive',
+    whatYouGet: 'whatYouGet',
+    productHighlights: 'productHighlights',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type PackageScalarFieldEnum = (typeof PackageScalarFieldEnum)[keyof typeof PackageScalarFieldEnum]
+
+
   export const SortOrder: {
     asc: 'asc',
     desc: 'desc'
@@ -9591,16 +10631,16 @@ export namespace Prisma {
 
 
   /**
-   * Reference to a field of type 'Boolean'
+   * Reference to a field of type 'DateTime'
    */
-  export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+  export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
     
 
 
   /**
-   * Reference to a field of type 'DateTime'
+   * Reference to a field of type 'Boolean'
    */
-  export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
+  export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
     
 
 
@@ -9626,59 +10666,59 @@ export namespace Prisma {
     OR?: UserWhereInput[]
     NOT?: UserWhereInput | UserWhereInput[]
     id?: StringFilter<"User"> | string
-    mobileNumber?: StringFilter<"User"> | string
     email?: StringNullableFilter<"User"> | string | null
     name?: StringNullableFilter<"User"> | string | null
-    isMobileVerified?: BoolFilter<"User"> | boolean
-    status?: StringFilter<"User"> | string
-    role?: StringFilter<"User"> | string
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
-    weddings?: WeddingListRelationFilter
+    isMobileVerified?: BoolFilter<"User"> | boolean
+    mobileNumber?: StringFilter<"User"> | string
+    role?: StringFilter<"User"> | string
+    status?: StringFilter<"User"> | string
     orders?: OrderListRelationFilter
+    weddings?: WeddingListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
     id?: SortOrder
-    mobileNumber?: SortOrder
     email?: SortOrderInput | SortOrder
     name?: SortOrderInput | SortOrder
-    isMobileVerified?: SortOrder
-    status?: SortOrder
-    role?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    weddings?: WeddingOrderByRelationAggregateInput
+    isMobileVerified?: SortOrder
+    mobileNumber?: SortOrder
+    role?: SortOrder
+    status?: SortOrder
     orders?: OrderOrderByRelationAggregateInput
+    weddings?: WeddingOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    mobileNumber?: string
     email?: string
+    mobileNumber?: string
     AND?: UserWhereInput | UserWhereInput[]
     OR?: UserWhereInput[]
     NOT?: UserWhereInput | UserWhereInput[]
     name?: StringNullableFilter<"User"> | string | null
-    isMobileVerified?: BoolFilter<"User"> | boolean
-    status?: StringFilter<"User"> | string
-    role?: StringFilter<"User"> | string
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
-    weddings?: WeddingListRelationFilter
+    isMobileVerified?: BoolFilter<"User"> | boolean
+    role?: StringFilter<"User"> | string
+    status?: StringFilter<"User"> | string
     orders?: OrderListRelationFilter
-  }, "id" | "mobileNumber" | "email">
+    weddings?: WeddingListRelationFilter
+  }, "id" | "email" | "mobileNumber">
 
   export type UserOrderByWithAggregationInput = {
     id?: SortOrder
-    mobileNumber?: SortOrder
     email?: SortOrderInput | SortOrder
     name?: SortOrderInput | SortOrder
-    isMobileVerified?: SortOrder
-    status?: SortOrder
-    role?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    isMobileVerified?: SortOrder
+    mobileNumber?: SortOrder
+    role?: SortOrder
+    status?: SortOrder
     _count?: UserCountOrderByAggregateInput
     _max?: UserMaxOrderByAggregateInput
     _min?: UserMinOrderByAggregateInput
@@ -9689,14 +10729,14 @@ export namespace Prisma {
     OR?: UserScalarWhereWithAggregatesInput[]
     NOT?: UserScalarWhereWithAggregatesInput | UserScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"User"> | string
-    mobileNumber?: StringWithAggregatesFilter<"User"> | string
     email?: StringNullableWithAggregatesFilter<"User"> | string | null
     name?: StringNullableWithAggregatesFilter<"User"> | string | null
-    isMobileVerified?: BoolWithAggregatesFilter<"User"> | boolean
-    status?: StringWithAggregatesFilter<"User"> | string
-    role?: StringWithAggregatesFilter<"User"> | string
     createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
+    isMobileVerified?: BoolWithAggregatesFilter<"User"> | boolean
+    mobileNumber?: StringWithAggregatesFilter<"User"> | string
+    role?: StringWithAggregatesFilter<"User"> | string
+    status?: StringWithAggregatesFilter<"User"> | string
   }
 
   export type OTPRequestWhereInput = {
@@ -9769,21 +10809,19 @@ export namespace Prisma {
     NOT?: BundleWhereInput | BundleWhereInput[]
     id?: StringFilter<"Bundle"> | string
     name?: StringFilter<"Bundle"> | string
-    subtitle?: StringNullableFilter<"Bundle"> | string | null
-    price?: StringFilter<"Bundle"> | string
-    features?: StringNullableFilter<"Bundle"> | string | null
-    printables?: StringNullableFilter<"Bundle"> | string | null
+    whatsappPrice?: IntFilter<"Bundle"> | number
+    printablePrice?: IntFilter<"Bundle"> | number
+    completePrice?: IntFilter<"Bundle"> | number
     isPopular?: BoolFilter<"Bundle"> | boolean
     theme?: StringFilter<"Bundle"> | string
     description?: StringNullableFilter<"Bundle"> | string | null
-    highlights?: StringNullableFilter<"Bundle"> | string | null
-    checklist?: StringNullableFilter<"Bundle"> | string | null
     isActive?: BoolFilter<"Bundle"> | boolean
     themeId?: StringNullableFilter<"Bundle"> | string | null
     createdAt?: DateTimeFilter<"Bundle"> | Date | string
     updatedAt?: DateTimeFilter<"Bundle"> | Date | string
     previewImages?: StringNullableFilter<"Bundle"> | string | null
     thumbnailUrl?: StringNullableFilter<"Bundle"> | string | null
+    itemImages?: StringNullableFilter<"Bundle"> | string | null
     themeRef?: XOR<ThemeNullableRelationFilter, ThemeWhereInput> | null
     orders?: OrderListRelationFilter
   }
@@ -9791,21 +10829,19 @@ export namespace Prisma {
   export type BundleOrderByWithRelationInput = {
     id?: SortOrder
     name?: SortOrder
-    subtitle?: SortOrderInput | SortOrder
-    price?: SortOrder
-    features?: SortOrderInput | SortOrder
-    printables?: SortOrderInput | SortOrder
+    whatsappPrice?: SortOrder
+    printablePrice?: SortOrder
+    completePrice?: SortOrder
     isPopular?: SortOrder
     theme?: SortOrder
     description?: SortOrderInput | SortOrder
-    highlights?: SortOrderInput | SortOrder
-    checklist?: SortOrderInput | SortOrder
     isActive?: SortOrder
     themeId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     previewImages?: SortOrderInput | SortOrder
     thumbnailUrl?: SortOrderInput | SortOrder
+    itemImages?: SortOrderInput | SortOrder
     themeRef?: ThemeOrderByWithRelationInput
     orders?: OrderOrderByRelationAggregateInput
   }
@@ -9816,21 +10852,19 @@ export namespace Prisma {
     OR?: BundleWhereInput[]
     NOT?: BundleWhereInput | BundleWhereInput[]
     name?: StringFilter<"Bundle"> | string
-    subtitle?: StringNullableFilter<"Bundle"> | string | null
-    price?: StringFilter<"Bundle"> | string
-    features?: StringNullableFilter<"Bundle"> | string | null
-    printables?: StringNullableFilter<"Bundle"> | string | null
+    whatsappPrice?: IntFilter<"Bundle"> | number
+    printablePrice?: IntFilter<"Bundle"> | number
+    completePrice?: IntFilter<"Bundle"> | number
     isPopular?: BoolFilter<"Bundle"> | boolean
     theme?: StringFilter<"Bundle"> | string
     description?: StringNullableFilter<"Bundle"> | string | null
-    highlights?: StringNullableFilter<"Bundle"> | string | null
-    checklist?: StringNullableFilter<"Bundle"> | string | null
     isActive?: BoolFilter<"Bundle"> | boolean
     themeId?: StringNullableFilter<"Bundle"> | string | null
     createdAt?: DateTimeFilter<"Bundle"> | Date | string
     updatedAt?: DateTimeFilter<"Bundle"> | Date | string
     previewImages?: StringNullableFilter<"Bundle"> | string | null
     thumbnailUrl?: StringNullableFilter<"Bundle"> | string | null
+    itemImages?: StringNullableFilter<"Bundle"> | string | null
     themeRef?: XOR<ThemeNullableRelationFilter, ThemeWhereInput> | null
     orders?: OrderListRelationFilter
   }, "id">
@@ -9838,24 +10872,24 @@ export namespace Prisma {
   export type BundleOrderByWithAggregationInput = {
     id?: SortOrder
     name?: SortOrder
-    subtitle?: SortOrderInput | SortOrder
-    price?: SortOrder
-    features?: SortOrderInput | SortOrder
-    printables?: SortOrderInput | SortOrder
+    whatsappPrice?: SortOrder
+    printablePrice?: SortOrder
+    completePrice?: SortOrder
     isPopular?: SortOrder
     theme?: SortOrder
     description?: SortOrderInput | SortOrder
-    highlights?: SortOrderInput | SortOrder
-    checklist?: SortOrderInput | SortOrder
     isActive?: SortOrder
     themeId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     previewImages?: SortOrderInput | SortOrder
     thumbnailUrl?: SortOrderInput | SortOrder
+    itemImages?: SortOrderInput | SortOrder
     _count?: BundleCountOrderByAggregateInput
+    _avg?: BundleAvgOrderByAggregateInput
     _max?: BundleMaxOrderByAggregateInput
     _min?: BundleMinOrderByAggregateInput
+    _sum?: BundleSumOrderByAggregateInput
   }
 
   export type BundleScalarWhereWithAggregatesInput = {
@@ -9864,21 +10898,19 @@ export namespace Prisma {
     NOT?: BundleScalarWhereWithAggregatesInput | BundleScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Bundle"> | string
     name?: StringWithAggregatesFilter<"Bundle"> | string
-    subtitle?: StringNullableWithAggregatesFilter<"Bundle"> | string | null
-    price?: StringWithAggregatesFilter<"Bundle"> | string
-    features?: StringNullableWithAggregatesFilter<"Bundle"> | string | null
-    printables?: StringNullableWithAggregatesFilter<"Bundle"> | string | null
+    whatsappPrice?: IntWithAggregatesFilter<"Bundle"> | number
+    printablePrice?: IntWithAggregatesFilter<"Bundle"> | number
+    completePrice?: IntWithAggregatesFilter<"Bundle"> | number
     isPopular?: BoolWithAggregatesFilter<"Bundle"> | boolean
     theme?: StringWithAggregatesFilter<"Bundle"> | string
     description?: StringNullableWithAggregatesFilter<"Bundle"> | string | null
-    highlights?: StringNullableWithAggregatesFilter<"Bundle"> | string | null
-    checklist?: StringNullableWithAggregatesFilter<"Bundle"> | string | null
     isActive?: BoolWithAggregatesFilter<"Bundle"> | boolean
     themeId?: StringNullableWithAggregatesFilter<"Bundle"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Bundle"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Bundle"> | Date | string
     previewImages?: StringNullableWithAggregatesFilter<"Bundle"> | string | null
     thumbnailUrl?: StringNullableWithAggregatesFilter<"Bundle"> | string | null
+    itemImages?: StringNullableWithAggregatesFilter<"Bundle"> | string | null
   }
 
   export type OrderWhereInput = {
@@ -9960,11 +10992,11 @@ export namespace Prisma {
     description?: StringNullableFilter<"Theme"> | string | null
     thumbnailUrl?: StringNullableFilter<"Theme"> | string | null
     previewImages?: StringNullableFilter<"Theme"> | string | null
-    isBestSeller?: BoolFilter<"Theme"> | boolean
-    isPopular?: BoolFilter<"Theme"> | boolean
     isActive?: BoolFilter<"Theme"> | boolean
     createdAt?: DateTimeFilter<"Theme"> | Date | string
     updatedAt?: DateTimeFilter<"Theme"> | Date | string
+    isBestSeller?: BoolFilter<"Theme"> | boolean
+    isPopular?: BoolFilter<"Theme"> | boolean
     bundles?: BundleListRelationFilter
     weddings?: WeddingListRelationFilter
   }
@@ -9975,11 +11007,11 @@ export namespace Prisma {
     description?: SortOrderInput | SortOrder
     thumbnailUrl?: SortOrderInput | SortOrder
     previewImages?: SortOrderInput | SortOrder
-    isBestSeller?: SortOrder
-    isPopular?: SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    isBestSeller?: SortOrder
+    isPopular?: SortOrder
     bundles?: BundleOrderByRelationAggregateInput
     weddings?: WeddingOrderByRelationAggregateInput
   }
@@ -9993,11 +11025,11 @@ export namespace Prisma {
     description?: StringNullableFilter<"Theme"> | string | null
     thumbnailUrl?: StringNullableFilter<"Theme"> | string | null
     previewImages?: StringNullableFilter<"Theme"> | string | null
-    isBestSeller?: BoolFilter<"Theme"> | boolean
-    isPopular?: BoolFilter<"Theme"> | boolean
     isActive?: BoolFilter<"Theme"> | boolean
     createdAt?: DateTimeFilter<"Theme"> | Date | string
     updatedAt?: DateTimeFilter<"Theme"> | Date | string
+    isBestSeller?: BoolFilter<"Theme"> | boolean
+    isPopular?: BoolFilter<"Theme"> | boolean
     bundles?: BundleListRelationFilter
     weddings?: WeddingListRelationFilter
   }, "id">
@@ -10008,11 +11040,11 @@ export namespace Prisma {
     description?: SortOrderInput | SortOrder
     thumbnailUrl?: SortOrderInput | SortOrder
     previewImages?: SortOrderInput | SortOrder
-    isBestSeller?: SortOrder
-    isPopular?: SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    isBestSeller?: SortOrder
+    isPopular?: SortOrder
     _count?: ThemeCountOrderByAggregateInput
     _max?: ThemeMaxOrderByAggregateInput
     _min?: ThemeMinOrderByAggregateInput
@@ -10027,11 +11059,11 @@ export namespace Prisma {
     description?: StringNullableWithAggregatesFilter<"Theme"> | string | null
     thumbnailUrl?: StringNullableWithAggregatesFilter<"Theme"> | string | null
     previewImages?: StringNullableWithAggregatesFilter<"Theme"> | string | null
-    isBestSeller?: BoolWithAggregatesFilter<"Theme"> | boolean
-    isPopular?: BoolWithAggregatesFilter<"Theme"> | boolean
     isActive?: BoolWithAggregatesFilter<"Theme"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"Theme"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Theme"> | Date | string
+    isBestSeller?: BoolWithAggregatesFilter<"Theme"> | boolean
+    isPopular?: BoolWithAggregatesFilter<"Theme"> | boolean
   }
 
   export type WeddingWhereInput = {
@@ -10332,96 +11364,175 @@ export namespace Prisma {
     updatedAt?: DateTimeWithAggregatesFilter<"RSVP"> | Date | string
   }
 
+  export type PackageWhereInput = {
+    AND?: PackageWhereInput | PackageWhereInput[]
+    OR?: PackageWhereInput[]
+    NOT?: PackageWhereInput | PackageWhereInput[]
+    id?: StringFilter<"Package"> | string
+    name?: StringFilter<"Package"> | string
+    price?: IntFilter<"Package"> | number
+    level?: IntFilter<"Package"> | number
+    allowedItems?: StringFilter<"Package"> | string
+    isActive?: BoolFilter<"Package"> | boolean
+    whatYouGet?: StringNullableFilter<"Package"> | string | null
+    productHighlights?: StringNullableFilter<"Package"> | string | null
+    createdAt?: DateTimeFilter<"Package"> | Date | string
+    updatedAt?: DateTimeFilter<"Package"> | Date | string
+  }
+
+  export type PackageOrderByWithRelationInput = {
+    id?: SortOrder
+    name?: SortOrder
+    price?: SortOrder
+    level?: SortOrder
+    allowedItems?: SortOrder
+    isActive?: SortOrder
+    whatYouGet?: SortOrderInput | SortOrder
+    productHighlights?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PackageWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: PackageWhereInput | PackageWhereInput[]
+    OR?: PackageWhereInput[]
+    NOT?: PackageWhereInput | PackageWhereInput[]
+    name?: StringFilter<"Package"> | string
+    price?: IntFilter<"Package"> | number
+    level?: IntFilter<"Package"> | number
+    allowedItems?: StringFilter<"Package"> | string
+    isActive?: BoolFilter<"Package"> | boolean
+    whatYouGet?: StringNullableFilter<"Package"> | string | null
+    productHighlights?: StringNullableFilter<"Package"> | string | null
+    createdAt?: DateTimeFilter<"Package"> | Date | string
+    updatedAt?: DateTimeFilter<"Package"> | Date | string
+  }, "id">
+
+  export type PackageOrderByWithAggregationInput = {
+    id?: SortOrder
+    name?: SortOrder
+    price?: SortOrder
+    level?: SortOrder
+    allowedItems?: SortOrder
+    isActive?: SortOrder
+    whatYouGet?: SortOrderInput | SortOrder
+    productHighlights?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: PackageCountOrderByAggregateInput
+    _avg?: PackageAvgOrderByAggregateInput
+    _max?: PackageMaxOrderByAggregateInput
+    _min?: PackageMinOrderByAggregateInput
+    _sum?: PackageSumOrderByAggregateInput
+  }
+
+  export type PackageScalarWhereWithAggregatesInput = {
+    AND?: PackageScalarWhereWithAggregatesInput | PackageScalarWhereWithAggregatesInput[]
+    OR?: PackageScalarWhereWithAggregatesInput[]
+    NOT?: PackageScalarWhereWithAggregatesInput | PackageScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Package"> | string
+    name?: StringWithAggregatesFilter<"Package"> | string
+    price?: IntWithAggregatesFilter<"Package"> | number
+    level?: IntWithAggregatesFilter<"Package"> | number
+    allowedItems?: StringWithAggregatesFilter<"Package"> | string
+    isActive?: BoolWithAggregatesFilter<"Package"> | boolean
+    whatYouGet?: StringNullableWithAggregatesFilter<"Package"> | string | null
+    productHighlights?: StringNullableWithAggregatesFilter<"Package"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"Package"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"Package"> | Date | string
+  }
+
   export type UserCreateInput = {
     id?: string
-    mobileNumber: string
     email?: string | null
     name?: string | null
-    isMobileVerified?: boolean
-    status?: string
-    role?: string
     createdAt?: Date | string
     updatedAt?: Date | string
-    weddings?: WeddingCreateNestedManyWithoutOwnerInput
+    isMobileVerified?: boolean
+    mobileNumber: string
+    role?: string
+    status?: string
     orders?: OrderCreateNestedManyWithoutUserInput
+    weddings?: WeddingCreateNestedManyWithoutOwnerInput
   }
 
   export type UserUncheckedCreateInput = {
     id?: string
-    mobileNumber: string
     email?: string | null
     name?: string | null
-    isMobileVerified?: boolean
-    status?: string
-    role?: string
     createdAt?: Date | string
     updatedAt?: Date | string
-    weddings?: WeddingUncheckedCreateNestedManyWithoutOwnerInput
+    isMobileVerified?: boolean
+    mobileNumber: string
+    role?: string
+    status?: string
     orders?: OrderUncheckedCreateNestedManyWithoutUserInput
+    weddings?: WeddingUncheckedCreateNestedManyWithoutOwnerInput
   }
 
   export type UserUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    mobileNumber?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
     name?: NullableStringFieldUpdateOperationsInput | string | null
-    isMobileVerified?: BoolFieldUpdateOperationsInput | boolean
-    status?: StringFieldUpdateOperationsInput | string
-    role?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    weddings?: WeddingUpdateManyWithoutOwnerNestedInput
+    isMobileVerified?: BoolFieldUpdateOperationsInput | boolean
+    mobileNumber?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
     orders?: OrderUpdateManyWithoutUserNestedInput
+    weddings?: WeddingUpdateManyWithoutOwnerNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    mobileNumber?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
     name?: NullableStringFieldUpdateOperationsInput | string | null
-    isMobileVerified?: BoolFieldUpdateOperationsInput | boolean
-    status?: StringFieldUpdateOperationsInput | string
-    role?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    weddings?: WeddingUncheckedUpdateManyWithoutOwnerNestedInput
+    isMobileVerified?: BoolFieldUpdateOperationsInput | boolean
+    mobileNumber?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
     orders?: OrderUncheckedUpdateManyWithoutUserNestedInput
+    weddings?: WeddingUncheckedUpdateManyWithoutOwnerNestedInput
   }
 
   export type UserCreateManyInput = {
     id?: string
-    mobileNumber: string
     email?: string | null
     name?: string | null
-    isMobileVerified?: boolean
-    status?: string
-    role?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    isMobileVerified?: boolean
+    mobileNumber: string
+    role?: string
+    status?: string
   }
 
   export type UserUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
-    mobileNumber?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
     name?: NullableStringFieldUpdateOperationsInput | string | null
-    isMobileVerified?: BoolFieldUpdateOperationsInput | boolean
-    status?: StringFieldUpdateOperationsInput | string
-    role?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isMobileVerified?: BoolFieldUpdateOperationsInput | boolean
+    mobileNumber?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
   }
 
   export type UserUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
-    mobileNumber?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
     name?: NullableStringFieldUpdateOperationsInput | string | null
-    isMobileVerified?: BoolFieldUpdateOperationsInput | boolean
-    status?: StringFieldUpdateOperationsInput | string
-    role?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isMobileVerified?: BoolFieldUpdateOperationsInput | boolean
+    mobileNumber?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
   }
 
   export type OTPRequestCreateInput = {
@@ -10497,20 +11608,18 @@ export namespace Prisma {
   export type BundleCreateInput = {
     id?: string
     name: string
-    subtitle?: string | null
-    price: string
-    features?: string | null
-    printables?: string | null
+    whatsappPrice?: number
+    printablePrice?: number
+    completePrice?: number
     isPopular?: boolean
     theme?: string
     description?: string | null
-    highlights?: string | null
-    checklist?: string | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     previewImages?: string | null
     thumbnailUrl?: string | null
+    itemImages?: string | null
     themeRef?: ThemeCreateNestedOneWithoutBundlesInput
     orders?: OrderCreateNestedManyWithoutBundleInput
   }
@@ -10518,41 +11627,37 @@ export namespace Prisma {
   export type BundleUncheckedCreateInput = {
     id?: string
     name: string
-    subtitle?: string | null
-    price: string
-    features?: string | null
-    printables?: string | null
+    whatsappPrice?: number
+    printablePrice?: number
+    completePrice?: number
     isPopular?: boolean
     theme?: string
     description?: string | null
-    highlights?: string | null
-    checklist?: string | null
     isActive?: boolean
     themeId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     previewImages?: string | null
     thumbnailUrl?: string | null
+    itemImages?: string | null
     orders?: OrderUncheckedCreateNestedManyWithoutBundleInput
   }
 
   export type BundleUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    subtitle?: NullableStringFieldUpdateOperationsInput | string | null
-    price?: StringFieldUpdateOperationsInput | string
-    features?: NullableStringFieldUpdateOperationsInput | string | null
-    printables?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPrice?: IntFieldUpdateOperationsInput | number
+    printablePrice?: IntFieldUpdateOperationsInput | number
+    completePrice?: IntFieldUpdateOperationsInput | number
     isPopular?: BoolFieldUpdateOperationsInput | boolean
     theme?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    highlights?: NullableStringFieldUpdateOperationsInput | string | null
-    checklist?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     previewImages?: NullableStringFieldUpdateOperationsInput | string | null
     thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    itemImages?: NullableStringFieldUpdateOperationsInput | string | null
     themeRef?: ThemeUpdateOneWithoutBundlesNestedInput
     orders?: OrderUpdateManyWithoutBundleNestedInput
   }
@@ -10560,81 +11665,73 @@ export namespace Prisma {
   export type BundleUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    subtitle?: NullableStringFieldUpdateOperationsInput | string | null
-    price?: StringFieldUpdateOperationsInput | string
-    features?: NullableStringFieldUpdateOperationsInput | string | null
-    printables?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPrice?: IntFieldUpdateOperationsInput | number
+    printablePrice?: IntFieldUpdateOperationsInput | number
+    completePrice?: IntFieldUpdateOperationsInput | number
     isPopular?: BoolFieldUpdateOperationsInput | boolean
     theme?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    highlights?: NullableStringFieldUpdateOperationsInput | string | null
-    checklist?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     themeId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     previewImages?: NullableStringFieldUpdateOperationsInput | string | null
     thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    itemImages?: NullableStringFieldUpdateOperationsInput | string | null
     orders?: OrderUncheckedUpdateManyWithoutBundleNestedInput
   }
 
   export type BundleCreateManyInput = {
     id?: string
     name: string
-    subtitle?: string | null
-    price: string
-    features?: string | null
-    printables?: string | null
+    whatsappPrice?: number
+    printablePrice?: number
+    completePrice?: number
     isPopular?: boolean
     theme?: string
     description?: string | null
-    highlights?: string | null
-    checklist?: string | null
     isActive?: boolean
     themeId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     previewImages?: string | null
     thumbnailUrl?: string | null
+    itemImages?: string | null
   }
 
   export type BundleUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    subtitle?: NullableStringFieldUpdateOperationsInput | string | null
-    price?: StringFieldUpdateOperationsInput | string
-    features?: NullableStringFieldUpdateOperationsInput | string | null
-    printables?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPrice?: IntFieldUpdateOperationsInput | number
+    printablePrice?: IntFieldUpdateOperationsInput | number
+    completePrice?: IntFieldUpdateOperationsInput | number
     isPopular?: BoolFieldUpdateOperationsInput | boolean
     theme?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    highlights?: NullableStringFieldUpdateOperationsInput | string | null
-    checklist?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     previewImages?: NullableStringFieldUpdateOperationsInput | string | null
     thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    itemImages?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type BundleUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    subtitle?: NullableStringFieldUpdateOperationsInput | string | null
-    price?: StringFieldUpdateOperationsInput | string
-    features?: NullableStringFieldUpdateOperationsInput | string | null
-    printables?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPrice?: IntFieldUpdateOperationsInput | number
+    printablePrice?: IntFieldUpdateOperationsInput | number
+    completePrice?: IntFieldUpdateOperationsInput | number
     isPopular?: BoolFieldUpdateOperationsInput | boolean
     theme?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    highlights?: NullableStringFieldUpdateOperationsInput | string | null
-    checklist?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     themeId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     previewImages?: NullableStringFieldUpdateOperationsInput | string | null
     thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    itemImages?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type OrderCreateInput = {
@@ -10711,11 +11808,11 @@ export namespace Prisma {
     description?: string | null
     thumbnailUrl?: string | null
     previewImages?: string | null
-    isBestSeller?: boolean
-    isPopular?: boolean
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
+    isBestSeller?: boolean
+    isPopular?: boolean
     bundles?: BundleCreateNestedManyWithoutThemeRefInput
     weddings?: WeddingCreateNestedManyWithoutThemeInput
   }
@@ -10726,11 +11823,11 @@ export namespace Prisma {
     description?: string | null
     thumbnailUrl?: string | null
     previewImages?: string | null
-    isBestSeller?: boolean
-    isPopular?: boolean
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
+    isBestSeller?: boolean
+    isPopular?: boolean
     bundles?: BundleUncheckedCreateNestedManyWithoutThemeRefInput
     weddings?: WeddingUncheckedCreateNestedManyWithoutThemeInput
   }
@@ -10741,11 +11838,11 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
     previewImages?: NullableStringFieldUpdateOperationsInput | string | null
-    isBestSeller?: BoolFieldUpdateOperationsInput | boolean
-    isPopular?: BoolFieldUpdateOperationsInput | boolean
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isBestSeller?: BoolFieldUpdateOperationsInput | boolean
+    isPopular?: BoolFieldUpdateOperationsInput | boolean
     bundles?: BundleUpdateManyWithoutThemeRefNestedInput
     weddings?: WeddingUpdateManyWithoutThemeNestedInput
   }
@@ -10756,11 +11853,11 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
     previewImages?: NullableStringFieldUpdateOperationsInput | string | null
-    isBestSeller?: BoolFieldUpdateOperationsInput | boolean
-    isPopular?: BoolFieldUpdateOperationsInput | boolean
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isBestSeller?: BoolFieldUpdateOperationsInput | boolean
+    isPopular?: BoolFieldUpdateOperationsInput | boolean
     bundles?: BundleUncheckedUpdateManyWithoutThemeRefNestedInput
     weddings?: WeddingUncheckedUpdateManyWithoutThemeNestedInput
   }
@@ -10771,11 +11868,11 @@ export namespace Prisma {
     description?: string | null
     thumbnailUrl?: string | null
     previewImages?: string | null
-    isBestSeller?: boolean
-    isPopular?: boolean
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
+    isBestSeller?: boolean
+    isPopular?: boolean
   }
 
   export type ThemeUpdateManyMutationInput = {
@@ -10784,11 +11881,11 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
     previewImages?: NullableStringFieldUpdateOperationsInput | string | null
-    isBestSeller?: BoolFieldUpdateOperationsInput | boolean
-    isPopular?: BoolFieldUpdateOperationsInput | boolean
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isBestSeller?: BoolFieldUpdateOperationsInput | boolean
+    isPopular?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type ThemeUncheckedUpdateManyInput = {
@@ -10797,11 +11894,11 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
     previewImages?: NullableStringFieldUpdateOperationsInput | string | null
-    isBestSeller?: BoolFieldUpdateOperationsInput | boolean
-    isPopular?: BoolFieldUpdateOperationsInput | boolean
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isBestSeller?: BoolFieldUpdateOperationsInput | boolean
+    isPopular?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type WeddingCreateInput = {
@@ -11144,6 +12241,97 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type PackageCreateInput = {
+    id?: string
+    name: string
+    price: number
+    level: number
+    allowedItems: string
+    isActive?: boolean
+    whatYouGet?: string | null
+    productHighlights?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PackageUncheckedCreateInput = {
+    id?: string
+    name: string
+    price: number
+    level: number
+    allowedItems: string
+    isActive?: boolean
+    whatYouGet?: string | null
+    productHighlights?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PackageUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    price?: IntFieldUpdateOperationsInput | number
+    level?: IntFieldUpdateOperationsInput | number
+    allowedItems?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    whatYouGet?: NullableStringFieldUpdateOperationsInput | string | null
+    productHighlights?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PackageUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    price?: IntFieldUpdateOperationsInput | number
+    level?: IntFieldUpdateOperationsInput | number
+    allowedItems?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    whatYouGet?: NullableStringFieldUpdateOperationsInput | string | null
+    productHighlights?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PackageCreateManyInput = {
+    id?: string
+    name: string
+    price: number
+    level: number
+    allowedItems: string
+    isActive?: boolean
+    whatYouGet?: string | null
+    productHighlights?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PackageUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    price?: IntFieldUpdateOperationsInput | number
+    level?: IntFieldUpdateOperationsInput | number
+    allowedItems?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    whatYouGet?: NullableStringFieldUpdateOperationsInput | string | null
+    productHighlights?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PackageUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    price?: IntFieldUpdateOperationsInput | number
+    level?: IntFieldUpdateOperationsInput | number
+    allowedItems?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    whatYouGet?: NullableStringFieldUpdateOperationsInput | string | null
+    productHighlights?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[]
@@ -11172,11 +12360,6 @@ export namespace Prisma {
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
   }
 
-  export type BoolFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolFilter<$PrismaModel> | boolean
-  }
-
   export type DateTimeFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[]
@@ -11188,10 +12371,9 @@ export namespace Prisma {
     not?: NestedDateTimeFilter<$PrismaModel> | Date | string
   }
 
-  export type WeddingListRelationFilter = {
-    every?: WeddingWhereInput
-    some?: WeddingWhereInput
-    none?: WeddingWhereInput
+  export type BoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
   }
 
   export type OrderListRelationFilter = {
@@ -11200,53 +12382,59 @@ export namespace Prisma {
     none?: OrderWhereInput
   }
 
+  export type WeddingListRelationFilter = {
+    every?: WeddingWhereInput
+    some?: WeddingWhereInput
+    none?: WeddingWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
-  }
-
-  export type WeddingOrderByRelationAggregateInput = {
-    _count?: SortOrder
   }
 
   export type OrderOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
+  export type WeddingOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
   export type UserCountOrderByAggregateInput = {
     id?: SortOrder
-    mobileNumber?: SortOrder
     email?: SortOrder
     name?: SortOrder
-    isMobileVerified?: SortOrder
-    status?: SortOrder
-    role?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    isMobileVerified?: SortOrder
+    mobileNumber?: SortOrder
+    role?: SortOrder
+    status?: SortOrder
   }
 
   export type UserMaxOrderByAggregateInput = {
     id?: SortOrder
-    mobileNumber?: SortOrder
     email?: SortOrder
     name?: SortOrder
-    isMobileVerified?: SortOrder
-    status?: SortOrder
-    role?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    isMobileVerified?: SortOrder
+    mobileNumber?: SortOrder
+    role?: SortOrder
+    status?: SortOrder
   }
 
   export type UserMinOrderByAggregateInput = {
     id?: SortOrder
-    mobileNumber?: SortOrder
     email?: SortOrder
     name?: SortOrder
-    isMobileVerified?: SortOrder
-    status?: SortOrder
-    role?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    isMobileVerified?: SortOrder
+    mobileNumber?: SortOrder
+    role?: SortOrder
+    status?: SortOrder
   }
 
   export type StringWithAggregatesFilter<$PrismaModel = never> = {
@@ -11283,14 +12471,6 @@ export namespace Prisma {
     _max?: NestedStringNullableFilter<$PrismaModel>
   }
 
-  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedBoolFilter<$PrismaModel>
-    _max?: NestedBoolFilter<$PrismaModel>
-  }
-
   export type DateTimeWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[]
@@ -11303,6 +12483,14 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedDateTimeFilter<$PrismaModel>
     _max?: NestedDateTimeFilter<$PrismaModel>
+  }
+
+  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
   }
 
   export type IntFilter<$PrismaModel = never> = {
@@ -11378,61 +12566,67 @@ export namespace Prisma {
   export type BundleCountOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
-    subtitle?: SortOrder
-    price?: SortOrder
-    features?: SortOrder
-    printables?: SortOrder
+    whatsappPrice?: SortOrder
+    printablePrice?: SortOrder
+    completePrice?: SortOrder
     isPopular?: SortOrder
     theme?: SortOrder
     description?: SortOrder
-    highlights?: SortOrder
-    checklist?: SortOrder
     isActive?: SortOrder
     themeId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     previewImages?: SortOrder
     thumbnailUrl?: SortOrder
+    itemImages?: SortOrder
+  }
+
+  export type BundleAvgOrderByAggregateInput = {
+    whatsappPrice?: SortOrder
+    printablePrice?: SortOrder
+    completePrice?: SortOrder
   }
 
   export type BundleMaxOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
-    subtitle?: SortOrder
-    price?: SortOrder
-    features?: SortOrder
-    printables?: SortOrder
+    whatsappPrice?: SortOrder
+    printablePrice?: SortOrder
+    completePrice?: SortOrder
     isPopular?: SortOrder
     theme?: SortOrder
     description?: SortOrder
-    highlights?: SortOrder
-    checklist?: SortOrder
     isActive?: SortOrder
     themeId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     previewImages?: SortOrder
     thumbnailUrl?: SortOrder
+    itemImages?: SortOrder
   }
 
   export type BundleMinOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
-    subtitle?: SortOrder
-    price?: SortOrder
-    features?: SortOrder
-    printables?: SortOrder
+    whatsappPrice?: SortOrder
+    printablePrice?: SortOrder
+    completePrice?: SortOrder
     isPopular?: SortOrder
     theme?: SortOrder
     description?: SortOrder
-    highlights?: SortOrder
-    checklist?: SortOrder
     isActive?: SortOrder
     themeId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     previewImages?: SortOrder
     thumbnailUrl?: SortOrder
+    itemImages?: SortOrder
+  }
+
+  export type BundleSumOrderByAggregateInput = {
+    whatsappPrice?: SortOrder
+    printablePrice?: SortOrder
+    completePrice?: SortOrder
   }
 
   export type FloatFilter<$PrismaModel = never> = {
@@ -11526,11 +12720,11 @@ export namespace Prisma {
     description?: SortOrder
     thumbnailUrl?: SortOrder
     previewImages?: SortOrder
-    isBestSeller?: SortOrder
-    isPopular?: SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    isBestSeller?: SortOrder
+    isPopular?: SortOrder
   }
 
   export type ThemeMaxOrderByAggregateInput = {
@@ -11539,11 +12733,11 @@ export namespace Prisma {
     description?: SortOrder
     thumbnailUrl?: SortOrder
     previewImages?: SortOrder
-    isBestSeller?: SortOrder
-    isPopular?: SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    isBestSeller?: SortOrder
+    isPopular?: SortOrder
   }
 
   export type ThemeMinOrderByAggregateInput = {
@@ -11552,11 +12746,11 @@ export namespace Prisma {
     description?: SortOrder
     thumbnailUrl?: SortOrder
     previewImages?: SortOrder
-    isBestSeller?: SortOrder
-    isPopular?: SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    isBestSeller?: SortOrder
+    isPopular?: SortOrder
   }
 
   export type DateTimeNullableFilter<$PrismaModel = never> = {
@@ -11776,11 +12970,53 @@ export namespace Prisma {
     childCount?: SortOrder
   }
 
-  export type WeddingCreateNestedManyWithoutOwnerInput = {
-    create?: XOR<WeddingCreateWithoutOwnerInput, WeddingUncheckedCreateWithoutOwnerInput> | WeddingCreateWithoutOwnerInput[] | WeddingUncheckedCreateWithoutOwnerInput[]
-    connectOrCreate?: WeddingCreateOrConnectWithoutOwnerInput | WeddingCreateOrConnectWithoutOwnerInput[]
-    createMany?: WeddingCreateManyOwnerInputEnvelope
-    connect?: WeddingWhereUniqueInput | WeddingWhereUniqueInput[]
+  export type PackageCountOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    price?: SortOrder
+    level?: SortOrder
+    allowedItems?: SortOrder
+    isActive?: SortOrder
+    whatYouGet?: SortOrder
+    productHighlights?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PackageAvgOrderByAggregateInput = {
+    price?: SortOrder
+    level?: SortOrder
+  }
+
+  export type PackageMaxOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    price?: SortOrder
+    level?: SortOrder
+    allowedItems?: SortOrder
+    isActive?: SortOrder
+    whatYouGet?: SortOrder
+    productHighlights?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PackageMinOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    price?: SortOrder
+    level?: SortOrder
+    allowedItems?: SortOrder
+    isActive?: SortOrder
+    whatYouGet?: SortOrder
+    productHighlights?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PackageSumOrderByAggregateInput = {
+    price?: SortOrder
+    level?: SortOrder
   }
 
   export type OrderCreateNestedManyWithoutUserInput = {
@@ -11790,7 +13026,7 @@ export namespace Prisma {
     connect?: OrderWhereUniqueInput | OrderWhereUniqueInput[]
   }
 
-  export type WeddingUncheckedCreateNestedManyWithoutOwnerInput = {
+  export type WeddingCreateNestedManyWithoutOwnerInput = {
     create?: XOR<WeddingCreateWithoutOwnerInput, WeddingUncheckedCreateWithoutOwnerInput> | WeddingCreateWithoutOwnerInput[] | WeddingUncheckedCreateWithoutOwnerInput[]
     connectOrCreate?: WeddingCreateOrConnectWithoutOwnerInput | WeddingCreateOrConnectWithoutOwnerInput[]
     createMany?: WeddingCreateManyOwnerInputEnvelope
@@ -11804,6 +13040,13 @@ export namespace Prisma {
     connect?: OrderWhereUniqueInput | OrderWhereUniqueInput[]
   }
 
+  export type WeddingUncheckedCreateNestedManyWithoutOwnerInput = {
+    create?: XOR<WeddingCreateWithoutOwnerInput, WeddingUncheckedCreateWithoutOwnerInput> | WeddingCreateWithoutOwnerInput[] | WeddingUncheckedCreateWithoutOwnerInput[]
+    connectOrCreate?: WeddingCreateOrConnectWithoutOwnerInput | WeddingCreateOrConnectWithoutOwnerInput[]
+    createMany?: WeddingCreateManyOwnerInputEnvelope
+    connect?: WeddingWhereUniqueInput | WeddingWhereUniqueInput[]
+  }
+
   export type StringFieldUpdateOperationsInput = {
     set?: string
   }
@@ -11812,26 +13055,12 @@ export namespace Prisma {
     set?: string | null
   }
 
-  export type BoolFieldUpdateOperationsInput = {
-    set?: boolean
-  }
-
   export type DateTimeFieldUpdateOperationsInput = {
     set?: Date | string
   }
 
-  export type WeddingUpdateManyWithoutOwnerNestedInput = {
-    create?: XOR<WeddingCreateWithoutOwnerInput, WeddingUncheckedCreateWithoutOwnerInput> | WeddingCreateWithoutOwnerInput[] | WeddingUncheckedCreateWithoutOwnerInput[]
-    connectOrCreate?: WeddingCreateOrConnectWithoutOwnerInput | WeddingCreateOrConnectWithoutOwnerInput[]
-    upsert?: WeddingUpsertWithWhereUniqueWithoutOwnerInput | WeddingUpsertWithWhereUniqueWithoutOwnerInput[]
-    createMany?: WeddingCreateManyOwnerInputEnvelope
-    set?: WeddingWhereUniqueInput | WeddingWhereUniqueInput[]
-    disconnect?: WeddingWhereUniqueInput | WeddingWhereUniqueInput[]
-    delete?: WeddingWhereUniqueInput | WeddingWhereUniqueInput[]
-    connect?: WeddingWhereUniqueInput | WeddingWhereUniqueInput[]
-    update?: WeddingUpdateWithWhereUniqueWithoutOwnerInput | WeddingUpdateWithWhereUniqueWithoutOwnerInput[]
-    updateMany?: WeddingUpdateManyWithWhereWithoutOwnerInput | WeddingUpdateManyWithWhereWithoutOwnerInput[]
-    deleteMany?: WeddingScalarWhereInput | WeddingScalarWhereInput[]
+  export type BoolFieldUpdateOperationsInput = {
+    set?: boolean
   }
 
   export type OrderUpdateManyWithoutUserNestedInput = {
@@ -11848,7 +13077,7 @@ export namespace Prisma {
     deleteMany?: OrderScalarWhereInput | OrderScalarWhereInput[]
   }
 
-  export type WeddingUncheckedUpdateManyWithoutOwnerNestedInput = {
+  export type WeddingUpdateManyWithoutOwnerNestedInput = {
     create?: XOR<WeddingCreateWithoutOwnerInput, WeddingUncheckedCreateWithoutOwnerInput> | WeddingCreateWithoutOwnerInput[] | WeddingUncheckedCreateWithoutOwnerInput[]
     connectOrCreate?: WeddingCreateOrConnectWithoutOwnerInput | WeddingCreateOrConnectWithoutOwnerInput[]
     upsert?: WeddingUpsertWithWhereUniqueWithoutOwnerInput | WeddingUpsertWithWhereUniqueWithoutOwnerInput[]
@@ -11874,6 +13103,20 @@ export namespace Prisma {
     update?: OrderUpdateWithWhereUniqueWithoutUserInput | OrderUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: OrderUpdateManyWithWhereWithoutUserInput | OrderUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: OrderScalarWhereInput | OrderScalarWhereInput[]
+  }
+
+  export type WeddingUncheckedUpdateManyWithoutOwnerNestedInput = {
+    create?: XOR<WeddingCreateWithoutOwnerInput, WeddingUncheckedCreateWithoutOwnerInput> | WeddingCreateWithoutOwnerInput[] | WeddingUncheckedCreateWithoutOwnerInput[]
+    connectOrCreate?: WeddingCreateOrConnectWithoutOwnerInput | WeddingCreateOrConnectWithoutOwnerInput[]
+    upsert?: WeddingUpsertWithWhereUniqueWithoutOwnerInput | WeddingUpsertWithWhereUniqueWithoutOwnerInput[]
+    createMany?: WeddingCreateManyOwnerInputEnvelope
+    set?: WeddingWhereUniqueInput | WeddingWhereUniqueInput[]
+    disconnect?: WeddingWhereUniqueInput | WeddingWhereUniqueInput[]
+    delete?: WeddingWhereUniqueInput | WeddingWhereUniqueInput[]
+    connect?: WeddingWhereUniqueInput | WeddingWhereUniqueInput[]
+    update?: WeddingUpdateWithWhereUniqueWithoutOwnerInput | WeddingUpdateWithWhereUniqueWithoutOwnerInput[]
+    updateMany?: WeddingUpdateManyWithWhereWithoutOwnerInput | WeddingUpdateManyWithWhereWithoutOwnerInput[]
+    deleteMany?: WeddingScalarWhereInput | WeddingScalarWhereInput[]
   }
 
   export type IntFieldUpdateOperationsInput = {
@@ -12234,11 +13477,6 @@ export namespace Prisma {
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
   }
 
-  export type NestedBoolFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolFilter<$PrismaModel> | boolean
-  }
-
   export type NestedDateTimeFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[]
@@ -12248,6 +13486,11 @@ export namespace Prisma {
     gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     not?: NestedDateTimeFilter<$PrismaModel> | Date | string
+  }
+
+  export type NestedBoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
   }
 
   export type NestedStringWithAggregatesFilter<$PrismaModel = never> = {
@@ -12306,14 +13549,6 @@ export namespace Prisma {
     not?: NestedIntNullableFilter<$PrismaModel> | number | null
   }
 
-  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedBoolFilter<$PrismaModel>
-    _max?: NestedBoolFilter<$PrismaModel>
-  }
-
   export type NestedDateTimeWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[]
@@ -12326,6 +13561,14 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedDateTimeFilter<$PrismaModel>
     _max?: NestedDateTimeFilter<$PrismaModel>
+  }
+
+  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
   }
 
   export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
@@ -12396,6 +13639,33 @@ export namespace Prisma {
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
+  export type OrderCreateWithoutUserInput = {
+    id?: string
+    totalAmount: number
+    status?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    bundle: BundleCreateNestedOneWithoutOrdersInput
+  }
+
+  export type OrderUncheckedCreateWithoutUserInput = {
+    id?: string
+    bundleId: string
+    totalAmount: number
+    status?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type OrderCreateOrConnectWithoutUserInput = {
+    where: OrderWhereUniqueInput
+    create: XOR<OrderCreateWithoutUserInput, OrderUncheckedCreateWithoutUserInput>
+  }
+
+  export type OrderCreateManyUserInputEnvelope = {
+    data: OrderCreateManyUserInput | OrderCreateManyUserInput[]
+  }
+
   export type WeddingCreateWithoutOwnerInput = {
     id?: string
     groomName: string
@@ -12437,31 +13707,33 @@ export namespace Prisma {
     data: WeddingCreateManyOwnerInput | WeddingCreateManyOwnerInput[]
   }
 
-  export type OrderCreateWithoutUserInput = {
-    id?: string
-    totalAmount: number
-    status?: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    bundle: BundleCreateNestedOneWithoutOrdersInput
-  }
-
-  export type OrderUncheckedCreateWithoutUserInput = {
-    id?: string
-    bundleId: string
-    totalAmount: number
-    status?: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type OrderCreateOrConnectWithoutUserInput = {
+  export type OrderUpsertWithWhereUniqueWithoutUserInput = {
     where: OrderWhereUniqueInput
+    update: XOR<OrderUpdateWithoutUserInput, OrderUncheckedUpdateWithoutUserInput>
     create: XOR<OrderCreateWithoutUserInput, OrderUncheckedCreateWithoutUserInput>
   }
 
-  export type OrderCreateManyUserInputEnvelope = {
-    data: OrderCreateManyUserInput | OrderCreateManyUserInput[]
+  export type OrderUpdateWithWhereUniqueWithoutUserInput = {
+    where: OrderWhereUniqueInput
+    data: XOR<OrderUpdateWithoutUserInput, OrderUncheckedUpdateWithoutUserInput>
+  }
+
+  export type OrderUpdateManyWithWhereWithoutUserInput = {
+    where: OrderScalarWhereInput
+    data: XOR<OrderUpdateManyMutationInput, OrderUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type OrderScalarWhereInput = {
+    AND?: OrderScalarWhereInput | OrderScalarWhereInput[]
+    OR?: OrderScalarWhereInput[]
+    NOT?: OrderScalarWhereInput | OrderScalarWhereInput[]
+    id?: StringFilter<"Order"> | string
+    userId?: StringFilter<"Order"> | string
+    bundleId?: StringFilter<"Order"> | string
+    totalAmount?: FloatFilter<"Order"> | number
+    status?: StringFilter<"Order"> | string
+    createdAt?: DateTimeFilter<"Order"> | Date | string
+    updatedAt?: DateTimeFilter<"Order"> | Date | string
   }
 
   export type WeddingUpsertWithWhereUniqueWithoutOwnerInput = {
@@ -12498,46 +13770,17 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Wedding"> | Date | string
   }
 
-  export type OrderUpsertWithWhereUniqueWithoutUserInput = {
-    where: OrderWhereUniqueInput
-    update: XOR<OrderUpdateWithoutUserInput, OrderUncheckedUpdateWithoutUserInput>
-    create: XOR<OrderCreateWithoutUserInput, OrderUncheckedCreateWithoutUserInput>
-  }
-
-  export type OrderUpdateWithWhereUniqueWithoutUserInput = {
-    where: OrderWhereUniqueInput
-    data: XOR<OrderUpdateWithoutUserInput, OrderUncheckedUpdateWithoutUserInput>
-  }
-
-  export type OrderUpdateManyWithWhereWithoutUserInput = {
-    where: OrderScalarWhereInput
-    data: XOR<OrderUpdateManyMutationInput, OrderUncheckedUpdateManyWithoutUserInput>
-  }
-
-  export type OrderScalarWhereInput = {
-    AND?: OrderScalarWhereInput | OrderScalarWhereInput[]
-    OR?: OrderScalarWhereInput[]
-    NOT?: OrderScalarWhereInput | OrderScalarWhereInput[]
-    id?: StringFilter<"Order"> | string
-    userId?: StringFilter<"Order"> | string
-    bundleId?: StringFilter<"Order"> | string
-    totalAmount?: FloatFilter<"Order"> | number
-    status?: StringFilter<"Order"> | string
-    createdAt?: DateTimeFilter<"Order"> | Date | string
-    updatedAt?: DateTimeFilter<"Order"> | Date | string
-  }
-
   export type ThemeCreateWithoutBundlesInput = {
     id?: string
     name: string
     description?: string | null
     thumbnailUrl?: string | null
     previewImages?: string | null
-    isBestSeller?: boolean
-    isPopular?: boolean
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
+    isBestSeller?: boolean
+    isPopular?: boolean
     weddings?: WeddingCreateNestedManyWithoutThemeInput
   }
 
@@ -12547,11 +13790,11 @@ export namespace Prisma {
     description?: string | null
     thumbnailUrl?: string | null
     previewImages?: string | null
-    isBestSeller?: boolean
-    isPopular?: boolean
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
+    isBestSeller?: boolean
+    isPopular?: boolean
     weddings?: WeddingUncheckedCreateNestedManyWithoutThemeInput
   }
 
@@ -12604,11 +13847,11 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
     previewImages?: NullableStringFieldUpdateOperationsInput | string | null
-    isBestSeller?: BoolFieldUpdateOperationsInput | boolean
-    isPopular?: BoolFieldUpdateOperationsInput | boolean
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isBestSeller?: BoolFieldUpdateOperationsInput | boolean
+    isPopular?: BoolFieldUpdateOperationsInput | boolean
     weddings?: WeddingUpdateManyWithoutThemeNestedInput
   }
 
@@ -12618,11 +13861,11 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
     previewImages?: NullableStringFieldUpdateOperationsInput | string | null
-    isBestSeller?: BoolFieldUpdateOperationsInput | boolean
-    isPopular?: BoolFieldUpdateOperationsInput | boolean
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isBestSeller?: BoolFieldUpdateOperationsInput | boolean
+    isPopular?: BoolFieldUpdateOperationsInput | boolean
     weddings?: WeddingUncheckedUpdateManyWithoutThemeNestedInput
   }
 
@@ -12645,41 +13888,37 @@ export namespace Prisma {
   export type BundleCreateWithoutOrdersInput = {
     id?: string
     name: string
-    subtitle?: string | null
-    price: string
-    features?: string | null
-    printables?: string | null
+    whatsappPrice?: number
+    printablePrice?: number
+    completePrice?: number
     isPopular?: boolean
     theme?: string
     description?: string | null
-    highlights?: string | null
-    checklist?: string | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     previewImages?: string | null
     thumbnailUrl?: string | null
+    itemImages?: string | null
     themeRef?: ThemeCreateNestedOneWithoutBundlesInput
   }
 
   export type BundleUncheckedCreateWithoutOrdersInput = {
     id?: string
     name: string
-    subtitle?: string | null
-    price: string
-    features?: string | null
-    printables?: string | null
+    whatsappPrice?: number
+    printablePrice?: number
+    completePrice?: number
     isPopular?: boolean
     theme?: string
     description?: string | null
-    highlights?: string | null
-    checklist?: string | null
     isActive?: boolean
     themeId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     previewImages?: string | null
     thumbnailUrl?: string | null
+    itemImages?: string | null
   }
 
   export type BundleCreateOrConnectWithoutOrdersInput = {
@@ -12689,27 +13928,27 @@ export namespace Prisma {
 
   export type UserCreateWithoutOrdersInput = {
     id?: string
-    mobileNumber: string
     email?: string | null
     name?: string | null
-    isMobileVerified?: boolean
-    status?: string
-    role?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    isMobileVerified?: boolean
+    mobileNumber: string
+    role?: string
+    status?: string
     weddings?: WeddingCreateNestedManyWithoutOwnerInput
   }
 
   export type UserUncheckedCreateWithoutOrdersInput = {
     id?: string
-    mobileNumber: string
     email?: string | null
     name?: string | null
-    isMobileVerified?: boolean
-    status?: string
-    role?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    isMobileVerified?: boolean
+    mobileNumber: string
+    role?: string
+    status?: string
     weddings?: WeddingUncheckedCreateNestedManyWithoutOwnerInput
   }
 
@@ -12732,41 +13971,37 @@ export namespace Prisma {
   export type BundleUpdateWithoutOrdersInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    subtitle?: NullableStringFieldUpdateOperationsInput | string | null
-    price?: StringFieldUpdateOperationsInput | string
-    features?: NullableStringFieldUpdateOperationsInput | string | null
-    printables?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPrice?: IntFieldUpdateOperationsInput | number
+    printablePrice?: IntFieldUpdateOperationsInput | number
+    completePrice?: IntFieldUpdateOperationsInput | number
     isPopular?: BoolFieldUpdateOperationsInput | boolean
     theme?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    highlights?: NullableStringFieldUpdateOperationsInput | string | null
-    checklist?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     previewImages?: NullableStringFieldUpdateOperationsInput | string | null
     thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    itemImages?: NullableStringFieldUpdateOperationsInput | string | null
     themeRef?: ThemeUpdateOneWithoutBundlesNestedInput
   }
 
   export type BundleUncheckedUpdateWithoutOrdersInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    subtitle?: NullableStringFieldUpdateOperationsInput | string | null
-    price?: StringFieldUpdateOperationsInput | string
-    features?: NullableStringFieldUpdateOperationsInput | string | null
-    printables?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPrice?: IntFieldUpdateOperationsInput | number
+    printablePrice?: IntFieldUpdateOperationsInput | number
+    completePrice?: IntFieldUpdateOperationsInput | number
     isPopular?: BoolFieldUpdateOperationsInput | boolean
     theme?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    highlights?: NullableStringFieldUpdateOperationsInput | string | null
-    checklist?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     themeId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     previewImages?: NullableStringFieldUpdateOperationsInput | string | null
     thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    itemImages?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type UserUpsertWithoutOrdersInput = {
@@ -12782,67 +14017,63 @@ export namespace Prisma {
 
   export type UserUpdateWithoutOrdersInput = {
     id?: StringFieldUpdateOperationsInput | string
-    mobileNumber?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
     name?: NullableStringFieldUpdateOperationsInput | string | null
-    isMobileVerified?: BoolFieldUpdateOperationsInput | boolean
-    status?: StringFieldUpdateOperationsInput | string
-    role?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isMobileVerified?: BoolFieldUpdateOperationsInput | boolean
+    mobileNumber?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
     weddings?: WeddingUpdateManyWithoutOwnerNestedInput
   }
 
   export type UserUncheckedUpdateWithoutOrdersInput = {
     id?: StringFieldUpdateOperationsInput | string
-    mobileNumber?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
     name?: NullableStringFieldUpdateOperationsInput | string | null
-    isMobileVerified?: BoolFieldUpdateOperationsInput | boolean
-    status?: StringFieldUpdateOperationsInput | string
-    role?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isMobileVerified?: BoolFieldUpdateOperationsInput | boolean
+    mobileNumber?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
     weddings?: WeddingUncheckedUpdateManyWithoutOwnerNestedInput
   }
 
   export type BundleCreateWithoutThemeRefInput = {
     id?: string
     name: string
-    subtitle?: string | null
-    price: string
-    features?: string | null
-    printables?: string | null
+    whatsappPrice?: number
+    printablePrice?: number
+    completePrice?: number
     isPopular?: boolean
     theme?: string
     description?: string | null
-    highlights?: string | null
-    checklist?: string | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     previewImages?: string | null
     thumbnailUrl?: string | null
+    itemImages?: string | null
     orders?: OrderCreateNestedManyWithoutBundleInput
   }
 
   export type BundleUncheckedCreateWithoutThemeRefInput = {
     id?: string
     name: string
-    subtitle?: string | null
-    price: string
-    features?: string | null
-    printables?: string | null
+    whatsappPrice?: number
+    printablePrice?: number
+    completePrice?: number
     isPopular?: boolean
     theme?: string
     description?: string | null
-    highlights?: string | null
-    checklist?: string | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     previewImages?: string | null
     thumbnailUrl?: string | null
+    itemImages?: string | null
     orders?: OrderUncheckedCreateNestedManyWithoutBundleInput
   }
 
@@ -12918,21 +14149,19 @@ export namespace Prisma {
     NOT?: BundleScalarWhereInput | BundleScalarWhereInput[]
     id?: StringFilter<"Bundle"> | string
     name?: StringFilter<"Bundle"> | string
-    subtitle?: StringNullableFilter<"Bundle"> | string | null
-    price?: StringFilter<"Bundle"> | string
-    features?: StringNullableFilter<"Bundle"> | string | null
-    printables?: StringNullableFilter<"Bundle"> | string | null
+    whatsappPrice?: IntFilter<"Bundle"> | number
+    printablePrice?: IntFilter<"Bundle"> | number
+    completePrice?: IntFilter<"Bundle"> | number
     isPopular?: BoolFilter<"Bundle"> | boolean
     theme?: StringFilter<"Bundle"> | string
     description?: StringNullableFilter<"Bundle"> | string | null
-    highlights?: StringNullableFilter<"Bundle"> | string | null
-    checklist?: StringNullableFilter<"Bundle"> | string | null
     isActive?: BoolFilter<"Bundle"> | boolean
     themeId?: StringNullableFilter<"Bundle"> | string | null
     createdAt?: DateTimeFilter<"Bundle"> | Date | string
     updatedAt?: DateTimeFilter<"Bundle"> | Date | string
     previewImages?: StringNullableFilter<"Bundle"> | string | null
     thumbnailUrl?: StringNullableFilter<"Bundle"> | string | null
+    itemImages?: StringNullableFilter<"Bundle"> | string | null
   }
 
   export type WeddingUpsertWithWhereUniqueWithoutThemeInput = {
@@ -13033,27 +14262,27 @@ export namespace Prisma {
 
   export type UserCreateWithoutWeddingsInput = {
     id?: string
-    mobileNumber: string
     email?: string | null
     name?: string | null
-    isMobileVerified?: boolean
-    status?: string
-    role?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    isMobileVerified?: boolean
+    mobileNumber: string
+    role?: string
+    status?: string
     orders?: OrderCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutWeddingsInput = {
     id?: string
-    mobileNumber: string
     email?: string | null
     name?: string | null
-    isMobileVerified?: boolean
-    status?: string
-    role?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    isMobileVerified?: boolean
+    mobileNumber: string
+    role?: string
+    status?: string
     orders?: OrderUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -13068,11 +14297,11 @@ export namespace Prisma {
     description?: string | null
     thumbnailUrl?: string | null
     previewImages?: string | null
-    isBestSeller?: boolean
-    isPopular?: boolean
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
+    isBestSeller?: boolean
+    isPopular?: boolean
     bundles?: BundleCreateNestedManyWithoutThemeRefInput
   }
 
@@ -13082,11 +14311,11 @@ export namespace Prisma {
     description?: string | null
     thumbnailUrl?: string | null
     previewImages?: string | null
-    isBestSeller?: boolean
-    isPopular?: boolean
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
+    isBestSeller?: boolean
+    isPopular?: boolean
     bundles?: BundleUncheckedCreateNestedManyWithoutThemeRefInput
   }
 
@@ -13179,27 +14408,27 @@ export namespace Prisma {
 
   export type UserUpdateWithoutWeddingsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    mobileNumber?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
     name?: NullableStringFieldUpdateOperationsInput | string | null
-    isMobileVerified?: BoolFieldUpdateOperationsInput | boolean
-    status?: StringFieldUpdateOperationsInput | string
-    role?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isMobileVerified?: BoolFieldUpdateOperationsInput | boolean
+    mobileNumber?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
     orders?: OrderUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutWeddingsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    mobileNumber?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
     name?: NullableStringFieldUpdateOperationsInput | string | null
-    isMobileVerified?: BoolFieldUpdateOperationsInput | boolean
-    status?: StringFieldUpdateOperationsInput | string
-    role?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isMobileVerified?: BoolFieldUpdateOperationsInput | boolean
+    mobileNumber?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
     orders?: OrderUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -13220,11 +14449,11 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
     previewImages?: NullableStringFieldUpdateOperationsInput | string | null
-    isBestSeller?: BoolFieldUpdateOperationsInput | boolean
-    isPopular?: BoolFieldUpdateOperationsInput | boolean
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isBestSeller?: BoolFieldUpdateOperationsInput | boolean
+    isPopular?: BoolFieldUpdateOperationsInput | boolean
     bundles?: BundleUpdateManyWithoutThemeRefNestedInput
   }
 
@@ -13234,11 +14463,11 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
     previewImages?: NullableStringFieldUpdateOperationsInput | string | null
-    isBestSeller?: BoolFieldUpdateOperationsInput | boolean
-    isPopular?: BoolFieldUpdateOperationsInput | boolean
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isBestSeller?: BoolFieldUpdateOperationsInput | boolean
+    isPopular?: BoolFieldUpdateOperationsInput | boolean
     bundles?: BundleUncheckedUpdateManyWithoutThemeRefNestedInput
   }
 
@@ -13402,6 +14631,15 @@ export namespace Prisma {
     events?: EventUncheckedUpdateManyWithoutWeddingNestedInput
   }
 
+  export type OrderCreateManyUserInput = {
+    id?: string
+    bundleId: string
+    totalAmount: number
+    status?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type WeddingCreateManyOwnerInput = {
     id?: string
     themeId: string
@@ -13416,13 +14654,31 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
-  export type OrderCreateManyUserInput = {
-    id?: string
-    bundleId: string
-    totalAmount: number
-    status?: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
+  export type OrderUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    totalAmount?: FloatFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    bundle?: BundleUpdateOneRequiredWithoutOrdersNestedInput
+  }
+
+  export type OrderUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    bundleId?: StringFieldUpdateOperationsInput | string
+    totalAmount?: FloatFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type OrderUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    bundleId?: StringFieldUpdateOperationsInput | string
+    totalAmount?: FloatFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type WeddingUpdateWithoutOwnerInput = {
@@ -13471,33 +14727,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type OrderUpdateWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    totalAmount?: FloatFieldUpdateOperationsInput | number
-    status?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    bundle?: BundleUpdateOneRequiredWithoutOrdersNestedInput
-  }
-
-  export type OrderUncheckedUpdateWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    bundleId?: StringFieldUpdateOperationsInput | string
-    totalAmount?: FloatFieldUpdateOperationsInput | number
-    status?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type OrderUncheckedUpdateManyWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    bundleId?: StringFieldUpdateOperationsInput | string
-    totalAmount?: FloatFieldUpdateOperationsInput | number
-    status?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
   export type OrderCreateManyBundleInput = {
     id?: string
     userId: string
@@ -13537,20 +14766,18 @@ export namespace Prisma {
   export type BundleCreateManyThemeRefInput = {
     id?: string
     name: string
-    subtitle?: string | null
-    price: string
-    features?: string | null
-    printables?: string | null
+    whatsappPrice?: number
+    printablePrice?: number
+    completePrice?: number
     isPopular?: boolean
     theme?: string
     description?: string | null
-    highlights?: string | null
-    checklist?: string | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     previewImages?: string | null
     thumbnailUrl?: string | null
+    itemImages?: string | null
   }
 
   export type WeddingCreateManyThemeInput = {
@@ -13570,60 +14797,54 @@ export namespace Prisma {
   export type BundleUpdateWithoutThemeRefInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    subtitle?: NullableStringFieldUpdateOperationsInput | string | null
-    price?: StringFieldUpdateOperationsInput | string
-    features?: NullableStringFieldUpdateOperationsInput | string | null
-    printables?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPrice?: IntFieldUpdateOperationsInput | number
+    printablePrice?: IntFieldUpdateOperationsInput | number
+    completePrice?: IntFieldUpdateOperationsInput | number
     isPopular?: BoolFieldUpdateOperationsInput | boolean
     theme?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    highlights?: NullableStringFieldUpdateOperationsInput | string | null
-    checklist?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     previewImages?: NullableStringFieldUpdateOperationsInput | string | null
     thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    itemImages?: NullableStringFieldUpdateOperationsInput | string | null
     orders?: OrderUpdateManyWithoutBundleNestedInput
   }
 
   export type BundleUncheckedUpdateWithoutThemeRefInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    subtitle?: NullableStringFieldUpdateOperationsInput | string | null
-    price?: StringFieldUpdateOperationsInput | string
-    features?: NullableStringFieldUpdateOperationsInput | string | null
-    printables?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPrice?: IntFieldUpdateOperationsInput | number
+    printablePrice?: IntFieldUpdateOperationsInput | number
+    completePrice?: IntFieldUpdateOperationsInput | number
     isPopular?: BoolFieldUpdateOperationsInput | boolean
     theme?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    highlights?: NullableStringFieldUpdateOperationsInput | string | null
-    checklist?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     previewImages?: NullableStringFieldUpdateOperationsInput | string | null
     thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    itemImages?: NullableStringFieldUpdateOperationsInput | string | null
     orders?: OrderUncheckedUpdateManyWithoutBundleNestedInput
   }
 
   export type BundleUncheckedUpdateManyWithoutThemeRefInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    subtitle?: NullableStringFieldUpdateOperationsInput | string | null
-    price?: StringFieldUpdateOperationsInput | string
-    features?: NullableStringFieldUpdateOperationsInput | string | null
-    printables?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPrice?: IntFieldUpdateOperationsInput | number
+    printablePrice?: IntFieldUpdateOperationsInput | number
+    completePrice?: IntFieldUpdateOperationsInput | number
     isPopular?: BoolFieldUpdateOperationsInput | boolean
     theme?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    highlights?: NullableStringFieldUpdateOperationsInput | string | null
-    checklist?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     previewImages?: NullableStringFieldUpdateOperationsInput | string | null
     thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    itemImages?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type WeddingUpdateWithoutThemeInput = {
@@ -13849,6 +15070,10 @@ export namespace Prisma {
      * @deprecated Use RSVPDefaultArgs instead
      */
     export type RSVPArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = RSVPDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use PackageDefaultArgs instead
+     */
+    export type PackageArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = PackageDefaultArgs<ExtArgs>
 
   /**
    * Batch Payload for updateMany & deleteMany & createMany

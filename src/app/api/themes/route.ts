@@ -20,6 +20,15 @@ export async function GET() {
             thumbnail: theme.thumbnailUrl || '/placeholder-theme.jpg',
             previewImages: theme.previewImages ? JSON.parse(theme.previewImages as string) : [],
             bundleName: theme.bundles[0]?.name || 'Theme Invitation Bundle',
+            bundles: theme.bundles.map(b => ({
+                id: b.id,
+                name: b.name,
+                whatsappPrice: b.whatsappPrice,
+                printablePrice: b.printablePrice,
+                completePrice: b.completePrice,
+                description: b.description || '',
+                itemImages: b.itemImages
+            })),
             isBestSeller: theme.isBestSeller,
             isPopular: theme.isPopular,
             tag: undefined

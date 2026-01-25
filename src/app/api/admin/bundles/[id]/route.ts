@@ -13,58 +13,52 @@ export async function PUT(
 
         const formData = await request.formData();
         const name = formData.get('name') as string;
-        const price = formData.get('price') as string;
         const description = formData.get('description') as string;
-        const highlights = formData.get('highlights') as string;
-        const checklist = formData.get('checklist') as string;
-
-        // Force convert to boolean correctly
         const isActive = formData.get('isActive') === 'true';
         const isPopular = formData.get('isPopular') === 'true';
+        const themeId = formData.get('themeId') as string;
+
+        const tierPricesRaw = formData.get('tierPrices') as string;
+        const tierPrices = tierPricesRaw ? JSON.parse(tierPricesRaw) : {};
 
         console.log(`[ADMIN API] Updating Bundle: ${id}`, { name, isActive, isPopular });
 
-        const themeId = formData.get('themeId') as string;
-        const files = formData.getAll('images') as File[];
-
-        const savedImagePaths: string[] = [];
         const uploadDir = path.join(process.cwd(), 'public/Image/bundle');
-
         try {
             await mkdir(uploadDir, { recursive: true });
         } catch (e) { }
 
-        for (const file of files) {
-            if (file && typeof file !== 'string') {
-                const bytes = await file.arrayBuffer();
+        // Process item-wise uploads
+        const existingItemImages = JSON.parse(formData.get('existingItemImages') as string || '{}');
+        const itemImages: { [key: string]: string } = { ...existingItemImages };
+
+        for (const [key, value] of Array.from(formData.entries())) {
+            if (key.startsWith('itemFile_') && value instanceof File) {
+                const itemName = key.replace('itemFile_', '');
+                const bytes = await value.arrayBuffer();
                 const buffer = Buffer.from(bytes);
                 const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-                const filename = file.name.replace(/\.[^/.]+$/, "") + '-' + uniqueSuffix + path.extname(file.name);
+                const filename = `item-${itemName.replace(/\s+/g, '_')}-${uniqueSuffix}${path.extname(value.name)}`;
                 const filepath = path.join(uploadDir, filename);
                 await writeFile(filepath, buffer);
-                savedImagePaths.push(`/Image/bundle/${filename}`);
+                itemImages[itemName] = `/Image/bundle/${filename}`;
             }
         }
 
-        const existingBundle = await prisma.bundle.findUnique({ where: { id } });
-        let finalImages = existingBundle?.previewImages ? JSON.parse(existingBundle.previewImages) : [];
-        if (savedImagePaths.length > 0) {
-            finalImages = [...finalImages, ...savedImagePaths];
-        }
-
+        const itemImagePaths = Object.values(itemImages);
         const bundle = await prisma.bundle.update({
             where: { id },
             data: {
                 name,
-                price: String(price),
+                whatsappPrice: parseInt(tierPrices['WhatsApp Essentials']) || 0,
+                printablePrice: parseInt(tierPrices['WhatsApp + Posters']) || 0,
+                completePrice: parseInt(tierPrices['Complete Wedding Suite']) || 0,
                 description,
-                highlights,
-                checklist,
                 isActive,
                 isPopular,
                 themeId: themeId || null,
-                thumbnailUrl: finalImages.length > 0 ? finalImages[0] : null,
-                previewImages: JSON.stringify(finalImages),
+                thumbnailUrl: itemImagePaths.length > 0 ? (itemImagePaths[0] as string) : null,
+                itemImages: JSON.stringify(itemImages)
             }
         });
 

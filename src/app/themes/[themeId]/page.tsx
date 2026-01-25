@@ -21,12 +21,19 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
 
     const [theme, setTheme] = useState<Theme | null>(null);
     const [recommendations, setRecommendations] = useState<Theme[]>([]);
+    const [packages, setPackages] = useState<any[]>([]);
 
     useEffect(() => {
         async function fetchData() {
             try {
-                // Fetch all themes to find current one and recommendations
-                // Optimized approach would be parallel or separate endpoints
+                // Fetch packages first to have mappings
+                const pkgRes = await fetch('/api/admin/packages');
+                if (pkgRes.ok) {
+                    const pkgData = await pkgRes.json();
+                    setPackages(pkgData.packages || []);
+                }
+
+                // Fetch themes
                 const res = await fetch('/api/themes');
                 if (res.ok) {
                     const data = await res.json();
@@ -36,7 +43,7 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
                     setRecommendations(allThemes.filter(t => t.id !== themeId).slice(0, 4));
                 }
             } catch (error) {
-                console.error("Failed to fetch themes", error);
+                console.error("Failed to fetch themes or packages", error);
             }
         }
         fetchData();
@@ -102,6 +109,12 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
     const [activeSlide, setActiveSlide] = useState(0);
     const [showStickyBar, setShowStickyBar] = useState(false);
 
+    // Reset index if image list changes and index is out of bounds
+    useEffect(() => {
+        setSelectedAssetIndex(0);
+        setActiveSlide(0);
+    }, [selectedPlan]);
+
     // Track scroll for sticky bar
     useEffect(() => {
         const handleScroll = () => {
@@ -143,10 +156,57 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
         router.push('/details');
     };
 
+    const formatPrice = (price: string | number) => {
+        const num = typeof price === 'string' ? parseInt(price.replace(/,/g, '')) || 0 : price;
+        return num.toLocaleString('en-IN');
+    };
+
+    // Find active bundle (default to first one)
+    const activeBundle = theme && theme.bundles && theme.bundles.length > 0 ? theme.bundles[0] : null;
+
+    // Dynamic Plans logic
+    const DYNAMIC_PLANS = {
+        essentials: {
+            ...PLANS.essentials,
+            price: activeBundle ? formatPrice(activeBundle.whatsappPrice) : PLANS.essentials.price,
+        },
+        posters: {
+            ...PLANS.posters,
+            price: activeBundle ? formatPrice(activeBundle.printablePrice) : PLANS.posters.price,
+        },
+        complete: {
+            ...PLANS.complete,
+            price: activeBundle ? formatPrice(activeBundle.completePrice) : PLANS.complete.price,
+        }
+    };
+
+    const selectedPackageName = DYNAMIC_PLANS[selectedPlan].label;
+    const currentPackage = packages.find(p => p.name === selectedPackageName);
+
     // Use theme.previewImages or fallback to empty array
-    const imageList = (theme && theme.previewImages && theme.previewImages.length > 0)
-        ? theme.previewImages
-        : [];
+    let imageList: string[] = [];
+    if (activeBundle && activeBundle.itemImages) {
+        try {
+            const itemImagesObj = JSON.parse(activeBundle.itemImages);
+
+            if (currentPackage) {
+                const allowedItems = JSON.parse(currentPackage.allowedItems || '[]');
+                // Filter items that are in the allowedItems list
+                const filteredItems = Object.entries(itemImagesObj)
+                    .filter(([itemName]) => allowedItems.includes(itemName))
+                    .map(([_, imgUrl]) => imgUrl as string);
+
+                imageList = filteredItems;
+            } else {
+                // Fallback to all images if package not found
+                imageList = Object.values(itemImagesObj) as string[];
+            }
+        } catch (e) {
+            imageList = theme?.previewImages || [];
+        }
+    } else {
+        imageList = theme?.previewImages || [];
+    }
 
     // Create a normalized assets structure for rendering
     const assets = imageList.length > 0 ? imageList.map((img, i) => ({
@@ -155,6 +215,7 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
     })) : [
         { name: "No Preview", image: theme?.thumbnail || '/placeholder-theme.jpg' }
     ];
+
 
     const toggleAccordion = (id: string) => {
         setOpenAccordion(openAccordion === id ? null : id);
@@ -353,7 +414,7 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
                             <div className={styles.stackedSelectorContainer}>
                                 <h3 className={styles.sectionLabel}>SELECT PACKAGE</h3>
                                 <div className={styles.stackedSelector}>
-                                    {(Object.values(PLANS) as Array<typeof PLANS['essentials']>).map((plan) => (
+                                    {(Object.values(DYNAMIC_PLANS) as Array<typeof PLANS['essentials']>).map((plan) => (
                                         <div
                                             key={plan.id}
                                             className={clsx(styles.stackedOption, selectedPlan === plan.id && styles.stackedOptionActive)}
@@ -385,11 +446,11 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
 
 
                         <div className={styles.pricing}>
-                            <span className={styles.currentPrice}>₹ {PLANS[selectedPlan].price}</span>
-                            <span className={styles.originalPrice}>₹ {PLANS[selectedPlan].originalPrice}</span>
+                            <span className={styles.currentPrice}>₹ {DYNAMIC_PLANS[selectedPlan].price}</span>
+                            <span className={styles.originalPrice}>₹ {DYNAMIC_PLANS[selectedPlan].originalPrice}</span>
                             {(() => {
-                                const price = parseInt(PLANS[selectedPlan].price.replace(/,/g, ''));
-                                const original = parseInt(PLANS[selectedPlan].originalPrice.replace(/,/g, ''));
+                                const price = parseInt(DYNAMIC_PLANS[selectedPlan].price.replace(/,/g, ''));
+                                const original = parseInt(DYNAMIC_PLANS[selectedPlan].originalPrice.replace(/,/g, ''));
                                 const discount = Math.round(((original - price) / original) * 100);
                                 return (
                                     <span className={styles.discountBadge}>
@@ -436,9 +497,21 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
                                 {openAccordion === 'what-you-get' && (
                                     <div className={styles.accordionContent}>
                                         <ul style={{ listStyleType: 'disc', paddingLeft: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                            {PLANS[selectedPlan].features.map((feature, i) => (
-                                                <li key={i}>{feature}</li>
-                                            ))}
+                                            {(() => {
+                                                if (!currentPackage || !currentPackage.whatYouGet) {
+                                                    return DYNAMIC_PLANS[selectedPlan].features.map((feature, i) => (
+                                                        <li key={i}>{feature}</li>
+                                                    ));
+                                                }
+                                                try {
+                                                    const items = JSON.parse(currentPackage.whatYouGet);
+                                                    return Array.isArray(items) ? items.map((item, i) => (
+                                                        <li key={i}>{item}</li>
+                                                    )) : <li>{currentPackage.whatYouGet}</li>;
+                                                } catch (e) {
+                                                    return <li>{currentPackage.whatYouGet}</li>;
+                                                }
+                                            })()}
                                         </ul>
                                     </div>
                                 )}
@@ -449,12 +522,18 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
                                 </button>
                                 {openAccordion === 'highlights' && (
                                     <div className={styles.accordionContent}>
-                                        <p style={{ marginBottom: '1rem' }}>
-                                            Premium typography, royal motifs, and culturally sensitive design elements crafted for a grand Indian wedding experience.
-                                        </p>
-                                        <p>
-                                            This bundle captures the grandeur of Rajputana culture. Each element is crafted with royal precision, ensuring your wedding invitation stands out as a masterpiece.
-                                        </p>
+                                        {currentPackage && currentPackage.productHighlights ? (
+                                            <div dangerouslySetInnerHTML={{ __html: currentPackage.productHighlights.replace(/\n/g, '<br/>') }} />
+                                        ) : (
+                                            <>
+                                                <p style={{ marginBottom: '1rem' }}>
+                                                    Premium typography, royal motifs, and culturally sensitive design elements crafted for a grand Indian wedding experience.
+                                                </p>
+                                                <p>
+                                                    This bundle captures the grandeur of Rajputana culture. Each element is crafted with royal precision, ensuring your wedding invitation stands out as a masterpiece.
+                                                </p>
+                                            </>
+                                        )}
                                     </div>
                                 )}
                             </div>
@@ -577,8 +656,8 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
             {/* Sticky Bottom Bar */}
             <div className={clsx(styles.stickyBottomBar, showStickyBar && styles.stickyVisible, styles.mobileOnly)}>
                 <div className={styles.stickyInfo}>
-                    <span className={styles.stickyLabel}>{PLANS[selectedPlan].label}</span>
-                    <span className={styles.stickyPrice}>₹{PLANS[selectedPlan].price}</span>
+                    <span className={styles.stickyLabel}>{DYNAMIC_PLANS[selectedPlan].label}</span>
+                    <span className={styles.stickyPrice}>₹{DYNAMIC_PLANS[selectedPlan].price}</span>
                 </div>
                 <button onClick={handleCreateNow} className={clsx("btn btn-primary", styles.stickyBtn)}>
                     Create Now

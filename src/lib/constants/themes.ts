@@ -1,11 +1,22 @@
+export interface BundleData {
+    id: string;
+    name: string;
+    whatsappPrice: number;
+    printablePrice: number;
+    completePrice: number;
+    description?: string;
+    itemImages?: string; // JSON string
+}
+
 export interface Theme {
     id: string;
     name: string;
     description: string;
     colors: string[];
-    thumbnail: string; // URL to an image
-    previewImages: string[]; // List of image URLs
-    bundleName?: string; // Optional bundle name
+    thumbnail: string;
+    previewImages: string[];
+    bundleName?: string;
+    bundles?: BundleData[];
     tag?: string;
 }
 

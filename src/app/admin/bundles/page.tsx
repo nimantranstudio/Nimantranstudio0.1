@@ -1,22 +1,93 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, Package, Loader2, Check, Star, Edit, Trash2, Globe, Lock, Image as ImageIcon } from 'lucide-react';
+import { Plus, Package, Loader2, Check, Star, Edit, Trash2, Globe, Lock, Image as ImageIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { BundleModal } from '@/components/admin/BundleModal';
 
 interface Bundle {
     id: string;
     name: string;
     description: string;
-    price: string;
+    whatsappPrice: number;
+    printablePrice: number;
+    completePrice: number;
     isActive: boolean;
     isPopular: boolean;
-    checklist: string;
-    highlights: string;
     thumbnailUrl?: string;
+    itemImages?: string;
     themeRef?: {
         name: string;
     };
+}
+
+function ImageSlider({ images, name }: { images: string[], name: string }) {
+    const [currentIndex, setCurrentIndex] = useState(0);
+
+    useEffect(() => {
+        if (images.length <= 1) return;
+        const interval = setInterval(() => {
+            setCurrentIndex((prev) => (prev + 1) % images.length);
+        }, 3000);
+        return () => clearInterval(interval);
+    }, [images.length]);
+
+    if (images.length === 0) {
+        return (
+            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#d1d5db' }}>
+                <ImageIcon size={48} />
+            </div>
+        );
+    }
+
+    const nextSlide = (e: any) => {
+        e.stopPropagation();
+        setCurrentIndex((prev) => (prev + 1) % images.length);
+    };
+
+    const prevSlide = (e: any) => {
+        e.stopPropagation();
+        setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
+    };
+
+    return (
+        <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+            <img
+                src={images[currentIndex]}
+                alt={`${name} - ${currentIndex + 1}`}
+                style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'opacity 0.3s ease' }}
+            />
+            {images.length > 1 && (
+                <>
+                    <button
+                        onClick={prevSlide}
+                        style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.7)', border: 'none', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 5, color: '#4b5563' }}
+                    >
+                        <ChevronLeft size={18} />
+                    </button>
+                    <button
+                        onClick={nextSlide}
+                        style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.7)', border: 'none', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 5, color: '#4b5563' }}
+                    >
+                        <ChevronRight size={18} />
+                    </button>
+                    <div style={{ position: 'absolute', bottom: '12px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '4px', zIndex: 5 }}>
+                        {images.map((_, idx) => (
+                            <div
+                                key={idx}
+                                style={{
+                                    width: '6px',
+                                    height: '6px',
+                                    borderRadius: '50%',
+                                    background: idx === currentIndex ? 'white' : 'rgba(255,255,255,0.5)',
+                                    boxShadow: '0 1px 2px rgba(0,0,0,0.2)'
+                                }}
+                            />
+                        ))}
+                    </div>
+                </>
+            )}
+        </div>
+    );
 }
 
 export default function BundlesPage() {
@@ -104,7 +175,6 @@ export default function BundlesPage() {
             ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem' }}>
                     {bundles.map((bundle) => {
-                        const checklist = JSON.parse(bundle.checklist || '[]');
                         return (
                             <div
                                 key={bundle.id}
@@ -120,18 +190,20 @@ export default function BundlesPage() {
                                     borderColor: bundle.isPopular ? '#6366f1' : '#e5e7eb'
                                 }}
                             >
-                                <div style={{ height: '160px', width: '100%', background: '#f3f4f6', position: 'relative', overflow: 'hidden' }}>
-                                    {bundle.thumbnailUrl ? (
-                                        <img
-                                            src={bundle.thumbnailUrl}
-                                            alt={bundle.name}
-                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                        />
-                                    ) : (
-                                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#d1d5db' }}>
-                                            <ImageIcon size={48} />
-                                        </div>
-                                    )}
+                                <div style={{ height: '240px', width: '100%', background: '#f3f4f6', position: 'relative', overflow: 'hidden' }}>
+                                    {(() => {
+                                        let images: string[] = [];
+                                        try {
+                                            const itemImgs = JSON.parse(bundle.itemImages || '{}');
+                                            images = Object.values(itemImgs) as string[];
+                                        } catch (e) { }
+
+                                        if (bundle.thumbnailUrl && !images.includes(bundle.thumbnailUrl)) {
+                                            images = [bundle.thumbnailUrl, ...images];
+                                        }
+
+                                        return <ImageSlider images={images} name={bundle.name} />;
+                                    })()}
 
                                     <div style={{ position: 'absolute', top: '1rem', right: '1rem', display: 'flex', gap: '8px', zIndex: 10 }}>
                                         <button
@@ -155,13 +227,13 @@ export default function BundlesPage() {
                                     )}
                                 </div>
 
-                                <div style={{ padding: '1.5rem' }}>
-                                    <div style={{ marginBottom: '1.25rem' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '0.5rem' }}>
-                                            <h3 style={{ fontSize: '1.15rem', fontWeight: '700', color: '#111827' }}>{bundle.name}</h3>
+                                <div style={{ padding: '1.25rem' }}>
+                                    <div style={{ marginBottom: '0.75rem' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '0.25rem' }}>
+                                            <h3 style={{ fontSize: '1.1rem', fontWeight: '700', color: '#111827' }}>{bundle.name}</h3>
                                             <span style={{
-                                                fontSize: '0.65rem',
-                                                padding: '2px 8px',
+                                                fontSize: '0.6rem',
+                                                padding: '1px 6px',
                                                 borderRadius: '20px',
                                                 background: bundle.isActive ? '#ecfdf5' : '#fff1f2',
                                                 color: bundle.isActive ? '#059669' : '#e11d48',
@@ -176,28 +248,30 @@ export default function BundlesPage() {
                                                 {bundle.isActive ? 'Active' : 'Inactive'}
                                             </span>
                                         </div>
-                                        <div style={{ fontSize: '0.8rem', color: '#6366f1', fontWeight: '600', marginBottom: '0.5rem' }}>
+                                        <div style={{ fontSize: '0.75rem', color: '#6366f1', fontWeight: '600', marginBottom: '0.25rem' }}>
                                             Theme: {bundle.themeRef?.name || 'Multiple'}
                                         </div>
-                                        <p style={{ fontSize: '0.875rem', color: '#6b7280', minHeight: '40px', lineHeight: '1.4' }}>{bundle.description}</p>
+                                        <p style={{ fontSize: '0.8rem', color: '#6b7280', minHeight: 'auto', lineHeight: '1.3' }}>{bundle.description}</p>
                                     </div>
 
-                                    <div style={{ marginBottom: '1.25rem', borderTop: '1px solid #f3f4f6', paddingTop: '1.25rem' }}>
-                                        <div style={{ fontSize: '0.75rem', fontWeight: '700', color: '#9ca3af', textTransform: 'uppercase', marginBottom: '0.75rem' }}>Price</div>
-                                        <span style={{ fontSize: '1.5rem', fontWeight: '800', color: '#111827' }}>₹{bundle.price}</span>
+                                    <div style={{ borderTop: '1px solid #f3f4f6', paddingTop: '0.75rem' }}>
+                                        <div style={{ fontSize: '0.7rem', fontWeight: '700', color: '#9ca3af', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Tiered Pricing</div>
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(80px, 1fr))', gap: '8px' }}>
+                                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                                <span style={{ fontSize: '0.6rem', color: '#6b7280', fontWeight: '600' }}>WhatsApp</span>
+                                                <span style={{ fontSize: '0.85rem', fontWeight: '800', color: '#111827' }}>₹{bundle.whatsappPrice}</span>
+                                            </div>
+                                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                                <span style={{ fontSize: '0.6rem', color: '#6b7280', fontWeight: '600' }}>Printable</span>
+                                                <span style={{ fontSize: '0.85rem', fontWeight: '800', color: '#111827' }}>₹{bundle.printablePrice}</span>
+                                            </div>
+                                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                                <span style={{ fontSize: '0.6rem', color: '#6b7280', fontWeight: '600' }}>Complete</span>
+                                                <span style={{ fontSize: '0.85rem', fontWeight: '800', color: '#111827' }}>₹{bundle.completePrice}</span>
+                                            </div>
+                                        </div>
                                     </div>
 
-                                    <div style={{ background: '#f9fafb', padding: '1rem', borderRadius: '10px' }}>
-                                        <div style={{ fontSize: '0.7rem', fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', marginBottom: '0.75rem' }}>Includes:</div>
-                                        <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                                            {checklist.map((item: string, idx: number) => (
-                                                <li key={idx} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.7rem', color: '#4b5563' }}>
-                                                    <Check size={12} color="#10b981" strokeWidth={3} />
-                                                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item}</span>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
                                 </div>
                             </div>
                         );
