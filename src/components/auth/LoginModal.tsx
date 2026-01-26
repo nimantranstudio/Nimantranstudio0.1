@@ -1,9 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { X, Phone } from 'lucide-react';
 import styles from './LoginModal.module.css';
+
+import { useWeddingStore } from '@/store/wedding-store';
 
 interface LoginModalProps {
     isOpen: boolean;
@@ -12,10 +14,24 @@ interface LoginModalProps {
 }
 
 export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
+    const { userPhone, isAuthenticated } = useWeddingStore();
     const [step, setStep] = useState<'phone' | 'otp'>('phone');
     const [phoneNumber, setPhoneNumber] = useState('');
     const [otp, setOtp] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+
+    useEffect(() => {
+        if (isOpen) {
+            if (isAuthenticated && userPhone) {
+                // Determine if we should auto-close or just fill
+                // If the user opened this, it implies they think they needed to login, OR the app forced them.
+                // If the app forced them but they ARE logged in, we should auto-succeed.
+                onSuccess(userPhone);
+            } else if (userPhone) {
+                setPhoneNumber(userPhone);
+            }
+        }
+    }, [isOpen, isAuthenticated, userPhone, onSuccess]);
 
     if (!isOpen) return null;
 
@@ -109,7 +125,14 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
                                 )}
                             </button>
 
-                            <button type="button" className={styles.footerLink} onClick={() => console.log('Login clicked')}>
+                            <button
+                                type="button"
+                                className={styles.footerLink}
+                                onClick={() => {
+                                    const input = document.querySelector('input[type="tel"]') as HTMLInputElement;
+                                    if (input) input.focus();
+                                }}
+                            >
                                 Already Registered? Log In Here
                             </button>
                         </form>

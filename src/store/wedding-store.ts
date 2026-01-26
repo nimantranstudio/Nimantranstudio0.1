@@ -30,6 +30,7 @@ const INITIAL_FORM_DATA: WeddingFormData = {
     groomParents: '',
     brideParents: '',
     primaryDate: '',
+    primaryTime: '',
     timezone: 'Asia/Kolkata',
     defaultVenueName: '',
     defaultVenueAddress: '',
@@ -161,6 +162,20 @@ export const useWeddingStore = create<WeddingState>()(
         }),
         {
             name: 'nimantran-wedding-storage',
+            version: 1,
+            partialize: (state) => ({
+                selectedThemeId: state.selectedThemeId,
+                selectedPlan: state.selectedPlan,
+                bundleImages: state.bundleImages,
+                formData: state.formData,
+                lastSavedWeddingId: state.lastSavedWeddingId,
+                isAuthenticated: state.isAuthenticated,
+                isAdmin: state.isAdmin,
+                userPhone: state.userPhone,
+            }),
+            onRehydrateStorage: () => (state) => {
+                console.log('Hydration finished', state);
+            },
         }
     )
 );

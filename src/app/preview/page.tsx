@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { clsx } from 'clsx';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { useState, useEffect } from 'react';
+import { LoginModal } from '@/components/auth/LoginModal';
 
 const ALL_ASSETS = [
     { id: 'poster', name: "Wedding poster", type: 'image' },
@@ -26,9 +27,15 @@ const ALL_ASSETS = [
 ];
 
 export default function PreviewPage() {
-    const { formData, selectedThemeId } = useWeddingStore();
+    const { formData, selectedThemeId, isAuthenticated, login, bundleImages } = useWeddingStore();
     const [isSecuring, setIsSecuring] = useState(false);
     const [theme, setTheme] = useState<Theme | null>(null);
+    const [activeTab, setActiveTab] = useState<'summary' | 'edit'>('summary');
+    const [showLoginModal, setShowLoginModal] = useState(false);
+    const [selectedPreviewIndex, setSelectedPreviewIndex] = useState<number | null>(null);
+
+
+    const { updateFormData, updateEvent } = useWeddingStore();
 
     useEffect(() => {
         async function fetchTheme() {
@@ -46,10 +53,33 @@ export default function PreviewPage() {
         fetchTheme();
     }, [selectedThemeId]);
 
+    // Auto-close modal if auth state changes to true (e.g. cross-tab login or delayed hydration)
+    useEffect(() => {
+        if (isAuthenticated && showLoginModal) {
+            setShowLoginModal(false);
+            setIsSecuring(true);
+        }
+    }, [isAuthenticated, showLoginModal]);
+
     const handleCheckout = () => {
+        // Direct read to ensure we have the latest persisted state
+        const state = useWeddingStore.getState();
+        const currentAuth = state.isAuthenticated;
+
+        if (currentAuth) {
+            setIsSecuring(true);
+            return;
+        }
+
+        // If not auth, check if we have a phone number (maybe just need to re-verify?)
+        // For now, always prompt login, but LoginModal will handle existing users better
+        setShowLoginModal(true);
+    };
+
+    const handleLoginSuccess = (phone: string) => {
+        setShowLoginModal(false);
+        login(phone);
         setIsSecuring(true);
-        // Simulate potential redirect after some time
-        // setTimeout(() => setIsSecuring(false), 5000);
     };
 
     if (!theme) {
@@ -67,9 +97,7 @@ export default function PreviewPage() {
             <div className={styles.securingOverlay}>
                 <h2 className={styles.securingTitle}>Securing your bundle...</h2>
                 <p className={styles.securingSubtitle}>Redirecting to checkout</p>
-
                 <div className={styles.spinner}></div>
-
                 <button
                     onClick={() => setIsSecuring(false)}
                     className={styles.cancelPayment}
@@ -80,8 +108,62 @@ export default function PreviewPage() {
         );
     }
 
+    const displayImages = (bundleImages && bundleImages.length > 0) ? bundleImages : (theme.previewImages || []);
+
+
+
     return (
         <div className={styles.previewPage}>
+            {/* Fullscreen Preview Modal */}
+            {selectedPreviewIndex !== null && theme && (
+                <div
+                    style={{
+                        position: 'fixed', inset: 0, zIndex: 1000,
+                        backgroundColor: 'rgba(0,0,0,0.9)',
+                        display: 'flex', flexDirection: 'column',
+                        alignItems: 'center', justifyContent: 'center',
+                        padding: '2rem'
+                    }}
+                    onClick={() => setSelectedPreviewIndex(null)}
+                >
+                    <button
+                        onClick={() => setSelectedPreviewIndex(null)}
+                        style={{
+                            position: 'absolute', top: '2rem', right: '2rem',
+                            background: 'white', border: 'none', borderRadius: '50%',
+                            width: '40px', height: '40px', cursor: 'pointer',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center'
+                        }}
+                    >
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+
+                    <div
+                        style={{ width: '100%', maxWidth: '500px', maxHeight: '90vh' }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <InvitationCard
+                            event={{
+                                id: `design-${selectedPreviewIndex}`,
+                                name: `Design ${selectedPreviewIndex + 1}`,
+                                date: formData.primaryDate,
+                                time: formData.primaryTime,
+                                venue: formData.defaultVenueName
+                            }}
+                            theme={theme}
+                            groomName={formData.groomName}
+                            brideName={formData.brideName}
+                            isPlaceholder={true}
+                            type='image'
+                            customImage={displayImages[selectedPreviewIndex]}
+                        />
+                    </div>
+                </div>
+            )}
+
             <header className={styles.header}>
                 <div className="container">
                     <Breadcrumbs
@@ -101,27 +183,28 @@ export default function PreviewPage() {
                     {/* Left Column: 12-Card Grid */}
                     <div className={styles.leftColumn}>
                         <div className={styles.grid}>
-                            {(theme.previewImages && theme.previewImages.length > 0) ? (
-                                theme.previewImages.map((imgUrl, index) => (
+                            {(displayImages.length > 0) ? (
+                                displayImages.map((imgUrl, index) => (
                                     <InvitationCard
                                         key={index}
                                         event={{
                                             id: `design-${index}`,
-                                            name: `Design ${index + 1}`,
-                                            date: '',
-                                            time: '',
-                                            venue: ''
+                                            // Map the index to the global asset list name (e.g., "Haldi", "Wedding")
+                                            name: ALL_ASSETS[index]?.name || `Design ${index + 1}`,
+                                            date: formData.primaryDate,
+                                            time: formData.primaryTime,
+                                            venue: formData.defaultVenueName
                                         }}
                                         theme={theme}
                                         groomName={formData.groomName}
                                         brideName={formData.brideName}
-                                        isPlaceholder={true} // Since we don't have event types mapping yet
+                                        isPlaceholder={true}
                                         type='image'
-                                        customImage={imgUrl} // Pass custom image from theme
+                                        customImage={imgUrl}
+                                        onClick={() => setSelectedPreviewIndex(index)}
                                     />
                                 ))
                             ) : (
-                                // Fallback if no preview images
                                 <div className={styles.noPreviews} style={{ gridColumn: '1/-1', textAlign: 'center', padding: '2rem', color: '#666' }}>
                                     No preview images available for this theme.
                                 </div>
@@ -131,71 +214,149 @@ export default function PreviewPage() {
 
                     {/* Right Column: Title and Summary Card */}
                     <div className={styles.rightColumn}>
-                        <div>
-                            <h1 className={styles.previewHeaderTitle} style={{
-                                fontSize: '2rem',
-                                marginBottom: '0.5rem',
-                                color: '#1a4d2e',
-                                lineHeight: 1.2
-                            }}>
-                                Your Wedding Bundle is Ready!
-                            </h1>
-                            <p className={styles.previewHeaderSubtitle} style={{
-                                fontSize: '0.9rem',
-                                color: '#666',
-                                marginBottom: '1.5rem'
-                            }}>
-                                Generated automatically from your details. Ready for high-res delivery.
-                            </p>
-
-                            <h2 className={styles.bundleTitle}>
-                                {theme.name} theme invitation bundle complete pack of 12
-                            </h2>
-                        </div>
-
-                        <div className={styles.summaryCard}>
-                            <div className={styles.summaryHeader}>
-                                <h2>Bundle Summary</h2>
-                            </div>
-
-                            <div className={styles.detailsList}>
-                                <div className={styles.detailRow}>
-                                    <span className={styles.detailLabel}>Theme:</span>
-                                    <span className={styles.detailValue}>Royal {theme.name}</span>
-                                </div>
-                                <div className={styles.detailRow}>
-                                    <span className={styles.detailLabel}>Invitation Items:</span>
-                                    <span className={styles.detailValue}>12 Total</span>
-                                </div>
-                                <div className={styles.detailRow}>
-                                    <span className={styles.detailRow}>
-                                        <span className={styles.detailLabel}>Video Format:</span>
-                                    </span>
-                                    <span className={styles.detailValue}>Full HD (1080p)</span>
-                                </div>
-                                <div className={styles.detailRow}>
-                                    <span className={styles.detailLabel}>RSVP Support:</span>
-                                    <span className={styles.detailValue}>Included</span>
-                                </div>
-                            </div>
-
-                            <div className={styles.divider}></div>
-
-                            <div className={styles.priceSection}>
-                                <div className={styles.priceInfo}>
-                                    <span className={styles.priceTitle}>Gold Bundle</span>
-                                    <span className={styles.priceSub}>INCLUSIVE OF ALL TAXES</span>
-                                </div>
-                                <div className={styles.priceValue}>₹1,200</div>
-                            </div>
-
+                        <div className={styles.editorTabs}>
                             <button
-                                className={styles.confirmBtn}
-                                onClick={handleCheckout}
+                                className={clsx(styles.tabBtn, activeTab === 'summary' && styles.tabBtnActive)}
+                                onClick={() => setActiveTab('summary')}
                             >
-                                Confirm & Pay
+                                Summary
+                            </button>
+                            <button
+                                className={clsx(styles.tabBtn, activeTab === 'edit' && styles.tabBtnActive)}
+                                onClick={() => setActiveTab('edit')}
+                            >
+                                Live Editor
                             </button>
                         </div>
+
+                        {activeTab === 'summary' ? (
+                            <div className={styles.summaryView}>
+                                <div>
+                                    <h1 className={styles.previewHeaderTitle} style={{
+                                        fontSize: '2rem',
+                                        marginBottom: '0.5rem',
+                                        color: '#1a4d2e',
+                                        lineHeight: 1.2
+                                    }}>
+                                        Your Wedding Bundle is Ready!
+                                    </h1>
+                                    <p className={styles.previewHeaderSubtitle} style={{
+                                        fontSize: '0.9rem',
+                                        color: '#666',
+                                        marginBottom: '1.5rem'
+                                    }}>
+                                        Generated automatically from your details. Ready for high-res delivery.
+                                    </p>
+                                    <h2 className={styles.bundleTitle}>
+                                        {theme.name} theme invitation bundle complete pack of 12
+                                    </h2>
+                                </div>
+
+                                <div className={styles.summaryCard}>
+                                    <div className={styles.summaryHeader}>
+                                        <h2>Bundle Summary</h2>
+                                    </div>
+                                    <div className={styles.detailsList}>
+                                        <div className={styles.detailRow}>
+                                            <span className={styles.detailLabel}>Theme:</span>
+                                            <span className={styles.detailValue}>Royal {theme.name}</span>
+                                        </div>
+                                        <div className={styles.detailRow}>
+                                            <span className={styles.detailLabel}>Invitation Items:</span>
+                                            <span className={styles.detailValue}>12 Total</span>
+                                        </div>
+                                        <div className={styles.detailRow}>
+                                            <span className={styles.detailRow}>
+                                                <span className={styles.detailLabel}>Video Format:</span>
+                                            </span>
+                                            <span className={styles.detailValue}>Full HD (1080p)</span>
+                                        </div>
+                                        <div className={styles.detailRow}>
+                                            <span className={styles.detailLabel}>RSVP Support:</span>
+                                            <span className={styles.detailValue}>Included</span>
+                                        </div>
+                                    </div>
+                                    <div className={styles.divider}></div>
+                                    <div className={styles.priceSection}>
+                                        <div className={styles.priceInfo}>
+                                            <span className={styles.priceTitle}>Gold Bundle</span>
+                                            <span className={styles.priceSub}>INCLUSIVE OF ALL TAXES</span>
+                                        </div>
+                                        <div className={styles.priceValue}>₹1,200</div>
+                                    </div>
+                                    <button
+                                        className={styles.confirmBtn}
+                                        onClick={handleCheckout}
+                                    >
+                                        Confirm & Pay
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className={styles.editorContent}>
+                                <div className={styles.editorHeader}>
+                                    <h2 style={{ fontSize: '1.5rem', color: '#1a4d2e', marginBottom: '0.5rem' }}>Quick Edit</h2>
+                                    <p style={{ fontSize: '0.875rem', color: '#666' }}>Changes are reflected instantly on the preview cards.</p>
+                                </div>
+
+                                <div className={styles.editorField}>
+                                    <label>Groom's Name</label>
+                                    <input
+                                        className={styles.editorInput}
+                                        value={formData.groomName}
+                                        onChange={(e) => updateFormData({ groomName: e.target.value })}
+                                        placeholder="Groom Name"
+                                    />
+                                </div>
+
+                                <div className={styles.editorField}>
+                                    <label>Bride's Name</label>
+                                    <input
+                                        className={styles.editorInput}
+                                        value={formData.brideName}
+                                        onChange={(e) => updateFormData({ brideName: e.target.value })}
+                                        placeholder="Bride Name"
+                                    />
+                                </div>
+
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                    <div className={styles.editorField}>
+                                        <label>Wedding Date</label>
+                                        <input
+                                            type="date"
+                                            className={styles.editorInput}
+                                            value={formData.primaryDate}
+                                            onChange={(e) => updateFormData({ primaryDate: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className={styles.editorField}>
+                                        <label>Wedding Time</label>
+                                        <input
+                                            type="time"
+                                            className={styles.editorInput}
+                                            value={formData.primaryTime || ''}
+                                            onChange={(e) => updateFormData({ primaryTime: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className={styles.editorField}>
+                                    <label>Default Venue</label>
+                                    <textarea
+                                        className={clsx(styles.editorInput, styles.editorTextarea)}
+                                        value={formData.defaultVenueName}
+                                        onChange={(e) => updateFormData({ defaultVenueName: e.target.value })}
+                                        placeholder="The Grand Palace, Rajasthan"
+                                    />
+                                </div>
+
+                                <div style={{ marginTop: '1rem', padding: '1.5rem', background: '#ECFDF5', borderRadius: '16px', border: '1px solid #10B981' }}>
+                                    <p style={{ margin: 0, fontSize: '0.875rem', color: '#065F46', fontWeight: 600 }}>
+                                        Pro Tip: Your changes are automatically saved. Switch back to the 'Summary' tab to complete your purchase.
+                                    </p>
+                                </div>
+                            </div>
+                        )}
 
                         {/* Info Blocks below the card */}
                         <div className={styles.infoGrid}>
@@ -226,10 +387,15 @@ export default function PreviewPage() {
                                 </div>
                             </div>
                         </div>
-
                     </div>
                 </div>
             </main>
+            {/* Authentication Gateway */}
+            <LoginModal
+                isOpen={showLoginModal}
+                onClose={() => setShowLoginModal(false)}
+                onSuccess={handleLoginSuccess}
+            />
         </div>
     );
 }

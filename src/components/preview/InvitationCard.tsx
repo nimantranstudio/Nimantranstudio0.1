@@ -14,58 +14,106 @@ interface InvitationCardProps {
     isPlaceholder?: boolean;
     type?: 'image' | 'video';
     customImage?: string;
+    onClick?: () => void;
 }
 
-export const InvitationCard = ({ event, theme, groomName, brideName, isPlaceholder, type, customImage }: InvitationCardProps) => {
+export const InvitationCard = ({ event, theme, groomName, brideName, isPlaceholder, type, customImage, onClick }: InvitationCardProps) => {
+    const isHaldi = event.name?.toLowerCase().includes('haldi');
+
     return (
-        <div className={styles.invitationCard} style={{ '--theme-primary': theme.colors[1] } as any}>
-            {/* Watermark Overlay */}
-            <div className={styles.watermark}>
-                <span>NimantranStudio</span>
-                <span>NimantranStudio</span>
-                <span>NimantranStudio</span>
-            </div>
-
-            {customImage && (
-                <Image
-                    src={customImage}
-                    alt={event.name}
-                    fill
-                    style={{ objectFit: 'cover', zIndex: 0 }}
-                />
-            )}
-
-            {type === 'video' && (
-                <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.1)', zIndex: 10 }}>
-                    <div style={{ backgroundColor: 'white', borderRadius: '50%', padding: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}>
-                        <Play size={32} fill="currentColor" color={theme.colors[1]} />
-                    </div>
-                </div>
-            )}
-
-            <div className={styles.content}>
-                <p className={styles.cardEyebrow}>The Wedding of</p>
-                <h2 className={styles.cardNames}>
-                    {groomName || 'Groom'} <br /> & <br /> {brideName || 'Bride'}
-                </h2>
-
-                <div className={styles.cardDivider}></div>
-
-                <h3 className={styles.cardEvent}>{event.name}</h3>
-
-                {/* Only show dates and venue if it's not a generic placeholder (like poster/initials) */}
-                {!isPlaceholder && (
-                    <div className={styles.cardDetails}>
-                        <p>{event.date || 'Date TBD'}</p>
-                        <p>{event.time || 'Time TBD'}</p>
-                        <p style={{ marginTop: '0.25rem' }}>{event.venue || 'Venue TBD'}</p>
-                    </div>
+        <div
+            className={styles.invitationCard}
+            style={{
+                '--theme-primary': theme.colors[1],
+                cursor: onClick ? 'pointer' : 'default',
+                background: 'transparent',
+                border: 'none',
+                boxShadow: 'none'
+            } as any}
+            onClick={onClick}
+        >
+            <svg viewBox="0 0 600 800" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+                {/* Background Image */}
+                {customImage && (
+                    <image
+                        href={customImage}
+                        x="0"
+                        y="0"
+                        width="600"
+                        height="800"
+                        preserveAspectRatio="xMidYMid slice"
+                    />
                 )}
 
-                <div className={styles.cardFooter}>
-                    Helping beyond invitations, with love.
-                </div>
-            </div>
+                {/* Content Group (Centered text) */}
+                <g textAnchor="middle" fontFamily="serif">
+
+                    {/* Event Name (Top) */}
+                    {/* Event Name (Top) */}
+                    <text x="300" y="240" fill="#FFF" fontSize="36" fontFamily="var(--font-serif)" style={{ letterSpacing: '0.1em', textTransform: 'uppercase' }} filter="url(#shadow)">
+                        {event.name}
+                    </text>
+
+                    {/* Middle Section (Names & Subtitle) */}
+                    {isHaldi ? (
+                        <>
+                            <text x="300" y="380" fill="#FFF" fontFamily="'Great Vibes', cursive" fontSize="72" filter="url(#shadow)">
+                                {brideName || 'Bride'}
+                                <tspan dx="10" fontSize="36" fontFamily="var(--font-serif)" fontStyle="italic" dy="-10">ke haldi</tspan>
+                            </text>
+                            <text x="300" y="440" fill="#FFE4B5" fontSize="20" fontStyle="italic" style={{ letterSpacing: '0.05em' }}>
+                                <tspan x="300" dy="0">bless the couple with showers of yellow</tspan>
+                                <tspan x="300" dy="25">health and happiness</tspan>
+                            </text>
+                        </>
+                    ) : (
+                        <>
+                            <text x="300" y="380" fill="#FFF" fontFamily="'Great Vibes', cursive" fontSize="64" filter="url(#shadow)">
+                                {groomName || 'Groom'}
+                                <tspan dx="10" fontSize="32" opacity="0.8">&</tspan>
+                                <tspan dx="10">{brideName || 'Bride'}</tspan>
+                            </text>
+                            <text x="300" y="440" fill="#FFE4B5" fontSize="18" fontStyle="italic" style={{ letterSpacing: '0.05em' }}>
+                                <tspan x="300" dy="0">Request the honor of your presence to bless the couple</tspan>
+                                <tspan x="300" dy="25">with showers of love, health, and happiness.</tspan>
+                            </text>
+                        </>
+                    )}
+
+                    {/* Bottom Details */}
+                    {(event.date || event.time || event.venue || !isPlaceholder) && (
+                        <g transform="translate(0, 600)" fill="#FFF" fontSize="22" fontWeight="600">
+                            {event.date && (
+                                <text x="300" y="0">
+                                    <tspan fill="#FFE4B5" fontSize="16" style={{ letterSpacing: '0.1em', textTransform: 'uppercase' }} dy="-25">On</tspan>
+                                    <tspan x="300" dy="25">{event.date}</tspan>
+                                </text>
+                            )}
+
+                            {event.time && (
+                                <text x="300" y="80">
+                                    <tspan fill="#FFE4B5" fontSize="16" style={{ letterSpacing: '0.1em', textTransform: 'uppercase' }} dy="-25">At</tspan>
+                                    <tspan x="300" dy="25">{event.time}</tspan>
+                                </text>
+                            )}
+
+                            {event.venue && (
+                                <text x="300" y="160">
+                                    <tspan fill="#FFE4B5" fontSize="16" style={{ letterSpacing: '0.1em', textTransform: 'uppercase' }} dy="-25">Venue</tspan>
+                                    <tspan x="300" dy="25" fontSize="20" >{event.venue}</tspan>
+                                </text>
+                            )}
+                        </g>
+                    )}
+                </g>
+
+                {/* Filters */}
+                <defs>
+                    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+                        <feDropShadow dx="0" dy="2" stdDeviation="2" floodColor="rgba(0,0,0,0.5)" />
+                    </filter>
+                </defs>
+            </svg>
         </div>
     );
 };

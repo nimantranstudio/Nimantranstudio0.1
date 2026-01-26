@@ -32,6 +32,7 @@ export const WeddingFormSchema = z.object({
     groomParents: z.string().optional(),
     brideParents: z.string().optional(),
     primaryDate: z.string().optional(),
+    primaryTime: z.string().optional(),
     timezone: z.string().default('Asia/Kolkata').optional(),
     defaultVenueName: z.string().optional(),
     defaultVenueAddress: z.string().optional(),
