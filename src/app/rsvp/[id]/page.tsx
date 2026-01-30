@@ -16,7 +16,13 @@ export default async function RSVPPage({
     // The ID in the URL is now an EVENT ID, so we must query the Event model
     const event = await prisma.event.findUnique({
         where: { id },
-        include: { wedding: true },
+        include: {
+            wedding: {
+                include: {
+                    theme: true
+                }
+            }
+        },
     });
 
     if (!event) {
@@ -30,9 +36,7 @@ export default async function RSVPPage({
         events: [event]
     };
 
-    const dbTheme = await prisma.theme.findUnique({
-        where: { id: wedding.themeId }
-    });
+    const dbTheme = event.wedding.theme;
 
     const themeColors = ['#D4AF37', '#800000', '#F5E6BE']; // Default placeholder colors
 
