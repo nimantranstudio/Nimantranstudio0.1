@@ -4,20 +4,16 @@ export const dynamic = 'force-dynamic';
 import { WeddingFormSchema } from '@/lib/schemas/wedding-form';
 
 export async function POST(req: Request) {
-    console.log("API: POST /api/wedding called");
     try {
         const body = await req.json();
-        console.log("API: Request body received", JSON.stringify(body, null, 2));
 
         const validatedData = WeddingFormSchema.parse(body.formData);
-        console.log("API: Validation passed");
 
         const { selectedThemeId, userId } = body;
 
         // For now, if no userId is provided, we use a placeholder or create a guest user
         // In a real app, this would come from the auth session
         const finalUserId = userId || await getOrCreateGuestUser();
-        console.log("API: User ID resolved", finalUserId);
 
         const wedding = await prisma.wedding.create({
             data: {
@@ -52,9 +48,6 @@ export async function POST(req: Request) {
                 events: true
             }
         });
-
-        console.log("API: Wedding created successfully", wedding.id);
-        console.log("API: Created Events:", wedding.events.length);
 
         return NextResponse.json({ success: true, wedding });
     } catch (error: any) {
