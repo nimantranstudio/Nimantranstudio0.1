@@ -34,32 +34,20 @@ export async function POST(request: Request) {
 
         const isUserAdmin = mobileNumber === ADMIN_MOBILE;
 
-        // Sync with local DB
-        let user = await prisma.user.findUnique({
-            where: { mobileNumber }
-        });
-
-        if (!user) {
-            user = await prisma.user.create({
-                data: {
-                    mobileNumber,
-                    isMobileVerified: true,
-                    role: isUserAdmin ? 'admin' : 'user',
-                    status: 'active'
-                }
-            });
-        } else {
-            // Update users to verified if they weren't
-            if (!user.isMobileVerified || (isUserAdmin && user.role !== 'admin')) {
-                user = await prisma.user.update({
-                    where: { mobileNumber },
-                    data: { 
-                        isMobileVerified: true,
-                        role: isUserAdmin ? 'admin' : user.role 
-                    }
-                });
+        // Sync with local DB using upsert to handle race conditions and reduce logic
+        const user = await prisma.user.upsert({
+            where: { mobileNumber },
+            create: {
+                mobileNumber,
+                isMobileVerified: true,
+                role: isUserAdmin ? 'admin' : 'user',
+                status: 'active'
+            },
+            update: {
+                isMobileVerified: true,
+                ...(isUserAdmin ? { role: 'admin' } : {})
             }
-        }
+        });
 
         return NextResponse.json({
             success: true,
