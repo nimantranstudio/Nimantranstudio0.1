@@ -138,7 +138,14 @@ export const useWeddingStore = create<WeddingState>()(
                                 allowCompanions: evt.allowCompanions,
                                 collectDietary: evt.collectDietary,
                                 maxGuests: evt.maxGuests,
-                                guests: [] // Guests are separate in DB, for now reset or keep empty as this is 'creating' phase
+                                guests: (evt.guests || []).map((g: any) => ({
+                                    id: g.id,
+                                    name: g.name,
+                                    status: g.status,
+                                    phone: g.phone,
+                                    companions: g.companions,
+                                    dietary: g.dietary
+                                }))
                             }));
 
                             set((state) => ({
