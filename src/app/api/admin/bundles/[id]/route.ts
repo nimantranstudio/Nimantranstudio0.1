@@ -32,18 +32,20 @@ export async function PUT(
         const existingItemImages = JSON.parse(formData.get('existingItemImages') as string || '{}');
         const itemImages: { [key: string]: string } = { ...existingItemImages };
 
-        for (const [key, value] of Array.from(formData.entries())) {
-            if (key.startsWith('itemFile_') && value instanceof File) {
-                const itemName = key.replace('itemFile_', '');
-                const bytes = await value.arrayBuffer();
-                const buffer = Buffer.from(bytes);
-                const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-                const filename = `item-${itemName.replace(/\s+/g, '_')}-${uniqueSuffix}${path.extname(value.name)}`;
-                const filepath = path.join(uploadDir, filename);
-                await writeFile(filepath, buffer);
-                itemImages[itemName] = `/Image/bundle/${filename}`;
-            }
-        }
+        await Promise.all(
+            Array.from(formData.entries()).map(async ([key, value]) => {
+                if (key.startsWith('itemFile_') && value instanceof File) {
+                    const itemName = key.replace('itemFile_', '');
+                    const bytes = await value.arrayBuffer();
+                    const buffer = Buffer.from(bytes);
+                    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+                    const filename = `item-${itemName.replace(/\s+/g, '_')}-${uniqueSuffix}${path.extname(value.name)}`;
+                    const filepath = path.join(uploadDir, filename);
+                    await writeFile(filepath, buffer);
+                    itemImages[itemName] = `/Image/bundle/${filename}`;
+                }
+            })
+        );
 
         const itemImagePaths = Object.values(itemImages);
         const bundle = await prisma.bundle.update({
