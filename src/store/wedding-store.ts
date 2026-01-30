@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { WeddingFormData, DEFAULT_EVENTS } from '@/lib/schemas/wedding-form';
+import { auth } from '@/lib/firebase';
 
 interface WeddingState {
     selectedThemeId: string | null;
@@ -103,9 +104,26 @@ export const useWeddingStore = create<WeddingState>()(
                 const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout
 
                 try {
+                    // Get Firebase ID Token if user is logged in
+                    let token = '';
+                    if (auth.currentUser) {
+                        try {
+                            token = await auth.currentUser.getIdToken();
+                        } catch (err) {
+                            console.error('Failed to get ID token:', err);
+                        }
+                    }
+
+                    const headers: Record<string, string> = {
+                        'Content-Type': 'application/json',
+                    };
+                    if (token) {
+                        headers['Authorization'] = `Bearer ${token}`;
+                    }
+
                     const response = await fetch('/api/wedding', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers,
                         body: JSON.stringify({ formData, selectedThemeId }),
                         signal: controller.signal,
                     });

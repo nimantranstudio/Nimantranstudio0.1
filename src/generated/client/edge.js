@@ -248,7 +248,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "C:\\You can\\NS\\Nimantranstudio0.1\\src\\generated\\client",
+      "value": "/app/src/generated/client",
       "fromEnvVar": null
     },
     "config": {
@@ -257,17 +257,16 @@ const config = {
     "binaryTargets": [
       {
         "fromEnvVar": null,
-        "value": "windows",
+        "value": "debian-openssl-3.0.x",
         "native": true
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "C:\\You can\\NS\\Nimantranstudio0.1\\prisma\\schema.prisma",
+    "sourceFilePath": "/app/prisma/schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
-    "rootEnvPath": null,
-    "schemaEnvPath": "../../../.env"
+    "rootEnvPath": null
   },
   "relativePath": "../../../prisma",
   "clientVersion": "5.22.0",
@@ -276,7 +275,7 @@ const config = {
     "db"
   ],
   "activeProvider": "sqlserver",
-  "postinstall": false,
+  "postinstall": true,
   "inlineDatasources": {
     "db": {
       "url": {
