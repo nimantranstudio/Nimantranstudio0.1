@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import styles from './login.module.css';
 import { useWeddingStore } from '@/store/wedding-store';
 import { Loader2, AlertCircle } from 'lucide-react';
@@ -138,6 +139,11 @@ function LoginForm() {
 
                 {step === 'phone' ? (
                     <>
+                        <div style={{ marginBottom: '2rem' }}>
+                            <Link href="/" className={styles.logo}>
+                                <span>Nimantran<span>Studio</span></span>
+                            </Link>
+                        </div>
                         <h1 className={styles.title}>Welcome to Nimantranstudio</h1>
                         <p className={styles.subtitle}>Enter your WhatsApp number to continue</p>
 
