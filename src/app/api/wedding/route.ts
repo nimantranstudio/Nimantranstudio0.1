@@ -44,12 +44,25 @@ export async function POST(req: Request) {
                         rsvpDeadline: event.rsvpDeadline ? event.rsvpDeadline : null,
                         allowCompanions: event.allowCompanions ?? true,
                         collectDietary: event.collectDietary ?? false,
-                        // maxGuests: event.maxGuests 
+                        // maxGuests: event.maxGuests,
+                        guests: {
+                            create: (event.guests || []).map(guest => ({
+                                name: guest.name,
+                                status: guest.status,
+                                phone: guest.phone,
+                                companions: guest.companions ?? 0,
+                                dietary: guest.dietary
+                            }))
+                        }
                     }))
                 }
             },
             include: {
-                events: true
+                events: {
+                    include: {
+                        guests: true
+                    }
+                }
             }
         });
 

@@ -219,6 +219,18 @@ exports.Prisma.EventScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.GuestScalarFieldEnum = {
+  id: 'id',
+  eventId: 'eventId',
+  name: 'name',
+  status: 'status',
+  phone: 'phone',
+  companions: 'companions',
+  dietary: 'dietary',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.RSVPScalarFieldEnum = {
   id: 'id',
   weddingId: 'weddingId',
@@ -266,6 +278,7 @@ exports.Prisma.ModelName = {
   Theme: 'Theme',
   Wedding: 'Wedding',
   Event: 'Event',
+  Guest: 'Guest',
   RSVP: 'RSVP',
   Package: 'Package'
 };

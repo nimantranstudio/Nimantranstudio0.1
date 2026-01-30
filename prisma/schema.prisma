@@ -127,8 +127,24 @@ model Event {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   wedding         Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  guests          Guest[]
 
   @@map("Event")
+}
+
+model Guest {
+  id          String   @id @default(cuid())
+  eventId     String
+  name        String
+  status      String   @default("pending")
+  phone       String?
+  companions  Int      @default(0)
+  dietary     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@map("Guest")
 }
 
 model RSVP {
