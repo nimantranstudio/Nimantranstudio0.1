@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { adminAuth } from '@/lib/firebase-admin';
 export const dynamic = 'force-dynamic';
 import { WeddingFormSchema } from '@/lib/schemas/wedding-form';
 
@@ -14,9 +15,39 @@ export async function POST(req: Request) {
 
         const { selectedThemeId, userId } = body;
 
-        // For now, if no userId is provided, we use a placeholder or create a guest user
-        // In a real app, this would come from the auth session
-        const finalUserId = userId || await getOrCreateGuestUser();
+        // Authenticate user via Firebase ID Token
+        let authenticatedUserId: string | null = null;
+        const authHeader = req.headers.get('Authorization');
+
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+            const token = authHeader.split('Bearer ')[1];
+            try {
+                const decodedToken = await adminAuth.verifyIdToken(token);
+                if (decodedToken.phone_number) {
+                    // Extract mobile number (assuming Indian +91 prefix)
+                    let mobileNumber = decodedToken.phone_number;
+                    if (mobileNumber.startsWith('+91')) {
+                        mobileNumber = mobileNumber.slice(3);
+                    }
+
+                    const user = await prisma.user.findUnique({
+                        where: { mobileNumber }
+                    });
+
+                    if (user) {
+                        authenticatedUserId = user.id;
+                        console.log("API: Authenticated User ID:", authenticatedUserId);
+                    } else {
+                        console.warn("API: User authenticated with Firebase but not found in DB:", mobileNumber);
+                    }
+                }
+            } catch (error) {
+                console.error("API: Token verification failed:", error);
+            }
+        }
+
+        // Use authenticated user if available, otherwise fallback to userId (if provided) or guest user
+        const finalUserId = authenticatedUserId || userId || await getOrCreateGuestUser();
         console.log("API: User ID resolved", finalUserId);
 
         const wedding = await prisma.wedding.create({
