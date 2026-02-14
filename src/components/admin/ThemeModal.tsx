@@ -15,7 +15,7 @@ interface ThemeModalProps {
         isActive: boolean;
         isBestSeller: boolean;
         isPopular: boolean;
-        thumbnailUrl: string;
+        thumbnailUrl: string | null;
         previewImages?: string;
     } | null;
 }
@@ -40,7 +40,9 @@ export function ThemeModal({ isOpen, onClose, onSuccess, initialData }: ThemeMod
             setIsBestSeller(initialData.isBestSeller);
             setIsPopular(initialData.isPopular);
             setFiles([]);
-            const existingImages = initialData.previewImages ? JSON.parse(initialData.previewImages) : [initialData.thumbnailUrl];
+            const existingImages = initialData.previewImages
+                ? JSON.parse(initialData.previewImages)
+                : initialData.thumbnailUrl ? [initialData.thumbnailUrl] : [];
             setPreviews(existingImages);
         } else {
             setName('');
