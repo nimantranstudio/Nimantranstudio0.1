@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { Plus, Package, Loader2, Check, Star, Edit, Trash2, Globe, Lock, Image as ImageIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { BundleModal } from '@/components/admin/BundleModal';
 
@@ -51,10 +52,12 @@ function ImageSlider({ images, name }: { images: string[], name: string }) {
 
     return (
         <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-            <img
+            <Image
                 src={images[currentIndex]}
                 alt={`${name} - ${currentIndex + 1}`}
-                style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'opacity 0.3s ease' }}
+                fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                style={{ objectFit: 'cover', transition: 'opacity 0.3s ease' }}
             />
             {images.length > 1 && (
                 <>
