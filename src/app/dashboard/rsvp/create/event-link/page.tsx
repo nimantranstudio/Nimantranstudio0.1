@@ -1,25 +1,37 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Download, Copy, Phone, LogOut } from 'lucide-react';
 import styles from './event-link.module.css';
 import dashboardStyles from '@/app/dashboard/dashboard.module.css';
 import { useWeddingStore } from '@/store/wedding-store';
 
-export default function EventLinkPage() {
+function EventLinkContent() {
     const router = useRouter();
-    const { logout } = useWeddingStore();
-    const [copied, setCopied] = useState(false);
+    const searchParams = useSearchParams();
+    const eventId = searchParams.get('eventId');
 
-    // In a real app, you'd get the actual ID from context or URL params
+    const { logout, formData } = useWeddingStore();
+    const [copied, setCopied] = useState(false);
     const [link, setLink] = useState('');
 
     useEffect(() => {
-        // Just a placeholder example since we don't have the ID here without params
-        setLink(`${window.location.origin}/dashboard/rsvp`);
-    }, []);
+        if (eventId) {
+            // Find the event to ensure it exists (optional but good for validation)
+            const event = formData.events.find(e => e.id === eventId);
+            if (event) {
+                setLink(`${window.location.origin}/rsvp/${event.id}`);
+            } else {
+                // Even if not found in local store yet (e.g. slight sync delay?), trust the ID if present
+                setLink(`${window.location.origin}/rsvp/${eventId}`);
+            }
+        } else {
+            // Fallback if no ID provided
+            setLink(`${window.location.origin}/dashboard/rsvp`);
+        }
+    }, [eventId, formData.events]);
 
     const handleLogout = () => {
         logout();
@@ -118,5 +130,13 @@ export default function EventLinkPage() {
                 </div>
             </main>
         </div>
+    );
+}
+
+export default function EventLinkPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <EventLinkContent />
+        </Suspense>
     );
 }

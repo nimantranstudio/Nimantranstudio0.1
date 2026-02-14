@@ -71,7 +71,15 @@ export default function RSVPCreatePage() {
             alert(`Backend sync failed: ${result.error || 'Unknown error'}. Link might not work immediately.`);
         }
 
-        router.push('/dashboard/rsvp');
+        // Retrieve the latest state from store to get the real DB ID of the new event
+        const latestEvents = useWeddingStore.getState().formData.events;
+        const newEvent = latestEvents[latestEvents.length - 1];
+
+        if (newEvent && newEvent.id) {
+            router.push(`/dashboard/rsvp/create/event-link?eventId=${newEvent.id}`);
+        } else {
+            router.push('/dashboard/rsvp');
+        }
     };
 
     return (
