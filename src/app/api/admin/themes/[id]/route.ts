@@ -115,14 +115,14 @@ export async function DELETE(
         if (theme.previewImages) {
             try {
                 const images = JSON.parse(theme.previewImages) as string[];
-                for (const imagePath of images) {
+                await Promise.all(images.map(async (imagePath) => {
                     const fullPath = path.join(process.cwd(), 'public', imagePath);
                     try {
                         await unlink(fullPath);
                     } catch (e) {
                         console.error(`Failed to delete file: ${fullPath}`, e);
                     }
-                }
+                }));
             } catch (e) {
                 console.error("Failed to parse/delete images", e);
             }
