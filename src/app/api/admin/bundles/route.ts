@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
 
         // Process item-wise uploads
         const itemImages: { [key: string]: string } = {};
-        for (const [key, value] of Array.from(formData.entries())) {
+        await Promise.all(Array.from(formData.entries()).map(async ([key, value]) => {
             if (key.startsWith('itemFile_') && value instanceof File) {
                 const itemName = key.replace('itemFile_', '');
                 const bytes = await value.arrayBuffer();
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
                 await writeFile(filepath, buffer);
                 itemImages[itemName] = `/Image/bundle/${filename}`;
             }
-        }
+        }));
 
         const itemImagePaths = Object.values(itemImages);
         const bundle = await prisma.bundle.create({
