@@ -8,7 +8,7 @@ import Image from 'next/image';
 interface Theme {
     id: string;
     name: string;
-    thumbnailUrl: string;
+    thumbnailUrl: string | null;
     description?: string;
     isActive: boolean;
     isBestSeller: boolean;
@@ -115,12 +115,18 @@ export default function ThemesPage() {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
                     {themes.map((theme) => (
                         <div key={theme.id} style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', position: 'relative' }}>
-                            <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', background: '#f3f4f6' }}>
-                                <img
-                                    src={theme.thumbnailUrl}
-                                    alt={theme.name}
-                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                />
+                            <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', background: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                {theme.thumbnailUrl ? (
+                                    <Image
+                                        src={theme.thumbnailUrl}
+                                        alt={theme.name}
+                                        fill
+                                        style={{ objectFit: 'cover' }}
+                                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                                    />
+                                ) : (
+                                    <Palette size={48} color="#9ca3af" />
+                                )}
                                 <div style={{ position: 'absolute', top: '10px', right: '10px', display: 'flex', gap: '8px' }}>
                                     <button
                                         onClick={() => handleEdit(theme)}
