@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { X, Upload, Image as ImageIcon } from 'lucide-react';
 import styles from './ThemeModal.module.css';
+import Image from 'next/image';
+import clsx from 'clsx';
 
 interface ThemeModalProps {
     isOpen: boolean;
@@ -218,7 +220,14 @@ export function ThemeModal({ isOpen, onClose, onSuccess, initialData }: ThemeMod
                                 <div className={styles.previewGrid}>
                                     {previews.map((src, index) => (
                                         <div key={index} className={styles.previewItem}>
-                                            <img src={src} alt="Preview" className={styles.previewImg} />
+                                            <Image
+                                                src={src}
+                                                alt="Preview"
+                                                className={styles.previewImg}
+                                                fill
+                                                sizes="(max-width: 768px) 33vw, (max-width: 1200px) 25vw, 150px"
+                                                unoptimized={src.startsWith('blob:')}
+                                            />
                                             <button
                                                 type="button"
                                                 className={styles.removeBtn}
@@ -249,9 +258,4 @@ export function ThemeModal({ isOpen, onClose, onSuccess, initialData }: ThemeMod
             </div>
         </div>
     );
-}
-
-// Utility to handle conditional classes since clsx isn't imported yet in some environments
-function clsx(...args: any[]) {
-    return args.filter(Boolean).join(' ');
 }
