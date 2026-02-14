@@ -159,6 +159,7 @@ export default function PreviewPage() {
                             isPlaceholder={true}
                             type='image'
                             customImage={displayImages[selectedPreviewIndex]}
+                            variant={selectedPreviewIndex === 3 ? 'contract' : selectedPreviewIndex === 7 ? 'save-the-date' : 'default'}
                         />
                     </div>
                 </div>
@@ -202,6 +203,7 @@ export default function PreviewPage() {
                                         type='image'
                                         customImage={imgUrl}
                                         onClick={() => setSelectedPreviewIndex(index)}
+                                        variant={index === 3 ? 'contract' : index === 7 ? 'save-the-date' : 'default'} // Apply variants based on design index
                                     />
                                 ))
                             ) : (
