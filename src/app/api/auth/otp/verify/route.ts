@@ -35,16 +35,19 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Incorrect OTP' }, { status: 400 });
         }
 
-        // Mark OTP as used
-        await prisma.oTPRequest.update({
-            where: { id: otpRequest.id },
-            data: { isUsed: true }
-        });
+        // Mark OTP as used and Find User in parallel
+        const [, userFound] = await Promise.all([
+            prisma.oTPRequest.update({
+                where: { id: otpRequest.id },
+                data: { isUsed: true }
+            }),
+            prisma.user.findUnique({
+                where: { mobileNumber }
+            })
+        ]);
 
         // Find or Create User
-        let user = await prisma.user.findUnique({
-            where: { mobileNumber }
-        });
+        let user = userFound;
 
         const isUserAdmin = mobileNumber === ADMIN_MOBILE;
 
