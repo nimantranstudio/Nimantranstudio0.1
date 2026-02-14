@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { X, Package, CheckCircle, Info, Upload, Image as ImageIcon, AlertCircle } from 'lucide-react';
 import styles from './BundleModal.module.css';
 import { clsx } from 'clsx';
+import Image from 'next/image';
 
 interface Theme {
     id: string;
@@ -332,7 +333,14 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
                                                 <div className={styles.itemUploadControls}>
                                                     {itemPreviews[item] ? (
                                                         <div className={styles.itemPreviewWrapper}>
-                                                            <img src={itemPreviews[item]} alt={item} className={styles.itemPreview} />
+                                                            <Image
+                                                                src={itemPreviews[item]}
+                                                                alt={item}
+                                                                width={24}
+                                                                height={24}
+                                                                className={styles.itemPreview}
+                                                                unoptimized={itemPreviews[item].startsWith('blob:')}
+                                                            />
                                                             <button type="button" className={styles.itemRemoveBtn} onClick={() => removeItemFile(item)}>
                                                                 <X size={10} />
                                                             </button>
