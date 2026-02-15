@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from './src/generated/client';
 import { writeFile } from 'fs/promises';
 
 const prisma = new PrismaClient({

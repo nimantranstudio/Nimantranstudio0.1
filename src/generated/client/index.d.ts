@@ -2466,6 +2466,7 @@ export namespace Prisma {
      * The data used to create many Users.
      */
     data: UserCreateManyInput | UserCreateManyInput[]
+    skipDuplicates?: boolean
   }
 
   /**
@@ -3409,6 +3410,7 @@ export namespace Prisma {
      * The data used to create many OTPRequests.
      */
     data: OTPRequestCreateManyInput | OTPRequestCreateManyInput[]
+    skipDuplicates?: boolean
   }
 
   /**
@@ -4429,6 +4431,7 @@ export namespace Prisma {
      * The data used to create many Bundles.
      */
     data: BundleCreateManyInput | BundleCreateManyInput[]
+    skipDuplicates?: boolean
   }
 
   /**
@@ -5402,6 +5405,7 @@ export namespace Prisma {
      * The data used to create many Orders.
      */
     data: OrderCreateManyInput | OrderCreateManyInput[]
+    skipDuplicates?: boolean
   }
 
   /**
@@ -6341,6 +6345,7 @@ export namespace Prisma {
      * The data used to create many Themes.
      */
     data: ThemeCreateManyInput | ThemeCreateManyInput[]
+    skipDuplicates?: boolean
   }
 
   /**
@@ -7350,6 +7355,7 @@ export namespace Prisma {
      * The data used to create many Weddings.
      */
     data: WeddingCreateManyInput | WeddingCreateManyInput[]
+    skipDuplicates?: boolean
   }
 
   /**
@@ -8412,6 +8418,7 @@ export namespace Prisma {
      * The data used to create many Events.
      */
     data: EventCreateManyInput | EventCreateManyInput[]
+    skipDuplicates?: boolean
   }
 
   /**
@@ -9405,6 +9412,7 @@ export namespace Prisma {
      * The data used to create many RSVPS.
      */
     data: RSVPCreateManyInput | RSVPCreateManyInput[]
+    skipDuplicates?: boolean
   }
 
   /**
@@ -10345,6 +10353,7 @@ export namespace Prisma {
      * The data used to create many Packages.
      */
     data: PackageCreateManyInput | PackageCreateManyInput[]
+    skipDuplicates?: boolean
   }
 
   /**
@@ -10444,8 +10453,7 @@ export namespace Prisma {
     ReadUncommitted: 'ReadUncommitted',
     ReadCommitted: 'ReadCommitted',
     RepeatableRead: 'RepeatableRead',
-    Serializable: 'Serializable',
-    Snapshot: 'Snapshot'
+    Serializable: 'Serializable'
   };
 
   export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
@@ -13664,6 +13672,7 @@ export namespace Prisma {
 
   export type OrderCreateManyUserInputEnvelope = {
     data: OrderCreateManyUserInput | OrderCreateManyUserInput[]
+    skipDuplicates?: boolean
   }
 
   export type WeddingCreateWithoutOwnerInput = {
@@ -13705,6 +13714,7 @@ export namespace Prisma {
 
   export type WeddingCreateManyOwnerInputEnvelope = {
     data: WeddingCreateManyOwnerInput | WeddingCreateManyOwnerInput[]
+    skipDuplicates?: boolean
   }
 
   export type OrderUpsertWithWhereUniqueWithoutUserInput = {
@@ -13828,6 +13838,7 @@ export namespace Prisma {
 
   export type OrderCreateManyBundleInputEnvelope = {
     data: OrderCreateManyBundleInput | OrderCreateManyBundleInput[]
+    skipDuplicates?: boolean
   }
 
   export type ThemeUpsertWithoutBundlesInput = {
@@ -14084,6 +14095,7 @@ export namespace Prisma {
 
   export type BundleCreateManyThemeRefInputEnvelope = {
     data: BundleCreateManyThemeRefInput | BundleCreateManyThemeRefInput[]
+    skipDuplicates?: boolean
   }
 
   export type WeddingCreateWithoutThemeInput = {
@@ -14125,6 +14137,7 @@ export namespace Prisma {
 
   export type WeddingCreateManyThemeInputEnvelope = {
     data: WeddingCreateManyThemeInput | WeddingCreateManyThemeInput[]
+    skipDuplicates?: boolean
   }
 
   export type BundleUpsertWithWhereUniqueWithoutThemeRefInput = {
@@ -14221,6 +14234,7 @@ export namespace Prisma {
 
   export type EventCreateManyWeddingInputEnvelope = {
     data: EventCreateManyWeddingInput | EventCreateManyWeddingInput[]
+    skipDuplicates?: boolean
   }
 
   export type RSVPCreateWithoutWeddingInput = {
@@ -14258,6 +14272,7 @@ export namespace Prisma {
 
   export type RSVPCreateManyWeddingInputEnvelope = {
     data: RSVPCreateManyWeddingInput | RSVPCreateManyWeddingInput[]
+    skipDuplicates?: boolean
   }
 
   export type UserCreateWithoutWeddingsInput = {
