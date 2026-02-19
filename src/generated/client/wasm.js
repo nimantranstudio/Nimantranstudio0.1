@@ -178,6 +178,7 @@ exports.Prisma.ThemeScalarFieldEnum = {
   description: 'description',
   thumbnailUrl: 'thumbnailUrl',
   previewImages: 'previewImages',
+  colors: 'colors',
   isActive: 'isActive',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',

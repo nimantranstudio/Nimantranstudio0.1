@@ -18,6 +18,8 @@ export interface Theme {
     bundleName?: string;
     bundles?: BundleData[];
     tag?: string;
+    isPopular?: boolean;
+    isBestSeller?: boolean;
 }
 
 // THEMES constant removed to enforce dynamic fetching from API

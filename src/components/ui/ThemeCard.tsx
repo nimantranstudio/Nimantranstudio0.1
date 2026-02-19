@@ -34,10 +34,25 @@ export const ThemeCard = ({ theme, onSelect }: ThemeCardProps) => {
             <div className={styles.info}>
                 <h3 className={styles.name}>{theme.name}</h3>
                 <div className={styles.pricing}>
-                    <span className={styles.currentPrice}>₹1200</span>
-                    <span className={styles.originalPrice}>₹3800</span>
-                    <span className={styles.discount}>68% OFF</span>
+                    {theme.bundles && theme.bundles.length > 0 ? (
+                        <>
+                            <span className={styles.currentPrice}>₹{theme.bundles[0].whatsappPrice}</span>
+                            <span className={styles.originalPrice}>₹{theme.bundles[0].completePrice}</span>
+                            <span className={styles.discount}>
+                                {Math.round(((theme.bundles[0].completePrice - theme.bundles[0].whatsappPrice) / theme.bundles[0].completePrice) * 100)}% OFF
+                            </span>
+                        </>
+                    ) : (
+                        <span className={styles.currentPrice}>Check Details</span>
+                    )}
                 </div>
+                {theme.colors && theme.colors.length > 0 && (
+                    <div style={{ display: 'flex', gap: '4px', marginTop: '8px' }}>
+                        {theme.colors.map((color, i) => (
+                            <div key={i} style={{ width: '16px', height: '16px', borderRadius: '50%', backgroundColor: color, border: '1px solid #eee' }} />
+                        ))}
+                    </div>
+                )}
                 <div className={styles.details}>
                     Pack of 12 Assets
                 </div>

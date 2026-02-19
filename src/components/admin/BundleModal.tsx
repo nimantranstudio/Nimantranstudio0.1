@@ -321,8 +321,16 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
                                         packages.forEach(p => {
                                             try {
                                                 const items = JSON.parse(p.allowedItems);
-                                                items.forEach((item: string) => allItemsSet.add(item));
-                                            } catch (e) { }
+                                                if (Array.isArray(items)) {
+                                                    items.forEach((item: string) => {
+                                                        if (typeof item === 'string') {
+                                                            allItemsSet.add(item.trim());
+                                                        }
+                                                    });
+                                                }
+                                            } catch (e) {
+                                                console.warn("Failed to parse allowedItems for package:", p.name, e);
+                                            }
                                         });
                                         const allUniqueItems = Array.from(allItemsSet);
 

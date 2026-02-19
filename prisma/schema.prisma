@@ -78,6 +78,7 @@ model Theme {
   description   String?
   thumbnailUrl  String?
   previewImages String?
+  colors        String?   @db.Text
   isActive      Boolean   @default(true)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
