@@ -46,3 +46,6 @@ next-env.d.ts
 # Verification
 db-check.log
 db-test-remote.ts
+
+# Garbage
+.next_garbage/
