@@ -17,16 +17,33 @@ interface InvitationCardProps {
     onClick?: () => void;
 }
 
-export const InvitationCard = ({ event, theme, groomName, brideName, isPlaceholder, type, customImage, onClick, variant = 'default' }: InvitationCardProps & { variant?: 'default' | 'contract' | 'save-the-date' }) => {
-    const isHaldi = event.name?.toLowerCase().includes('haldi');
-    const isContract = variant === 'contract';
-    const isSaveTheDate = variant === 'save-the-date';
+export const InvitationCard = ({ event, theme, groomName, brideName, isPlaceholder, type, customImage, onClick, variant = 'default' }: InvitationCardProps & { variant?: 'default' | 'contract' | 'save-the-date' | string }) => {
+    const eventNameLower = event.name?.toLowerCase() || '';
+
+    // Determine layout type based on variant or event name
+    let layoutType = variant;
+    if (variant === 'default') {
+        if (eventNameLower.includes('haldi')) layoutType = 'haldi';
+        else if (eventNameLower.includes('sangeet')) layoutType = 'sangeet';
+        else if (eventNameLower.includes('mehndi') || eventNameLower.includes('mehendi')) layoutType = 'mehndi';
+        else if (eventNameLower.includes('reception')) layoutType = 'reception';
+        else if (eventNameLower.includes('wedding') || eventNameLower.includes('marriage')) layoutType = 'wedding';
+        else layoutType = 'wedding';
+    }
+
+    const isContract = layoutType === 'contract';
+    const isSaveTheDate = layoutType === 'save-the-date';
+    const isHaldi = layoutType === 'haldi';
+    const isSangeet = layoutType === 'sangeet';
+    const isMehndi = layoutType === 'mehndi';
+    const isReception = layoutType === 'reception';
+    const isWedding = layoutType === 'wedding';
 
     return (
         <div
             className={styles.invitationCard}
             style={{
-                '--theme-primary': theme.colors[1],
+                '--theme-primary': theme.colors[1] || '#FFE4B5',
                 cursor: onClick ? 'pointer' : 'default',
                 background: 'transparent',
                 border: 'none',
@@ -34,15 +51,15 @@ export const InvitationCard = ({ event, theme, groomName, brideName, isPlacehold
             } as any}
             onClick={onClick}
         >
-            <svg viewBox="0 0 600 800" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+            <svg viewBox="0 0 1240 1748" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
                 {/* Background Image */}
                 {customImage && (
                     <image
                         href={customImage}
                         x="0"
                         y="0"
-                        width="600"
-                        height="800"
+                        width="1240"
+                        height="1748"
                         preserveAspectRatio="xMidYMid slice"
                     />
                 )}
@@ -52,32 +69,29 @@ export const InvitationCard = ({ event, theme, groomName, brideName, isPlacehold
                     {isSaveTheDate ? (
                         /* Save The Date Layout (Design 8) */
                         <g>
-                            {/* Masking Rect to hide original text - Color picked to match dark maroon background */}
-                            <rect x="40" y="220" width="520" height="500" fill="#3E0E18" rx="10" />
-
                             {/* Header */}
-                            <text x="300" y="280" fill="#FFF" fontSize="42" fontFamily="var(--font-serif)" style={{ letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                            <text x="620" y="500" fill="#FFF" fontSize="85" fontFamily="var(--font-serif)" style={{ letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                                 Save The Date
                             </text>
-                            <text x="300" y="320" fill="#E5E7EB" fontSize="18" fontFamily="var(--font-serif)" fontStyle="italic">
+                            <text x="620" y="600" fill="#E5E7EB" fontSize="40" fontFamily="var(--font-serif)" fontStyle="italic">
                                 to celebrate the wedding of
                             </text>
 
                             {/* Names */}
-                            <text x="300" y="420" fill="#FFF" fontFamily="'Great Vibes', cursive" fontSize="72" filter="url(#shadow)">
+                            <text x="620" y="850" fill="#FFF" fontFamily="'Great Vibes', cursive" fontSize="160" filter="url(#shadow)">
                                 {groomName || 'Groom'}   &   {brideName || 'Bride'}
                             </text>
 
                             {/* Date */}
-                            <text x="300" y="550" fill="#FFF" fontSize="28" fontWeight="600" fontFamily="var(--font-serif)" style={{ letterSpacing: '0.05em' }}>
+                            <text x="620" y="1150" fill="#FFF" fontSize="60" fontWeight="600" fontFamily="var(--font-serif)" style={{ letterSpacing: '0.05em' }}>
                                 {event.date || '2026-02-01'}
                             </text>
-                            <text x="300" y="590" fill="#D1D5DB" fontSize="20" fontFamily="var(--font-serif)">
+                            <text x="620" y="1230" fill="#D1D5DB" fontSize="45" fontFamily="var(--font-serif)">
                                 {event.venue || 'Venue details to follow'}
                             </text>
 
                             {/* Footer */}
-                            <text x="300" y="660" fill="#9CA3AF" fontSize="14" style={{ letterSpacing: '0.2em', textTransform: 'uppercase' }}>
+                            <text x="620" y="1450" fill="#9CA3AF" fontSize="30" style={{ letterSpacing: '0.2em', textTransform: 'uppercase' }}>
                                 Formal Invitation to follow
                             </text>
                         </g>
@@ -86,73 +100,114 @@ export const InvitationCard = ({ event, theme, groomName, brideName, isPlacehold
                         /* Contract Card Layout */
                         <g>
                             {/* Names for "Between" section */}
-                            <text x="300" y="295" fill="#4a3b2b" fontFamily="'Great Vibes', cursive" fontSize="52" filter="url(#shadow-sm)">
+                            <text x="620" y="650" fill="#4a3b2b" fontFamily="'Great Vibes', cursive" fontSize="120" filter="url(#shadow-sm)">
                                 {groomName || 'Groom'}   &   {brideName || 'Bride'}
                             </text>
                             {/* Signatures at bottom */}
-                            <text x="150" y="660" fill="#4a3b2b" fontFamily="'Great Vibes', cursive" fontSize="32" transform="rotate(-5, 150, 660)">
+                            <text x="310" y="1450" fill="#4a3b2b" fontFamily="'Great Vibes', cursive" fontSize="70" transform="rotate(-5, 310, 1450)">
                                 {groomName || 'Groom'}
                             </text>
-                            <text x="450" y="660" fill="#4a3b2b" fontFamily="'Great Vibes', cursive" fontSize="32" transform="rotate(-5, 450, 660)">
+                            <text x="930" y="1450" fill="#4a3b2b" fontFamily="'Great Vibes', cursive" fontSize="70" transform="rotate(-5, 930, 1450)">
                                 {brideName || 'Bride'}
                             </text>
                             {/* Date for "On" section - approximate placement */}
-                            <text x="300" y="740" fill="#FFF" fontSize="24" fontWeight="600" fontFamily="var(--font-serif)">
+                            <text x="620" y="1620" fill="#FFF" fontSize="50" fontWeight="600" fontFamily="var(--font-serif)">
                                 {event.date || '2026-02-01'}
                             </text>
                         </g>
                     ) : isHaldi ? (
                         <>
-                            <text x="300" y="240" fill="#FFF" fontSize="36" fontFamily="var(--font-serif)" style={{ letterSpacing: '0.1em', textTransform: 'uppercase' }} filter="url(#shadow)">
-                                {event.name}
+                            <text x="620" y="550" fill="#FFF" fontSize="80" fontFamily="var(--font-serif)" style={{ letterSpacing: '0.1em', textTransform: 'uppercase' }} filter="url(#shadow)">
+                                {event.name || 'Haldi Ceremony'}
                             </text>
-                            <text x="300" y="380" fill="#FFF" fontFamily="'Great Vibes', cursive" fontSize="72" filter="url(#shadow)">
+                            <text x="620" y="850" fill="#FFF" fontFamily="'Great Vibes', cursive" fontSize="150" filter="url(#shadow)">
                                 {brideName || 'Bride'}
-                                <tspan dx="10" fontSize="36" fontFamily="var(--font-serif)" fontStyle="italic" dy="-10">ke haldi</tspan>
+                                <tspan dx="20" fontSize="75" fontFamily="var(--font-serif)" fontStyle="italic" dy="-20">ke haldi</tspan>
                             </text>
-                            <text x="300" y="440" fill="#FFE4B5" fontSize="20" fontStyle="italic" style={{ letterSpacing: '0.05em' }}>
-                                <tspan x="300" dy="0">bless the couple with showers of yellow</tspan>
-                                <tspan x="300" dy="25">health and happiness</tspan>
+                            <text x="620" y="980" fill="var(--theme-primary)" fontSize="45" fontStyle="italic" style={{ letterSpacing: '0.05em' }}>
+                                <tspan x="620" dy="0">bless the couple with showers of yellow</tspan>
+                                <tspan x="620" dy="55">health and happiness</tspan>
+                            </text>
+                        </>
+                    ) : isSangeet ? (
+                        <>
+                            <text x="620" y="550" fill="#FFF" fontSize="80" fontFamily="var(--font-serif)" style={{ letterSpacing: '0.1em', textTransform: 'uppercase' }} filter="url(#shadow)">
+                                {event.name || 'Sangeet Night'}
+                            </text>
+                            <text x="620" y="850" fill="#FFF" fontFamily="'Great Vibes', cursive" fontSize="150" filter="url(#shadow)">
+                                {groomName || 'Groom'}   &   {brideName || 'Bride'}
+                            </text>
+                            <text x="620" y="980" fill="var(--theme-primary)" fontSize="45" fontStyle="italic" style={{ letterSpacing: '0.05em' }}>
+                                <tspan x="620" dy="0">Join us for a musical night of dancing</tspan>
+                                <tspan x="620" dy="55">and celebration!</tspan>
+                            </text>
+                        </>
+                    ) : isMehndi ? (
+                        <>
+                            <text x="620" y="550" fill="#FFF" fontSize="80" fontFamily="var(--font-serif)" style={{ letterSpacing: '0.1em', textTransform: 'uppercase' }} filter="url(#shadow)">
+                                {event.name || 'Mehndi Ceremony'}
+                            </text>
+                            <text x="620" y="850" fill="#FFF" fontFamily="'Great Vibes', cursive" fontSize="150" filter="url(#shadow)">
+                                {brideName || 'Bride'}
+                                <tspan dx="20" fontSize="75" fontFamily="var(--font-serif)" fontStyle="italic" dy="-20">ki mehendi</tspan>
+                            </text>
+                            <text x="620" y="980" fill="var(--theme-primary)" fontSize="45" fontStyle="italic" style={{ letterSpacing: '0.05em' }}>
+                                <tspan x="620" dy="0">Join us as the bride gets adorned</tspan>
+                                <tspan x="620" dy="55">with beautiful henna</tspan>
+                            </text>
+                        </>
+                    ) : isReception ? (
+                        <>
+                            <text x="620" y="550" fill="#FFF" fontSize="80" fontFamily="var(--font-serif)" style={{ letterSpacing: '0.1em', textTransform: 'uppercase' }} filter="url(#shadow)">
+                                {event.name || 'Wedding Reception'}
+                            </text>
+                            <text x="620" y="850" fill="#FFF" fontFamily="'Great Vibes', cursive" fontSize="150" filter="url(#shadow)">
+                                {groomName || 'Groom'}   &   {brideName || 'Bride'}
+                            </text>
+                            <text x="620" y="980" fill="var(--theme-primary)" fontSize="45" fontStyle="italic" style={{ letterSpacing: '0.05em' }}>
+                                <tspan x="620" dy="0">Join us in celebrating the newly weds</tspan>
+                                <tspan x="620" dy="55">with an evening of dinner and dancing</tspan>
                             </text>
                         </>
                     ) : (
+                        /* Default Wedding */
                         <>
-                            <text x="300" y="240" fill="#FFF" fontSize="36" fontFamily="var(--font-serif)" style={{ letterSpacing: '0.1em', textTransform: 'uppercase' }} filter="url(#shadow)">
-                                {event.name}
+                            <text x="620" y="550" fill="#FFF" fontSize="80" fontFamily="var(--font-serif)" style={{ letterSpacing: '0.1em', textTransform: 'uppercase' }} filter="url(#shadow)">
+                                {event.name || 'Wedding Ceremony'}
                             </text>
-                            <text x="300" y="380" fill="#FFF" fontFamily="'Great Vibes', cursive" fontSize="64" filter="url(#shadow)">
+                            <text x="620" y="850" fill="#FFF" fontFamily="'Great Vibes', cursive" fontSize="140" filter="url(#shadow)">
                                 {groomName || 'Groom'}
-                                <tspan dx="10" fontSize="32" opacity="0.8">&</tspan>
-                                <tspan dx="10">{brideName || 'Bride'}</tspan>
+                                <tspan dx="25" fontSize="70" opacity="0.8">&</tspan>
+                                <tspan dx="25">{brideName || 'Bride'}</tspan>
                             </text>
-                            <text x="300" y="440" fill="#FFE4B5" fontSize="18" fontStyle="italic" style={{ letterSpacing: '0.05em' }}>
-                                <tspan x="300" dy="0">Request the honor of your presence to bless the couple</tspan>
-                                <tspan x="300" dy="25">with showers of love, health, and happiness.</tspan>
+                            <text x="620" y="980" fill="var(--theme-primary)" fontSize="40" fontStyle="italic" style={{ letterSpacing: '0.05em' }}>
+                                <tspan x="620" dy="0">Request the honor of your presence to bless the couple</tspan>
+                                <tspan x="620" dy="55">with showers of love, health, and happiness.</tspan>
                             </text>
                         </>
                     )}
 
-                    {/* Bottom Details (Only for non-contract cards) */}
-                    {!isContract && (event.date || event.time || event.venue || !isPlaceholder) && (
-                        <g transform="translate(0, 600)" fill="#FFF" fontSize="22" fontWeight="600">
+                    {/* Bottom Details (Only for non-contract and non-save-the-date cards) */}
+                    {!isContract && !isSaveTheDate && (event.date || event.time || event.venue || !isPlaceholder) && (
+                        <g transform="translate(0, 1310)" fill="#FFF" fontSize="48" fontWeight="600">
                             {event.date && (
-                                <text x="300" y="0">
-                                    <tspan fill="#FFE4B5" fontSize="16" style={{ letterSpacing: '0.1em', textTransform: 'uppercase' }} dy="-25">On</tspan>
-                                    <tspan x="300" dy="25">{event.date}</tspan>
+                                <text x="620" y="0">
+                                    <tspan fill="var(--theme-primary)" fontSize="35" style={{ letterSpacing: '0.1em', textTransform: 'uppercase' }} dy="-55">On</tspan>
+                                    <tspan x="620" dy="55">{event.date}</tspan>
                                 </text>
                             )}
 
                             {event.time && (
-                                <text x="300" y="80">
-                                    <tspan fill="#FFE4B5" fontSize="16" style={{ letterSpacing: '0.1em', textTransform: 'uppercase' }} dy="-25">At</tspan>
-                                    <tspan x="300" dy="25">{event.time}</tspan>
+                                <text x="620" y="175">
+                                    <tspan fill="var(--theme-primary)" fontSize="35" style={{ letterSpacing: '0.1em', textTransform: 'uppercase' }} dy="-55">At</tspan>
+                                    <tspan x="620" dy="55">{event.time}</tspan>
                                 </text>
                             )}
 
                             {event.venue && (
-                                <text x="300" y="160">
-                                    <tspan fill="#FFE4B5" fontSize="16" style={{ letterSpacing: '0.1em', textTransform: 'uppercase' }} dy="-25">Venue</tspan>
-                                    <tspan x="300" dy="25" fontSize="20" >{event.venue}</tspan>
+                                <text x="620" y="350">
+                                    <tspan fill="var(--theme-primary)" fontSize="35" style={{ letterSpacing: '0.1em', textTransform: 'uppercase' }} dy="-55">Venue</tspan>
+                                    <tspan x="620" dy="55" fontSize="42">{event.venue}</tspan>
                                 </text>
                             )}
                         </g>
@@ -162,10 +217,10 @@ export const InvitationCard = ({ event, theme, groomName, brideName, isPlacehold
                 {/* Filters */}
                 <defs>
                     <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
-                        <feDropShadow dx="0" dy="2" stdDeviation="2" floodColor="rgba(0,0,0,0.5)" />
+                        <feDropShadow dx="0" dy="4" stdDeviation="4" floodColor="rgba(0,0,0,0.5)" />
                     </filter>
                     <filter id="shadow-sm" x="-50%" y="-50%" width="200%" height="200%">
-                        <feDropShadow dx="0" dy="1" stdDeviation="1" floodColor="rgba(0,0,0,0.3)" />
+                        <feDropShadow dx="0" dy="2" stdDeviation="2" floodColor="rgba(0,0,0,0.3)" />
                     </filter>
                 </defs>
             </svg>

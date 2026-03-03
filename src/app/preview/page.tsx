@@ -11,21 +11,6 @@ import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { useState, useEffect } from 'react';
 import { LoginModal } from '@/components/auth/LoginModal';
 
-const ALL_ASSETS = [
-    { id: 'poster', name: "Wedding poster", type: 'image' },
-    { id: 'wedding', name: "Wedding", type: 'image' },
-    { id: 'video', name: "Cinematic Video", type: 'video' },
-    { id: 'sangeet', name: "Sangeet", type: 'image' },
-    { id: 'mehendi', name: "Mehendi", type: 'image' },
-    { id: 'haldi', name: "Haldi", type: 'image' },
-    { id: 'sangeet_poster', name: "Sangeet Poster", type: 'image' },
-    { id: 'mehendi_poster', name: "Mehendi Poster", type: 'image' },
-    { id: 'haldi_poster', name: "Haldi Poster", type: 'image' },
-    { id: 'save_the_date', name: "Save The Date", type: 'image' },
-    { id: 'initials', name: "Initials", type: 'image' },
-    { id: 'thank_you', name: "Thank you card", type: 'image' },
-];
-
 export default function PreviewPage() {
     const { formData, selectedThemeId, isAuthenticated, login, bundleImages } = useWeddingStore();
     const [isSecuring, setIsSecuring] = useState(false);
@@ -108,14 +93,31 @@ export default function PreviewPage() {
         );
     }
 
-    const displayImages = (bundleImages && bundleImages.length > 0) ? bundleImages : (theme.previewImages || []);
+    const bundleItems = [
+        { id: 'save-the-date', name: 'Save The Date', variant: 'save-the-date', customImage: '/assets/bundle-templates/save-the-date.png', usePrimaryDate: true },
+        // Loop through actual events defined by user
+        ...formData.events.map(ev => {
+            const evLower = ev.name.toLowerCase();
+            let templateFile = 'wedding.png';
+            if (evLower.includes('haldi')) templateFile = 'haldi.png';
+            else if (evLower.includes('mehndi') || evLower.includes('mehendi')) templateFile = 'mehndi.png';
+            else if (evLower.includes('sangeet')) templateFile = 'sangeet.png';
 
+            return {
+                ...ev,
+                variant: 'default',
+                customImage: `/assets/bundle-templates/${templateFile}`,
+                usePrimaryDate: false
+            };
+        })
+    ];
 
+    const activeItem = selectedPreviewIndex !== null ? bundleItems[selectedPreviewIndex] : null;
 
     return (
         <div className={styles.previewPage}>
             {/* Fullscreen Preview Modal */}
-            {selectedPreviewIndex !== null && theme && (
+            {selectedPreviewIndex !== null && theme && activeItem && (
                 <div
                     style={{
                         position: 'fixed', inset: 0, zIndex: 1000,
@@ -147,19 +149,19 @@ export default function PreviewPage() {
                     >
                         <InvitationCard
                             event={{
-                                id: `design-${selectedPreviewIndex}`,
-                                name: `Design ${selectedPreviewIndex + 1}`,
-                                date: formData.primaryDate,
-                                time: formData.primaryTime,
-                                venue: formData.defaultVenueName
+                                id: activeItem.id || `design-${selectedPreviewIndex}`,
+                                name: activeItem.name,
+                                date: activeItem.usePrimaryDate ? formData.primaryDate : activeItem.date,
+                                time: activeItem.usePrimaryDate ? formData.primaryTime : activeItem.time,
+                                venue: activeItem.usePrimaryDate ? formData.defaultVenueName : activeItem.venue
                             }}
                             theme={theme}
                             groomName={formData.groomName}
                             brideName={formData.brideName}
-                            isPlaceholder={true}
+                            isPlaceholder={false}
                             type='image'
-                            customImage={displayImages[selectedPreviewIndex]}
-                            variant={selectedPreviewIndex === 3 ? 'contract' : selectedPreviewIndex === 7 ? 'save-the-date' : 'default'}
+                            customImage={activeItem.customImage}
+                            variant={activeItem.variant as 'default' | 'save-the-date'}
                         />
                     </div>
                 </div>
@@ -184,33 +186,26 @@ export default function PreviewPage() {
                     {/* Left Column: 12-Card Grid */}
                     <div className={styles.leftColumn}>
                         <div className={styles.grid}>
-                            {(displayImages.length > 0) ? (
-                                displayImages.map((imgUrl, index) => (
-                                    <InvitationCard
-                                        key={index}
-                                        event={{
-                                            id: `design-${index}`,
-                                            // Map the index to the global asset list name (e.g., "Haldi", "Wedding")
-                                            name: ALL_ASSETS[index]?.name || `Design ${index + 1}`,
-                                            date: formData.primaryDate,
-                                            time: formData.primaryTime,
-                                            venue: formData.defaultVenueName
-                                        }}
-                                        theme={theme}
-                                        groomName={formData.groomName}
-                                        brideName={formData.brideName}
-                                        isPlaceholder={true}
-                                        type='image'
-                                        customImage={imgUrl}
-                                        onClick={() => setSelectedPreviewIndex(index)}
-                                        variant={index === 3 ? 'contract' : index === 7 ? 'save-the-date' : 'default'} // Apply variants based on design index
-                                    />
-                                ))
-                            ) : (
-                                <div className={styles.noPreviews} style={{ gridColumn: '1/-1', textAlign: 'center', padding: '2rem', color: '#666' }}>
-                                    No preview images available for this theme.
-                                </div>
-                            )}
+                            {bundleItems.map((item, index) => (
+                                <InvitationCard
+                                    key={index}
+                                    event={{
+                                        id: item.id || `design-${index}`,
+                                        name: item.name,
+                                        date: item.usePrimaryDate ? formData.primaryDate : item.date,
+                                        time: item.usePrimaryDate ? formData.primaryTime : item.time,
+                                        venue: item.usePrimaryDate ? formData.defaultVenueName : item.venue
+                                    }}
+                                    theme={theme}
+                                    groomName={formData.groomName}
+                                    brideName={formData.brideName}
+                                    isPlaceholder={false}
+                                    type='image'
+                                    customImage={item.customImage}
+                                    onClick={() => setSelectedPreviewIndex(index)}
+                                    variant={item.variant as 'default' | 'save-the-date'}
+                                />
+                            ))}
                         </div>
                     </div>
 
