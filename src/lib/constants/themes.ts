@@ -12,7 +12,6 @@ export interface Theme {
     id: string;
     name: string;
     description: string;
-    colors: string[];
     thumbnail: string;
     previewImages: string[];
     bundleName?: string;

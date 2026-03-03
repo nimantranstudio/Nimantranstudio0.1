@@ -28,7 +28,6 @@ export async function GET() {
                 id: theme.id,
                 name: theme.name,
                 description: theme.description || '',
-                colors: theme.colors ? JSON.parse(theme.colors) : [],
                 thumbnail: theme.thumbnailUrl || '/placeholder-theme.jpg',
                 previewImages: theme.previewImages ? JSON.parse(theme.previewImages as string) : [],
                 bundleName: theme.bundles?.[0]?.name || 'Theme Invitation Bundle',

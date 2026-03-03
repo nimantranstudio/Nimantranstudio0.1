@@ -26,7 +26,7 @@ export const InvitationCard = ({ event, theme, groomName, brideName, isPlacehold
         <div
             className={styles.invitationCard}
             style={{
-                '--theme-primary': theme.colors[1],
+                '--theme-primary': '#D4AF37',
                 cursor: onClick ? 'pointer' : 'default',
                 background: 'transparent',
                 border: 'none',

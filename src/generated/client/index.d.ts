@@ -5525,7 +5525,6 @@ export namespace Prisma {
     description: string | null
     thumbnailUrl: string | null
     previewImages: string | null
-    colors: string | null
     isActive: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -5539,7 +5538,6 @@ export namespace Prisma {
     description: string | null
     thumbnailUrl: string | null
     previewImages: string | null
-    colors: string | null
     isActive: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -5553,7 +5551,6 @@ export namespace Prisma {
     description: number
     thumbnailUrl: number
     previewImages: number
-    colors: number
     isActive: number
     createdAt: number
     updatedAt: number
@@ -5569,7 +5566,6 @@ export namespace Prisma {
     description?: true
     thumbnailUrl?: true
     previewImages?: true
-    colors?: true
     isActive?: true
     createdAt?: true
     updatedAt?: true
@@ -5583,7 +5579,6 @@ export namespace Prisma {
     description?: true
     thumbnailUrl?: true
     previewImages?: true
-    colors?: true
     isActive?: true
     createdAt?: true
     updatedAt?: true
@@ -5597,7 +5592,6 @@ export namespace Prisma {
     description?: true
     thumbnailUrl?: true
     previewImages?: true
-    colors?: true
     isActive?: true
     createdAt?: true
     updatedAt?: true
@@ -5684,7 +5678,6 @@ export namespace Prisma {
     description: string | null
     thumbnailUrl: string | null
     previewImages: string | null
-    colors: string | null
     isActive: boolean
     createdAt: Date
     updatedAt: Date
@@ -5715,7 +5708,6 @@ export namespace Prisma {
     description?: boolean
     thumbnailUrl?: boolean
     previewImages?: boolean
-    colors?: boolean
     isActive?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -5733,7 +5725,6 @@ export namespace Prisma {
     description?: boolean
     thumbnailUrl?: boolean
     previewImages?: boolean
-    colors?: boolean
     isActive?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -5759,7 +5750,6 @@ export namespace Prisma {
       description: string | null
       thumbnailUrl: string | null
       previewImages: string | null
-      colors: string | null
       isActive: boolean
       createdAt: Date
       updatedAt: Date
@@ -6141,7 +6131,6 @@ export namespace Prisma {
     readonly description: FieldRef<"Theme", 'String'>
     readonly thumbnailUrl: FieldRef<"Theme", 'String'>
     readonly previewImages: FieldRef<"Theme", 'String'>
-    readonly colors: FieldRef<"Theme", 'String'>
     readonly isActive: FieldRef<"Theme", 'Boolean'>
     readonly createdAt: FieldRef<"Theme", 'DateTime'>
     readonly updatedAt: FieldRef<"Theme", 'DateTime'>
@@ -10530,7 +10519,6 @@ export namespace Prisma {
     description: 'description',
     thumbnailUrl: 'thumbnailUrl',
     previewImages: 'previewImages',
-    colors: 'colors',
     isActive: 'isActive',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
@@ -11004,7 +10992,6 @@ export namespace Prisma {
     description?: StringNullableFilter<"Theme"> | string | null
     thumbnailUrl?: StringNullableFilter<"Theme"> | string | null
     previewImages?: StringNullableFilter<"Theme"> | string | null
-    colors?: StringNullableFilter<"Theme"> | string | null
     isActive?: BoolFilter<"Theme"> | boolean
     createdAt?: DateTimeFilter<"Theme"> | Date | string
     updatedAt?: DateTimeFilter<"Theme"> | Date | string
@@ -11020,7 +11007,6 @@ export namespace Prisma {
     description?: SortOrderInput | SortOrder
     thumbnailUrl?: SortOrderInput | SortOrder
     previewImages?: SortOrderInput | SortOrder
-    colors?: SortOrderInput | SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -11039,7 +11025,6 @@ export namespace Prisma {
     description?: StringNullableFilter<"Theme"> | string | null
     thumbnailUrl?: StringNullableFilter<"Theme"> | string | null
     previewImages?: StringNullableFilter<"Theme"> | string | null
-    colors?: StringNullableFilter<"Theme"> | string | null
     isActive?: BoolFilter<"Theme"> | boolean
     createdAt?: DateTimeFilter<"Theme"> | Date | string
     updatedAt?: DateTimeFilter<"Theme"> | Date | string
@@ -11055,7 +11040,6 @@ export namespace Prisma {
     description?: SortOrderInput | SortOrder
     thumbnailUrl?: SortOrderInput | SortOrder
     previewImages?: SortOrderInput | SortOrder
-    colors?: SortOrderInput | SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -11075,7 +11059,6 @@ export namespace Prisma {
     description?: StringNullableWithAggregatesFilter<"Theme"> | string | null
     thumbnailUrl?: StringNullableWithAggregatesFilter<"Theme"> | string | null
     previewImages?: StringNullableWithAggregatesFilter<"Theme"> | string | null
-    colors?: StringNullableWithAggregatesFilter<"Theme"> | string | null
     isActive?: BoolWithAggregatesFilter<"Theme"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"Theme"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Theme"> | Date | string
@@ -11825,7 +11808,6 @@ export namespace Prisma {
     description?: string | null
     thumbnailUrl?: string | null
     previewImages?: string | null
-    colors?: string | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -11841,7 +11823,6 @@ export namespace Prisma {
     description?: string | null
     thumbnailUrl?: string | null
     previewImages?: string | null
-    colors?: string | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -11857,7 +11838,6 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
     previewImages?: NullableStringFieldUpdateOperationsInput | string | null
-    colors?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -11873,7 +11853,6 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
     previewImages?: NullableStringFieldUpdateOperationsInput | string | null
-    colors?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -11889,7 +11868,6 @@ export namespace Prisma {
     description?: string | null
     thumbnailUrl?: string | null
     previewImages?: string | null
-    colors?: string | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -11903,7 +11881,6 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
     previewImages?: NullableStringFieldUpdateOperationsInput | string | null
-    colors?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -11917,7 +11894,6 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
     previewImages?: NullableStringFieldUpdateOperationsInput | string | null
-    colors?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -12744,7 +12720,6 @@ export namespace Prisma {
     description?: SortOrder
     thumbnailUrl?: SortOrder
     previewImages?: SortOrder
-    colors?: SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -12758,7 +12733,6 @@ export namespace Prisma {
     description?: SortOrder
     thumbnailUrl?: SortOrder
     previewImages?: SortOrder
-    colors?: SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -12772,7 +12746,6 @@ export namespace Prisma {
     description?: SortOrder
     thumbnailUrl?: SortOrder
     previewImages?: SortOrder
-    colors?: SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -13803,7 +13776,6 @@ export namespace Prisma {
     description?: string | null
     thumbnailUrl?: string | null
     previewImages?: string | null
-    colors?: string | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -13818,7 +13790,6 @@ export namespace Prisma {
     description?: string | null
     thumbnailUrl?: string | null
     previewImages?: string | null
-    colors?: string | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -13876,7 +13847,6 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
     previewImages?: NullableStringFieldUpdateOperationsInput | string | null
-    colors?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -13891,7 +13861,6 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
     previewImages?: NullableStringFieldUpdateOperationsInput | string | null
-    colors?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -14328,7 +14297,6 @@ export namespace Prisma {
     description?: string | null
     thumbnailUrl?: string | null
     previewImages?: string | null
-    colors?: string | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -14343,7 +14311,6 @@ export namespace Prisma {
     description?: string | null
     thumbnailUrl?: string | null
     previewImages?: string | null
-    colors?: string | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -14482,7 +14449,6 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
     previewImages?: NullableStringFieldUpdateOperationsInput | string | null
-    colors?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -14497,7 +14463,6 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
     previewImages?: NullableStringFieldUpdateOperationsInput | string | null
-    colors?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string

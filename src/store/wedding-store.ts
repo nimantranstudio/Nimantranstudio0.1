@@ -22,6 +22,7 @@ interface WeddingState {
     saveWedding: () => Promise<{ success: boolean; wedding?: any; error?: string }>;
     login: (phone: string, isAdmin?: boolean) => void;
     logout: () => void;
+    resetForm: () => void;
 }
 
 const INITIAL_FORM_DATA: WeddingFormData = {
@@ -58,6 +59,7 @@ export const useWeddingStore = create<WeddingState>()(
 
             login: (phone, isAdmin = false) => set({ isAuthenticated: true, userPhone: phone, isAdmin }),
             logout: () => set({ isAuthenticated: false, userPhone: null, isAdmin: false }),
+            resetForm: () => set({ formData: INITIAL_FORM_DATA }),
 
             updateFormData: (data) => set((state) => ({
                 formData: { ...state.formData, ...data },

@@ -30,7 +30,6 @@ export async function GET(
             id: theme.id,
             name: theme.name,
             description: theme.description || '',
-            colors: ['#D4AF37', '#800000', '#F5E6BE'], // Placeholder colors
             thumbnail: theme.thumbnailUrl || '/placeholder-theme.jpg',
             previewImages: theme.previewImages ? JSON.parse(theme.previewImages as string) : [],
             bundleName: theme.bundles[0]?.name || 'Theme Invitation Bundle',
@@ -41,7 +40,7 @@ export async function GET(
     } catch (error: any) {
         console.error(`Failed to fetch theme:`, error);
         return NextResponse.json(
-            { error: 'Failed to fetch theme' },
+            { error: 'Failed to fetch theme', message: error.message, stack: error.stack },
             { status: 500 }
         );
     }

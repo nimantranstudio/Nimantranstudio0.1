@@ -17,7 +17,7 @@ import { motion } from 'framer-motion';
 export default function ThemeDetailPage({ params }: { params: Promise<{ themeId: string }> }) {
     const { themeId } = use(params);
     const router = useRouter();
-    const { setThemeId, setBundleData } = useWeddingStore();
+    const { setThemeId, setBundleData, resetForm } = useWeddingStore();
 
     const [theme, setTheme] = useState<Theme | null>(null);
     const [recommendations, setRecommendations] = useState<Theme[]>([]);
@@ -152,6 +152,7 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
 
     const handleCreateNow = () => {
         if (!theme) return;
+        resetForm();
         setThemeId(theme.id);
         setBundleData(selectedPlan, imageList);
         router.push('/details');

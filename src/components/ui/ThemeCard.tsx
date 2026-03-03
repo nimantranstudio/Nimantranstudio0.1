@@ -46,13 +46,6 @@ export const ThemeCard = ({ theme, onSelect }: ThemeCardProps) => {
                         <span className={styles.currentPrice}>Check Details</span>
                     )}
                 </div>
-                {theme.colors && theme.colors.length > 0 && (
-                    <div style={{ display: 'flex', gap: '4px', marginTop: '8px' }}>
-                        {theme.colors.map((color, i) => (
-                            <div key={i} style={{ width: '16px', height: '16px', borderRadius: '50%', backgroundColor: color, border: '1px solid #eee' }} />
-                        ))}
-                    </div>
-                )}
                 <div className={styles.details}>
                     Pack of 12 Assets
                 </div>
