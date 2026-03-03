@@ -6,13 +6,27 @@ export async function GET() {
     try {
         const { getPrisma } = await import('@/lib/prisma');
         const prisma = getPrisma();
-        const bundles = await prisma.bundle.findMany({
-            include: { themeRef: true },
-            orderBy: { createdAt: 'desc' }
+
+        // Workaround for missing columns in the actual local DB: use queryRaw to safely pull available columns
+        const rawBundles = await prisma.$queryRaw`
+            SELECT id, name, whatsappPrice, printablePrice, completePrice, description, isPopular, isActive, themeId, thumbnailUrl, itemImages, createdAt, updatedAt
+            FROM Bundle 
+            ORDER BY createdAt DESC
+        `;
+
+        // Manual lookup for themeRefs since queryRaw doesn't do "includes"
+        const rawThemes = await prisma.$queryRaw`SELECT id, name, thumbnailUrl FROM Theme`;
+
+        const bundles = (rawBundles as any[]).map(rb => {
+            return {
+                ...rb,
+                themeRef: (rawThemes as any[]).find(t => t.id === rb.themeId) || null
+            }
         });
+
         return NextResponse.json({ bundles });
     } catch (error: any) {
-        console.error('Failed to fetch bundles:', error);
+        console.error('Failed to fetch admin bundles:', error);
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }

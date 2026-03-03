@@ -114,17 +114,9 @@ export default function DetailsPage() {
                 alert("Please fill in basic details and wedding date.");
                 return;
             }
-            // Smart Inheritance logic is usually handled when adding events, 
-            // but we can ensure it here if events were already selected
             setStep(2);
         } else if (step === 2) {
-            if (!formData.events || formData.events.length === 0) {
-                alert("Please select at least one event.");
-                return;
-            }
             setStep(3);
-        } else if (step === 3) {
-            setStep(4);
         } else {
             // Final step: Summary -> Login and Save
             setShowLoginModal(true);
@@ -138,9 +130,8 @@ export default function DetailsPage() {
 
     const STEPS = [
         { id: 1, label: 'THE COUPLE', icon: '❤️' },
-        { id: 2, label: 'PICK EVENTS', icon: '📋' },
-        { id: 3, label: 'TIMELINE', icon: '📅' },
-        { id: 4, label: 'ARCHITECTURE', icon: '🏛️' },
+        { id: 2, label: 'TIMELINE', icon: '📅' },
+        { id: 3, label: 'ARCHITECTURE', icon: '🏛️' },
     ];
 
     return (
@@ -229,17 +220,11 @@ export default function DetailsPage() {
 
                     {step === 2 && (
                         <div className={styles.wizardCard}>
-                            <PickEventsStep />
-                        </div>
-                    )}
-
-                    {step === 3 && (
-                        <div className={styles.wizardCard}>
                             <TimelineStep />
                         </div>
                     )}
 
-                    {step === 4 && (
+                    {step === 3 && (
                         <div className={styles.wizardCard}>
                             <ArchitectureSummary />
                         </div>
@@ -258,7 +243,7 @@ export default function DetailsPage() {
                         </div>
                     )}
                     <button className="btn btn-primary" onClick={handleNext} disabled={isSaving}>
-                        {step === 4 ? (isSaving ? 'Generating...' : 'Finalize & Preview') : 'Next Step →'}
+                        {step === 3 ? (isSaving ? 'Generating...' : 'Finalize & Preview') : 'Next Step →'}
                     </button>
                 </div>
             </footer>
@@ -273,79 +258,6 @@ export default function DetailsPage() {
 
     // --- Sub Components ---
 
-    function PickEventsStep() {
-        const toggleEvent = (event: typeof DEFAULT_EVENTS[0]) => {
-            const currentEvents = formData.events || [];
-            const exists = currentEvents.find(e => e.id === event.id);
-
-            if (exists) {
-                updateFormData({
-                    events: currentEvents.filter(e => e.id !== event.id)
-                });
-            } else {
-                // Smart Inheritance
-                const newEvent = {
-                    ...event,
-                    date: formData.primaryDate || '',
-                    venue: formData.defaultVenueName || '',
-                    tagline: formData.globalTagline || '',
-                    isCustomVenue: false
-                };
-                updateFormData({
-                    events: [...currentEvents, newEvent]
-                });
-            }
-        };
-
-        const eventIcons: Record<string, any> = {
-            haldi: Sun,
-            mehendi: Leaf,
-            sangeet: Music,
-            wedding: Circle,
-            reception: Wine
-        };
-
-        return (
-            <div>
-                <h2 className={styles.wizardTitle}>Select the functions you are having:</h2>
-                <div className={styles.eventGrid}>
-                    {DEFAULT_EVENTS.map(evt => {
-                        const Icon = eventIcons[evt.id] || MoreHorizontal;
-                        const isActive = formData.events?.some(e => e.id === evt.id);
-                        return (
-                            <div
-                                key={evt.id}
-                                className={clsx(styles.eventOption, isActive && styles.eventOptionActive)}
-                                onClick={() => toggleEvent(evt)}
-                            >
-                                <Icon size={32} color={isActive ? '#E11D48' : '#9CA3AF'} />
-                                <span className={styles.eventLabel}>{evt.name}</span>
-                                {isActive && (
-                                    <div style={{ position: 'absolute', top: '-8px', right: '-8px' }}>
-                                        <CheckCircle size={20} fill="#E11D48" color="white" />
-                                    </div>
-                                )}
-                            </div>
-                        );
-                    })}
-                    <div className={styles.eventOption}>
-                        <MoreHorizontal size={32} color="#9CA3AF" />
-                        <span className={styles.eventLabel}>OTHER</span>
-                    </div>
-                </div>
-
-                <div className={styles.smartInfo}>
-                    <Info size={18} color="#2563EB" />
-                    <div>
-                        <p style={{ fontWeight: 600, color: '#1E3A8A', margin: 0 }}>Smart Inheritance Active</p>
-                        <p style={{ fontSize: '0.8125rem', color: '#1E40AF', margin: '4px 0 0' }}>
-                            Any events you select here will automatically inherit the bride/groom names, venue, and primary wedding date you set in the first step. You'll only need to specify times!
-                        </p>
-                    </div>
-                </div>
-            </div>
-        );
-    }
 
     function TimelineStep() {
         const [activeEventId, setActiveEventId] = useState(formData.events?.[0]?.id || '');

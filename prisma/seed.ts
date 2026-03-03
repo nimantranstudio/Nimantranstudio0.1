@@ -3,32 +3,32 @@ const { PrismaClient } = require('../src/generated/client');
 const prisma = new PrismaClient();
 
 const themes = [
-    // {
-    //     name: "Royal Maratha",
-    //     description: "Traditional Marathi wedding theme with royal elements",
-    //     thumbnailUrl: "/theme-marathas.png",
-    //     previewImages: JSON.stringify(["/theme-marathas.png", "/bundle-preview.png"]),
-    //     colors: JSON.stringify(["#D4AF37", "#800000"]),
-    //     isActive: true,
-    //     isBestSeller: true
-    // },
-    // {
-    //     name: "Floral Elegance",
-    //     description: "Modern floral design for elegant weddings",
-    //     thumbnailUrl: "/theme-floral.png",
-    //     previewImages: JSON.stringify(["/theme-floral.png", "/bundle-preview.png"]),
-    //     colors: JSON.stringify(["#FFC0CB", "#FFFFFF", "#4A90E2"]),
-    //     isActive: true,
-    //     isPopular: true
-    // },
-    // {
-    //     name: "Golden Heritage",
-    //     description: "Classic golden theme celebrating heritage",
-    //     thumbnailUrl: "/theme-gold.png",
-    //     previewImages: JSON.stringify(["/theme-gold.png", "/bundle-preview.png"]),
-    //     colors: JSON.stringify(["#FFD700", "#000000", "#C5A065"]),
-    //     isActive: true
-    // }
+    {
+        name: "Royal Maratha",
+        description: "Traditional Marathi wedding theme with royal elements",
+        thumbnailUrl: "/theme-marathas.png",
+        previewImages: JSON.stringify(["/theme-marathas.png", "/bundle-preview.png"]),
+        colors: JSON.stringify(["#D4AF37", "#800000"]),
+        isActive: true,
+        isBestSeller: true
+    },
+    {
+        name: "Floral Elegance",
+        description: "Modern floral design for elegant weddings",
+        thumbnailUrl: "/theme-floral.png",
+        previewImages: JSON.stringify(["/theme-floral.png", "/bundle-preview.png"]),
+        colors: JSON.stringify(["#FFC0CB", "#FFFFFF", "#4A90E2"]),
+        isActive: true,
+        isPopular: true
+    },
+    {
+        name: "Golden Heritage",
+        description: "Classic golden theme celebrating heritage",
+        thumbnailUrl: "/theme-gold.png",
+        previewImages: JSON.stringify(["/theme-gold.png", "/bundle-preview.png"]),
+        colors: JSON.stringify(["#FFD700", "#000000", "#C5A065"]),
+        isActive: true
+    }
 ];
 
 async function main() {
