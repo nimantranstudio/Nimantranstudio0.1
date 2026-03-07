@@ -22,6 +22,7 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
     const [theme, setTheme] = useState<Theme | null>(null);
     const [recommendations, setRecommendations] = useState<Theme[]>([]);
     const [packages, setPackages] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         async function fetchData() {
@@ -44,6 +45,8 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
                 }
             } catch (error) {
                 console.error("Failed to fetch themes or packages", error);
+            } finally {
+                setIsLoading(false);
             }
         }
         fetchData();
@@ -257,6 +260,14 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [previewIndex]);
+
+    if (isLoading) {
+        return (
+            <div className="container" style={{ padding: '10rem 0', textAlign: 'center' }}>
+                <h2>Loading Theme Details...</h2>
+            </div>
+        );
+    }
 
     if (!theme) {
         return (

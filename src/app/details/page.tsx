@@ -25,6 +25,7 @@ export default function DetailsPage() {
     const [isSaving, setIsSaving] = useState(false);
     const [saveError, setSaveError] = useState<string | null>(null);
     const [showLoginModal, setShowLoginModal] = useState(false);
+    const [errors, setErrors] = useState<Record<string, string>>({});
 
     const [activeTheme, setActiveTheme] = useState<Theme | null>(null);
 
@@ -54,8 +55,12 @@ export default function DetailsPage() {
             key="groom-name"
             label="Groom's Name"
             value={formData.groomName}
-            onChange={(e) => updateFormData({ groomName: e.target.value })}
+            onChange={(e) => {
+                updateFormData({ groomName: e.target.value });
+                if (errors.groomName) setErrors(e => ({ ...e, groomName: '' }));
+            }}
             placeholder="First & Last Name"
+            error={errors.groomName}
         />
     );
 
@@ -64,8 +69,12 @@ export default function DetailsPage() {
             key="bride-name"
             label="Bride's Name"
             value={formData.brideName}
-            onChange={(e) => updateFormData({ brideName: e.target.value })}
+            onChange={(e) => {
+                updateFormData({ brideName: e.target.value });
+                if (errors.brideName) setErrors(e => ({ ...e, brideName: '' }));
+            }}
             placeholder="First & Last Name"
+            error={errors.brideName}
         />
     );
 
@@ -110,12 +119,36 @@ export default function DetailsPage() {
 
     const handleNext = async () => {
         if (step === 1) {
-            if (!formData.groomName || !formData.brideName || !formData.primaryDate) {
-                alert("Please fill in basic details and wedding date.");
+            const newErrors: Record<string, string> = {};
+            if (!formData.groomName?.trim()) newErrors.groomName = "Groom's name is required";
+            if (!formData.brideName?.trim()) newErrors.brideName = "Bride's name is required";
+            if (!formData.primaryDate) newErrors.primaryDate = "Wedding date is required";
+            if (!formData.primaryTime) newErrors.primaryTime = "Wedding time is required";
+            if (!formData.defaultVenueName?.trim()) newErrors.defaultVenueName = "Venue address is required";
+
+            if (Object.keys(newErrors).length > 0) {
+                setErrors(newErrors);
                 return;
             }
+            setErrors({});
             setStep(2);
         } else if (step === 2) {
+            if (formData.events) {
+                const newErrors: Record<string, string> = {};
+                for (const event of formData.events) {
+                    if (!event.date) {
+                        newErrors[`${event.id}-date`] = "Date is required";
+                    }
+                    if (!event.time) {
+                        newErrors[`${event.id}-time`] = "Time is required";
+                    }
+                }
+                if (Object.keys(newErrors).length > 0) {
+                    setErrors(newErrors);
+                    return;
+                }
+            }
+            setErrors({});
             setStep(3);
         } else {
             // Final step: Summary -> Login and Save
@@ -170,49 +203,54 @@ export default function DetailsPage() {
                                     <>
                                         {groomNameField}
                                         {brideNameField}
+                                        {groomParentsField}
+                                        {brideParentsField}
                                     </>
                                 ) : (
                                     <>
                                         {brideNameField}
                                         {groomNameField}
+                                        {brideParentsField}
+                                        {groomParentsField}
                                     </>
                                 )}
                                 <Input
                                     label="Primary Wedding Date"
                                     type="date"
                                     value={formData.primaryDate || ''}
-                                    onChange={(e) => updateFormData({ primaryDate: e.target.value })}
+                                    onChange={(e) => {
+                                        updateFormData({ primaryDate: e.target.value });
+                                        if (errors.primaryDate) setErrors(errs => ({ ...errs, primaryDate: '' }));
+                                    }}
+                                    error={errors.primaryDate}
                                 />
                                 <Input
-                                    label="Timezone"
-                                    value={formData.timezone || 'Asia/Kolkata'}
-                                    disabled
+                                    label="Time"
+                                    type="time"
+                                    value={formData.primaryTime || ''}
+                                    onChange={(e) => {
+                                        updateFormData({ primaryTime: e.target.value });
+                                        if (errors.primaryTime) setErrors(errs => ({ ...errs, primaryTime: '' }));
+                                    }}
+                                    error={errors.primaryTime}
                                 />
                                 <div className={styles.venueSection}>
-                                    <h3 className={styles.venueHeading}>DEFAULT VENUE</h3>
+                                    <h3 className={styles.venueHeading}>VENUE ADDRESS</h3>
                                     <div className={formStyles.grid}>
-                                        <Input
-                                            label="Venue Name"
-                                            value={formData.defaultVenueName || ''}
-                                            onChange={(e) => updateFormData({ defaultVenueName: e.target.value })}
-                                            placeholder="The Grand Palace"
-                                        />
-                                        <Input
-                                            label="Full Address"
-                                            value={formData.defaultVenueAddress || ''}
-                                            onChange={(e) => updateFormData({ defaultVenueAddress: e.target.value })}
-                                            placeholder="123 Royal Road, Jaipur"
-                                        />
+                                        <div style={{ gridColumn: 'span 2' }}>
+                                            <Input
+                                                label="Address"
+                                                value={formData.defaultVenueName || ''}
+                                                onChange={(e) => {
+                                                    updateFormData({ defaultVenueName: e.target.value });
+                                                    if (errors.defaultVenueName) setErrors(errs => ({ ...errs, defaultVenueName: '' }));
+                                                }}
+                                                placeholder="e.g. The Grand Palace, 123 Royal Road, Jaipur"
+                                                type="textarea"
+                                                error={errors.defaultVenueName}
+                                            />
+                                        </div>
                                     </div>
-                                </div>
-                                <div style={{ gridColumn: 'span 2' }}>
-                                    <Input
-                                        label="Global Invitation Tagline"
-                                        value={formData.globalTagline || ''}
-                                        onChange={(e) => updateFormData({ globalTagline: e.target.value })}
-                                        placeholder="Together with their families"
-                                        type="textarea"
-                                    />
                                 </div>
                             </div>
                         </div>
@@ -220,7 +258,7 @@ export default function DetailsPage() {
 
                     {step === 2 && (
                         <div className={styles.wizardCard}>
-                            <TimelineStep />
+                            <TimelineStep errors={errors} setErrors={setErrors} />
                         </div>
                     )}
 
@@ -257,9 +295,30 @@ export default function DetailsPage() {
     );
 }
 
+// --- Helpers ---
+function formatDateDisplay(dateStr?: string) {
+    if (!dateStr) return '';
+    const parts = dateStr.split('-');
+    if (parts.length !== 3) return dateStr;
+    const [year, month, day] = parts;
+    const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+    const monthStr = date.toLocaleString('default', { month: 'short' });
+    return `${day}-${monthStr}-${year}`;
+}
+
+function getDefaultWelcomeMessage(eventName: string): string {
+    const name = eventName.toLowerCase();
+    if (name.includes('haldi')) return "Bless the couple with showers of yellow health and happiness";
+    if (name.includes('mehendi')) return "Join at the mehendi event, with the \"Hands full of mehendi , hearts full of love\"";
+    if (name.includes('sangeet')) return "Join us to turn up the volume \"Naach. gaana aur full-on hungama!\"";
+    if (name.includes('wedding')) return "We are pleased to invite you to the wedding of";
+    if (name.includes('reception')) return "We are pleased to invite you to the reception of";
+    return "";
+}
+
 // --- Sub Components ---
 
-function TimelineStep() {
+function TimelineStep({ errors, setErrors }: { errors: Record<string, string>, setErrors: any }) {
     const { formData, updateFormData } = useWeddingStore();
     const [activeEventId, setActiveEventId] = useState(formData.events?.[0]?.id || '');
     const currentEvents = formData.events || [];
@@ -283,7 +342,7 @@ function TimelineStep() {
                         onClick={() => setActiveEventId(e.id)}
                     >
                         <div style={{ fontWeight: 600 }}>{e.name}</div>
-                        <div style={{ fontSize: '0.75rem', opacity: 0.8 }}>{e.date || formData.primaryDate}</div>
+                        <div style={{ fontSize: '0.75rem', opacity: 0.8 }}>{formatDateDisplay(e.date || formData.primaryDate)}</div>
                     </div>
                 ))}
             </div>
@@ -296,42 +355,40 @@ function TimelineStep() {
 
                 <div className={formStyles.grid}>
                     <Input
-                        label="Override Date?"
+                        label="Date"
                         type="date"
                         value={activeEvent.date || ''}
-                        onChange={(e) => updateActiveEvent({ date: e.target.value })}
-                        helperText={`Default: ${formData.primaryDate}`}
+                        onChange={(e) => {
+                            updateActiveEvent({ date: e.target.value });
+                            setErrors((prev: any) => ({ ...prev, [`${activeEvent.id}-date`]: '' }));
+                        }}
+                        helperText={`Default: ${formatDateDisplay(formData.primaryDate)}`}
+                        error={errors[`${activeEvent.id}-date`]}
                     />
-                    <div style={{ display: 'flex', gap: '1rem' }}>
-                        <Input
-                            label="Start Time"
-                            type="time"
-                            value={activeEvent.time || ''}
-                            onChange={(e) => updateActiveEvent({ time: e.target.value })}
-                            style={{ flex: 1 }}
-                        />
-                        <Input
-                            label="End Time"
-                            type="time"
-                            value={activeEvent.endTime || ''}
-                            onChange={(e) => updateActiveEvent({ endTime: e.target.value })}
-                            style={{ flex: 1 }}
-                        />
-                    </div>
+                    <Input
+                        label="Time"
+                        type="time"
+                        value={activeEvent.time || ''}
+                        onChange={(e) => {
+                            updateActiveEvent({ time: e.target.value });
+                            setErrors((prev: any) => ({ ...prev, [`${activeEvent.id}-time`]: '' }));
+                        }}
+                        error={errors[`${activeEvent.id}-time`]}
+                    />
                     <div style={{ gridColumn: 'span 2' }}>
                         <Input
-                            label="Custom Event Tagline"
-                            value={activeEvent.tagline || ''}
+                            label={`${activeEvent.name} Welcome Message`}
+                            value={activeEvent.tagline || getDefaultWelcomeMessage(activeEvent.name)}
                             onChange={(e) => updateActiveEvent({ tagline: e.target.value })}
-                            placeholder={formData.globalTagline}
-                            helperText="Inherits from global tagline if left empty."
+                            placeholder={getDefaultWelcomeMessage(activeEvent.name)}
+                            helperText="Change welcome message if you want."
                             type="textarea"
                         />
                     </div>
 
                     <div style={{ gridColumn: 'span 2', padding: '1rem', background: 'white', borderRadius: '12px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                            <span style={{ fontWeight: 600, fontSize: '0.875rem' }}>VENUE LOGIC</span>
+                            <span style={{ fontWeight: 600, fontSize: '0.875rem', textTransform: 'uppercase' }}>VENUE</span>
                             <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
                                 <span style={{ fontSize: '0.75rem' }}>Custom Venue?</span>
                                 <input
@@ -377,7 +434,7 @@ function ArchitectureSummary() {
                 </div>
                 <div className={styles.summaryItem}>
                     <Calendar size={18} />
-                    <span>{formData.primaryDate} (Default Date)</span>
+                    <span>{formatDateDisplay(formData.primaryDate)} (Default Date)</span>
                 </div>
                 <div className={styles.summaryItem}>
                     <MapPin size={18} />
@@ -391,7 +448,7 @@ function ArchitectureSummary() {
                         <div className={styles.eventTimeInfo}>
                             <div style={{ fontWeight: 700 }}>{e.name}</div>
                             <div style={{ fontSize: '0.875rem', color: '#666' }}>
-                                {e.date || formData.primaryDate} @ {e.time || 'TBD'}
+                                {formatDateDisplay(e.date || formData.primaryDate)} @ {e.time || 'TBD'}
                             </div>
                         </div>
                         <div className={styles.inheritanceBadge}>
