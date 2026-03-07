@@ -5,22 +5,10 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
     try {
-        // Workaround for missing columns in the actual local DB: use queryRaw to safely pull available columns
-        const rawThemes = await prisma.$queryRaw`
-            SELECT id, name, description, thumbnailUrl, previewImages, isBestSeller, isPopular
-            FROM Theme 
-            WHERE isActive = 1 
-            ORDER BY createdAt DESC
-        `;
-
-        // Manual lookup for bundles since queryRaw doesn't do "includes"
-        const rawBundles = await prisma.$queryRaw`SELECT * FROM Bundle`;
-
-        const themes = (rawThemes as any[]).map(rt => {
-            return {
-                ...rt,
-                bundles: (rawBundles as any[]).filter(b => b.themeId === rt.id)
-            }
+        const themes = await prisma.theme.findMany({
+            where: { isActive: true },
+            orderBy: { createdAt: 'desc' },
+            include: { bundles: true }
         });
 
         try {

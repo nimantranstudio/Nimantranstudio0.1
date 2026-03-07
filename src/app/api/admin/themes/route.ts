@@ -7,11 +7,9 @@ export async function GET() {
     try {
         const { getPrisma } = await import('@/lib/prisma');
         const prisma = getPrisma();
-        const themes = await prisma.$queryRaw`
-            SELECT id, name, description, thumbnailUrl, previewImages, isActive, isBestSeller, isPopular, createdAt, updatedAt
-            FROM Theme 
-            ORDER BY createdAt DESC
-        `;
+        const themes = await prisma.theme.findMany({
+            orderBy: { createdAt: 'desc' }
+        });
         return NextResponse.json({ themes });
     } catch (error: any) {
         console.error('Failed to fetch themes:', error);

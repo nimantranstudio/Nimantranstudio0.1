@@ -7,21 +7,9 @@ export async function GET() {
         const { getPrisma } = await import('@/lib/prisma');
         const prisma = getPrisma();
 
-        // Workaround for missing columns in the actual local DB: use queryRaw to safely pull available columns
-        const rawBundles = await prisma.$queryRaw`
-            SELECT id, name, whatsappPrice, printablePrice, completePrice, description, isPopular, isActive, themeId, thumbnailUrl, itemImages, createdAt, updatedAt
-            FROM Bundle 
-            ORDER BY createdAt DESC
-        `;
-
-        // Manual lookup for themeRefs since queryRaw doesn't do "includes"
-        const rawThemes = await prisma.$queryRaw`SELECT id, name, thumbnailUrl FROM Theme`;
-
-        const bundles = (rawBundles as any[]).map(rb => {
-            return {
-                ...rb,
-                themeRef: (rawThemes as any[]).find(t => t.id === rb.themeId) || null
-            }
+        const bundles = await prisma.bundle.findMany({
+            orderBy: { createdAt: 'desc' },
+            include: { themeRef: true }
         });
 
         return NextResponse.json({ bundles });
