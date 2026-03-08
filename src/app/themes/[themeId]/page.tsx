@@ -18,11 +18,11 @@ import { InvitationCard } from '@/components/preview/InvitationCard';
 const DUMMY_EVENT = {
     id: 'preview',
     name: 'Wedding',
-    heading: 'Wedding Ceremony',
+    heading: 'Royal Wedding Ceremony',
     tagline: 'We are pleased to invite you to the wedding of',
     date: '2026-03-22',
     time: '19:00',
-    venue: 'The Grand Palace, Rajasthan',
+    venue: 'The Grand Rajputana Palace, Rajasthan',
     description: 'Join us for the celebration of love and togetherness.',
     isCustomVenue: false
 };
@@ -667,9 +667,8 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
             {previewIndex !== null && (
                 <div className={styles.overlayBackdrop} onClick={() => setPreviewIndex(null)}>
                     <div className={styles.overlayContent} onClick={(e) => e.stopPropagation()}>
-                        <button className={styles.closeBtn} onClick={() => setPreviewIndex(null)}>
-                            <X size={24} />
-                            <span>Close</span>
+                        <button className={styles.closeBtn} onClick={() => setPreviewIndex(null)} style={{ top: '-3rem', zIndex: 10 }}>
+                            <X size={28} />
                         </button>
 
                         <div className={styles.previewImageWrapper} style={{ borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>

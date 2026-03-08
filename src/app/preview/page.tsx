@@ -391,6 +391,7 @@ export default function PreviewPage() {
                                         value={formData.groomName}
                                         onChange={(e) => updateFormData({ groomName: e.target.value })}
                                         placeholder="Groom Name"
+                                        maxLength={25}
                                     />
                                 </div>
 
@@ -401,6 +402,7 @@ export default function PreviewPage() {
                                         value={formData.brideName}
                                         onChange={(e) => updateFormData({ brideName: e.target.value })}
                                         placeholder="Bride Name"
+                                        maxLength={25}
                                     />
                                 </div>
 
@@ -432,6 +434,7 @@ export default function PreviewPage() {
                                         value={formData.defaultVenueName}
                                         onChange={(e) => updateFormData({ defaultVenueName: e.target.value })}
                                         placeholder="The Grand Palace, Rajasthan"
+                                        maxLength={500}
                                     />
                                 </div>
 
@@ -447,6 +450,7 @@ export default function PreviewPage() {
                                             }
                                         }}
                                         placeholder="Enter heading"
+                                        maxLength={25}
                                     />
                                 </div>
 
@@ -458,6 +462,7 @@ export default function PreviewPage() {
                                         value={formData.invitationMessage}
                                         onChange={(e) => updateFormData({ invitationMessage: e.target.value })}
                                         placeholder="We are pleased to invite you..."
+                                        maxLength={108}
                                     />
                                 </div>
 

@@ -61,6 +61,7 @@ export default function DetailsPage() {
             }}
             placeholder="First & Last Name"
             error={errors.groomName}
+            maxLength={25}
         />
     );
 
@@ -75,6 +76,7 @@ export default function DetailsPage() {
             }}
             placeholder="First & Last Name"
             error={errors.brideName}
+            maxLength={25}
         />
     );
 
@@ -85,6 +87,7 @@ export default function DetailsPage() {
             value={formData.groomParents || ''}
             onChange={(e) => updateFormData({ groomParents: e.target.value })}
             placeholder="e.g. Mr. & Mrs. Sharma"
+            maxLength={100}
         />
     );
 
@@ -95,6 +98,7 @@ export default function DetailsPage() {
             value={formData.brideParents || ''}
             onChange={(e) => updateFormData({ brideParents: e.target.value })}
             placeholder="e.g. Mr. & Mrs. Patel"
+            maxLength={100}
         />
     );
 
@@ -248,6 +252,7 @@ export default function DetailsPage() {
                                                 placeholder="e.g. The Grand Palace, 123 Royal Road, Jaipur"
                                                 type="textarea"
                                                 error={errors.defaultVenueName}
+                                                maxLength={500}
                                             />
                                         </div>
                                     </div>
@@ -409,6 +414,7 @@ function TimelineStep({ errors, setErrors }: { errors: Record<string, string>, s
                             onChange={(e) => updateActiveEvent({ heading: e.target.value })}
                             placeholder="Enter heading"
                             helperText="Custom heading displayed on the invitation card."
+                            maxLength={25}
                         />
                     </div>
                     <div style={{ gridColumn: 'span 2' }}>
@@ -419,6 +425,7 @@ function TimelineStep({ errors, setErrors }: { errors: Record<string, string>, s
                             placeholder="Enter welcome message"
                             helperText="Change welcome message if you want."
                             type="textarea"
+                            maxLength={108}
                         />
                     </div>
 
@@ -441,6 +448,7 @@ function TimelineStep({ errors, setErrors }: { errors: Record<string, string>, s
                                 onChange={(e) => updateActiveEvent({ venue: e.target.value })}
                                 placeholder="Enter specific venue name"
                                 type="textarea"
+                                maxLength={500}
                             />
                         ) : (
                             <p style={{ fontSize: '0.8125rem', color: '#666', fontStyle: 'italic', margin: 0 }}>

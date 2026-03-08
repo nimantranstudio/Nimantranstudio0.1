@@ -65,14 +65,13 @@
 
 .previewImageWrapper {
     position: relative;
-    width: min(85vw, 600px);
+    width: min(90vw, 450px);
     aspect-ratio: 1/1.6;
-    /* Taller for mobile invitations */
     background-color: #111;
-    border-radius: 12px;
+    border-radius: 16px;
     overflow: hidden;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .closeBtn {
@@ -130,6 +129,7 @@
 .previewInfo {
     color: white;
     text-align: center;
+    margin-top: 1rem;
 }
 
 .previewTitle {
@@ -189,7 +189,8 @@
     }
 
     .previewImageWrapper {
-        width: 80vw;
+        width: 75vw;
+        max-width: 400px;
     }
 }
 
@@ -207,7 +208,7 @@
 }
 
 .assetCard {
-    aspect-ratio: 3/4;
+    aspect-ratio: 1/1.6;
     background-color: #E2E2E2;
     border-radius: 4px;
     display: flex;
@@ -502,7 +503,7 @@
 
 .thumbnailItem {
     width: 100%;
-    aspect-ratio: 3/4;
+    aspect-ratio: 1/1.6;
     border-radius: 4px;
     position: relative;
     overflow: hidden;
