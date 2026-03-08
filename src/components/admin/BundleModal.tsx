@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { X, Package, CheckCircle, Info, Upload, Image as ImageIcon, AlertCircle } from 'lucide-react';
 import styles from './BundleModal.module.css';
 import { clsx } from 'clsx';
@@ -46,6 +46,7 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
     const [activeTemplateName, setActiveTemplateName] = useState('');
     const [activeTemplateFile, setActiveTemplateFile] = useState<File | null>(null);
     const [bundleItemsList, setBundleItemsList] = useState<Array<{ id: string, eventType: string, templateName: string, file: File | null, previewUrl: string | null }>>([]);
+    const templateFileRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -162,24 +163,23 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
         });
     };
 
-    const handleAddBundleItem = () => {
-        if (!activeTemplateName.trim()) {
-            alert('Template Name is required');
-            return;
-        }
 
+    const handleAddBundleItem = () => {
         const previewUrl = activeTemplateFile ? URL.createObjectURL(activeTemplateFile) : null;
+        const autoName = activeEventType.replace(/_/g, ' ');
 
         setBundleItemsList(prev => [...prev, {
             id: Math.random().toString(),
             eventType: activeEventType,
-            templateName: activeTemplateName,
+            templateName: autoName,
             file: activeTemplateFile,
             previewUrl
         }]);
 
-        setActiveTemplateName('');
         setActiveTemplateFile(null);
+        if (templateFileRef.current) {
+            templateFileRef.current.value = '';
+        }
     };
 
     const removeBundleItem = (id: string) => {
@@ -374,7 +374,7 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
                         <div className={styles.formGroup} style={{ borderTop: '1px solid #eee', paddingTop: '1.5rem', marginTop: '1rem' }}>
                             <label className={styles.label}>Bundle Items Configuration</label>
 
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr auto', gap: '0.75rem', alignItems: 'end', marginBottom: '1.5rem', background: '#f9fafb', padding: '1rem', borderRadius: '8px' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr auto auto', gap: '0.75rem', alignItems: 'end', marginBottom: '1.5rem', background: '#f9fafb', padding: '1rem', borderRadius: '8px' }}>
                                 <div>
                                     <label style={{ fontSize: '0.75rem', fontWeight: 600, display: 'block', marginBottom: '0.25rem' }}>Event Type</label>
                                     <select
@@ -393,22 +393,33 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
                                     </select>
                                 </div>
                                 <div>
-                                    <label style={{ fontSize: '0.75rem', fontWeight: 600, display: 'block', marginBottom: '0.25rem' }}>Template Name</label>
-                                    <input
-                                        placeholder="e.g. Haldi Card"
-                                        className={styles.input}
-                                        value={activeTemplateName}
-                                        onChange={(e) => setActiveTemplateName(e.target.value)}
-                                    />
-                                </div>
-                                <div>
                                     <label style={{ fontSize: '0.75rem', fontWeight: 600, display: 'block', marginBottom: '0.25rem' }}>Template File</label>
                                     <input
+                                        ref={templateFileRef}
                                         type="file"
-                                        className={styles.input}
-                                        style={{ padding: '0.4rem' }}
+                                        style={{ display: 'none' }}
                                         onChange={(e) => setActiveTemplateFile(e.target.files?.[0] || null)}
                                     />
+                                    <button
+                                        type="button"
+                                        onClick={() => templateFileRef.current?.click()}
+                                        title={activeTemplateFile ? activeTemplateFile.name : 'Upload template file'}
+                                        style={{
+                                            height: '42px',
+                                            width: '42px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            border: activeTemplateFile ? '2px solid #6366f1' : '1px solid #d1d5db',
+                                            borderRadius: '8px',
+                                            background: activeTemplateFile ? '#eef2ff' : '#fff',
+                                            cursor: 'pointer',
+                                            color: activeTemplateFile ? '#6366f1' : '#6b7280',
+                                            transition: 'all 0.2s ease'
+                                        }}
+                                    >
+                                        <Upload size={18} />
+                                    </button>
                                 </div>
                                 <div>
                                     <button
@@ -427,7 +438,6 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
                                     <thead style={{ background: '#f9fafb', textAlign: 'left' }}>
                                         <tr>
                                             <th style={{ padding: '0.75rem', borderBottom: '1px solid #eee' }}>Event Type</th>
-                                            <th style={{ padding: '0.75rem', borderBottom: '1px solid #eee' }}>Template Name</th>
                                             <th style={{ padding: '0.75rem', borderBottom: '1px solid #eee' }}>Preview</th>
                                             <th style={{ padding: '0.75rem', borderBottom: '1px solid #eee', width: '50px' }}></th>
                                         </tr>
@@ -436,7 +446,6 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
                                         {bundleItemsList.map(item => (
                                             <tr key={item.id} style={{ borderBottom: '1px solid #eee' }}>
                                                 <td style={{ padding: '0.75rem' }}>{item.eventType}</td>
-                                                <td style={{ padding: '0.75rem' }}>{item.templateName}</td>
                                                 <td style={{ padding: '0.75rem' }}>
                                                     {item.previewUrl ? (
                                                         <img src={item.previewUrl} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #e5e7eb' }} />

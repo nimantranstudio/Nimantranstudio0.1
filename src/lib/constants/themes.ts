@@ -1,3 +1,10 @@
+export interface BundleItemData {
+    id: string;
+    eventType: string;
+    templateName: string;
+    templateFile: string;
+}
+
 export interface BundleData {
     id: string;
     name: string;
@@ -6,6 +13,7 @@ export interface BundleData {
     completePrice: number;
     description?: string;
     itemImages?: string; // JSON string
+    bundleItems?: BundleItemData[];
 }
 
 export interface Theme {

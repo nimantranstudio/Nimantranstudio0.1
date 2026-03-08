@@ -8,7 +8,7 @@ export async function GET() {
         const themes = await prisma.theme.findMany({
             where: { isActive: true },
             orderBy: { createdAt: 'desc' },
-            include: { bundles: true }
+            include: { bundles: { include: { bundleItems: true } } }
         });
 
         try {
@@ -26,7 +26,13 @@ export async function GET() {
                     printablePrice: b.printablePrice,
                     completePrice: b.completePrice,
                     description: b.description || '',
-                    itemImages: b.itemImages
+                    itemImages: b.itemImages,
+                    bundleItems: (b.bundleItems || []).map((bi: any) => ({
+                        id: bi.id,
+                        eventType: bi.eventType,
+                        templateName: bi.templateName,
+                        templateFile: bi.templateFile
+                    }))
                 })),
                 isBestSeller: theme.isBestSeller || false,
                 isPopular: theme.isPopular || false,

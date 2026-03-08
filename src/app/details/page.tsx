@@ -316,10 +316,20 @@ function getDefaultWelcomeMessage(eventName: string): string {
     return "";
 }
 
+function getDefaultHeading(eventName: string): string {
+    const name = eventName.toLowerCase();
+    if (name.includes('haldi')) return "Haldi Ceremony";
+    if (name.includes('mehendi')) return "Mehendi Ceremony";
+    if (name.includes('sangeet')) return "Sangeet Ceremoney";
+    if (name.includes('wedding')) return "Wedding Ceremony";
+    if (name.includes('reception')) return "Reception Ceremony";
+    return `${eventName} Ceremony`;
+}
+
 // --- Sub Components ---
 
 function TimelineStep({ errors, setErrors }: { errors: Record<string, string>, setErrors: any }) {
-    const { formData, updateFormData } = useWeddingStore();
+    const { formData, updateFormData, bundleItems } = useWeddingStore();
     const [activeEventId, setActiveEventId] = useState(formData.events?.[0]?.id || '');
     const currentEvents = formData.events || [];
     const activeEvent = currentEvents.find(e => e.id === activeEventId) || currentEvents[0];
@@ -329,6 +339,21 @@ function TimelineStep({ errors, setErrors }: { errors: Record<string, string>, s
             events: currentEvents.map(e => e.id === activeEventId ? { ...e, ...data } : e)
         });
     };
+
+    // Map event name to BundleItem eventType
+    const getMatchingEventType = (eventName: string): string | null => {
+        if (!bundleItems || bundleItems.length === 0) return null;
+        // Normalize: "Haldi" -> "HALDI", "Save The Date" -> "SAVE_THE_DATE" or "SAVE_DATE"
+        const normalized = eventName.toUpperCase().replace(/\s+/g, '_');
+        const match = bundleItems.find(bi => {
+            const biType = bi.eventType.toUpperCase();
+            return biType === normalized || biType === eventName.toUpperCase() ||
+                biType.replace(/_/g, '') === normalized.replace(/_/g, '');
+        });
+        return match ? match.eventType : null;
+    };
+
+    const matchedEventType = activeEvent ? getMatchingEventType(activeEvent.name) : null;
 
     if (currentEvents.length === 0) return <div>Please go back and select events.</div>;
 
@@ -350,7 +375,9 @@ function TimelineStep({ errors, setErrors }: { errors: Record<string, string>, s
             <div className={styles.timelineContent}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                     <h2 style={{ fontSize: '1.5rem', margin: 0 }}>{activeEvent.name} Settings</h2>
-                    <span style={{ fontSize: '0.75rem', background: '#E5E7EB', padding: '2px 8px', borderRadius: '100px' }}>EVT-{activeEvent.id.toUpperCase()}</span>
+                    {matchedEventType && (
+                        <span style={{ fontSize: '0.75rem', background: '#E5E7EB', padding: '2px 8px', borderRadius: '100px' }}>{matchedEventType}</span>
+                    )}
                 </div>
 
                 <div className={formStyles.grid}>
@@ -377,10 +404,19 @@ function TimelineStep({ errors, setErrors }: { errors: Record<string, string>, s
                     />
                     <div style={{ gridColumn: 'span 2' }}>
                         <Input
-                            label={`${activeEvent.name} Welcome Message`}
+                            label="Event Heading"
+                            value={activeEvent.heading || getDefaultHeading(activeEvent.name)}
+                            onChange={(e) => updateActiveEvent({ heading: e.target.value })}
+                            placeholder="Enter heading"
+                            helperText="Custom heading displayed on the invitation card."
+                        />
+                    </div>
+                    <div style={{ gridColumn: 'span 2' }}>
+                        <Input
+                            label="Welcome Message"
                             value={activeEvent.tagline || getDefaultWelcomeMessage(activeEvent.name)}
                             onChange={(e) => updateActiveEvent({ tagline: e.target.value })}
-                            placeholder={getDefaultWelcomeMessage(activeEvent.name)}
+                            placeholder="Enter welcome message"
                             helperText="Change welcome message if you want."
                             type="textarea"
                         />

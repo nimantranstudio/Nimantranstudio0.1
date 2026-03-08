@@ -45,6 +45,38 @@ export async function PUT(
             }
         }
 
+        // Process structured bundle items
+        const bundleItemsMetaRaw = formData.get('bundleItemsMeta');
+        let bundleItemsMeta: any[] = [];
+        if (typeof bundleItemsMetaRaw === 'string') {
+            bundleItemsMeta = JSON.parse(bundleItemsMetaRaw);
+        }
+
+        const bundleItemsDataToCreate = [];
+        for (const meta of bundleItemsMeta) {
+            let templateFileStr = meta.existingUrl;
+
+            const file = formData.get(`newBundleItem_${meta.id}`);
+            if (file instanceof File) {
+                const bytes = await file.arrayBuffer();
+                const buffer = Buffer.from(bytes);
+                const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+                const filename = `template-${meta.eventType}-${uniqueSuffix}${path.extname(file.name)}`;
+                const filepath = path.join(uploadDir, filename);
+                await writeFile(filepath, buffer);
+                templateFileStr = `/Image/bundle/${filename}`;
+            }
+
+            bundleItemsDataToCreate.push({
+                eventType: meta.eventType,
+                templateName: meta.templateName || meta.eventType.replace(/_/g, ' '),
+                templateFile: templateFileStr || ''
+            });
+        }
+
+        // Delete existing bundle items and re-create
+        await prisma.bundleItem.deleteMany({ where: { bundleId: id } });
+
         const itemImagePaths = Object.values(itemImages);
         const bundle = await prisma.bundle.update({
             where: { id },
@@ -57,8 +89,14 @@ export async function PUT(
                 isActive,
                 isPopular,
                 themeId: themeId || null,
-                thumbnailUrl: itemImagePaths.length > 0 ? (itemImagePaths[0] as string) : null,
-                itemImages: JSON.stringify(itemImages)
+                thumbnailUrl: itemImagePaths.length > 0 ? (itemImagePaths[0] as string) : (bundleItemsDataToCreate.length > 0 ? bundleItemsDataToCreate[0].templateFile : null),
+                itemImages: JSON.stringify(itemImages),
+                bundleItems: {
+                    create: bundleItemsDataToCreate
+                }
+            },
+            include: {
+                bundleItems: true
             }
         });
 

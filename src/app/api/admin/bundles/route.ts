@@ -9,7 +9,7 @@ export async function GET() {
 
         const bundles = await prisma.bundle.findMany({
             orderBy: { createdAt: 'desc' },
-            include: { themeRef: true }
+            include: { themeRef: true, bundleItems: true }
         });
 
         return NextResponse.json({ bundles });

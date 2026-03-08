@@ -157,7 +157,8 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
         if (!theme) return;
         resetForm();
         setThemeId(theme.id);
-        setBundleData(selectedPlan, imageList);
+        const items = activeBundle?.bundleItems || [];
+        setBundleData(selectedPlan, imageList, items);
         router.push('/details');
     };
 

@@ -27,7 +27,7 @@ const ALL_ASSETS = [
 ];
 
 export default function PreviewPage() {
-    const { formData, selectedThemeId, isAuthenticated, login, bundleImages } = useWeddingStore();
+    const { formData, selectedThemeId, isAuthenticated, login, bundleImages, bundleItems } = useWeddingStore();
     const [isSecuring, setIsSecuring] = useState(false);
     const [theme, setTheme] = useState<Theme | null>(null);
     const [activeTab, setActiveTab] = useState<'summary' | 'edit'>('summary');
@@ -108,7 +108,91 @@ export default function PreviewPage() {
         );
     }
 
-    const displayImages = (bundleImages && bundleImages.length > 0) ? bundleImages : (theme.previewImages || []);
+    // Build preview items from bundleItems matched to wedding events
+    const buildPreviewItems = () => {
+        if (!bundleItems || bundleItems.length === 0) {
+            // Fallback: use old displayImages approach
+            const displayImages = (bundleImages && bundleImages.length > 0) ? bundleImages : (theme.previewImages || []);
+            return displayImages.map((imgUrl, index) => ({
+                id: `design-${index}`,
+                name: ALL_ASSETS[index]?.name || `Design ${index + 1}`,
+                image: imgUrl,
+                event: {
+                    id: `design-${index}`,
+                    name: ALL_ASSETS[index]?.name || `Design ${index + 1}`,
+                    date: formData.primaryDate,
+                    time: formData.primaryTime,
+                    venue: formData.defaultVenueName
+                }
+            }));
+        }
+
+        // Match bundleItems to wedding events by eventType
+        const weddingEvents = formData.events || [];
+        const items: Array<{ id: string; name: string; image: string; event: any }> = [];
+
+        for (const bi of bundleItems) {
+            if (!bi.templateFile) continue;
+
+            const biType = bi.eventType.toUpperCase().replace(/_/g, '');
+
+            // Find matching wedding event using multiple fallbacks
+            let matchedEvent = weddingEvents.find(evt => {
+                const evtId = evt.id.toUpperCase();
+                const evtType = (evt.eventType || '').toUpperCase();
+                const evtName = (evt.name || '').toUpperCase();
+
+                // 1. Check ID (e.g. 'wedding')
+                if (biType.includes(evtId) || evtId.includes(biType)) return true;
+
+                // 2. Check eventType field
+                if (evtType && (biType.includes(evtType) || evtType.includes(biType))) return true;
+
+                // 3. Check name
+                if (biType.includes(evtName) || evtName.includes(biType)) return true;
+
+                // 4. Special cases for common naming
+                if (biType.includes('WEDDING') && evtId === 'WEDDING') return true;
+                if (biType.includes('HALDI') && evtId === 'HALDI') return true;
+                if (biType.includes('MEHENDI') && evtId === 'MEHENDI') return true;
+                if (biType.includes('SANGEET') && evtId === 'SANGEET') return true;
+                if (biType.includes('RECEPTION') && evtId === 'RECEPTION') return true;
+
+                return false;
+            });
+
+            // If no match found, default to 'wedding' for generic wedding items
+            if (!matchedEvent && biType.includes('WEDDING')) {
+                matchedEvent = weddingEvents.find(e => e.id === 'wedding');
+            }
+
+            items.push({
+                id: bi.id,
+                name: matchedEvent?.heading || matchedEvent?.name || bi.templateName || bi.eventType,
+                image: bi.templateFile,
+                event: matchedEvent ? {
+                    id: matchedEvent.id,
+                    name: matchedEvent.heading || matchedEvent.name,
+                    date: matchedEvent.date || formData.primaryDate,
+                    time: matchedEvent.time || formData.primaryTime,
+                    venue: (matchedEvent.isCustomVenue && matchedEvent.venue) ? matchedEvent.venue : formData.defaultVenueName,
+                    tagline: matchedEvent.tagline,
+                    description: matchedEvent.description,
+                    heading: matchedEvent.heading
+                } : {
+                    id: bi.id,
+                    name: bi.templateName || bi.eventType,
+                    date: formData.primaryDate,
+                    time: formData.primaryTime,
+                    venue: formData.defaultVenueName
+                }
+            });
+        }
+
+        return items;
+    };
+
+    const previewItems = buildPreviewItems();
 
 
 
@@ -146,7 +230,7 @@ export default function PreviewPage() {
                         onClick={(e) => e.stopPropagation()}
                     >
                         <InvitationCard
-                            event={{
+                            event={previewItems[selectedPreviewIndex]?.event || {
                                 id: `design-${selectedPreviewIndex}`,
                                 name: `Design ${selectedPreviewIndex + 1}`,
                                 date: formData.primaryDate,
@@ -156,10 +240,13 @@ export default function PreviewPage() {
                             theme={theme}
                             groomName={formData.groomName}
                             brideName={formData.brideName}
+                            groomParents={formData.groomParents}
+                            brideParents={formData.brideParents}
+                            welcomeMessage={formData.invitationMessage}
                             isPlaceholder={true}
                             type='image'
-                            customImage={displayImages[selectedPreviewIndex]}
-                            variant={selectedPreviewIndex === 3 ? 'contract' : selectedPreviewIndex === 7 ? 'save-the-date' : 'default'}
+                            customImage={previewItems[selectedPreviewIndex]?.image}
+                            isSecured={false} // Preview always has watermarks unless downloaded
                         />
                     </div>
                 </div>
@@ -184,26 +271,22 @@ export default function PreviewPage() {
                     {/* Left Column: 12-Card Grid */}
                     <div className={styles.leftColumn}>
                         <div className={styles.grid}>
-                            {(displayImages.length > 0) ? (
-                                displayImages.map((imgUrl, index) => (
+                            {(previewItems.length > 0) ? (
+                                previewItems.map((item, index) => (
                                     <InvitationCard
-                                        key={index}
-                                        event={{
-                                            id: `design-${index}`,
-                                            // Map the index to the global asset list name (e.g., "Haldi", "Wedding")
-                                            name: ALL_ASSETS[index]?.name || `Design ${index + 1}`,
-                                            date: formData.primaryDate,
-                                            time: formData.primaryTime,
-                                            venue: formData.defaultVenueName
-                                        }}
+                                        key={item.id}
+                                        event={item.event}
                                         theme={theme}
                                         groomName={formData.groomName}
                                         brideName={formData.brideName}
+                                        groomParents={formData.groomParents}
+                                        brideParents={formData.brideParents}
+                                        welcomeMessage={formData.invitationMessage}
                                         isPlaceholder={true}
                                         type='image'
-                                        customImage={imgUrl}
+                                        customImage={item.image}
                                         onClick={() => setSelectedPreviewIndex(index)}
-                                        variant={index === 3 ? 'contract' : index === 7 ? 'save-the-date' : 'default'} // Apply variants based on design index
+                                        isSecured={false}
                                     />
                                 ))
                             ) : (
@@ -349,6 +432,32 @@ export default function PreviewPage() {
                                         value={formData.defaultVenueName}
                                         onChange={(e) => updateFormData({ defaultVenueName: e.target.value })}
                                         placeholder="The Grand Palace, Rajasthan"
+                                    />
+                                </div>
+
+                                <div className={styles.editorField}>
+                                    <label>Event Heading</label>
+                                    <input
+                                        className={styles.editorInput}
+                                        value={formData.events?.find(e => e.id === 'wedding')?.heading || 'Wedding Ceremony'}
+                                        onChange={(e) => {
+                                            const weddingEvent = formData.events?.find(evt => evt.id === 'wedding');
+                                            if (weddingEvent) {
+                                                updateEvent(weddingEvent.id, { heading: e.target.value });
+                                            }
+                                        }}
+                                        placeholder="Enter heading"
+                                    />
+                                </div>
+
+                                <div className={styles.editorField}>
+                                    <label>Welcome Message</label>
+                                    <textarea
+                                        className={clsx(styles.editorInput, styles.editorTextarea)}
+                                        style={{ minHeight: '80px' }}
+                                        value={formData.invitationMessage}
+                                        onChange={(e) => updateFormData({ invitationMessage: e.target.value })}
+                                        placeholder="We are pleased to invite you..."
                                     />
                                 </div>
 
