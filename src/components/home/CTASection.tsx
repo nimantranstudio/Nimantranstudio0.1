@@ -15,7 +15,7 @@ export const CTASection = () => {
                         viewport={{ once: true }}
                         transition={{ duration: 0.6 }}
                     >
-                        <span className={styles.ctaLabel}>BEGIN YOUR JOURNEY</span>
+                        <span className={styles.ctaLabel}>BEGIN YOUR CELEBRATION TODAY</span>
                         <h2 className={styles.ctaTitle}>
                             Ready to invite your guests <br />
                             with <span style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontWeight: 400 }}>elegance?</span>
@@ -30,7 +30,7 @@ export const CTASection = () => {
                         </Link>
 
                         <p className={styles.ctaFooter}>
-                            Used by 10,000+ modern couples worldwide
+                            Designed for WhatsApp-first wedding invitations
                         </p>
                     </motion.div>
                 </div>

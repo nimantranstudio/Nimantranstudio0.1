@@ -624,10 +624,10 @@
 
 .discountBadge {
     display: inline-block;
-    background-color: #D1FADF;
-    /* Pale green */
-    color: #027A48;
-    /* Dark green */
+    background-color: #E0F7FA;
+    /* Pale Teal */
+    color: #08232B;
+    /* Deep Teal */
     font-size: 0.75rem;
     font-weight: 700;
     padding: 0.2rem 0.6rem;

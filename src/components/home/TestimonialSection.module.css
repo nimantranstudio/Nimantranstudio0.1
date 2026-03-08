@@ -1,0 +1,79 @@
+.testimonialSection {
+    padding: 6rem 0;
+    background-color: #FDFBF7;
+    /* Assuming main background, could be slightly offset if needed */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.header {
+    margin-bottom: 3rem;
+    text-align: center;
+}
+
+.title {
+    font-size: 2.5rem;
+    font-weight: 600;
+    color: var(--foreground);
+    margin: 0;
+}
+
+.content {
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+}
+
+.stars {
+    display: flex;
+    gap: 0.5rem;
+    color: #D4AF37;
+    /* Gold color for stars is usually standard, but let's stick to theme if strictly required. Gold looks good. */
+}
+
+.starIcon {
+    width: 24px;
+    height: 24px;
+}
+
+.quote {
+    font-size: 1.5rem;
+    line-height: 1.6;
+    font-family: var(--font-playfair), serif;
+    /* Assuming playfair or similar serif is available for quotes */
+    font-style: italic;
+    color: var(--foreground);
+    margin: 0;
+}
+
+.author {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    color: var(--foreground);
+}
+
+.author strong {
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.author span {
+    font-size: 0.9rem;
+    opacity: 0.7;
+}
+
+@media (max-width: 768px) {
+    .testimonialSection {
+        padding: 4rem 0;
+    }
+
+    .quote {
+        font-size: 1.25rem;
+    }
+}

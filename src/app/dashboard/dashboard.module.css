@@ -1,62 +1,67 @@
 .dashboardContainer {
     display: flex;
     min-height: 100vh;
-    background-color: #FDFBF7;
-    /* Ivory background */
+    background-color: var(--background);
 }
 
 /* Sidebar */
 .sidebar {
     width: 280px;
     background: white;
-    border-right: 1px solid #E6E2D6;
+    border-right: 1px solid var(--border);
     display: flex;
     flex-direction: column;
-    padding: 2rem 0;
+    padding: 2.5rem 0;
+    /* Increased breathing room */
     flex-shrink: 0;
 }
 
 .brand {
-    padding: 0 2rem;
+    padding: 0 2.5rem;
+    /* Increased padding */
     margin-bottom: 3rem;
     font-family: var(--font-serif);
     font-size: 1.25rem;
-    color: #1B5E20;
-    font-weight: 700;
+    color: var(--secondary);
+    /* Swapped random green for token */
+    font-weight: 500;
 }
 
 .nav {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.25rem;
+    /* Tighter gap, softer visual */
     flex: 1;
 }
 
 .navItem {
-    padding: 0.875rem 2rem;
-    color: #666;
+    padding: 0.875rem 2.5rem;
+    /* Increased padding */
+    color: var(--muted-foreground);
     font-size: 0.9375rem;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.2s ease-in-out;
     text-decoration: none;
     font-weight: 500;
+    font-family: var(--font-sans);
 }
 
 .navItem:hover {
-    background-color: #FDFBF7;
-    color: #1B5E20;
+    background-color: var(--muted);
+    color: var(--foreground);
 }
 
 .navItem.active {
-    background-color: #FDFBF7;
-    /* Highlight active item roughly like screenshot */
-    color: #1B5E20;
-    border-right: 3px solid #1B5E20;
+    background-color: transparent;
+    color: var(--secondary);
+    border-right: 3px solid var(--secondary);
+    font-weight: 500;
 }
 
 .userProfile {
-    padding: 1.5rem 2rem;
-    border-top: 1px solid #E6E2D6;
+    padding: 1.5rem 2.5rem;
+    border-top: 1px solid var(--border);
     display: flex;
     align-items: center;
     gap: 1rem;
@@ -66,14 +71,15 @@
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background-color: #E55B5B;
-    /* Reddish tone from screenshot */
-    color: white;
+    background-color: var(--muted);
+    /* Calm, neutral */
+    color: var(--foreground);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 600;
+    font-weight: 500;
     font-size: 1.125rem;
+    font-family: var(--font-serif);
 }
 
 .userInfo {
@@ -82,20 +88,21 @@
 }
 
 .userName {
-    font-weight: 600;
-    color: #333;
+    font-weight: 500;
+    color: var(--foreground);
     font-size: 0.9375rem;
 }
 
 .userRole {
     font-size: 0.75rem;
-    color: #888;
+    color: var(--muted-foreground);
 }
 
 /* Main Content */
 .main {
     flex: 1;
-    padding: 2.5rem 3rem;
+    padding: 3.5rem 4rem;
+    /* More generous whitespace */
     overflow-y: auto;
 }
 
@@ -104,62 +111,76 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 3rem;
+    /* Consistent spacing */
 }
 
 .title {
     font-family: var(--font-serif);
-    font-size: 2.5rem;
-    color: #333;
-    font-weight: 600;
+    font-size: 2.25rem;
+    color: var(--foreground);
+    font-weight: 500;
 }
 
 .createButton {
-    background-color: #2E594A;
-    color: white;
-    padding: 0.75rem 1.5rem;
-    border-radius: 6px;
-    /* Slightly squarer than pill buttons for admin UI, closer to screenshot */
-    font-size: 0.875rem;
-    font-weight: 600;
-    border: none;
+    background-color: var(--secondary);
+    color: var(--secondary-foreground);
+    padding: 0.75rem 1.75rem;
+    border-radius: var(--radius);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    border: 1px solid transparent;
     cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+    font-family: var(--font-sans);
+}
+
+.createButton:hover {
+    background-color: #07191E;
+}
+
+.createButton:focus-visible {
+    outline: 2px solid var(--secondary);
+    outline-offset: 2px;
 }
 
 /* Event Card */
 .card {
     background: white;
-    border-radius: 12px;
-    border: 1px solid #E6E2D6;
-    /* Subtle border */
-    padding: 2rem;
+    border-radius: var(--radius);
+    /* Standardized */
+    border: 1px solid var(--border);
+    padding: 2.5rem;
+    /* Consistent internal padding */
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+    /* Very subtle elevation */
 }
 
 .cardContent h2 {
     font-family: var(--font-serif);
-    color: #1B5E20;
+    color: var(--foreground);
     font-size: 1.5rem;
     margin-bottom: 0.5rem;
+    font-weight: 500;
 }
 
 .cardDetails {
-    color: #666;
+    color: var(--muted-foreground);
     font-size: 0.9375rem;
-    margin-bottom: 0.75rem;
+    margin-bottom: 1rem;
 }
 
 .statusBadge {
     display: inline-block;
-    background-color: #F2F0E9;
-    /* Muted background */
-    color: #666;
-    padding: 0.25rem 0.75rem;
+    background-color: var(--muted);
+    color: var(--foreground);
+    padding: 0.35rem 0.85rem;
     border-radius: 100px;
     font-size: 0.75rem;
-    font-weight: 600;
+    font-weight: 500;
+    letter-spacing: 0.02em;
 }
 
 .cardActions {
@@ -168,34 +189,42 @@
 }
 
 .btnActionOutline {
-    background: white;
-    border: 1px solid #333;
-    color: #333;
-    padding: 0.6rem 1.25rem;
-    border-radius: 6px;
-    font-size: 0.875rem;
-    font-weight: 600;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--foreground);
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius);
+    font-size: 0.9375rem;
+    font-weight: 500;
     cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    font-family: var(--font-sans);
+}
+
+.btnActionOutline:hover {
+    border-color: var(--secondary);
+    color: var(--secondary);
 }
 
 .btnActionPrimary {
-    background: #2E594A;
-    border: none;
-    color: white;
-    padding: 0.6rem 1.25rem;
-    border-radius: 6px;
-    font-size: 0.875rem;
-    font-weight: 600;
+    background: var(--secondary);
+    border: 1px solid transparent;
+    color: var(--secondary-foreground);
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius);
+    font-size: 0.9375rem;
+    font-weight: 500;
     cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    font-family: var(--font-sans);
 }
 
 .btnActionPrimary:hover {
-    background-color: var(--primary-foreground);
-    transform: translateY(-1px);
+    background-color: #07191E;
 }
 
 .sidebarFooter {
-    padding: 1.5rem;
+    padding: 1.5rem 2.5rem;
     border-top: 1px solid var(--border);
     margin-top: auto;
 }
@@ -206,16 +235,18 @@
     gap: 0.75rem;
     width: 100%;
     padding: 0.75rem 1rem;
-    background: none;
-    border: none;
-    color: #ef4444;
-    font-size: 0.95rem;
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--foreground);
+    font-size: 0.9375rem;
     font-weight: 500;
     cursor: pointer;
-    border-radius: 0.5rem;
-    transition: all 0.2s;
+    border-radius: var(--radius);
+    transition: all 0.2s ease-in-out;
+    opacity: 0.7;
 }
 
 .logoutBtn:hover {
-    background-color: #fee2e2;
+    background-color: var(--muted);
+    opacity: 1;
 }

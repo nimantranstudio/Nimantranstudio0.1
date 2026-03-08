@@ -26,8 +26,8 @@
 
 .title {
     font-size: 3.5rem;
-    color: #1B5E20;
-    /* Deep green */
+    color: #08232B;
+    /* Deep Teal */
     font-family: var(--font-serif);
     margin-bottom: 2rem;
     line-height: 1.1;
@@ -43,7 +43,7 @@
 
 .ctaButton {
     display: inline-block;
-    background-color: #1B5E20;
+    background-color: #08232B;
     color: white;
     padding: 1.25rem 3rem;
     border-radius: 100px;
@@ -51,14 +51,14 @@
     font-weight: 700;
     letter-spacing: 0.1em;
     text-decoration: none;
-    box-shadow: 0 10px 20px rgba(27, 94, 32, 0.2);
+    box-shadow: 0 10px 20px rgba(8, 35, 43, 0.2);
     transition: all 0.3s ease;
 }
 
 .ctaButton:hover {
     transform: translateY(-4px);
-    box-shadow: 0 15px 30px rgba(27, 94, 32, 0.3);
-    background-color: #144617;
+    box-shadow: 0 15px 30px rgba(8, 35, 43, 0.3);
+    background-color: #061C22;
 }
 
 .featuresList {
@@ -82,8 +82,8 @@
 
 .featureItem p {
     font-size: 1.25rem;
-    color: #4A5D44;
-    /* Muted olive/green */
+    color: #08232B;
+    /* Deep Teal */
     line-height: 1.4;
     font-family: var(--font-sans);
 }
@@ -132,7 +132,7 @@
 
 .sectionTitle {
     font-size: 3rem;
-    color: #1B5E20;
+    color: #08232B;
     font-family: var(--font-serif);
     text-align: center;
     margin-bottom: 4rem;
@@ -195,8 +195,8 @@
 
 .cardTitle {
     font-size: 1.75rem;
-    color: #1B5E20;
-    /* Brand green */
+    color: #08232B;
+    /* Deep Teal */
     font-family: var(--font-serif);
     margin-bottom: 1.5rem;
     line-height: 1.3;

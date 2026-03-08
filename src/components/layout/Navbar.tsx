@@ -12,7 +12,6 @@ const NAV_LINKS = [
     { name: 'Home', href: '/' },
     { name: 'Themes', href: '/themes' },
     { name: 'RSVP', href: '/rsvp' },
-    { name: 'Products', href: '/products' },
     // { name: 'Blogs', href: '/blogs' },
 ];
 
@@ -57,7 +56,7 @@ export const Navbar = () => {
         <nav className={styles.navbar}>
             <div className={clsx("container", styles.navContainer)}>
                 <Link href="/" className={styles.logo}>
-                    <span>Nimantran<span>Studio</span></span>
+                    <img src="/logo.png" alt="Nimantran Studio Logo" className={styles.logoImage} />
                 </Link>
 
                 {/* Desktop Nav */}

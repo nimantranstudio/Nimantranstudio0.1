@@ -26,7 +26,7 @@
     font-family: var(--font-serif);
     font-size: 1.75rem;
     /* Slightly smaller title */
-    color: #1B5E20;
+    color: #08232B;
     margin-bottom: 0.5rem;
 }
 
@@ -81,9 +81,9 @@
 }
 
 .input:focus {
-    border-color: #1B5E20;
-    /* Green focus */
-    box-shadow: 0 0 0 3px rgba(27, 94, 32, 0.05);
+    border-color: #08232B;
+    /* Deep Teal focus */
+    box-shadow: 0 0 0 3px rgba(8, 35, 43, 0.05);
 }
 
 .otpInput {
@@ -101,7 +101,7 @@
 .linkButton {
     background: none;
     border: none;
-    color: #4A5D44;
+    color: #08232B;
     text-decoration: underline;
     cursor: pointer;
     font-size: 0.875rem;
@@ -111,7 +111,7 @@
 }
 
 .linkButton:hover {
-    color: #1B5E20;
+    color: #061C22;
 }
 
 @keyframes fadeIn {
@@ -149,8 +149,8 @@
 }
 
 .tab.active {
-    color: #2D5A27;
-    border-bottom-color: #2D5A27;
+    color: #08232B;
+    border-bottom-color: #08232B;
     font-weight: 600;
 }
 

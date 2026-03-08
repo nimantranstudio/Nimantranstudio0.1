@@ -162,7 +162,15 @@ export const useWeddingStore = create<WeddingState>()(
         }),
         {
             name: 'nimantran-wedding-storage',
-            version: 1,
+            version: 2,
+            migrate: (persistedState: any, version: number) => {
+                if (version === 0) {
+                    // if we had no version or version 0, reset or migrate
+                    // For now, just return the persisted state as is, or reset if needed
+                    return persistedState as WeddingState;
+                }
+                return persistedState as WeddingState;
+            },
             partialize: (state) => ({
                 selectedThemeId: state.selectedThemeId,
                 selectedPlan: state.selectedPlan,
@@ -174,7 +182,7 @@ export const useWeddingStore = create<WeddingState>()(
                 userPhone: state.userPhone,
             }),
             onRehydrateStorage: () => (state) => {
-                console.log('Hydration finished', state);
+                console.log('Hydration finished for version 2');
             },
         }
     )

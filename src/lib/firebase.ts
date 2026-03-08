@@ -14,5 +14,29 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-export const auth = getAuth(app);
+let app;
+let auth;
+
+try {
+    if (typeof window !== 'undefined' && (!process.env.NEXT_PUBLIC_FIREBASE_API_KEY || process.env.NEXT_PUBLIC_FIREBASE_API_KEY === 'your_api_key')) {
+        console.warn('Firebase API keys missing. Authentication features will be disabled.');
+        // Create a dummy auth object to prevent immediate crashes in components
+        auth = {
+            currentUser: null,
+            onAuthStateChanged: () => () => { },
+            signInWithPopup: async () => { throw new Error("Firebase not configured"); },
+            signOut: async () => { },
+        } as any;
+    } else {
+        app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+        auth = getAuth(app);
+    }
+} catch (error) {
+    console.error("Firebase initialization error:", error);
+    auth = {
+        currentUser: null,
+        onAuthStateChanged: () => () => { },
+    } as any;
+}
+
+export { app, auth };

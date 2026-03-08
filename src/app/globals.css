@@ -1,33 +1,37 @@
 :root {
-  /* Core Palette - Indian Wedding Premium */
-  --background: #FDFBF7;
-  /* Cream/Ivory */
-  --foreground: #1A1A1A;
-  /* Soft Black */
+  /* Core Palette - Premium Stable Aesthetic */
+  --background: #F8F7F5;
+  /* Warm off-white */
+  --foreground: #1F1F1F;
+  /* Soft charcoal */
 
-  /* Primary - Royal Gold/Mustard */
-  --primary: #D4AF37;
+  /* Primary Accent - Muted Antique Gold */
+  --primary: #C8A951;
   --primary-foreground: #FFFFFF;
 
-  /* Secondary - Deep Green (Mehendi) */
-  --secondary: #2E594A;
+  /* Secondary Accent - Deep Desaturated Teal */
+  --secondary: #0A252C;
   --secondary-foreground: #FFFFFF;
 
-  /* Accent - Terracotta/Red (Sindoor) */
-  --accent: #E55B5B;
-  --accent-foreground: #FFFFFF;
+  /* Accent - Removed bright red, using muted gold alternative */
+  --accent: #E0C888;
+  --accent-foreground: #1F1F1F;
 
   /* Neutral scale */
-  --muted: #F2F0E9;
-  --muted-foreground: #666666;
-  --border: #E6E2D6;
+  --muted: #EBEAE7;
+  /* Slightly darker than background */
+  --muted-foreground: rgba(31, 31, 31, 0.65);
+  /* 65% opacity of primary text */
+  --border: #E0DED7;
+  /* Calm border */
 
   /* Font Families */
   --font-serif: 'Playfair Display', 'Merriweather', serif;
   --font-sans: 'Inter', system-ui, sans-serif;
 
-  /* Spacing */
-  --radius: 0.5rem;
+  /* Spacing & Forms */
+  --radius: 8px;
+  /* Standardized 8px radius */
   --container-width: 1200px;
 }
 
@@ -35,6 +39,10 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+}
+
+html {
+  font-size: 80%;
 }
 
 html,
@@ -45,6 +53,8 @@ body {
   color: var(--foreground);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  line-height: 1.6;
+  /* Enforced 1.6 line height */
 }
 
 h1,
@@ -54,8 +64,16 @@ h4,
 h5,
 h6 {
   font-family: var(--font-serif);
-  font-weight: 600;
+  font-weight: 500;
+  /* Medium weight, not 600 */
   line-height: 1.2;
+  letter-spacing: 0.02em;
+  /* Slightly increased letter spacing */
+}
+
+/* Enforcing line width for readability on large paragraphs */
+p {
+  max-width: 75ch;
 }
 
 a {
@@ -69,25 +87,34 @@ a {
   padding: 0 1.5rem;
 }
 
+/* Standardized Button System */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.875rem 2rem;
-  border-radius: 100px;
-  font-weight: 600;
+  padding: 0.75rem 1.75rem;
+  /* Standardized internal padding */
+  border-radius: var(--radius);
+  /* Standardized radius */
+  font-weight: 500;
   font-size: 0.9375rem;
   letter-spacing: 0.02em;
-  transition: all 0.2s ease;
+  transition: all 0.2s ease-in-out;
+  /* 200ms ease-in-out */
   cursor: pointer;
-  border: none;
+  border: 1px solid transparent;
   font-family: var(--font-sans);
   text-decoration: none;
 }
 
+.btn:focus-visible {
+  outline: 2px solid var(--secondary);
+  outline-offset: 2px;
+}
+
 .btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  /* Removed heavy shadow */
 }
 
 .btn:active {
@@ -95,33 +122,31 @@ a {
 }
 
 .btn-primary {
-  background-color: var(--secondary);
+  background-color: #111111;
   color: var(--secondary-foreground);
-  box-shadow: 0 4px 14px rgba(46, 89, 74, 0.25);
+  /* Removed heavy shadow */
 }
 
 .btn-primary:hover {
-  background-color: #24463a;
-  box-shadow: 0 6px 20px rgba(46, 89, 74, 0.3);
+  background-color: #000000;
+  /* Darkest black for hover */
 }
 
 .btn-secondary {
   background-color: transparent;
   color: var(--secondary);
-  border: 1px solid var(--secondary);
-  box-shadow: none;
+  border: 1px solid var(--border);
 }
 
 .btn-secondary:hover {
   background-color: var(--muted);
-  transform: none;
-  box-shadow: none;
+  border-color: var(--border);
 }
 
 .btn-outline {
   background-color: transparent;
   border: 1px solid var(--border);
-  color: var(--muted-foreground);
+  color: var(--foreground);
 }
 
 .btn-outline:hover {
