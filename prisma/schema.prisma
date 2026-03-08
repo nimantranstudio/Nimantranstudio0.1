@@ -55,8 +55,22 @@ model Bundle {
   itemImages         String?  @db.Text
   themeRef           Theme?   @relation(fields: [themeId], references: [id])
   orders             Order[]
+  bundleItems        BundleItem[]
 
   @@map("Bundle")
+}
+
+model BundleItem {
+  id            String   @id @default(cuid())
+  bundleId      String
+  eventType     String
+  templateName  String
+  templateFile  String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  bundle        Bundle   @relation(fields: [bundleId], references: [id], onDelete: Cascade)
+
+  @@map("BundleItems")
 }
 
 model Order {

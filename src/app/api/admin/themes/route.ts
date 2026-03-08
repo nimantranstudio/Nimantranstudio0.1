@@ -5,7 +5,6 @@ import path from 'path';
 // In production/real app, you'd want to handle GET by querying the DB
 export async function GET() {
     try {
-        // Dynamic import to prevent top-level crash
         const { getPrisma } = await import('@/lib/prisma');
         const prisma = getPrisma();
         const themes = await prisma.theme.findMany({

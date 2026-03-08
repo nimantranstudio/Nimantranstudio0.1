@@ -2,10 +2,18 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { WeddingFormData, DEFAULT_EVENTS } from '@/lib/schemas/wedding-form';
 
+interface BundleItemInfo {
+    id: string;
+    eventType: string;
+    templateName: string;
+    templateFile: string;
+}
+
 interface WeddingState {
     selectedThemeId: string | null;
     selectedPlan: string | null;
     bundleImages: string[];
+    bundleItems: BundleItemInfo[];
     formData: WeddingFormData;
     lastSavedWeddingId: string | null;
 
@@ -14,7 +22,7 @@ interface WeddingState {
     userPhone: string | null;
 
     setThemeId: (id: string) => void;
-    setBundleData: (plan: string, images: string[]) => void;
+    setBundleData: (plan: string, images: string[], items?: BundleItemInfo[]) => void;
     updateFormData: (data: Partial<WeddingFormData>) => void;
     addEvent: (event?: Partial<WeddingFormData['events'][0]>) => void;
     removeEvent: (id: string) => void;
@@ -22,6 +30,7 @@ interface WeddingState {
     saveWedding: () => Promise<{ success: boolean; wedding?: any; error?: string }>;
     login: (phone: string, isAdmin?: boolean) => void;
     logout: () => void;
+    resetForm: () => void;
 }
 
 const INITIAL_FORM_DATA: WeddingFormData = {
@@ -47,6 +56,7 @@ export const useWeddingStore = create<WeddingState>()(
             selectedThemeId: null,
             selectedPlan: null,
             bundleImages: [],
+            bundleItems: [],
             formData: INITIAL_FORM_DATA,
             lastSavedWeddingId: null,
             isAuthenticated: false,
@@ -54,10 +64,11 @@ export const useWeddingStore = create<WeddingState>()(
             userPhone: null,
 
             setThemeId: (id) => set({ selectedThemeId: id }),
-            setBundleData: (plan, images) => set({ selectedPlan: plan, bundleImages: images }),
+            setBundleData: (plan, images, items = []) => set({ selectedPlan: plan, bundleImages: images, bundleItems: items }),
 
             login: (phone, isAdmin = false) => set({ isAuthenticated: true, userPhone: phone, isAdmin }),
             logout: () => set({ isAuthenticated: false, userPhone: null, isAdmin: false }),
+            resetForm: () => set({ formData: INITIAL_FORM_DATA }),
 
             updateFormData: (data) => set((state) => ({
                 formData: { ...state.formData, ...data },
@@ -175,6 +186,7 @@ export const useWeddingStore = create<WeddingState>()(
                 selectedThemeId: state.selectedThemeId,
                 selectedPlan: state.selectedPlan,
                 bundleImages: state.bundleImages,
+                bundleItems: state.bundleItems,
                 formData: state.formData,
                 lastSavedWeddingId: state.lastSavedWeddingId,
                 isAuthenticated: state.isAuthenticated,

@@ -25,6 +25,7 @@ export default function DetailsPage() {
     const [isSaving, setIsSaving] = useState(false);
     const [saveError, setSaveError] = useState<string | null>(null);
     const [showLoginModal, setShowLoginModal] = useState(false);
+    const [errors, setErrors] = useState<Record<string, string>>({});
 
     const [activeTheme, setActiveTheme] = useState<Theme | null>(null);
 
@@ -54,8 +55,13 @@ export default function DetailsPage() {
             key="groom-name"
             label="Groom's Name"
             value={formData.groomName}
-            onChange={(e) => updateFormData({ groomName: e.target.value })}
+            onChange={(e) => {
+                updateFormData({ groomName: e.target.value });
+                if (errors.groomName) setErrors(e => ({ ...e, groomName: '' }));
+            }}
             placeholder="First & Last Name"
+            error={errors.groomName}
+            maxLength={25}
         />
     );
 
@@ -64,8 +70,13 @@ export default function DetailsPage() {
             key="bride-name"
             label="Bride's Name"
             value={formData.brideName}
-            onChange={(e) => updateFormData({ brideName: e.target.value })}
+            onChange={(e) => {
+                updateFormData({ brideName: e.target.value });
+                if (errors.brideName) setErrors(e => ({ ...e, brideName: '' }));
+            }}
             placeholder="First & Last Name"
+            error={errors.brideName}
+            maxLength={25}
         />
     );
 
@@ -76,6 +87,7 @@ export default function DetailsPage() {
             value={formData.groomParents || ''}
             onChange={(e) => updateFormData({ groomParents: e.target.value })}
             placeholder="e.g. Mr. & Mrs. Sharma"
+            maxLength={100}
         />
     );
 
@@ -86,6 +98,7 @@ export default function DetailsPage() {
             value={formData.brideParents || ''}
             onChange={(e) => updateFormData({ brideParents: e.target.value })}
             placeholder="e.g. Mr. & Mrs. Patel"
+            maxLength={100}
         />
     );
 
@@ -110,21 +123,37 @@ export default function DetailsPage() {
 
     const handleNext = async () => {
         if (step === 1) {
-            if (!formData.groomName || !formData.brideName || !formData.primaryDate) {
-                alert("Please fill in basic details and wedding date.");
+            const newErrors: Record<string, string> = {};
+            if (!formData.groomName?.trim()) newErrors.groomName = "Groom's name is required";
+            if (!formData.brideName?.trim()) newErrors.brideName = "Bride's name is required";
+            if (!formData.primaryDate) newErrors.primaryDate = "Wedding date is required";
+            if (!formData.primaryTime) newErrors.primaryTime = "Wedding time is required";
+            if (!formData.defaultVenueName?.trim()) newErrors.defaultVenueName = "Venue address is required";
+
+            if (Object.keys(newErrors).length > 0) {
+                setErrors(newErrors);
                 return;
             }
-            // Smart Inheritance logic is usually handled when adding events, 
-            // but we can ensure it here if events were already selected
+            setErrors({});
             setStep(2);
         } else if (step === 2) {
-            if (!formData.events || formData.events.length === 0) {
-                alert("Please select at least one event.");
-                return;
+            if (formData.events) {
+                const newErrors: Record<string, string> = {};
+                for (const event of formData.events) {
+                    if (!event.date) {
+                        newErrors[`${event.id}-date`] = "Date is required";
+                    }
+                    if (!event.time) {
+                        newErrors[`${event.id}-time`] = "Time is required";
+                    }
+                }
+                if (Object.keys(newErrors).length > 0) {
+                    setErrors(newErrors);
+                    return;
+                }
             }
+            setErrors({});
             setStep(3);
-        } else if (step === 3) {
-            setStep(4);
         } else {
             // Final step: Summary -> Login and Save
             setShowLoginModal(true);
@@ -138,9 +167,8 @@ export default function DetailsPage() {
 
     const STEPS = [
         { id: 1, label: 'THE COUPLE', icon: '❤️' },
-        { id: 2, label: 'PICK EVENTS', icon: '📋' },
-        { id: 3, label: 'TIMELINE', icon: '📅' },
-        { id: 4, label: 'ARCHITECTURE', icon: '🏛️' },
+        { id: 2, label: 'TIMELINE', icon: '📅' },
+        { id: 3, label: 'ARCHITECTURE', icon: '🏛️' },
     ];
 
     return (
@@ -179,49 +207,55 @@ export default function DetailsPage() {
                                     <>
                                         {groomNameField}
                                         {brideNameField}
+                                        {groomParentsField}
+                                        {brideParentsField}
                                     </>
                                 ) : (
                                     <>
                                         {brideNameField}
                                         {groomNameField}
+                                        {brideParentsField}
+                                        {groomParentsField}
                                     </>
                                 )}
                                 <Input
                                     label="Primary Wedding Date"
                                     type="date"
                                     value={formData.primaryDate || ''}
-                                    onChange={(e) => updateFormData({ primaryDate: e.target.value })}
+                                    onChange={(e) => {
+                                        updateFormData({ primaryDate: e.target.value });
+                                        if (errors.primaryDate) setErrors(errs => ({ ...errs, primaryDate: '' }));
+                                    }}
+                                    error={errors.primaryDate}
                                 />
                                 <Input
-                                    label="Timezone"
-                                    value={formData.timezone || 'Asia/Kolkata'}
-                                    disabled
+                                    label="Time"
+                                    type="time"
+                                    value={formData.primaryTime || ''}
+                                    onChange={(e) => {
+                                        updateFormData({ primaryTime: e.target.value });
+                                        if (errors.primaryTime) setErrors(errs => ({ ...errs, primaryTime: '' }));
+                                    }}
+                                    error={errors.primaryTime}
                                 />
                                 <div className={styles.venueSection}>
-                                    <h3 className={styles.venueHeading}>DEFAULT VENUE</h3>
+                                    <h3 className={styles.venueHeading}>VENUE ADDRESS</h3>
                                     <div className={formStyles.grid}>
-                                        <Input
-                                            label="Venue Name"
-                                            value={formData.defaultVenueName || ''}
-                                            onChange={(e) => updateFormData({ defaultVenueName: e.target.value })}
-                                            placeholder="The Grand Palace"
-                                        />
-                                        <Input
-                                            label="Full Address"
-                                            value={formData.defaultVenueAddress || ''}
-                                            onChange={(e) => updateFormData({ defaultVenueAddress: e.target.value })}
-                                            placeholder="123 Royal Road, Jaipur"
-                                        />
+                                        <div style={{ gridColumn: 'span 2' }}>
+                                            <Input
+                                                label="Address"
+                                                value={formData.defaultVenueName || ''}
+                                                onChange={(e) => {
+                                                    updateFormData({ defaultVenueName: e.target.value });
+                                                    if (errors.defaultVenueName) setErrors(errs => ({ ...errs, defaultVenueName: '' }));
+                                                }}
+                                                placeholder="e.g. The Grand Palace, 123 Royal Road, Jaipur"
+                                                type="textarea"
+                                                error={errors.defaultVenueName}
+                                                maxLength={500}
+                                            />
+                                        </div>
                                     </div>
-                                </div>
-                                <div style={{ gridColumn: 'span 2' }}>
-                                    <Input
-                                        label="Global Invitation Tagline"
-                                        value={formData.globalTagline || ''}
-                                        onChange={(e) => updateFormData({ globalTagline: e.target.value })}
-                                        placeholder="Together with their families"
-                                        type="textarea"
-                                    />
                                 </div>
                             </div>
                         </div>
@@ -229,17 +263,11 @@ export default function DetailsPage() {
 
                     {step === 2 && (
                         <div className={styles.wizardCard}>
-                            <PickEventsStep />
+                            <TimelineStep errors={errors} setErrors={setErrors} />
                         </div>
                     )}
 
                     {step === 3 && (
-                        <div className={styles.wizardCard}>
-                            <TimelineStep />
-                        </div>
-                    )}
-
-                    {step === 4 && (
                         <div className={styles.wizardCard}>
                             <ArchitectureSummary />
                         </div>
@@ -258,7 +286,7 @@ export default function DetailsPage() {
                         </div>
                     )}
                     <button className="btn btn-primary" onClick={handleNext} disabled={isSaving}>
-                        {step === 4 ? (isSaving ? 'Generating...' : 'Finalize & Preview') : 'Next Step →'}
+                        {step === 3 ? (isSaving ? 'Generating...' : 'Finalize & Preview') : 'Next Step →'}
                     </button>
                 </div>
             </footer>
@@ -270,221 +298,209 @@ export default function DetailsPage() {
             />
         </div >
     );
+}
 
-    // --- Sub Components ---
+// --- Helpers ---
+function formatDateDisplay(dateStr?: string) {
+    if (!dateStr) return '';
+    const parts = dateStr.split('-');
+    if (parts.length !== 3) return dateStr;
+    const [year, month, day] = parts;
+    const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+    const monthStr = date.toLocaleString('default', { month: 'short' });
+    return `${day}-${monthStr}-${year}`;
+}
 
-    function PickEventsStep() {
-        const toggleEvent = (event: typeof DEFAULT_EVENTS[0]) => {
-            const currentEvents = formData.events || [];
-            const exists = currentEvents.find(e => e.id === event.id);
+function getDefaultWelcomeMessage(eventName: string): string {
+    const name = eventName.toLowerCase();
+    if (name.includes('haldi')) return "Bless the couple with showers of yellow health and happiness";
+    if (name.includes('mehendi')) return "Join at the mehendi event, with the \"Hands full of mehendi , hearts full of love\"";
+    if (name.includes('sangeet')) return "Join us to turn up the volume \"Naach. gaana aur full-on hungama!\"";
+    if (name.includes('wedding')) return "We are pleased to invite you to the wedding of";
+    if (name.includes('reception')) return "We are pleased to invite you to the reception of";
+    return "";
+}
 
-            if (exists) {
-                updateFormData({
-                    events: currentEvents.filter(e => e.id !== event.id)
-                });
-            } else {
-                // Smart Inheritance
-                const newEvent = {
-                    ...event,
-                    date: formData.primaryDate || '',
-                    venue: formData.defaultVenueName || '',
-                    tagline: formData.globalTagline || '',
-                    isCustomVenue: false
-                };
-                updateFormData({
-                    events: [...currentEvents, newEvent]
-                });
-            }
-        };
+function getDefaultHeading(eventName: string): string {
+    const name = eventName.toLowerCase();
+    if (name.includes('haldi')) return "Haldi Ceremony";
+    if (name.includes('mehendi')) return "Mehendi Ceremony";
+    if (name.includes('sangeet')) return "Sangeet Ceremoney";
+    if (name.includes('wedding')) return "Wedding Ceremony";
+    if (name.includes('reception')) return "Reception Ceremony";
+    return `${eventName} Ceremony`;
+}
 
-        const eventIcons: Record<string, any> = {
-            haldi: Sun,
-            mehendi: Leaf,
-            sangeet: Music,
-            wedding: Circle,
-            reception: Wine
-        };
+// --- Sub Components ---
 
-        return (
-            <div>
-                <h2 className={styles.wizardTitle}>Select the functions you are having:</h2>
-                <div className={styles.eventGrid}>
-                    {DEFAULT_EVENTS.map(evt => {
-                        const Icon = eventIcons[evt.id] || MoreHorizontal;
-                        const isActive = formData.events?.some(e => e.id === evt.id);
-                        return (
-                            <div
-                                key={evt.id}
-                                className={clsx(styles.eventOption, isActive && styles.eventOptionActive)}
-                                onClick={() => toggleEvent(evt)}
-                            >
-                                <Icon size={32} color={isActive ? '#E11D48' : '#9CA3AF'} />
-                                <span className={styles.eventLabel}>{evt.name}</span>
-                                {isActive && (
-                                    <div style={{ position: 'absolute', top: '-8px', right: '-8px' }}>
-                                        <CheckCircle size={20} fill="#E11D48" color="white" />
-                                    </div>
-                                )}
-                            </div>
-                        );
-                    })}
-                    <div className={styles.eventOption}>
-                        <MoreHorizontal size={32} color="#9CA3AF" />
-                        <span className={styles.eventLabel}>OTHER</span>
+function TimelineStep({ errors, setErrors }: { errors: Record<string, string>, setErrors: any }) {
+    const { formData, updateFormData, bundleItems } = useWeddingStore();
+    const [activeEventId, setActiveEventId] = useState(formData.events?.[0]?.id || '');
+    const currentEvents = formData.events || [];
+    const activeEvent = currentEvents.find(e => e.id === activeEventId) || currentEvents[0];
+
+    const updateActiveEvent = (data: Partial<typeof currentEvents[0]>) => {
+        updateFormData({
+            events: currentEvents.map(e => e.id === activeEventId ? { ...e, ...data } : e)
+        });
+    };
+
+    // Map event name to BundleItem eventType
+    const getMatchingEventType = (eventName: string): string | null => {
+        if (!bundleItems || bundleItems.length === 0) return null;
+        // Normalize: "Haldi" -> "HALDI", "Save The Date" -> "SAVE_THE_DATE" or "SAVE_DATE"
+        const normalized = eventName.toUpperCase().replace(/\s+/g, '_');
+        const match = bundleItems.find(bi => {
+            const biType = bi.eventType.toUpperCase();
+            return biType === normalized || biType === eventName.toUpperCase() ||
+                biType.replace(/_/g, '') === normalized.replace(/_/g, '');
+        });
+        return match ? match.eventType : null;
+    };
+
+    const matchedEventType = activeEvent ? getMatchingEventType(activeEvent.name) : null;
+
+    if (currentEvents.length === 0) return <div>Please go back and select events.</div>;
+
+    return (
+        <div className={styles.timelineLayout}>
+            <div className={styles.timelineSidebar}>
+                {currentEvents.map(e => (
+                    <div
+                        key={e.id}
+                        className={clsx(styles.timelineItem, activeEventId === e.id && styles.timelineItemActive)}
+                        onClick={() => setActiveEventId(e.id)}
+                    >
+                        <div style={{ fontWeight: 600 }}>{e.name}</div>
+                        <div style={{ fontSize: '0.75rem', opacity: 0.8 }}>{formatDateDisplay(e.date || formData.primaryDate)}</div>
                     </div>
-                </div>
-
-                <div className={styles.smartInfo}>
-                    <Info size={18} color="#2563EB" />
-                    <div>
-                        <p style={{ fontWeight: 600, color: '#1E3A8A', margin: 0 }}>Smart Inheritance Active</p>
-                        <p style={{ fontSize: '0.8125rem', color: '#1E40AF', margin: '4px 0 0' }}>
-                            Any events you select here will automatically inherit the bride/groom names, venue, and primary wedding date you set in the first step. You'll only need to specify times!
-                        </p>
-                    </div>
-                </div>
+                ))}
             </div>
-        );
-    }
 
-    function TimelineStep() {
-        const [activeEventId, setActiveEventId] = useState(formData.events?.[0]?.id || '');
-        const currentEvents = formData.events || [];
-        const activeEvent = currentEvents.find(e => e.id === activeEventId) || currentEvents[0];
-
-        const updateActiveEvent = (data: Partial<typeof currentEvents[0]>) => {
-            updateFormData({
-                events: currentEvents.map(e => e.id === activeEventId ? { ...e, ...data } : e)
-            });
-        };
-
-        if (currentEvents.length === 0) return <div>Please go back and select events.</div>;
-
-        return (
-            <div className={styles.timelineLayout}>
-                <div className={styles.timelineSidebar}>
-                    {currentEvents.map(e => (
-                        <div
-                            key={e.id}
-                            className={clsx(styles.timelineItem, activeEventId === e.id && styles.timelineItemActive)}
-                            onClick={() => setActiveEventId(e.id)}
-                        >
-                            <div style={{ fontWeight: 600 }}>{e.name}</div>
-                            <div style={{ fontSize: '0.75rem', opacity: 0.8 }}>{e.date || formData.primaryDate}</div>
-                        </div>
-                    ))}
+            <div className={styles.timelineContent}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                    <h2 style={{ fontSize: '1.5rem', margin: 0 }}>{activeEvent.name} Settings</h2>
+                    {matchedEventType && (
+                        <span style={{ fontSize: '0.75rem', background: '#E5E7EB', padding: '2px 8px', borderRadius: '100px' }}>{matchedEventType}</span>
+                    )}
                 </div>
 
-                <div className={styles.timelineContent}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                        <h2 style={{ fontSize: '1.5rem', margin: 0 }}>{activeEvent.name} Settings</h2>
-                        <span style={{ fontSize: '0.75rem', background: '#E5E7EB', padding: '2px 8px', borderRadius: '100px' }}>EVT-{activeEvent.id.toUpperCase()}</span>
-                    </div>
-
-                    <div className={formStyles.grid}>
+                <div className={formStyles.grid}>
+                    <Input
+                        label="Date"
+                        type="date"
+                        value={activeEvent.date || ''}
+                        onChange={(e) => {
+                            updateActiveEvent({ date: e.target.value });
+                            setErrors((prev: any) => ({ ...prev, [`${activeEvent.id}-date`]: '' }));
+                        }}
+                        helperText={`Default: ${formatDateDisplay(formData.primaryDate)}`}
+                        error={errors[`${activeEvent.id}-date`]}
+                    />
+                    <Input
+                        label="Time"
+                        type="time"
+                        value={activeEvent.time || ''}
+                        onChange={(e) => {
+                            updateActiveEvent({ time: e.target.value });
+                            setErrors((prev: any) => ({ ...prev, [`${activeEvent.id}-time`]: '' }));
+                        }}
+                        error={errors[`${activeEvent.id}-time`]}
+                    />
+                    <div style={{ gridColumn: 'span 2' }}>
                         <Input
-                            label="Override Date?"
-                            type="date"
-                            value={activeEvent.date || ''}
-                            onChange={(e) => updateActiveEvent({ date: e.target.value })}
-                            helperText={`Default: ${formData.primaryDate}`}
+                            label="Event Heading"
+                            value={activeEvent.heading || getDefaultHeading(activeEvent.name)}
+                            onChange={(e) => updateActiveEvent({ heading: e.target.value })}
+                            placeholder="Enter heading"
+                            helperText="Custom heading displayed on the invitation card."
+                            maxLength={25}
                         />
-                        <div style={{ display: 'flex', gap: '1rem' }}>
-                            <Input
-                                label="Start Time"
-                                type="time"
-                                value={activeEvent.time || ''}
-                                onChange={(e) => updateActiveEvent({ time: e.target.value })}
-                                style={{ flex: 1 }}
-                            />
-                            <Input
-                                label="End Time"
-                                type="time"
-                                value={activeEvent.endTime || ''}
-                                onChange={(e) => updateActiveEvent({ endTime: e.target.value })}
-                                style={{ flex: 1 }}
-                            />
-                        </div>
-                        <div style={{ gridColumn: 'span 2' }}>
-                            <Input
-                                label="Custom Event Tagline"
-                                value={activeEvent.tagline || ''}
-                                onChange={(e) => updateActiveEvent({ tagline: e.target.value })}
-                                placeholder={formData.globalTagline}
-                                helperText="Inherits from global tagline if left empty."
-                            />
-                        </div>
+                    </div>
+                    <div style={{ gridColumn: 'span 2' }}>
+                        <Input
+                            label="Welcome Message"
+                            value={activeEvent.tagline || getDefaultWelcomeMessage(activeEvent.name)}
+                            onChange={(e) => updateActiveEvent({ tagline: e.target.value })}
+                            placeholder="Enter welcome message"
+                            helperText="Change welcome message if you want."
+                            type="textarea"
+                            maxLength={108}
+                        />
+                    </div>
 
-                        <div style={{ gridColumn: 'span 2', padding: '1rem', background: 'white', borderRadius: '12px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                                <span style={{ fontWeight: 600, fontSize: '0.875rem' }}>VENUE LOGIC</span>
-                                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-                                    <span style={{ fontSize: '0.75rem' }}>Custom Venue?</span>
-                                    <input
-                                        type="checkbox"
-                                        checked={activeEvent.isCustomVenue}
-                                        onChange={(e) => updateActiveEvent({ isCustomVenue: e.target.checked })}
-                                    />
-                                </label>
-                            </div>
-                            {activeEvent.isCustomVenue ? (
-                                <Input
-                                    label="Custom Venue for this Event"
-                                    value={activeEvent.venue || ''}
-                                    onChange={(e) => updateActiveEvent({ venue: e.target.value })}
-                                    placeholder="Enter specific venue name"
+                    <div style={{ gridColumn: 'span 2', padding: '1rem', background: 'white', borderRadius: '12px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                            <span style={{ fontWeight: 600, fontSize: '0.875rem', textTransform: 'uppercase' }}>VENUE</span>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                                <span style={{ fontSize: '0.75rem' }}>Custom Venue?</span>
+                                <input
+                                    type="checkbox"
+                                    checked={activeEvent.isCustomVenue}
+                                    onChange={(e) => updateActiveEvent({ isCustomVenue: e.target.checked })}
                                 />
-                            ) : (
-                                <p style={{ fontSize: '0.8125rem', color: '#666', fontStyle: 'italic', margin: 0 }}>
-                                    Inheriting from Global: {formData.defaultVenueName || 'Not Set'}
-                                </p>
-                            )}
+                            </label>
                         </div>
+                        {activeEvent.isCustomVenue ? (
+                            <Input
+                                label="Custom Venue for this Event"
+                                value={activeEvent.venue || ''}
+                                onChange={(e) => updateActiveEvent({ venue: e.target.value })}
+                                placeholder="Enter specific venue name"
+                                type="textarea"
+                                maxLength={500}
+                            />
+                        ) : (
+                            <p style={{ fontSize: '0.8125rem', color: '#666', fontStyle: 'italic', margin: 0 }}>
+                                Inheriting from Global: {formData.defaultVenueName || 'Not Set'}
+                            </p>
+                        )}
                     </div>
                 </div>
             </div>
-        );
-    }
+        </div>
+    );
+}
 
-    function ArchitectureSummary() {
-        return (
-            <div className={styles.summaryScroll}>
-                <div className={styles.summaryHeader}>
-                    <ShieldCheck size={28} color="#059669" />
-                    <h2 style={{ margin: 0 }}>Global Wedding Identity</h2>
+function ArchitectureSummary() {
+    const { formData } = useWeddingStore();
+    return (
+        <div className={styles.summaryScroll}>
+            <div className={styles.summaryHeader}>
+                <ShieldCheck size={28} color="#059669" />
+                <h2 style={{ margin: 0 }}>Global Wedding Identity</h2>
+            </div>
+
+            <div className={styles.summaryList}>
+                <div className={styles.summaryItem}>
+                    <Users size={18} />
+                    <span>{formData.brideName} & {formData.groomName}</span>
                 </div>
-
-                <div className={styles.summaryList}>
-                    <div className={styles.summaryItem}>
-                        <Users size={18} />
-                        <span>{formData.brideName} & {formData.groomName}</span>
-                    </div>
-                    <div className={styles.summaryItem}>
-                        <Calendar size={18} />
-                        <span>{formData.primaryDate} (Default Date)</span>
-                    </div>
-                    <div className={styles.summaryItem}>
-                        <MapPin size={18} />
-                        <span>{formData.defaultVenueName} (Default Venue)</span>
-                    </div>
+                <div className={styles.summaryItem}>
+                    <Calendar size={18} />
+                    <span>{formatDateDisplay(formData.primaryDate)} (Default Date)</span>
                 </div>
-
-                <div className={styles.eventsTimeline}>
-                    {(formData.events || []).map((e, i) => (
-                        <div key={e.id} className={styles.summaryEventCard}>
-                            <div className={styles.eventTimeInfo}>
-                                <div style={{ fontWeight: 700 }}>{e.name}</div>
-                                <div style={{ fontSize: '0.875rem', color: '#666' }}>
-                                    {e.date || formData.primaryDate} @ {e.time || 'TBD'}
-                                </div>
-                            </div>
-                            <div className={styles.inheritanceBadge}>
-                                {!e.date && !e.isCustomVenue ? 'INHERITED' : 'CUSTOMIZED'}
-                            </div>
-                        </div>
-                    ))}
+                <div className={styles.summaryItem}>
+                    <MapPin size={18} />
+                    <span>{formData.defaultVenueName} (Default Venue)</span>
                 </div>
             </div>
-        );
-    }
+
+            <div className={styles.eventsTimeline}>
+                {(formData.events || []).map((e, i) => (
+                    <div key={e.id} className={styles.summaryEventCard}>
+                        <div className={styles.eventTimeInfo}>
+                            <div style={{ fontWeight: 700 }}>{e.name}</div>
+                            <div style={{ fontSize: '0.875rem', color: '#666' }}>
+                                {formatDateDisplay(e.date || formData.primaryDate)} @ {e.time || 'TBD'}
+                            </div>
+                        </div>
+                        <div className={styles.inheritanceBadge}>
+                            {!e.date && !e.isCustomVenue ? 'INHERITED' : 'CUSTOMIZED'}
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
 }

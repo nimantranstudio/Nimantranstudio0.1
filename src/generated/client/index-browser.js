@@ -162,6 +162,16 @@ exports.Prisma.BundleScalarFieldEnum = {
   itemImages: 'itemImages'
 };
 
+exports.Prisma.BundleItemScalarFieldEnum = {
+  id: 'id',
+  bundleId: 'bundleId',
+  eventType: 'eventType',
+  templateName: 'templateName',
+  templateFile: 'templateFile',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.OrderScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
@@ -266,6 +276,7 @@ exports.Prisma.ModelName = {
   User: 'User',
   OTPRequest: 'OTPRequest',
   Bundle: 'Bundle',
+  BundleItem: 'BundleItem',
   Order: 'Order',
   Theme: 'Theme',
   Wedding: 'Wedding',

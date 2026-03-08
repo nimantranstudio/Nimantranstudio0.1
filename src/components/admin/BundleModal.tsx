@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { X, Package, CheckCircle, Info, Upload, Image as ImageIcon, AlertCircle } from 'lucide-react';
 import styles from './BundleModal.module.css';
 import { clsx } from 'clsx';
@@ -40,6 +40,13 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
     const [packages, setPackages] = useState<PackageModel[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    // New Event Type Bundle Items
+    const [activeEventType, setActiveEventType] = useState('SAVE_DATE');
+    const [activeTemplateName, setActiveTemplateName] = useState('');
+    const [activeTemplateFile, setActiveTemplateFile] = useState<File | null>(null);
+    const [bundleItemsList, setBundleItemsList] = useState<Array<{ id: string, eventType: string, templateName: string, file: File | null, previewUrl: string | null }>>([]);
+    const templateFileRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -105,6 +112,17 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
             } else {
                 setItemPreviews({});
             }
+            if (initialData.bundleItems && Array.isArray(initialData.bundleItems)) {
+                setBundleItemsList(initialData.bundleItems.map((item: any) => ({
+                    id: item.id || Math.random().toString(),
+                    eventType: item.eventType,
+                    templateName: item.templateName,
+                    file: null,
+                    previewUrl: item.templateFile
+                })));
+            } else {
+                setBundleItemsList([]);
+            }
             setItemFiles({});
         } else {
             setName('');
@@ -115,6 +133,9 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
             setTierPrices({});
             setItemFiles({});
             setItemPreviews({});
+            setActiveTemplateName('');
+            setActiveTemplateFile(null);
+            setBundleItemsList([]);
         }
     }, [initialData, isOpen]);
 
@@ -142,6 +163,29 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
         });
     };
 
+
+    const handleAddBundleItem = () => {
+        const previewUrl = activeTemplateFile ? URL.createObjectURL(activeTemplateFile) : null;
+        const autoName = activeEventType.replace(/_/g, ' ');
+
+        setBundleItemsList(prev => [...prev, {
+            id: Math.random().toString(),
+            eventType: activeEventType,
+            templateName: autoName,
+            file: activeTemplateFile,
+            previewUrl
+        }]);
+
+        setActiveTemplateFile(null);
+        if (templateFileRef.current) {
+            templateFileRef.current.value = '';
+        }
+    };
+
+    const removeBundleItem = (id: string) => {
+        setBundleItemsList(prev => prev.filter(item => item.id !== id));
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
@@ -161,6 +205,21 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
             });
 
             formData.append('existingItemImages', JSON.stringify(itemPreviews));
+
+            // Append specific structured bundle items
+            const structuredItems = bundleItemsList.map(item => ({
+                id: item.id,
+                eventType: item.eventType,
+                templateName: item.templateName,
+                existingUrl: !item.file ? item.previewUrl : null
+            }));
+            formData.append('bundleItemsMeta', JSON.stringify(structuredItems));
+
+            bundleItemsList.forEach(item => {
+                if (item.file) {
+                    formData.append(`newBundleItem_${item.id}`, item.file);
+                }
+            });
 
             const url = initialData ? `/api/admin/bundles/${initialData.id}` : '/api/admin/bundles';
             const method = initialData ? 'PUT' : 'POST';
@@ -312,49 +371,99 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
                             />
                         </div>
 
-                        {packages.length > 0 && (
-                            <div className={styles.formGroup}>
-                                <label className={styles.label}>Item-wise Invite Uploads (All Tiers)</label>
-                                <div className={styles.itemUploadGrid}>
-                                    {(() => {
-                                        const allItemsSet = new Set<string>();
-                                        packages.forEach(p => {
-                                            try {
-                                                const items = JSON.parse(p.allowedItems);
-                                                items.forEach((item: string) => allItemsSet.add(item));
-                                            } catch (e) { }
-                                        });
-                                        const allUniqueItems = Array.from(allItemsSet);
+                        <div className={styles.formGroup} style={{ borderTop: '1px solid #eee', paddingTop: '1.5rem', marginTop: '1rem' }}>
+                            <label className={styles.label}>Bundle Items Configuration</label>
 
-                                        return allUniqueItems.map((item: string) => (
-                                            <div key={item} className={styles.itemUploadField}>
-                                                <span className={styles.itemName}>{item}</span>
-                                                <div className={styles.itemUploadControls}>
-                                                    {itemPreviews[item] ? (
-                                                        <div className={styles.itemPreviewWrapper}>
-                                                            <img src={itemPreviews[item]} alt={item} className={styles.itemPreview} />
-                                                            <button type="button" className={styles.itemRemoveBtn} onClick={() => removeItemFile(item)}>
-                                                                <X size={10} />
-                                                            </button>
-                                                        </div>
-                                                    ) : (
-                                                        <label className={styles.itemUploadBtn}>
-                                                            <Upload size={14} />
-                                                            <input
-                                                                type="file"
-                                                                hidden
-                                                                accept="image/*"
-                                                                onChange={(e) => e.target.files?.[0] && handleItemFileChange(item, e.target.files[0])}
-                                                            />
-                                                        </label>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        ));
-                                    })()}
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr auto auto', gap: '0.75rem', alignItems: 'end', marginBottom: '1.5rem', background: '#f9fafb', padding: '1rem', borderRadius: '8px' }}>
+                                <div>
+                                    <label style={{ fontSize: '0.75rem', fontWeight: 600, display: 'block', marginBottom: '0.25rem' }}>Event Type</label>
+                                    <select
+                                        className={styles.select}
+                                        value={activeEventType}
+                                        onChange={(e) => setActiveEventType(e.target.value)}
+                                    >
+                                        <option value="SAVE_DATE">Save The Date</option>
+                                        <option value="HALDI">Haldi</option>
+                                        <option value="MEHENDI">Mehendi</option>
+                                        <option value="SANGEET">Sangeet</option>
+                                        <option value="WEDDING">Wedding</option>
+                                        <option value="RECEPTION">Reception</option>
+                                        <option value="RSVP">RSVP</option>
+                                        <option value="THANK_YOU">Thank You</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style={{ fontSize: '0.75rem', fontWeight: 600, display: 'block', marginBottom: '0.25rem' }}>Template File</label>
+                                    <input
+                                        ref={templateFileRef}
+                                        type="file"
+                                        style={{ display: 'none' }}
+                                        onChange={(e) => setActiveTemplateFile(e.target.files?.[0] || null)}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => templateFileRef.current?.click()}
+                                        title={activeTemplateFile ? activeTemplateFile.name : 'Upload template file'}
+                                        style={{
+                                            height: '42px',
+                                            width: '42px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            border: activeTemplateFile ? '2px solid #6366f1' : '1px solid #d1d5db',
+                                            borderRadius: '8px',
+                                            background: activeTemplateFile ? '#eef2ff' : '#fff',
+                                            cursor: 'pointer',
+                                            color: activeTemplateFile ? '#6366f1' : '#6b7280',
+                                            transition: 'all 0.2s ease'
+                                        }}
+                                    >
+                                        <Upload size={18} />
+                                    </button>
+                                </div>
+                                <div>
+                                    <button
+                                        type="button"
+                                        className={styles.btnSubmit}
+                                        onClick={handleAddBundleItem}
+                                        style={{ height: '42px', padding: '0 1.5rem' }}
+                                    >
+                                        Add
+                                    </button>
                                 </div>
                             </div>
-                        )}
+
+                            {bundleItemsList.length > 0 && (
+                                <table style={{ width: '100%', fontSize: '0.875rem', borderCollapse: 'collapse', border: '1px solid #eee' }}>
+                                    <thead style={{ background: '#f9fafb', textAlign: 'left' }}>
+                                        <tr>
+                                            <th style={{ padding: '0.75rem', borderBottom: '1px solid #eee' }}>Event Type</th>
+                                            <th style={{ padding: '0.75rem', borderBottom: '1px solid #eee' }}>Preview</th>
+                                            <th style={{ padding: '0.75rem', borderBottom: '1px solid #eee', width: '50px' }}></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {bundleItemsList.map(item => (
+                                            <tr key={item.id} style={{ borderBottom: '1px solid #eee' }}>
+                                                <td style={{ padding: '0.75rem' }}>{item.eventType}</td>
+                                                <td style={{ padding: '0.75rem' }}>
+                                                    {item.previewUrl ? (
+                                                        <img src={item.previewUrl} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #e5e7eb' }} />
+                                                    ) : (
+                                                        <span style={{ color: '#999', fontSize: '0.75rem' }}>No file</span>
+                                                    )}
+                                                </td>
+                                                <td style={{ padding: '0.75rem', textAlign: 'center' }}>
+                                                    <button type="button" onClick={() => removeBundleItem(item.id)} style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', display: 'flex' }}>
+                                                        <X size={16} />
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            )}
+                        </div>
                     </div>
 
                     <div className={styles.footer}>

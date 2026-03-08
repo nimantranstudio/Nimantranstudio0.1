@@ -6,13 +6,15 @@ export async function GET() {
     try {
         const { getPrisma } = await import('@/lib/prisma');
         const prisma = getPrisma();
+
         const bundles = await prisma.bundle.findMany({
-            include: { themeRef: true },
-            orderBy: { createdAt: 'desc' }
+            orderBy: { createdAt: 'desc' },
+            include: { themeRef: true, bundleItems: true }
         });
+
         return NextResponse.json({ bundles });
     } catch (error: any) {
-        console.error('Failed to fetch bundles:', error);
+        console.error('Failed to fetch admin bundles:', error);
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }
@@ -41,7 +43,7 @@ export async function POST(request: NextRequest) {
             await mkdir(uploadDir, { recursive: true });
         } catch (e) { }
 
-        // Process item-wise uploads
+        // Process item-wise uploads (legacy compatibility just in case)
         const itemImages: { [key: string]: string } = {};
         for (const [key, value] of Array.from(formData.entries())) {
             if (key.startsWith('itemFile_') && value instanceof File) {
@@ -56,6 +58,35 @@ export async function POST(request: NextRequest) {
             }
         }
 
+        // Process new structured bundle items
+        const bundleItemsMetaRaw = formData.get('bundleItemsMeta');
+        let bundleItemsMeta: any[] = [];
+        if (typeof bundleItemsMetaRaw === 'string') {
+            bundleItemsMeta = JSON.parse(bundleItemsMetaRaw);
+        }
+
+        const bundleItemsDataToCreate = [];
+        for (const meta of bundleItemsMeta) {
+            let templateFileStr = meta.existingUrl;
+
+            const file = formData.get(`newBundleItem_${meta.id}`);
+            if (file instanceof File) {
+                const bytes = await file.arrayBuffer();
+                const buffer = Buffer.from(bytes);
+                const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+                const filename = `template-${meta.eventType}-${uniqueSuffix}${path.extname(file.name)}`;
+                const filepath = path.join(uploadDir, filename);
+                await writeFile(filepath, buffer);
+                templateFileStr = `/Image/bundle/${filename}`;
+            }
+
+            bundleItemsDataToCreate.push({
+                eventType: meta.eventType,
+                templateName: meta.templateName,
+                templateFile: templateFileStr || ''
+            });
+        }
+
         const itemImagePaths = Object.values(itemImages);
         const bundle = await prisma.bundle.create({
             data: {
@@ -67,8 +98,14 @@ export async function POST(request: NextRequest) {
                 isActive,
                 isPopular,
                 themeId: themeId || null,
-                thumbnailUrl: itemImagePaths.length > 0 ? itemImagePaths[0] : null,
-                itemImages: JSON.stringify(itemImages)
+                thumbnailUrl: itemImagePaths.length > 0 ? itemImagePaths[0] : (bundleItemsDataToCreate.length > 0 ? bundleItemsDataToCreate[0].templateFile : null),
+                itemImages: JSON.stringify(itemImages),
+                bundleItems: {
+                    create: bundleItemsDataToCreate
+                }
+            },
+            include: {
+                bundleItems: true
             }
         });
 
