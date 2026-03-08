@@ -13,6 +13,19 @@ import { useState, useEffect, useRef } from 'react';
 import clsx from 'clsx';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { motion } from 'framer-motion';
+import { InvitationCard } from '@/components/preview/InvitationCard';
+
+const DUMMY_EVENT = {
+    id: 'preview',
+    name: 'Wedding',
+    heading: 'Wedding Ceremony',
+    tagline: 'We are pleased to invite you to the wedding of',
+    date: '2026-03-22',
+    time: '19:00',
+    venue: 'The Grand Palace, Rajasthan',
+    description: 'Join us for the celebration of love and togetherness.',
+    isCustomVenue: false
+};
 
 export default function ThemeDetailPage({ params }: { params: Promise<{ themeId: string }> }) {
     const { themeId } = use(params);
@@ -312,12 +325,24 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
                 >
                     {assets.map((asset, index) => (
                         <div key={index} className={styles.carouselItem} onClick={() => setPreviewIndex(index)}>
-                            <Image
-                                src={asset.image}
-                                alt={asset.name}
-                                fill
-                                style={{ objectFit: 'cover' }}
-                            />
+                            {asset.image.endsWith('.html') ? (
+                                <InvitationCard
+                                    event={DUMMY_EVENT as any}
+                                    theme={theme}
+                                    groomName="Rahul"
+                                    brideName="Anjali"
+                                    groomParents="Mr. & Mrs. Bajaj"
+                                    brideParents="Mr. & Mrs. Patel"
+                                    customImage={asset.image}
+                                />
+                            ) : (
+                                <Image
+                                    src={asset.image}
+                                    alt={asset.name}
+                                    fill
+                                    style={{ objectFit: 'cover' }}
+                                />
+                            )}
                             <div style={{
                                 position: 'absolute',
                                 bottom: '10px',
@@ -353,20 +378,32 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
                             className={styles.mainImageWrapper}
                             onClick={() => setPreviewIndex(selectedAssetIndex)}
                         >
-                            <Image
-                                src={assets[selectedAssetIndex].image}
-                                alt={assets[selectedAssetIndex].name}
-                                fill
-                                style={{
-                                    objectFit: 'contain',
-                                    zIndex: 2
-                                }}
-                                priority
-                                onError={(e) => {
-                                    const target = e.target as HTMLImageElement;
-                                    target.style.display = 'none';
-                                }}
-                            />
+                            {assets[selectedAssetIndex].image.endsWith('.html') ? (
+                                <InvitationCard
+                                    event={DUMMY_EVENT as any}
+                                    theme={theme}
+                                    groomName="Rahul"
+                                    brideName="Anjali"
+                                    groomParents="Mr. & Mrs. Bajaj"
+                                    brideParents="Mr. & Mrs. Patel"
+                                    customImage={assets[selectedAssetIndex].image}
+                                />
+                            ) : (
+                                <Image
+                                    src={assets[selectedAssetIndex].image}
+                                    alt={assets[selectedAssetIndex].name}
+                                    fill
+                                    style={{
+                                        objectFit: 'contain',
+                                        zIndex: 2
+                                    }}
+                                    priority
+                                    onError={(e) => {
+                                        const target = e.target as HTMLImageElement;
+                                        target.style.display = 'none';
+                                    }}
+                                />
+                            )}
                             <div style={{
                                 position: 'absolute',
                                 bottom: '1rem',
@@ -408,12 +445,24 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
                                     )}
                                     onClick={() => setSelectedAssetIndex(index)}
                                 >
-                                    <Image
-                                        src={asset.image}
-                                        alt={asset.name}
-                                        fill
-                                        style={{ objectFit: 'cover' }}
-                                    />
+                                    {asset.image.endsWith('.html') ? (
+                                        <InvitationCard
+                                            event={DUMMY_EVENT as any}
+                                            theme={theme}
+                                            groomName="Rahul"
+                                            brideName="Anjali"
+                                            groomParents="Mr. & Mrs. Bajaj"
+                                            brideParents="Mr. & Mrs. Patel"
+                                            customImage={asset.image}
+                                        />
+                                    ) : (
+                                        <Image
+                                            src={asset.image}
+                                            alt={asset.name}
+                                            fill
+                                            style={{ objectFit: 'cover' }}
+                                        />
+                                    )}
                                 </div>
                             ))}
                         </div>
@@ -624,17 +673,29 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
                         </button>
 
                         <div className={styles.previewImageWrapper} style={{ borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-                            <Image
-                                src={assets[previewIndex].image}
-                                alt={assets[previewIndex].name}
-                                fill
-                                style={{ objectFit: 'contain', zIndex: 2 }}
-                                priority
-                                onError={(e) => {
-                                    const target = e.target as HTMLImageElement;
-                                    target.style.display = 'none';
-                                }}
-                            />
+                            {assets[previewIndex].image.endsWith('.html') ? (
+                                <InvitationCard
+                                    event={DUMMY_EVENT as any}
+                                    theme={theme}
+                                    groomName="Rahul"
+                                    brideName="Anjali"
+                                    groomParents="Mr. & Mrs. Bajaj"
+                                    brideParents="Mr. & Mrs. Patel"
+                                    customImage={assets[previewIndex].image}
+                                />
+                            ) : (
+                                <Image
+                                    src={assets[previewIndex].image}
+                                    alt={assets[previewIndex].name}
+                                    fill
+                                    style={{ objectFit: 'contain', zIndex: 2 }}
+                                    priority
+                                    onError={(e) => {
+                                        const target = e.target as HTMLImageElement;
+                                        target.style.display = 'none';
+                                    }}
+                                />
+                            )}
                         </div>
 
                         <div className={styles.previewInfo}>
