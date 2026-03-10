@@ -1,0 +1,46 @@
+.wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 1;
+}
+
+.blob {
+    position: absolute;
+    width: 800px;
+    height: 800px;
+    border-radius: 50%;
+    filter: blur(100px);
+    will-change: transform;
+}
+
+.gold {
+    background: radial-gradient(circle, rgba(200, 169, 81, 0.2) 0%, rgba(200, 169, 81, 0) 70%);
+    top: -20%;
+    left: 5%;
+}
+
+.rose {
+    background: radial-gradient(circle, rgba(212, 100, 120, 0.3) 0%, rgba(212, 100, 120, 0) 70%);
+    bottom: -10%;
+    right: 10%;
+}
+
+.blue {
+    background: radial-gradient(circle, rgba(100, 150, 240, 0.25) 0%, rgba(100, 150, 240, 0) 70%);
+    top: 20%;
+    right: -5%;
+}
+
+@media (max-width: 768px) {
+    .blob {
+        width: 300px;
+        height: 300px;
+        filter: blur(80px);
+    }
+}

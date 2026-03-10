@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Twitter, Instagram, Heart, Youtube } from 'lucide-react';
+import { Twitter, Instagram, Heart, Youtube, Mail, Phone, MapPin } from 'lucide-react';
 import styles from './Footer.module.css';
 
 export default function Footer() {
@@ -10,8 +10,8 @@ export default function Footer() {
                     {/* Branding */}
                     <div className={styles.brandCol}>
                         <div className={styles.logo}>
-                            <span className={styles.logoText}>Nimantran</span>
-                            <span className={styles.logoAccent}>Studio</span>
+                            <div className={styles.logoText}>Nimantran</div>
+                            <div className={styles.logoSub}>STUDIO</div>
                         </div>
                         <p className={styles.brandDesc}>
                             Nimantran Studio is a simple platform for creating wedding invitations, sharing them instantly on WhatsApp, and tracking guest RSVPs — all in one place.
@@ -38,33 +38,42 @@ export default function Footer() {
 
                     {/* Productivity Links */}
                     <div className={styles.linkCol}>
-                        <h4>PRODUCT</h4>
+                        <h4>QUICK LINKS</h4>
                         <ul>
                             <li><Link href="/themes">Invitation Templates</Link></li>
                             <li><Link href="/rsvp">RSVP & Guest Tracking</Link></li>
                             <li><Link href="/pricing">Pricing</Link></li>
-                        </ul>
-                    </div>
-
-                    {/* Company Links */}
-                    <div className={styles.linkCol}>
-                        <h4>COMPANY</h4>
-                        <ul>
                             <li><Link href="/about">About Us</Link></li>
-                            <li><Link href="/contact">Contact Support</Link></li>
                         </ul>
                     </div>
 
                     {/* Support Links */}
                     <div className={styles.linkCol}>
-                        <h4>SUPPORT</h4>
+                        <h4>POLICY</h4>
                         <ul>
-                            <li><Link href="/faqs">FAQs</Link></li>
                             <li><Link href="/privacy">Privacy Policy</Link></li>
                             <li><Link href="/terms">Terms of Service</Link></li>
                             <li><Link href="/refund-policy">Refund Policy</Link></li>
                         </ul>
-                        <div className={styles.emptySocialSpace}></div>
+                    </div>
+
+                    {/* Contact Info */}
+                    <div className={styles.linkCol}>
+                        <h4>CONTACT</h4>
+                        <ul className={styles.contactList}>
+                            <li>
+                                <span className={styles.contactIcon}><Mail size={15} /></span>
+                                <a href="mailto:hello@nimantranstudio.com">hello@nimantranstudio.com</a>
+                            </li>
+                            <li>
+                                <span className={styles.contactIcon}><Phone size={15} /></span>
+                                <a href="tel:+918884678194">+91 88846 78194</a>
+                            </li>
+                            <li>
+                                <span className={styles.contactIcon}><MapPin size={15} /></span>
+                                <span>Pune, Maharashtra, India</span>
+                            </li>
+                        </ul>
                     </div>
                 </div>
 
