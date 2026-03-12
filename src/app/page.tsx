@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import styles from "./page.module.css";
 import Image from "next/image";
-import { ArrowRight, Check, Sparkles, Heart, Smartphone, Users, CreditCard, Clock, Printer, Languages, ShieldCheck, X } from "lucide-react";
+import { ArrowRight, Check, Sparkles, Heart, Smartphone, Users, CreditCard, Clock, Printer, Languages, ShieldCheck, X, Play } from "lucide-react";
 import { clsx } from 'clsx';
 import { motion, AnimatePresence } from "framer-motion";
 import { ThemeCard } from "@/components/ui/ThemeCard";
@@ -75,7 +75,7 @@ export default function Home() {
           >
             <div className={styles.stripContent}>
               <span className={styles.stripIcon}>✦</span>
-              <span className={styles.stripMessage}>Get your wedding invites ready in under 5 minutes with <strong>15% discount</strong></span>
+              <span className={styles.stripMessage}><strong>Launch Offer</strong> - Create Your Complete Wedding Invitation Suite in Minutes</span>
               <span className={styles.stripBadge}>New<span className={styles.stripBadgeIcon}>🎉</span></span>
               <Link href="/themes" className={styles.stripCta}>CREATE NOW</Link>
             </div>
@@ -89,6 +89,7 @@ export default function Home() {
       {/* ... Hero Section ... */}
       <section className={styles.hero}>
         <HeroGradient />
+        <FloatingHearts />
         {/* ... Motifs ... */}
 
         <div className={styles.heroContainer}>
@@ -102,8 +103,7 @@ export default function Home() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8 }}
               >
-                <Sparkles size={18} fill="#D4AF37" color="#D4AF37" />
-                <span>INDIA'S 1ST WEDDING COMMUNICATION PLATFORM</span>
+                <span><strong>Trusted by</strong> Indian families for stress-free wedding invites</span>
               </motion.div>
 
               <motion.h1
@@ -113,9 +113,9 @@ export default function Home() {
                 transition={{ duration: 0.8, delay: 0.2 }}
               >
                 <span style={{ display: 'block' }}>Digital Wedding Invitations</span>
-                <span style={{ display: 'block', marginTop: '0.5rem' }}>& RSVP Tracker</span>
+                <span style={{ display: 'block', marginTop: '0.5rem' }}>& Smart RSVP Tracking</span>
                 <span style={{ fontSize: '0.45em', display: 'block', marginTop: '2rem', fontWeight: 300, lineHeight: '1.5', fontFamily: 'var(--font-inter), sans-serif', letterSpacing: '0.02em', color: '#666' }}>
-                  <span style={{ display: 'block' }}>Everything your wedding invitation journey needs all in one single platform.</span>
+                  <span style={{ display: 'block' }}>Create, share and manage beautiful wedding invites,<br /> RSVPs and guest updates all in one simple platform.</span>
                 </span>
               </motion.h1>
 
@@ -127,7 +127,7 @@ export default function Home() {
                 transition={{ duration: 0.8, delay: 0.4 }}
               >
                 <Link href="/themes" className="btn btn-primary">
-                  Create Your Invitation
+                  Create My Invitation
                 </Link>
                 <button
                   onClick={handleCreateRSVP}
@@ -137,20 +137,22 @@ export default function Home() {
                 </button>
               </motion.div>
 
-              <motion.div
-                className={styles.heroTrustText}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
+              <motion.p
+                className={styles.heroNote}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
                 transition={{ duration: 0.8, delay: 0.6 }}
               >
-                <p>
-                  <strong>Trusted by couples</strong> creating simple digital wedding invites with instant WhatsApp sharing.
-                </p>
-              </motion.div>
+                No design skills needed • Create in under 5 minutes • Family Approved
+              </motion.p>
+
+
 
             </div>
             {/* Right Column - Hero Image */}
             <HeroImage />
+
+
           </div>
         </div>
       </section>

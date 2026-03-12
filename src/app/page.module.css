@@ -91,8 +91,8 @@
 }
 
 .hero {
-  padding: 10rem 0;
-  /* Deep breathing space */
+  padding: 6rem 0 6rem 0;
+  /* Balanced breathing space */
   background-color: #FDFBF7;
   /* Warm off-white */
   text-align: center;
@@ -169,16 +169,18 @@
 .heroContainer {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 0 1rem;
+  padding: 0 2rem 0 4rem;
   /* Reduced padding further */
   width: 100%;
+  position: relative;
+  z-index: 10;
 }
 
 .heroContent {
   margin: 0;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 6rem;
+  gap: 3rem;
   align-items: center;
   text-align: left;
   padding: 0;
@@ -203,12 +205,17 @@
   display: inline-flex;
   align-items: center;
   justify-content: flex-start;
-  gap: 0.5rem;
+  gap: 0.75rem;
   margin-bottom: 2rem;
-  color: #D4AF37;
-  font-weight: 600;
-  font-size: 0.875rem;
-  letter-spacing: 0.05em;
+  color: #000000;
+  font-weight: 400;
+  font-size: 1.1rem;
+  letter-spacing: 0;
+}
+
+.trustedBadge strong {
+  font-weight: 700;
+  color: #000000;
 }
 
 @media (max-width: 968px) {
@@ -245,6 +252,14 @@
   margin-top: 0;
 }
 
+.heroNote {
+  font-size: 1rem;
+  color: #888;
+  margin-top: 1.25rem;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+}
+
 .actions a,
 .actions button {
   position: relative !important;
@@ -273,24 +288,29 @@
   width: 200px;
   height: 100%;
   background: linear-gradient(to right,
-      rgba(200, 169, 81, 0) 0%,
-      rgba(200, 169, 81, 0.15) 30%,
-      rgba(200, 169, 81, 0.45) 50%,
-      rgba(200, 169, 81, 0.15) 70%,
-      rgba(200, 169, 81, 0) 100%);
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.05) 35%,
+      rgba(255, 255, 255, 0.35) 50%,
+      rgba(255, 255, 255, 0.05) 65%,
+      rgba(255, 255, 255, 0) 100%);
   transform: translateX(-200%) skewX(-30deg);
   pointer-events: none;
   z-index: 10;
-  animation: btnShineEffect 4s infinite linear;
+  animation: btnShineEffect 10s infinite ease-in-out;
 }
 
 @keyframes btnShineEffect {
   0% {
-    transform: translateX(-200%) skewX(-30deg);
+    transform: translateX(-150%) skewX(-30deg);
+  }
+
+  /* Slower sweep over 4 seconds, then long 6-second pause */
+  40% {
+    transform: translateX(250%) skewX(-30deg);
   }
 
   100% {
-    transform: translateX(300%) skewX(-30deg);
+    transform: translateX(250%) skewX(-30deg);
   }
 }
 
@@ -590,7 +610,46 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: zoom-in;
+  cursor: pointer;
+  position: relative;
+}
+
+.imageHoverOverlay {
+  position: absolute;
+  top: 3rem;
+  left: 3rem;
+  right: 3rem;
+  bottom: 3rem;
+  background-color: rgba(255, 255, 255, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 10;
+  border-radius: 12px;
+}
+
+.featureCardImageWrapper:hover .imageHoverOverlay {
+  opacity: 1;
+}
+
+.viewButton {
+  background: white;
+  color: #000;
+  border: none;
+  padding: 0.6rem 1.5rem;
+  border-radius: 100px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transform: translateY(10px);
+  transition: transform 0.3s ease;
+}
+
+.featureCardImageWrapper:hover .viewButton {
+  transform: translateY(0);
 }
 
 .featureImageFull {
@@ -1664,7 +1723,6 @@
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   width: fit-content;
   font-family: var(--font-sans);
-  text-transform: uppercase;
 }
 
 .premiumCtaButton:hover {
@@ -1762,4 +1820,52 @@
   line-height: 1.6;
   max-width: 250px;
   margin: 0 auto;
+}
+.viewDemoButton {
+  margin-top: 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.8rem 2rem;
+  background-color: #111111;
+  color: #ffffff;
+  border-radius: 100px;
+  border: none;
+  font-weight: 500;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.viewDemoButton:hover {
+  transform: translateY(-2px);
+  background-color: #222222;
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.2);
+}
+
+.heroFullWidthBottom {
+  grid-column: 1 / -1;
+  text-align: center;
+  margin-top: 3rem;
+  width: 100%;
+}
+
+.heroFullWidthBottom p {
+  font-size: 1.125rem;
+  color: #666;
+  line-height: 1.6;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.heroFullWidthBottom strong {
+  color: #111111;
+  font-weight: 600;
+}
+
+@media (max-width: 968px) {
+  .heroFullWidthBottom {
+    margin-top: 2rem;
+  }
 }

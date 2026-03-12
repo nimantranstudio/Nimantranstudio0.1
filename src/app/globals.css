@@ -97,7 +97,7 @@ a {
   border-radius: var(--radius);
   /* Standardized radius */
   font-weight: 500;
-  font-size: 0.9375rem;
+  font-size: 1.1rem;
   letter-spacing: 0.02em;
   transition: all 0.2s ease-in-out;
   /* 200ms ease-in-out */
@@ -122,14 +122,16 @@ a {
 }
 
 .btn-primary {
-  background-color: #111111;
-  color: var(--secondary-foreground);
-  /* Removed heavy shadow */
+  background: linear-gradient(135deg, #ECC878 0%, #D4AF37 100%);
+  color: #111111;
+  border: none;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.2);
 }
 
 .btn-primary:hover {
-  background-color: #000000;
-  /* Darkest black for hover */
+  background: linear-gradient(135deg, #f0d59a 0%, #e0c15a 100%);
+  box-shadow: 0 8px 18px rgba(212, 175, 55, 0.3);
 }
 
 .btn-secondary {

@@ -16,7 +16,7 @@ const HeroGradient = () => {
                     scale: [1, 1.2, 0.9, 1],
                 }}
                 transition={{
-                    duration: 20,
+                    duration: 12,
                     repeat: Infinity,
                     ease: "linear"
                 }}
@@ -31,7 +31,7 @@ const HeroGradient = () => {
                     scale: [1, 0.9, 1.1, 1],
                 }}
                 transition={{
-                    duration: 25,
+                    duration: 15,
                     repeat: Infinity,
                     ease: "linear"
                 }}
@@ -46,7 +46,7 @@ const HeroGradient = () => {
                     scale: [1, 1.1, 0.8, 1],
                 }}
                 transition={{
-                    duration: 30,
+                    duration: 18,
                     repeat: Infinity,
                     ease: "linear"
                 }}
