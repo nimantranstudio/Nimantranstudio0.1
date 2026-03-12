@@ -113,7 +113,7 @@ export default function Home() {
                 transition={{ duration: 0.8, delay: 0.2 }}
               >
                 <span style={{ display: 'block' }}>Digital Wedding Invitations</span>
-                <span style={{ display: 'block', marginTop: '0.5rem' }}>& Smart RSVP Tracking</span>
+                <span style={{ display: 'block', marginTop: '0.5rem' }}>and Smart RSVP Tracking</span>
                 <span style={{ fontSize: '0.45em', display: 'block', marginTop: '2rem', fontWeight: 300, lineHeight: '1.5', fontFamily: 'var(--font-inter), sans-serif', letterSpacing: '0.02em', color: '#666' }}>
                   <span style={{ display: 'block' }}>Create, share and manage beautiful wedding invites,<br /> RSVPs and guest updates all in one simple platform.</span>
                 </span>

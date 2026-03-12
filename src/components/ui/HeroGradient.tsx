@@ -7,20 +7,7 @@ import styles from './HeroGradient.module.css';
 const HeroGradient = () => {
     return (
         <div className={styles.wrapper}>
-            {/* Golden/Champagne Blob */}
-            <motion.div
-                className={`${styles.blob} ${styles.gold}`}
-                animate={{
-                    x: [0, 100, -50, 0],
-                    y: [0, -50, 80, 0],
-                    scale: [1, 1.2, 0.9, 1],
-                }}
-                transition={{
-                    duration: 12,
-                    repeat: Infinity,
-                    ease: "linear"
-                }}
-            />
+
 
             {/* Soft Rose Blob */}
             <motion.div
