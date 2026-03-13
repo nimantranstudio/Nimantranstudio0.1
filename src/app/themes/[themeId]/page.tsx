@@ -17,13 +17,13 @@ import { InvitationCard } from '@/components/preview/InvitationCard';
 
 const DUMMY_EVENT = {
     id: 'preview',
-    name: 'Wedding',
-    heading: 'Royal Wedding Ceremony',
-    tagline: 'We are pleased to invite you to the wedding of',
-    date: '2026-03-22',
-    time: '19:00',
-    venue: 'The Grand Rajputana Palace, Rajasthan',
-    description: 'Join us for the celebration of love and togetherness.',
+    name: undefined,
+    heading: undefined,
+    tagline: undefined,
+    date: undefined,
+    time: undefined,
+    venue: undefined,
+    description: undefined,
     isCustomVenue: false
 };
 
@@ -329,10 +329,10 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
                                 <InvitationCard
                                     event={DUMMY_EVENT as any}
                                     theme={theme}
-                                    groomName="Rahul"
-                                    brideName="Anjali"
-                                    groomParents="Mr. & Mrs. Bajaj"
-                                    brideParents="Mr. & Mrs. Patel"
+                                    groomName={undefined as unknown as string}
+                                    brideName={undefined as unknown as string}
+                                    groomParents={undefined}
+                                    brideParents={undefined}
                                     customImage={asset.image}
                                 />
                             ) : (
@@ -382,10 +382,10 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
                                 <InvitationCard
                                     event={DUMMY_EVENT as any}
                                     theme={theme}
-                                    groomName="Rahul"
-                                    brideName="Anjali"
-                                    groomParents="Mr. & Mrs. Bajaj"
-                                    brideParents="Mr. & Mrs. Patel"
+                                    groomName={undefined as unknown as string}
+                                    brideName={undefined as unknown as string}
+                                    groomParents={undefined}
+                                    brideParents={undefined}
                                     customImage={assets[selectedAssetIndex].image}
                                 />
                             ) : (
@@ -449,10 +449,10 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
                                         <InvitationCard
                                             event={DUMMY_EVENT as any}
                                             theme={theme}
-                                            groomName="Rahul"
-                                            brideName="Anjali"
-                                            groomParents="Mr. & Mrs. Bajaj"
-                                            brideParents="Mr. & Mrs. Patel"
+                                            groomName={undefined as unknown as string}
+                                            brideName={undefined as unknown as string}
+                                            groomParents={undefined}
+                                            brideParents={undefined}
                                             customImage={asset.image}
                                         />
                                     ) : (
@@ -676,10 +676,10 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
                                 <InvitationCard
                                     event={DUMMY_EVENT as any}
                                     theme={theme}
-                                    groomName="Rahul"
-                                    brideName="Anjali"
-                                    groomParents="Mr. & Mrs. Bajaj"
-                                    brideParents="Mr. & Mrs. Patel"
+                                    groomName={undefined as unknown as string}
+                                    brideName={undefined as unknown as string}
+                                    groomParents={undefined}
+                                    brideParents={undefined}
                                     customImage={assets[previewIndex].image}
                                 />
                             ) : (

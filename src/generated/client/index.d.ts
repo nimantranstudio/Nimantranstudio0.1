@@ -15755,6 +15755,34 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type BundleItemCreateWithoutBundleInput = {
+    id?: string
+    eventType: string
+    templateName: string
+    templateFile: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type BundleItemUncheckedCreateWithoutBundleInput = {
+    id?: string
+    eventType: string
+    templateName: string
+    templateFile: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type BundleItemCreateOrConnectWithoutBundleInput = {
+    where: BundleItemWhereUniqueInput
+    create: XOR<BundleItemCreateWithoutBundleInput, BundleItemUncheckedCreateWithoutBundleInput>
+  }
+
+  export type BundleItemCreateManyBundleInputEnvelope = {
+    data: BundleItemCreateManyBundleInput | BundleItemCreateManyBundleInput[]
+    skipDuplicates?: boolean
+  }
+
   export type ThemeUpsertWithoutBundlesInput = {
     update: XOR<ThemeUpdateWithoutBundlesInput, ThemeUncheckedUpdateWithoutBundlesInput>
     create: XOR<ThemeCreateWithoutBundlesInput, ThemeUncheckedCreateWithoutBundlesInput>

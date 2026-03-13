@@ -53,6 +53,13 @@ function LoginForm() {
 
         const formattedNumber = `+91${identifier.replace(/\D/g, '').slice(-10)}`;
 
+        // BYPASS FIREBASE for Admin/Guest
+        if (identifier === '8087084358' || identifier === '8884678194') {
+            setStep('otp');
+            setIsLoading(false);
+            return;
+        }
+
         try {
             const appVerifier = window.recaptchaVerifier;
             const result = await signInWithPhoneNumber(auth, formattedNumber, appVerifier);
@@ -76,6 +83,31 @@ function LoginForm() {
 
         setError(null);
         setIsLoading(true);
+        
+        // BYPASS FIREBASE for Admin/Guest
+        if ((identifier === '8087084358' || identifier === '8884678194') && otp === '422101') {
+            try {
+                const res = await fetch('/api/auth/otp/verify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mobileNumber: identifier, otp })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    const isAdmin = data.user.role === 'admin';
+                    login(identifier, isAdmin);
+                    router.push(isAdmin ? '/admin' : redirectPath);
+                } else {
+                    setError('Invalid Bypass OTP');
+                }
+            } catch (err) {
+                setError('Network error during login bypass');
+            } finally {
+                setIsLoading(false);
+            }
+            return;
+        }
+
         try {
             if (!confirmationResult) throw new Error("No verification session found.");
 

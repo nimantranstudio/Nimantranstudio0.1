@@ -148,12 +148,11 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
                             <div className={styles.inputGroup}>
                                 <input
                                     type="text"
-                                    className={styles.input}
-                                    style={{ textAlign: 'center', letterSpacing: '0.5em', fontSize: '1.5rem' }}
-                                    placeholder="0 0 0 0"
+                                    placeholder="Enter OTP (e.g. 422101)"
+                                    className={styles.otpInput}
                                     value={otp}
-                                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                                    maxLength={4}
+                                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                    maxLength={6}
                                     autoFocus
                                     required
                                 />

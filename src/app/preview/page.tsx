@@ -2,13 +2,14 @@
 
 import { useWeddingStore } from '@/store/wedding-store';
 import type { Theme } from '@/lib/constants/themes';
-import { InvitationCard } from '@/components/preview/InvitationCard';
+import { InvitationCard, InvitationCardRef } from '@/components/preview/InvitationCard';
 import styles from '@/components/preview/Preview.module.css';
 import { ChevronLeft, Headphones, Play } from 'lucide-react';
 import Link from 'next/link';
 import { clsx } from 'clsx';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { LoginModal } from '@/components/auth/LoginModal';
 
 const ALL_ASSETS = [
@@ -30,10 +31,12 @@ export default function PreviewPage() {
     const { formData, selectedThemeId, isAuthenticated, login, bundleImages, bundleItems } = useWeddingStore();
     const [isSecuring, setIsSecuring] = useState(false);
     const [theme, setTheme] = useState<Theme | null>(null);
-    const [activeTab, setActiveTab] = useState<'summary' | 'edit'>('summary');
     const [showLoginModal, setShowLoginModal] = useState(false);
     const [selectedPreviewIndex, setSelectedPreviewIndex] = useState<number | null>(null);
-
+    const [isEditMode, setIsEditMode] = useState(false);
+    const [resetKey, setResetKey] = useState(0);
+    const cardRef = useRef<InvitationCardRef>(null);
+    const router = useRouter();
 
     const { updateFormData, updateEvent } = useWeddingStore();
 
@@ -60,6 +63,16 @@ export default function PreviewPage() {
             setIsSecuring(true);
         }
     }, [isAuthenticated, showLoginModal]);
+
+    // Navigate to payment screen when securing bundle
+    useEffect(() => {
+        if (isSecuring) {
+            const timer = setTimeout(() => {
+                router.push('/payment');
+            }, 1000);
+            return () => clearTimeout(timer);
+        }
+    }, [isSecuring, router]);
 
     const handleCheckout = () => {
         // Direct read to ensure we have the latest persisted state
@@ -216,20 +229,26 @@ export default function PreviewPage() {
                             position: 'absolute', top: '2rem', right: '2rem',
                             background: 'white', border: 'none', borderRadius: '50%',
                             width: '40px', height: '40px', cursor: 'pointer',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center'
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            color: '#333',
+                            boxShadow: '0 2px 10px rgba(0,0,0,0.2)'
                         }}
                     >
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <line x1="18" y1="6" x2="6" y2="18"></line>
                             <line x1="6" y1="6" x2="18" y2="18"></line>
                         </svg>
                     </button>
 
+
+
                     <div
-                        style={{ width: '100%', maxWidth: '500px', maxHeight: '90vh' }}
+                        style={{ width: '100%', maxWidth: '500px', maxHeight: '90vh', position: 'relative' }}
                         onClick={(e) => e.stopPropagation()}
                     >
                         <InvitationCard
+                            ref={cardRef}
+                            key={`preview-${selectedPreviewIndex}-${resetKey}`}
                             event={previewItems[selectedPreviewIndex]?.event || {
                                 id: `design-${selectedPreviewIndex}`,
                                 name: `Design ${selectedPreviewIndex + 1}`,
@@ -238,16 +257,199 @@ export default function PreviewPage() {
                                 venue: formData.defaultVenueName
                             }}
                             theme={theme}
-                            groomName={formData.groomName}
-                            brideName={formData.brideName}
-                            groomParents={formData.groomParents}
-                            brideParents={formData.brideParents}
-                            welcomeMessage={formData.invitationMessage}
+                            groomName={formData.groomName || undefined}
+                            brideName={formData.brideName || undefined}
+                            groomParents={formData.groomParents || undefined}
+                            brideParents={formData.brideParents || undefined}
+                            welcomeMessage={formData.invitationMessage || undefined}
                             isPlaceholder={true}
                             type='image'
                             customImage={previewItems[selectedPreviewIndex]?.image}
                             isSecured={false} // Preview always has watermarks unless downloaded
+                            showSizingBoxes={isEditMode}
                         />
+
+                        {/* On-Invite Action Buttons */}
+                        {!isEditMode ? (
+                            <div style={{
+                                position: 'absolute', top: '1.5rem', right: '1.5rem',
+                                display: 'flex', gap: '1rem', zIndex: 10
+                            }}>
+                                <button
+                                    onClick={() => {
+                                        if (cardRef.current) {
+                                            cardRef.current.downloadImage();
+                                        }
+                                    }}
+                                    style={{
+                                        background: '#3B82F6', color: 'white', border: 'none', borderRadius: '50%',
+                                        width: '48px', height: '48px', cursor: 'pointer',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        boxShadow: '0 4px 14px rgba(0,0,0,0.3)',
+                                        transition: 'transform 0.2s',
+                                    }}
+                                    onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
+                                    onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                                    title="Download Invitation"
+                                >
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                        <polyline points="7 10 12 15 17 10"></polyline>
+                                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                                    </svg>
+                                </button>
+
+                                <button
+                                    onClick={() => setIsEditMode(true)}
+                                    style={{
+                                        background: '#1a4d2e', color: 'white', border: 'none', borderRadius: '50%',
+                                        width: '48px', height: '48px', cursor: 'pointer',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        boxShadow: '0 4px 14px rgba(0,0,0,0.3)',
+                                        transition: 'transform 0.2s',
+                                    }}
+                                    onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
+                                    onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                                    title="Edit Layout"
+                                >
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        ) : (
+                            <div style={{
+                                position: 'absolute', top: '1.5rem', right: '1.5rem',
+                                display: 'flex', gap: '1rem', zIndex: 10
+                            }}>
+                                <button
+                                    onClick={() => {
+                                        setResetKey(prev => prev + 1); // Discard layout changes by force remounting
+                                        setIsEditMode(false);
+                                    }}
+                                    style={{
+                                        background: 'white', color: '#dc2626', border: '1px solid #dc2626', borderRadius: '50%',
+                                        width: '48px', height: '48px', cursor: 'pointer',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        boxShadow: '0 4px 14px rgba(0,0,0,0.2)',
+                                        transition: 'background 0.2s, transform 0.2s',
+                                    }}
+                                    onMouseOver={(e) => { e.currentTarget.style.background = '#fef2f2'; e.currentTarget.style.transform = 'scale(1.1)'; }}
+                                    onMouseOut={(e) => { e.currentTarget.style.background = 'white'; e.currentTarget.style.transform = 'scale(1)'; }}
+                                    title="Cancel"
+                                >
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                                    </svg>
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        if (cardRef.current && selectedPreviewIndex !== null) {
+                                            const edits = cardRef.current.saveEdits();
+                                            const newFormData = { ...formData };
+                                            let formDataChanged = false;
+                                            
+                                            const currentEventId = previewItems[selectedPreviewIndex]?.event?.id;
+                                            const currentEvent = formData.events?.find(e => e.id === currentEventId);
+
+                                            if (edits['groom-name'] !== undefined && edits['groom-name'] !== formData.groomName) {
+                                                newFormData.groomName = edits['groom-name'];
+                                                formDataChanged = true;
+                                            }
+                                            if (edits['bride-name'] !== undefined && edits['bride-name'] !== formData.brideName) {
+                                                newFormData.brideName = edits['bride-name'];
+                                                formDataChanged = true;
+                                            }
+                                            if ((edits['groom-parents'] !== undefined || edits['groom-parent-name'] !== undefined)) {
+                                                const gp = edits['groom-parents'] !== undefined ? edits['groom-parents'] : edits['groom-parent-name'];
+                                                if (gp !== undefined && gp !== formData.groomParents) {
+                                                    newFormData.groomParents = gp;
+                                                    formDataChanged = true;
+                                                }
+                                            }
+                                            if ((edits['bride-parents'] !== undefined || edits['bride-parent-name'] !== undefined)) {
+                                                const bp = edits['bride-parents'] !== undefined ? edits['bride-parents'] : edits['bride-parent-name'];
+                                                if (bp !== undefined && bp !== formData.brideParents) {
+                                                    newFormData.brideParents = bp;
+                                                    formDataChanged = true;
+                                                }
+                                            }
+                                            if (edits['welcome-message'] !== undefined && edits['welcome-message'] !== formData.invitationMessage) {
+                                                newFormData.invitationMessage = edits['welcome-message'];
+                                                formDataChanged = true;
+                                            }
+
+                                            if ((edits['event-venue'] !== undefined || edits['venue'] !== undefined)) {
+                                                const v = edits['event-venue'] !== undefined ? edits['event-venue'] : edits['venue'];
+                                                if (v !== undefined && v !== formData.defaultVenueName) {
+                                                    newFormData.defaultVenueName = v;
+                                                    formDataChanged = true;
+                                                }
+                                            }
+                                            if (edits['event-date'] !== undefined && edits['event-date'] !== formData.primaryDate) {
+                                                newFormData.primaryDate = edits['event-date'];
+                                                formDataChanged = true;
+                                            }
+                                            if (edits['event-time'] !== undefined && edits['event-time'] !== formData.primaryTime) {
+                                                newFormData.primaryTime = edits['event-time'];
+                                                formDataChanged = true;
+                                            }
+
+                                            if (formDataChanged) {
+                                                updateFormData(newFormData);
+                                            }
+
+                                            if (currentEvent) {
+                                                let eventChanged = false;
+                                                const updatedEvent = { ...currentEvent };
+
+                                                if (edits['event-name'] !== undefined && edits['event-name'] !== (currentEvent.heading || currentEvent.name)) {
+                                                    updatedEvent.heading = edits['event-name'];
+                                                    eventChanged = true;
+                                                }
+                                                if (edits['event-date'] !== undefined && edits['event-date'] !== currentEvent.date) {
+                                                    updatedEvent.date = edits['event-date'];
+                                                    eventChanged = true;
+                                                }
+                                                if (edits['event-time'] !== undefined && edits['event-time'] !== currentEvent.time) {
+                                                    updatedEvent.time = edits['event-time'];
+                                                    eventChanged = true;
+                                                }
+                                                if ((edits['event-venue'] !== undefined || edits['venue'] !== undefined)) {
+                                                    const v = edits['event-venue'] !== undefined ? edits['event-venue'] : edits['venue'];
+                                                    if (v !== undefined && v !== currentEvent.venue) {
+                                                        updatedEvent.venue = v;
+                                                        updatedEvent.isCustomVenue = true;
+                                                        eventChanged = true;
+                                                    }
+                                                }
+                                                
+                                                if (eventChanged) {
+                                                    updateEvent(currentEvent.id, updatedEvent);
+                                                }
+                                            }
+                                        }
+                                        setIsEditMode(false);
+                                    }}
+                                    style={{
+                                        background: '#1a4d2e', color: 'white', border: 'none', borderRadius: '50%',
+                                        width: '48px', height: '48px', cursor: 'pointer',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        boxShadow: '0 4px 14px rgba(0,0,0,0.3)',
+                                        transition: 'transform 0.2s',
+                                    }}
+                                    onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
+                                    onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                                    title="Done"
+                                >
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg>
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
             )}
@@ -277,11 +479,11 @@ export default function PreviewPage() {
                                         key={item.id}
                                         event={item.event}
                                         theme={theme}
-                                        groomName={formData.groomName}
-                                        brideName={formData.brideName}
-                                        groomParents={formData.groomParents}
-                                        brideParents={formData.brideParents}
-                                        welcomeMessage={formData.invitationMessage}
+                                        groomName={formData.groomName || undefined}
+                                        brideName={formData.brideName || undefined}
+                                        groomParents={formData.groomParents || undefined}
+                                        brideParents={formData.brideParents || undefined}
+                                        welcomeMessage={formData.invitationMessage || undefined}
                                         isPlaceholder={true}
                                         type='image'
                                         customImage={item.image}
@@ -299,23 +501,7 @@ export default function PreviewPage() {
 
                     {/* Right Column: Title and Summary Card */}
                     <div className={styles.rightColumn}>
-                        <div className={styles.editorTabs}>
-                            <button
-                                className={clsx(styles.tabBtn, activeTab === 'summary' && styles.tabBtnActive)}
-                                onClick={() => setActiveTab('summary')}
-                            >
-                                Summary
-                            </button>
-                            <button
-                                className={clsx(styles.tabBtn, activeTab === 'edit' && styles.tabBtnActive)}
-                                onClick={() => setActiveTab('edit')}
-                            >
-                                Live Editor
-                            </button>
-                        </div>
-
-                        {activeTab === 'summary' ? (
-                            <div className={styles.summaryView}>
+                        <div className={styles.summaryView}>
                                 <div>
                                     <h1 className={styles.previewHeaderTitle} style={{
                                         fontSize: '2rem',
@@ -377,102 +563,6 @@ export default function PreviewPage() {
                                     </button>
                                 </div>
                             </div>
-                        ) : (
-                            <div className={styles.editorContent}>
-                                <div className={styles.editorHeader}>
-                                    <h2 style={{ fontSize: '1.5rem', color: '#1a4d2e', marginBottom: '0.5rem' }}>Quick Edit</h2>
-                                    <p style={{ fontSize: '0.875rem', color: '#666' }}>Changes are reflected instantly on the preview cards.</p>
-                                </div>
-
-                                <div className={styles.editorField}>
-                                    <label>Groom's Name</label>
-                                    <input
-                                        className={styles.editorInput}
-                                        value={formData.groomName}
-                                        onChange={(e) => updateFormData({ groomName: e.target.value })}
-                                        placeholder="Groom Name"
-                                        maxLength={25}
-                                    />
-                                </div>
-
-                                <div className={styles.editorField}>
-                                    <label>Bride's Name</label>
-                                    <input
-                                        className={styles.editorInput}
-                                        value={formData.brideName}
-                                        onChange={(e) => updateFormData({ brideName: e.target.value })}
-                                        placeholder="Bride Name"
-                                        maxLength={25}
-                                    />
-                                </div>
-
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                                    <div className={styles.editorField}>
-                                        <label>Wedding Date</label>
-                                        <input
-                                            type="date"
-                                            className={styles.editorInput}
-                                            value={formData.primaryDate}
-                                            onChange={(e) => updateFormData({ primaryDate: e.target.value })}
-                                        />
-                                    </div>
-                                    <div className={styles.editorField}>
-                                        <label>Wedding Time</label>
-                                        <input
-                                            type="time"
-                                            className={styles.editorInput}
-                                            value={formData.primaryTime || ''}
-                                            onChange={(e) => updateFormData({ primaryTime: e.target.value })}
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className={styles.editorField}>
-                                    <label>Default Venue</label>
-                                    <textarea
-                                        className={clsx(styles.editorInput, styles.editorTextarea)}
-                                        value={formData.defaultVenueName}
-                                        onChange={(e) => updateFormData({ defaultVenueName: e.target.value })}
-                                        placeholder="The Grand Palace, Rajasthan"
-                                        maxLength={500}
-                                    />
-                                </div>
-
-                                <div className={styles.editorField}>
-                                    <label>Event Heading</label>
-                                    <input
-                                        className={styles.editorInput}
-                                        value={formData.events?.find(e => e.id === 'wedding')?.heading || 'Wedding Ceremony'}
-                                        onChange={(e) => {
-                                            const weddingEvent = formData.events?.find(evt => evt.id === 'wedding');
-                                            if (weddingEvent) {
-                                                updateEvent(weddingEvent.id, { heading: e.target.value });
-                                            }
-                                        }}
-                                        placeholder="Enter heading"
-                                        maxLength={25}
-                                    />
-                                </div>
-
-                                <div className={styles.editorField}>
-                                    <label>Welcome Message</label>
-                                    <textarea
-                                        className={clsx(styles.editorInput, styles.editorTextarea)}
-                                        style={{ minHeight: '80px' }}
-                                        value={formData.invitationMessage}
-                                        onChange={(e) => updateFormData({ invitationMessage: e.target.value })}
-                                        placeholder="We are pleased to invite you..."
-                                        maxLength={108}
-                                    />
-                                </div>
-
-                                <div style={{ marginTop: '1rem', padding: '1.5rem', background: '#ECFDF5', borderRadius: '16px', border: '1px solid #10B981' }}>
-                                    <p style={{ margin: 0, fontSize: '0.875rem', color: '#065F46', fontWeight: 600 }}>
-                                        Pro Tip: Your changes are automatically saved. Switch back to the 'Summary' tab to complete your purchase.
-                                    </p>
-                                </div>
-                            </div>
-                        )}
 
                         {/* Info Blocks below the card */}
                         <div className={styles.infoGrid}>

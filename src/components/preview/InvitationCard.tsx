@@ -6,8 +6,13 @@ import styles from './Preview.module.css';
 import { Play } from 'lucide-react';
 import Image from 'next/image';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import { clsx } from 'clsx';
+
+export interface InvitationCardRef {
+    saveEdits: () => Record<string, string>;
+    downloadImage: () => void;
+}
 
 interface InvitationCardProps {
     event: WeddingEvent;
@@ -24,9 +29,10 @@ interface InvitationCardProps {
     variant?: 'default' | 'contract' | 'save-the-date';
     className?: string; // Added className to props
     isSecured?: boolean; // Added isSecured to props
+    showSizingBoxes?: boolean; // Added showSizingBoxes
 }
 
-export const InvitationCard = ({
+export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>(({
     event,
     theme,
     groomName,
@@ -40,12 +46,71 @@ export const InvitationCard = ({
     onClick,
     variant = 'default',
     className,
-    isSecured = false
-}: InvitationCardProps) => {
+    isSecured = false,
+    showSizingBoxes = false
+}, ref) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const [containerScale, setContainerScale] = useState(1);
     const isHTMLDesign = customImage?.endsWith('.html') || customImage?.includes('item-Wedding_Invitation') && customImage.includes('.html'); // Robust check
+
+    useImperativeHandle(ref, () => ({
+        saveEdits: () => {
+            if (!iframeRef.current) return {};
+            const doc = iframeRef.current.contentDocument || iframeRef.current.contentWindow?.document;
+            if (!doc) return {};
+            const values: Record<string, string> = {};
+            const ids = [
+                'event-name', 'welcome-message', 'groom-name', 'bride-name', 
+                'groom-parents', 'groom-parent-name', 'bride-parents', 'bride-parent-name',
+                'event-date', 'event-time', 'event-venue', 'venue'
+            ];
+            ids.forEach(id => {
+                const el = doc.getElementById(id);
+                if (el) {
+                    let val = el.innerText || '';
+                    // Some browsers add trailing newlines for contenteditable
+                    val = val.replace(/[\r\n]+$/, '').trim();
+                    values[id] = val;
+                }
+            });
+            console.log("InvitationCard extracted edits:", values);
+            return values;
+        },
+        downloadImage: () => {
+            if (!iframeRef.current) return;
+            const doc = iframeRef.current.contentDocument || iframeRef.current.contentWindow?.document;
+            if (!doc) return;
+
+            const executeDownload = () => {
+                const win = iframeRef.current?.contentWindow as any;
+                if (!win || !win.html2canvas) return;
+
+                // Hide styling boxes before screenshot
+                const style = doc.createElement('style');
+                style.textContent = `.sizing-box { outline: none !important; cursor: default !important; }`;
+                doc.head.appendChild(style);
+
+                win.html2canvas(doc.body, { useCORS: true, scale: 2, backgroundColor: null }).then((canvas: HTMLCanvasElement) => {
+                    const link = document.createElement('a');
+                    link.download = `Wedding-Invitation-Design.png`;
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                    doc.head.removeChild(style);
+                });
+            };
+
+            if (!doc.getElementById('html2canvas-script')) {
+                const script = doc.createElement('script');
+                script.id = 'html2canvas-script';
+                script.src = "https://html2canvas.hertzen.com/dist/html2canvas.min.js";
+                script.onload = executeDownload;
+                doc.head.appendChild(script);
+            } else {
+                executeDownload();
+            }
+        }
+    }));
 
     // Handle scaling based on container width
     useEffect(() => {
@@ -100,8 +165,8 @@ export const InvitationCard = ({
                 return "";
             };
 
-            const displayEventName = event.heading || getDefaultHeading(event.name);
-            const displayWelcome = welcomeMessage || event.tagline || getDefaultWelcome(event.name);
+            const displayEventName = event.heading || (event.name ? getDefaultHeading(event.name) : undefined);
+            const displayWelcome = welcomeMessage || event.tagline || (event.name ? getDefaultWelcome(event.name) : undefined);
 
             const mapping: Record<string, string | undefined> = {
                 'event-name': displayEventName,
@@ -120,6 +185,8 @@ export const InvitationCard = ({
 
             Object.entries(mapping).forEach(([id, value]) => {
                 const el = doc.getElementById(id);
+                // Only replace if value is explicitly defined and not empty string (unless we specifically want empty defaults)
+                // For raw previews, passing undefined won't overwrite the designer's template text.
                 if (el && value !== undefined && value !== null) {
                     // Use innerHTML but handle line breaks
                     const formattedValue = value.toString().replace(/\n/g, '<br/>');
@@ -131,19 +198,19 @@ export const InvitationCard = ({
 
             // Ensure specific IDs for wedding names are handled if they differ
             const groomParentsEl = doc.getElementById('groom-parents') || doc.getElementById('groom-parent-name');
-            if (groomParentsEl && groomParents) groomParentsEl.innerHTML = groomParents;
+            if (groomParentsEl && groomParents !== undefined) groomParentsEl.innerHTML = groomParents;
 
             const brideParentsEl = doc.getElementById('bride-parents') || doc.getElementById('bride-parent-name');
-            if (brideParentsEl && brideParents) brideParentsEl.innerHTML = brideParents;
+            if (brideParentsEl && brideParents !== undefined) brideParentsEl.innerHTML = brideParents;
 
             // OVERRIDE: Force user input to take priority for main text elements
             const eventNameEl = doc.getElementById('event-name');
-            if (eventNameEl && displayEventName) {
+            if (eventNameEl && displayEventName !== undefined) {
                 eventNameEl.innerHTML = displayEventName.toString().replace(/\n/g, '<br/>');
             }
 
             const welcomeMsgEl = doc.getElementById('welcome-message');
-            if (welcomeMsgEl && displayWelcome) {
+            if (welcomeMsgEl && displayWelcome !== undefined) {
                 welcomeMsgEl.innerHTML = displayWelcome.toString().replace(/\n/g, '<br/>');
             }
 
@@ -154,21 +221,182 @@ export const InvitationCard = ({
                 styleEl.id = 'runtime-preview-fix';
                 doc.head.appendChild(styleEl);
             }
+            
+            // Fix viewport units: The templates were designed on desktop screens where 'vw' was huge.
+            // Inside our 500px iframe, 'vw' causes fonts to shrink massively. Replacing 'vw' with 'vmax' 
+            // forces the fonts back up, letting their 'clamp()' max values take over naturally.
+            if (!doc.body.dataset.vwFixed) {
+                const styleTags = doc.querySelectorAll('style:not(#runtime-preview-fix)');
+                styleTags.forEach(tag => {
+                    if (tag.innerHTML.includes('vw')) {
+                        tag.innerHTML = tag.innerHTML.replace(/([\d.]+)vw/g, '$1vmax');
+                    }
+                });
+                doc.body.dataset.vwFixed = "true";
+            }
+
             styleEl.textContent = `
                 * { hyphens: none !important; -webkit-hyphens: none !important; }
-                .text-overlay { 
-                    padding-top: 25vh !important; 
-                    padding-bottom: 2vh !important;
-                    display: flex !important;
-                    flex-direction: column !important;
-                    justify-content: center !important;
+                .text-overlay { padding-top: 15vh !important; }
+                ${showSizingBoxes ? `
+                .sizing-box {
+                    position: relative;
+                    outline: 1px dashed rgba(0,0,0,0.4);
+                    outline-offset: 4px;
+                    border-radius: 2px;
+                    transition: outline 0.2s, background 0.2s;
+                    cursor: move;
+                    resize: both !important;
+                    overflow: hidden !important;
+                    flex: none !important;
+                    min-width: 50px;
+                    min-height: 20px;
+                    z-index: 10;
                 }
-                .welcome-message { 
-                    width: 100% !important; 
-                    padding: 0 5% !important;
-                    margin-bottom: 4vh !important;
+                .sizing-box:hover {
+                    outline: 2px solid #10B981;
+                    outline-offset: 4px;
+                    background: rgba(16, 185, 129, 0.05);
                 }
+                .sizing-box:focus {
+                    cursor: text;
+                    outline: 2px solid #3B82F6 !important;
+                    background: rgba(59, 130, 246, 0.05);
+                }
+                .sizing-box:hover::after {
+                    content: '';
+                    position: absolute;
+                    bottom: -8px;
+                    right: -8px;
+                    width: 8px;
+                    height: 8px;
+                    background: white;
+                    border: 2px solid #10B981;
+                    border-radius: 50%;
+                }
+                .sizing-box:hover::before {
+                    content: '';
+                    position: absolute;
+                    top: -8px;
+                    left: -8px;
+                    width: 8px;
+                    height: 8px;
+                    background: white;
+                    border: 2px solid #10B981;
+                    border-radius: 50%;
+                }
+                ` : ''}
             `;
+
+            if (showSizingBoxes) {
+                Object.keys(mapping).forEach(id => {
+                    const el = doc.getElementById(id);
+                    if (el && !el.classList.contains('sizing-box')) {
+                        el.classList.add('sizing-box');
+                        el.setAttribute('contenteditable', 'true');
+                        if ((doc.defaultView as any)?.textScaler) (doc.defaultView as any).textScaler.observe(el);
+                    }
+                });
+                ['groom-parents', 'groom-parent-name', 'bride-parents', 'bride-parent-name'].forEach(id => {
+                    const el = doc.getElementById(id);
+                    if (el && !el.classList.contains('sizing-box')) {
+                        el.classList.add('sizing-box');
+                        el.setAttribute('contenteditable', 'true');
+                        if ((doc.defaultView as any)?.textScaler) (doc.defaultView as any).textScaler.observe(el);
+                    }
+                });
+
+                // INJECT DRAG AND DROP SCRIPT
+                let scriptEl = doc.getElementById('drag-script');
+                if (!scriptEl) {
+                    scriptEl = doc.createElement('script');
+                    scriptEl.id = 'drag-script';
+                    scriptEl.textContent = `
+                        let draggingEl = null;
+                        let startX, startY, initialTx, initialTy;
+                        
+                        document.addEventListener('mousedown', (e) => {
+                            const sizingBox = e.target.closest('.sizing-box');
+                            if (sizingBox) {
+                                const rect = sizingBox.getBoundingClientRect();
+                                const offsetX = e.clientX - rect.left;
+                                const offsetY = e.clientY - rect.top;
+                                
+                                // Ignore drag if clicking on the bottom-right resize handle (approx 20x20 px)
+                                const isResizeHandle = (rect.width - offsetX < 20) && (rect.height - offsetY < 20);
+                                if(isResizeHandle) return; // Allow native resize to work
+
+                                // Ignore drag if the element is currently being text-edited (focused)
+                                if (document.activeElement === sizingBox) return;
+
+                                draggingEl = sizingBox;
+                                startX = e.clientX;
+                                startY = e.clientY;
+                                
+                                initialTx = parseFloat(draggingEl.dataset.tx) || 0;
+                                initialTy = parseFloat(draggingEl.dataset.ty) || 0;
+                            }
+                        });
+                        
+                        document.addEventListener('mousemove', (e) => {
+                            if (draggingEl) {
+                                const dx = e.clientX - startX;
+                                const dy = e.clientY - startY;
+                                
+                                const newTx = initialTx + dx;
+                                const newTy = initialTy + dy;
+                                
+                                draggingEl.dataset.tx = newTx;
+                                draggingEl.dataset.ty = newTy;
+                                
+                                draggingEl.style.transform = \`translate(\${newTx}px, \${newTy}px)\`;
+                            }
+                        });
+                        
+                        document.addEventListener('mouseup', () => {
+                            draggingEl = null;
+                        });
+
+                        // RESIZE OBSERVER FOR FONT SCALING
+                        window.textScaler = new ResizeObserver(entries => {
+                            for (const entry of entries) {
+                                const el = entry.target;
+                                if (!el.dataset.initW) {
+                                    const st = window.getComputedStyle(el);
+                                    el.dataset.initW = el.offsetWidth;
+                                    el.dataset.initFs = parseFloat(st.fontSize) || 16;
+                                } else {
+                                    const currentW = el.offsetWidth;
+                                    const initW = parseFloat(el.dataset.initW);
+                                    if (initW > 0) {
+                                        const ratio = currentW / initW;
+                                        el.style.fontSize = (parseFloat(el.dataset.initFs) * ratio) + 'px';
+                                        el.style.lineHeight = '1.2';
+                                    }
+                                }
+                            }
+                        });
+                        
+                        document.querySelectorAll('.sizing-box').forEach(el => window.textScaler.observe(el));
+                    `;
+                    doc.body.appendChild(scriptEl);
+                }
+            } else {
+                Object.keys(mapping).forEach(id => {
+                    const el = doc.getElementById(id);
+                    if (el && el.classList.contains('sizing-box')) {
+                        el.classList.remove('sizing-box');
+                        el.removeAttribute('contenteditable');
+                    }
+                });
+                ['groom-parents', 'groom-parent-name', 'bride-parents', 'bride-parent-name'].forEach(id => {
+                    const el = doc.getElementById(id);
+                    if (el && el.classList.contains('sizing-box')) {
+                        el.classList.remove('sizing-box');
+                        el.removeAttribute('contenteditable');
+                    }
+                });
+            }
         };
 
         const currentIframe = iframeRef.current;
@@ -186,7 +414,7 @@ export const InvitationCard = ({
             currentIframe.addEventListener('load', handleLoad);
             return () => currentIframe.removeEventListener('load', handleLoad);
         }
-    }, [isHTMLDesign, event, welcomeMessage, groomName, brideName, groomParents, brideParents, customImage]);
+    }, [isHTMLDesign, event, welcomeMessage, groomName, brideName, groomParents, brideParents, customImage, showSizingBoxes]);
 
     const isHaldi = event.name?.toLowerCase().includes('haldi');
     const isContract = variant === 'contract';
@@ -210,10 +438,10 @@ export const InvitationCard = ({
                     top: 0,
                     left: 0,
                     width: '500px',
-                    height: '800px',
+                    height: '889px', /* Match 16:9 ratio (500 * (16/9)) */
                     transform: `scale(${containerScale})`,
                     transformOrigin: 'top left',
-                    pointerEvents: 'none'
+                    pointerEvents: (onClick && !showSizingBoxes) ? 'none' : 'auto'
                 }}>
                     <iframe
                         ref={iframeRef}
@@ -387,4 +615,4 @@ export const InvitationCard = ({
             </svg>
         </div>
     );
-};
+});

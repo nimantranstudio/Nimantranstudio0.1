@@ -11,6 +11,46 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Mobile number and OTP are required' }, { status: 400 });
         }
 
+        // Hardcoded bypass for the guest account and admin account
+        if (
+            (mobileNumber === '8087084358' && otp === '422101') ||
+            (mobileNumber === ADMIN_MOBILE && otp === '422101')
+        ) {
+            let user = await prisma.user.findUnique({
+                where: { mobileNumber }
+            });
+
+            const isUserAdmin = mobileNumber === ADMIN_MOBILE;
+
+            if (!user) {
+                user = await prisma.user.create({
+                    data: {
+                        mobileNumber,
+                        isMobileVerified: true,
+                        role: isUserAdmin ? 'admin' : 'guest',
+                        status: 'active'
+                    }
+                });
+            } else {
+                user = await prisma.user.update({
+                    where: { mobileNumber },
+                    data: {
+                        isMobileVerified: true,
+                        role: isUserAdmin ? 'admin' : user.role // keep guest or existing role
+                    }
+                });
+            }
+
+            return NextResponse.json({
+                success: true,
+                user: {
+                    id: user.id,
+                    mobileNumber: user.mobileNumber,
+                    role: user.role
+                }
+            });
+        }
+
         // Find the latest valid OTP request
         const otpRequest = await prisma.oTPRequest.findFirst({
             where: {
