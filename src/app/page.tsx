@@ -4,19 +4,23 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import styles from "./page.module.css";
 import Image from "next/image";
-import { ArrowRight, Check, Sparkles, Heart, Smartphone, Users, CreditCard, Clock, Printer, Languages, ShieldCheck } from "lucide-react";
+import { ArrowRight, Check, Sparkles, Heart, Smartphone, Users, CreditCard, Clock, Printer, Languages, ShieldCheck, X, Play } from "lucide-react";
 import { clsx } from 'clsx';
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { ThemeCard } from "@/components/ui/ThemeCard";
+import HeroGradient from "@/components/ui/HeroGradient";
 import { FloatingHearts } from "@/components/ui/FloatingHearts";
-import { PricingSection } from "@/components/home/PricingSection";
-import { CTASection } from "@/components/home/CTASection";
-import { BundleGridSection } from "@/components/home/BundleGridSection";
-import { RsvpFeatureSection } from "@/components/home/RsvpFeatureSection";
-import HeroImage from "@/components/home/HeroImage";
-import { FaqSection } from "@/components/home/FaqSection";
-import { TestimonialSection } from "@/components/home/TestimonialSection";
+import dynamic from "next/dynamic";
 import { useWeddingStore } from "@/store/wedding-store";
+
+// Lazy load heavy below-the-fold components
+const PricingSection = dynamic(() => import("@/components/home/PricingSection").then(mod => mod.PricingSection), { ssr: false });
+const CTASection = dynamic(() => import("@/components/home/CTASection").then(mod => mod.CTASection), { ssr: false });
+const BundleGridSection = dynamic(() => import("@/components/home/BundleGridSection").then(mod => mod.BundleGridSection), { ssr: false });
+const RsvpFeatureSection = dynamic(() => import("@/components/home/RsvpFeatureSection").then(mod => mod.RsvpFeatureSection), { ssr: false });
+const FaqSection = dynamic(() => import("@/components/home/FaqSection").then(mod => mod.FaqSection), { ssr: false });
+const TestimonialSection = dynamic(() => import("@/components/home/TestimonialSection").then(mod => mod.TestimonialSection), { ssr: false });
+import HeroImage from "@/components/home/HeroImage";
 import { useState, useEffect } from "react";
 import type { Theme } from "@/lib/constants/themes";
 
@@ -25,6 +29,7 @@ export default function Home() {
   const { isAuthenticated } = useWeddingStore();
   const [themes, setThemes] = useState<Theme[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showStrip, setShowStrip] = useState(true);
 
   useEffect(() => {
     const fetchThemes = async () => {
@@ -58,8 +63,32 @@ export default function Home() {
 
   return (
     <main className={styles.main}>
+      {/* Announcement Strip */}
+      <AnimatePresence>
+        {showStrip && (
+          <motion.div
+            className={styles.announcementStrip}
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className={styles.stripContent}>
+              <span className={styles.stripIcon}>✦</span>
+              <span className={styles.stripMessage}><strong>Launch Offer</strong> - Create Your Complete Wedding Invitation Suite in Minutes</span>
+              <span className={styles.stripBadge}>New<span className={styles.stripBadgeIcon}>🎉</span></span>
+              <Link href="/themes" className={styles.stripCta}>CREATE NOW</Link>
+            </div>
+            <button className={styles.stripClose} onClick={() => setShowStrip(false)} aria-label="Close">
+              <X size={14} />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* ... Hero Section ... */}
       <section className={styles.hero}>
+        <HeroGradient />
         <FloatingHearts />
         {/* ... Motifs ... */}
 
@@ -74,19 +103,19 @@ export default function Home() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8 }}
               >
-                <Sparkles size={18} fill="#D4AF37" color="#D4AF37" />
-                <span>INDIA'S 1ST WEDDING COMMUNICATION PLATFORM</span>
+                <span><strong>Trusted by</strong> Indian families for stress-free wedding invites</span>
               </motion.div>
 
               <motion.h1
-                className={styles.title}
+                className={styles.heroTitle}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
               >
-                <span style={{ display: 'block' }}>Everything your wedding needs</span>
-                <span style={{ fontSize: '0.4em', display: 'block', marginTop: '15px', fontWeight: 300, lineHeight: '1.5', fontFamily: 'var(--font-inter), sans-serif', letterSpacing: '0.02em', color: '#666' }}>
-                  <span style={{ display: 'block' }}>Design, send, track and manage your entire wedding invitation journey — all in one single platform.</span>
+                <span style={{ display: 'block' }}>Digital Wedding Invitations</span>
+                <span style={{ display: 'block', marginTop: '0.5rem' }}>and Smart RSVP Tracking</span>
+                <span style={{ fontSize: '0.45em', display: 'block', marginTop: '2rem', fontWeight: 300, lineHeight: '1.5', fontFamily: 'var(--font-inter), sans-serif', letterSpacing: '0.02em', color: '#666' }}>
+                  <span style={{ display: 'block' }}>Create, share and manage beautiful wedding invites,<br /> RSVPs and guest updates all in one simple platform.</span>
                 </span>
               </motion.h1>
 
@@ -98,7 +127,7 @@ export default function Home() {
                 transition={{ duration: 0.8, delay: 0.4 }}
               >
                 <Link href="/themes" className="btn btn-primary">
-                  Create Your Invitation <ArrowRight size={18} className={styles.heroIcon} />
+                  Create My Invitation
                 </Link>
                 <button
                   onClick={handleCreateRSVP}
@@ -108,20 +137,22 @@ export default function Home() {
                 </button>
               </motion.div>
 
-              <motion.div
-                className={styles.heroTrustText}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
+              <motion.p
+                className={styles.heroNote}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
                 transition={{ duration: 0.8, delay: 0.6 }}
               >
-                <p>
-                  <strong>Trusted by couples</strong> creating simple digital wedding invites with instant WhatsApp sharing.
-                </p>
-              </motion.div>
+                No design skills needed • Create in under 5 minutes • Family Approved
+              </motion.p>
+
+
 
             </div>
             {/* Right Column - Hero Image */}
             <HeroImage />
+
+
           </div>
         </div>
       </section>

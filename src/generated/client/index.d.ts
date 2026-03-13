@@ -1657,13 +1657,13 @@ export namespace Prisma {
    */
 
   export type BundleCountOutputType = {
-    orders: number
     bundleItems: number
+    orders: number
   }
 
   export type BundleCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    orders?: boolean | BundleCountOutputTypeCountOrdersArgs
     bundleItems?: boolean | BundleCountOutputTypeCountBundleItemsArgs
+    orders?: boolean | BundleCountOutputTypeCountOrdersArgs
   }
 
   // Custom InputTypes
@@ -1680,15 +1680,15 @@ export namespace Prisma {
   /**
    * BundleCountOutputType without action
    */
-  export type BundleCountOutputTypeCountOrdersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: OrderWhereInput
+  export type BundleCountOutputTypeCountBundleItemsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: BundleItemWhereInput
   }
 
   /**
    * BundleCountOutputType without action
    */
-  export type BundleCountOutputTypeCountBundleItemsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: BundleItemWhereInput
+  export type BundleCountOutputTypeCountOrdersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: OrderWhereInput
   }
 
 
@@ -4019,8 +4019,8 @@ export namespace Prisma {
     thumbnailUrl?: boolean
     itemImages?: boolean
     themeRef?: boolean | Bundle$themeRefArgs<ExtArgs>
-    orders?: boolean | Bundle$ordersArgs<ExtArgs>
     bundleItems?: boolean | Bundle$bundleItemsArgs<ExtArgs>
+    orders?: boolean | Bundle$ordersArgs<ExtArgs>
     _count?: boolean | BundleCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["bundle"]>
 
@@ -4063,8 +4063,8 @@ export namespace Prisma {
 
   export type BundleInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     themeRef?: boolean | Bundle$themeRefArgs<ExtArgs>
-    orders?: boolean | Bundle$ordersArgs<ExtArgs>
     bundleItems?: boolean | Bundle$bundleItemsArgs<ExtArgs>
+    orders?: boolean | Bundle$ordersArgs<ExtArgs>
     _count?: boolean | BundleCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type BundleIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4075,8 +4075,8 @@ export namespace Prisma {
     name: "Bundle"
     objects: {
       themeRef: Prisma.$ThemePayload<ExtArgs> | null
-      orders: Prisma.$OrderPayload<ExtArgs>[]
       bundleItems: Prisma.$BundleItemPayload<ExtArgs>[]
+      orders: Prisma.$OrderPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -4459,8 +4459,8 @@ export namespace Prisma {
   export interface Prisma__BundleClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     themeRef<T extends Bundle$themeRefArgs<ExtArgs> = {}>(args?: Subset<T, Bundle$themeRefArgs<ExtArgs>>): Prisma__ThemeClient<$Result.GetResult<Prisma.$ThemePayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
-    orders<T extends Bundle$ordersArgs<ExtArgs> = {}>(args?: Subset<T, Bundle$ordersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OrderPayload<ExtArgs>, T, "findMany"> | Null>
     bundleItems<T extends Bundle$bundleItemsArgs<ExtArgs> = {}>(args?: Subset<T, Bundle$bundleItemsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BundleItemPayload<ExtArgs>, T, "findMany"> | Null>
+    orders<T extends Bundle$ordersArgs<ExtArgs> = {}>(args?: Subset<T, Bundle$ordersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OrderPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -4838,26 +4838,6 @@ export namespace Prisma {
   }
 
   /**
-   * Bundle.orders
-   */
-  export type Bundle$ordersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Order
-     */
-    select?: OrderSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: OrderInclude<ExtArgs> | null
-    where?: OrderWhereInput
-    orderBy?: OrderOrderByWithRelationInput | OrderOrderByWithRelationInput[]
-    cursor?: OrderWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: OrderScalarFieldEnum | OrderScalarFieldEnum[]
-  }
-
-  /**
    * Bundle.bundleItems
    */
   export type Bundle$bundleItemsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4875,6 +4855,26 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: BundleItemScalarFieldEnum | BundleItemScalarFieldEnum[]
+  }
+
+  /**
+   * Bundle.orders
+   */
+  export type Bundle$ordersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Order
+     */
+    select?: OrderSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OrderInclude<ExtArgs> | null
+    where?: OrderWhereInput
+    orderBy?: OrderOrderByWithRelationInput | OrderOrderByWithRelationInput[]
+    cursor?: OrderWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: OrderScalarFieldEnum | OrderScalarFieldEnum[]
   }
 
   /**
@@ -12504,8 +12504,8 @@ export namespace Prisma {
     thumbnailUrl?: StringNullableFilter<"Bundle"> | string | null
     itemImages?: StringNullableFilter<"Bundle"> | string | null
     themeRef?: XOR<ThemeNullableRelationFilter, ThemeWhereInput> | null
-    orders?: OrderListRelationFilter
     bundleItems?: BundleItemListRelationFilter
+    orders?: OrderListRelationFilter
   }
 
   export type BundleOrderByWithRelationInput = {
@@ -12525,8 +12525,8 @@ export namespace Prisma {
     thumbnailUrl?: SortOrderInput | SortOrder
     itemImages?: SortOrderInput | SortOrder
     themeRef?: ThemeOrderByWithRelationInput
-    orders?: OrderOrderByRelationAggregateInput
     bundleItems?: BundleItemOrderByRelationAggregateInput
+    orders?: OrderOrderByRelationAggregateInput
   }
 
   export type BundleWhereUniqueInput = Prisma.AtLeast<{
@@ -12549,8 +12549,8 @@ export namespace Prisma {
     thumbnailUrl?: StringNullableFilter<"Bundle"> | string | null
     itemImages?: StringNullableFilter<"Bundle"> | string | null
     themeRef?: XOR<ThemeNullableRelationFilter, ThemeWhereInput> | null
-    orders?: OrderListRelationFilter
     bundleItems?: BundleItemListRelationFilter
+    orders?: OrderListRelationFilter
   }, "id">
 
   export type BundleOrderByWithAggregationInput = {
@@ -13370,8 +13370,8 @@ export namespace Prisma {
     thumbnailUrl?: string | null
     itemImages?: string | null
     themeRef?: ThemeCreateNestedOneWithoutBundlesInput
-    orders?: OrderCreateNestedManyWithoutBundleInput
     bundleItems?: BundleItemCreateNestedManyWithoutBundleInput
+    orders?: OrderCreateNestedManyWithoutBundleInput
   }
 
   export type BundleUncheckedCreateInput = {
@@ -13390,8 +13390,8 @@ export namespace Prisma {
     previewImages?: string | null
     thumbnailUrl?: string | null
     itemImages?: string | null
-    orders?: OrderUncheckedCreateNestedManyWithoutBundleInput
     bundleItems?: BundleItemUncheckedCreateNestedManyWithoutBundleInput
+    orders?: OrderUncheckedCreateNestedManyWithoutBundleInput
   }
 
   export type BundleUpdateInput = {
@@ -13410,8 +13410,8 @@ export namespace Prisma {
     thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
     itemImages?: NullableStringFieldUpdateOperationsInput | string | null
     themeRef?: ThemeUpdateOneWithoutBundlesNestedInput
-    orders?: OrderUpdateManyWithoutBundleNestedInput
     bundleItems?: BundleItemUpdateManyWithoutBundleNestedInput
+    orders?: OrderUpdateManyWithoutBundleNestedInput
   }
 
   export type BundleUncheckedUpdateInput = {
@@ -13430,8 +13430,8 @@ export namespace Prisma {
     previewImages?: NullableStringFieldUpdateOperationsInput | string | null
     thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
     itemImages?: NullableStringFieldUpdateOperationsInput | string | null
-    orders?: OrderUncheckedUpdateManyWithoutBundleNestedInput
     bundleItems?: BundleItemUncheckedUpdateManyWithoutBundleNestedInput
+    orders?: OrderUncheckedUpdateManyWithoutBundleNestedInput
   }
 
   export type BundleCreateManyInput = {
@@ -14999,13 +14999,6 @@ export namespace Prisma {
     connect?: ThemeWhereUniqueInput
   }
 
-  export type OrderCreateNestedManyWithoutBundleInput = {
-    create?: XOR<OrderCreateWithoutBundleInput, OrderUncheckedCreateWithoutBundleInput> | OrderCreateWithoutBundleInput[] | OrderUncheckedCreateWithoutBundleInput[]
-    connectOrCreate?: OrderCreateOrConnectWithoutBundleInput | OrderCreateOrConnectWithoutBundleInput[]
-    createMany?: OrderCreateManyBundleInputEnvelope
-    connect?: OrderWhereUniqueInput | OrderWhereUniqueInput[]
-  }
-
   export type BundleItemCreateNestedManyWithoutBundleInput = {
     create?: XOR<BundleItemCreateWithoutBundleInput, BundleItemUncheckedCreateWithoutBundleInput> | BundleItemCreateWithoutBundleInput[] | BundleItemUncheckedCreateWithoutBundleInput[]
     connectOrCreate?: BundleItemCreateOrConnectWithoutBundleInput | BundleItemCreateOrConnectWithoutBundleInput[]
@@ -15013,7 +15006,7 @@ export namespace Prisma {
     connect?: BundleItemWhereUniqueInput | BundleItemWhereUniqueInput[]
   }
 
-  export type OrderUncheckedCreateNestedManyWithoutBundleInput = {
+  export type OrderCreateNestedManyWithoutBundleInput = {
     create?: XOR<OrderCreateWithoutBundleInput, OrderUncheckedCreateWithoutBundleInput> | OrderCreateWithoutBundleInput[] | OrderUncheckedCreateWithoutBundleInput[]
     connectOrCreate?: OrderCreateOrConnectWithoutBundleInput | OrderCreateOrConnectWithoutBundleInput[]
     createMany?: OrderCreateManyBundleInputEnvelope
@@ -15027,6 +15020,13 @@ export namespace Prisma {
     connect?: BundleItemWhereUniqueInput | BundleItemWhereUniqueInput[]
   }
 
+  export type OrderUncheckedCreateNestedManyWithoutBundleInput = {
+    create?: XOR<OrderCreateWithoutBundleInput, OrderUncheckedCreateWithoutBundleInput> | OrderCreateWithoutBundleInput[] | OrderUncheckedCreateWithoutBundleInput[]
+    connectOrCreate?: OrderCreateOrConnectWithoutBundleInput | OrderCreateOrConnectWithoutBundleInput[]
+    createMany?: OrderCreateManyBundleInputEnvelope
+    connect?: OrderWhereUniqueInput | OrderWhereUniqueInput[]
+  }
+
   export type ThemeUpdateOneWithoutBundlesNestedInput = {
     create?: XOR<ThemeCreateWithoutBundlesInput, ThemeUncheckedCreateWithoutBundlesInput>
     connectOrCreate?: ThemeCreateOrConnectWithoutBundlesInput
@@ -15035,20 +15035,6 @@ export namespace Prisma {
     delete?: ThemeWhereInput | boolean
     connect?: ThemeWhereUniqueInput
     update?: XOR<XOR<ThemeUpdateToOneWithWhereWithoutBundlesInput, ThemeUpdateWithoutBundlesInput>, ThemeUncheckedUpdateWithoutBundlesInput>
-  }
-
-  export type OrderUpdateManyWithoutBundleNestedInput = {
-    create?: XOR<OrderCreateWithoutBundleInput, OrderUncheckedCreateWithoutBundleInput> | OrderCreateWithoutBundleInput[] | OrderUncheckedCreateWithoutBundleInput[]
-    connectOrCreate?: OrderCreateOrConnectWithoutBundleInput | OrderCreateOrConnectWithoutBundleInput[]
-    upsert?: OrderUpsertWithWhereUniqueWithoutBundleInput | OrderUpsertWithWhereUniqueWithoutBundleInput[]
-    createMany?: OrderCreateManyBundleInputEnvelope
-    set?: OrderWhereUniqueInput | OrderWhereUniqueInput[]
-    disconnect?: OrderWhereUniqueInput | OrderWhereUniqueInput[]
-    delete?: OrderWhereUniqueInput | OrderWhereUniqueInput[]
-    connect?: OrderWhereUniqueInput | OrderWhereUniqueInput[]
-    update?: OrderUpdateWithWhereUniqueWithoutBundleInput | OrderUpdateWithWhereUniqueWithoutBundleInput[]
-    updateMany?: OrderUpdateManyWithWhereWithoutBundleInput | OrderUpdateManyWithWhereWithoutBundleInput[]
-    deleteMany?: OrderScalarWhereInput | OrderScalarWhereInput[]
   }
 
   export type BundleItemUpdateManyWithoutBundleNestedInput = {
@@ -15065,7 +15051,7 @@ export namespace Prisma {
     deleteMany?: BundleItemScalarWhereInput | BundleItemScalarWhereInput[]
   }
 
-  export type OrderUncheckedUpdateManyWithoutBundleNestedInput = {
+  export type OrderUpdateManyWithoutBundleNestedInput = {
     create?: XOR<OrderCreateWithoutBundleInput, OrderUncheckedCreateWithoutBundleInput> | OrderCreateWithoutBundleInput[] | OrderUncheckedCreateWithoutBundleInput[]
     connectOrCreate?: OrderCreateOrConnectWithoutBundleInput | OrderCreateOrConnectWithoutBundleInput[]
     upsert?: OrderUpsertWithWhereUniqueWithoutBundleInput | OrderUpsertWithWhereUniqueWithoutBundleInput[]
@@ -15091,6 +15077,20 @@ export namespace Prisma {
     update?: BundleItemUpdateWithWhereUniqueWithoutBundleInput | BundleItemUpdateWithWhereUniqueWithoutBundleInput[]
     updateMany?: BundleItemUpdateManyWithWhereWithoutBundleInput | BundleItemUpdateManyWithWhereWithoutBundleInput[]
     deleteMany?: BundleItemScalarWhereInput | BundleItemScalarWhereInput[]
+  }
+
+  export type OrderUncheckedUpdateManyWithoutBundleNestedInput = {
+    create?: XOR<OrderCreateWithoutBundleInput, OrderUncheckedCreateWithoutBundleInput> | OrderCreateWithoutBundleInput[] | OrderUncheckedCreateWithoutBundleInput[]
+    connectOrCreate?: OrderCreateOrConnectWithoutBundleInput | OrderCreateOrConnectWithoutBundleInput[]
+    upsert?: OrderUpsertWithWhereUniqueWithoutBundleInput | OrderUpsertWithWhereUniqueWithoutBundleInput[]
+    createMany?: OrderCreateManyBundleInputEnvelope
+    set?: OrderWhereUniqueInput | OrderWhereUniqueInput[]
+    disconnect?: OrderWhereUniqueInput | OrderWhereUniqueInput[]
+    delete?: OrderWhereUniqueInput | OrderWhereUniqueInput[]
+    connect?: OrderWhereUniqueInput | OrderWhereUniqueInput[]
+    update?: OrderUpdateWithWhereUniqueWithoutBundleInput | OrderUpdateWithWhereUniqueWithoutBundleInput[]
+    updateMany?: OrderUpdateManyWithWhereWithoutBundleInput | OrderUpdateManyWithWhereWithoutBundleInput[]
+    deleteMany?: OrderScalarWhereInput | OrderScalarWhereInput[]
   }
 
   export type BundleCreateNestedOneWithoutBundleItemsInput = {
@@ -15727,34 +15727,6 @@ export namespace Prisma {
     create: XOR<ThemeCreateWithoutBundlesInput, ThemeUncheckedCreateWithoutBundlesInput>
   }
 
-  export type OrderCreateWithoutBundleInput = {
-    id?: string
-    totalAmount: number
-    status?: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    user: UserCreateNestedOneWithoutOrdersInput
-  }
-
-  export type OrderUncheckedCreateWithoutBundleInput = {
-    id?: string
-    userId: string
-    totalAmount: number
-    status?: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type OrderCreateOrConnectWithoutBundleInput = {
-    where: OrderWhereUniqueInput
-    create: XOR<OrderCreateWithoutBundleInput, OrderUncheckedCreateWithoutBundleInput>
-  }
-
-  export type OrderCreateManyBundleInputEnvelope = {
-    data: OrderCreateManyBundleInput | OrderCreateManyBundleInput[]
-    skipDuplicates?: boolean
-  }
-
   export type BundleItemCreateWithoutBundleInput = {
     id?: string
     eventType: string
@@ -15780,6 +15752,34 @@ export namespace Prisma {
 
   export type BundleItemCreateManyBundleInputEnvelope = {
     data: BundleItemCreateManyBundleInput | BundleItemCreateManyBundleInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type OrderCreateWithoutBundleInput = {
+    id?: string
+    totalAmount: number
+    status?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutOrdersInput
+  }
+
+  export type OrderUncheckedCreateWithoutBundleInput = {
+    id?: string
+    userId: string
+    totalAmount: number
+    status?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type OrderCreateOrConnectWithoutBundleInput = {
+    where: OrderWhereUniqueInput
+    create: XOR<OrderCreateWithoutBundleInput, OrderUncheckedCreateWithoutBundleInput>
+  }
+
+  export type OrderCreateManyBundleInputEnvelope = {
+    data: OrderCreateManyBundleInput | OrderCreateManyBundleInput[]
     skipDuplicates?: boolean
   }
 
@@ -15822,22 +15822,6 @@ export namespace Prisma {
     weddings?: WeddingUncheckedUpdateManyWithoutThemeNestedInput
   }
 
-  export type OrderUpsertWithWhereUniqueWithoutBundleInput = {
-    where: OrderWhereUniqueInput
-    update: XOR<OrderUpdateWithoutBundleInput, OrderUncheckedUpdateWithoutBundleInput>
-    create: XOR<OrderCreateWithoutBundleInput, OrderUncheckedCreateWithoutBundleInput>
-  }
-
-  export type OrderUpdateWithWhereUniqueWithoutBundleInput = {
-    where: OrderWhereUniqueInput
-    data: XOR<OrderUpdateWithoutBundleInput, OrderUncheckedUpdateWithoutBundleInput>
-  }
-
-  export type OrderUpdateManyWithWhereWithoutBundleInput = {
-    where: OrderScalarWhereInput
-    data: XOR<OrderUpdateManyMutationInput, OrderUncheckedUpdateManyWithoutBundleInput>
-  }
-
   export type BundleItemUpsertWithWhereUniqueWithoutBundleInput = {
     where: BundleItemWhereUniqueInput
     update: XOR<BundleItemUpdateWithoutBundleInput, BundleItemUncheckedUpdateWithoutBundleInput>
@@ -15865,6 +15849,22 @@ export namespace Prisma {
     templateFile?: StringFilter<"BundleItem"> | string
     createdAt?: DateTimeFilter<"BundleItem"> | Date | string
     updatedAt?: DateTimeFilter<"BundleItem"> | Date | string
+  }
+
+  export type OrderUpsertWithWhereUniqueWithoutBundleInput = {
+    where: OrderWhereUniqueInput
+    update: XOR<OrderUpdateWithoutBundleInput, OrderUncheckedUpdateWithoutBundleInput>
+    create: XOR<OrderCreateWithoutBundleInput, OrderUncheckedCreateWithoutBundleInput>
+  }
+
+  export type OrderUpdateWithWhereUniqueWithoutBundleInput = {
+    where: OrderWhereUniqueInput
+    data: XOR<OrderUpdateWithoutBundleInput, OrderUncheckedUpdateWithoutBundleInput>
+  }
+
+  export type OrderUpdateManyWithWhereWithoutBundleInput = {
+    where: OrderScalarWhereInput
+    data: XOR<OrderUpdateManyMutationInput, OrderUncheckedUpdateManyWithoutBundleInput>
   }
 
   export type BundleCreateWithoutBundleItemsInput = {
@@ -16134,8 +16134,8 @@ export namespace Prisma {
     previewImages?: string | null
     thumbnailUrl?: string | null
     itemImages?: string | null
-    orders?: OrderCreateNestedManyWithoutBundleInput
     bundleItems?: BundleItemCreateNestedManyWithoutBundleInput
+    orders?: OrderCreateNestedManyWithoutBundleInput
   }
 
   export type BundleUncheckedCreateWithoutThemeRefInput = {
@@ -16153,8 +16153,8 @@ export namespace Prisma {
     previewImages?: string | null
     thumbnailUrl?: string | null
     itemImages?: string | null
-    orders?: OrderUncheckedCreateNestedManyWithoutBundleInput
     bundleItems?: BundleItemUncheckedCreateNestedManyWithoutBundleInput
+    orders?: OrderUncheckedCreateNestedManyWithoutBundleInput
   }
 
   export type BundleCreateOrConnectWithoutThemeRefInput = {
@@ -16811,15 +16811,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type OrderCreateManyBundleInput = {
-    id?: string
-    userId: string
-    totalAmount: number
-    status?: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
   export type BundleItemCreateManyBundleInput = {
     id?: string
     eventType: string
@@ -16829,31 +16820,13 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
-  export type OrderUpdateWithoutBundleInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    totalAmount?: FloatFieldUpdateOperationsInput | number
-    status?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutOrdersNestedInput
-  }
-
-  export type OrderUncheckedUpdateWithoutBundleInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    totalAmount?: FloatFieldUpdateOperationsInput | number
-    status?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type OrderUncheckedUpdateManyWithoutBundleInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    totalAmount?: FloatFieldUpdateOperationsInput | number
-    status?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  export type OrderCreateManyBundleInput = {
+    id?: string
+    userId: string
+    totalAmount: number
+    status?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type BundleItemUpdateWithoutBundleInput = {
@@ -16879,6 +16852,33 @@ export namespace Prisma {
     eventType?: StringFieldUpdateOperationsInput | string
     templateName?: StringFieldUpdateOperationsInput | string
     templateFile?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type OrderUpdateWithoutBundleInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    totalAmount?: FloatFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutOrdersNestedInput
+  }
+
+  export type OrderUncheckedUpdateWithoutBundleInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    totalAmount?: FloatFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type OrderUncheckedUpdateManyWithoutBundleInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    totalAmount?: FloatFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -16929,8 +16929,8 @@ export namespace Prisma {
     previewImages?: NullableStringFieldUpdateOperationsInput | string | null
     thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
     itemImages?: NullableStringFieldUpdateOperationsInput | string | null
-    orders?: OrderUpdateManyWithoutBundleNestedInput
     bundleItems?: BundleItemUpdateManyWithoutBundleNestedInput
+    orders?: OrderUpdateManyWithoutBundleNestedInput
   }
 
   export type BundleUncheckedUpdateWithoutThemeRefInput = {
@@ -16948,8 +16948,8 @@ export namespace Prisma {
     previewImages?: NullableStringFieldUpdateOperationsInput | string | null
     thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
     itemImages?: NullableStringFieldUpdateOperationsInput | string | null
-    orders?: OrderUncheckedUpdateManyWithoutBundleNestedInput
     bundleItems?: BundleItemUncheckedUpdateManyWithoutBundleNestedInput
+    orders?: OrderUncheckedUpdateManyWithoutBundleNestedInput
   }
 
   export type BundleUncheckedUpdateManyWithoutThemeRefInput = {

@@ -1,14 +1,14 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-export const dynamic = 'force-dynamic';
+// Initializing theme cache for performance
+export const revalidate = 3600; // Cache for 1 hour
 
 export async function GET() {
     try {
         const themes = await prisma.theme.findMany({
-            where: { isActive: true },
             orderBy: { createdAt: 'desc' },
-            include: { bundles: { include: { bundleItems: true } } }
+            include: { bundles: true }
         });
 
         try {
@@ -27,18 +27,20 @@ export async function GET() {
                     completePrice: b.completePrice,
                     description: b.description || '',
                     itemImages: b.itemImages,
-                    bundleItems: (b.bundleItems || []).map((bi: any) => ({
-                        id: bi.id,
-                        eventType: bi.eventType,
-                        templateName: bi.templateName,
-                        templateFile: bi.templateFile
-                    }))
+                    bundleItems: []
                 })),
                 isBestSeller: theme.isBestSeller || false,
                 isPopular: theme.isPopular || false,
                 tag: undefined
             }));
-            return NextResponse.json({ themes: formattedThemes });
+            return NextResponse.json(
+                { themes: formattedThemes },
+                {
+                    headers: {
+                        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',
+                    }
+                }
+            );
         } catch (mapError: any) {
             console.error('Failed processing themes map:', mapError);
             throw mapError;

@@ -32,7 +32,7 @@ export function TestimonialSection() {
                     </div>
 
                     <blockquote className={styles.quote}>
-                        "We wanted something elegant but also simple to manage. Nimantran Studio made it effortless. The invites looked beautiful, sharing them on WhatsApp was instant, and the RSVP tracking helped us stay organized without endless calls and messages."
+                        "We wanted simple but elegant invites, and Nimantran made the whole process so smooth. The invites looked amazing, sharing them on WhatsApp was super easy, and the guest tracking was a total lifesaver. 10/10 experience — highly recommend."
                     </blockquote>
 
                     <div className={styles.author}>

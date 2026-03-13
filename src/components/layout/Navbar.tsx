@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useWeddingStore } from '@/store/wedding-store';
 import { Menu, X, User, LogOut, LayoutDashboard, ChevronDown } from 'lucide-react';
@@ -56,7 +57,14 @@ export const Navbar = () => {
         <nav className={styles.navbar}>
             <div className={clsx("container", styles.navContainer)}>
                 <Link href="/" className={styles.logo}>
-                    <img src="/logo.png" alt="Nimantran Studio Logo" className={styles.logoImage} />
+                    <Image
+                        src="/logo.png"
+                        alt="Nimantran Studio - Digital Wedding Invitations India"
+                        width={180}
+                        height={50}
+                        className={styles.logoImage}
+                        priority
+                    />
                 </Link>
 
                 {/* Desktop Nav */}

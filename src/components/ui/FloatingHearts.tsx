@@ -22,7 +22,7 @@ export const FloatingHearts = () => {
     }, []);
 
     return (
-        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', overflow: 'hidden' }} aria-hidden="true">
+        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', overflow: 'hidden', zIndex: 1 }} aria-hidden="true">
             {hearts.map((heart) => (
                 <motion.div
                     key={heart.id}
@@ -47,7 +47,7 @@ export const FloatingHearts = () => {
                         size={24}
                         fill="currentColor"
                         color="#D4AF37" // Manual Gold color since variable might not work in some contexts, but sticking to logic
-                        style={{ opacity: 0.3, color: 'var(--primary)' }}
+                        style={{ opacity: 0.2, color: 'var(--primary)' }}
                     />
                 </motion.div>
             ))}

@@ -26,12 +26,12 @@ const HeroImage = () => {
                 >
                     <Image
                         src={PLACEHOLDER_IMAGE}
-                        alt="Wedding Couple"
+                        alt="Elegant traditional Indian wedding invitation design by Nimantran Studio"
                         width={450}
                         height={600}
                         style={{ width: '100%', height: 'auto' }}
                         priority
-                        unoptimized
+                        sizes="(max-width: 768px) 100vw, 450px"
                     />
                 </motion.div>
 
@@ -93,18 +93,12 @@ const FloatingTag = ({ icon, text, delay, top, left, right, bottom }: { icon: Re
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{
                 opacity: 1,
-                scale: 1,
-                y: [0, -10, 0],
-                x: [0, 5, 0]
+                scale: 1
             }}
             transition={{
-                duration: 4,
+                duration: 0.8,
                 delay: delay,
-                repeat: Infinity,
-                repeatType: "reverse",
-                ease: "easeInOut",
-                opacity: { duration: 0.8, delay: delay, repeat: 0 },
-                scale: { duration: 0.8, delay: delay, repeat: 0 }
+                ease: "easeOut"
             }}
             style={{ top, left, right, bottom }}
             whileHover={{ scale: 1.05, transition: { duration: 0.2, repeat: 0 } }}

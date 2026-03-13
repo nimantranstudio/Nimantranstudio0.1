@@ -1,9 +1,43 @@
 import styles from '@/app/page.module.css';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import Image from 'next/image';
+import { useState } from 'react';
+import { X } from 'lucide-react';
 
 export const BundleGridSection = () => {
+    const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+
     return (
         <section className={styles.bundleGridSection}>
+            <AnimatePresence>
+                {isLightboxOpen && (
+                    <motion.div
+                        className={styles.lightboxOverlay}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setIsLightboxOpen(false)}
+                    >
+                        <button className={styles.lightboxClose}>
+                            <X size={24} />
+                        </button>
+                        <motion.div
+                            className={styles.lightboxImageWrapper}
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                        >
+                            <img
+                                src="/bundle-mockup.jpeg"
+                                alt="Complete digital wedding invitation suite"
+                                className={styles.lightboxImage}
+                            />
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             <div className="container">
                 <div className={styles.bundleGridHeader}>
                     <h2 className={styles.bundleGridTitle}>
@@ -33,8 +67,17 @@ export const BundleGridSection = () => {
                                 <span>Reception</span>
                             </div>
                         </div>
-                        <div className={styles.featureCardImageWrapper}>
-                            <img src="/bundle-mockup.jpeg" alt="Wedding Suite Mockups" className={styles.featureImageFull} />
+                        <div
+                            className={styles.featureCardImageWrapper}
+                            onClick={() => setIsLightboxOpen(true)}
+                        >
+                            <Image
+                                src="/bundle-mockup.jpeg"
+                                alt="Complete digital wedding invitation suite for multiple events - Nimantran Studio"
+                                width={800}
+                                height={600}
+                                className={styles.featureImageFull}
+                            />
                         </div>
                     </motion.div>
 
