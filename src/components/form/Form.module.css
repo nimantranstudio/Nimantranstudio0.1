@@ -28,7 +28,7 @@
 @media (min-width: 640px) {
     .grid {
         grid-template-columns: 1fr 1fr;
-        gap: 2rem;
+        gap: 3rem;
     }
 }
 
@@ -61,9 +61,8 @@
 .input:focus,
 .textarea:focus {
     outline: none;
-    border-color: var(--secondary);
-    box-shadow: 0 0 0 2px rgba(10, 37, 44, 0.1);
-    /* Subtle teal focus */
+    border-color: #D4AF37;
+    box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.1);
 }
 
 .inputError {

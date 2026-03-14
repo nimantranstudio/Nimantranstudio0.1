@@ -155,6 +155,97 @@
     }
 }
 
+/* Premium Transition Screen Styles */
+.transitionOverlay {
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(circle at center, #FFFCF7 0%, #FFF5F2 100%);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.transitionContent {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    max-width: 500px;
+    width: 100%;
+}
+
+.transitionIconWrapper {
+    margin-bottom: 3.5rem;
+    color: #D4AF37;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.transitionHeartOutline {
+    stroke-width: 0.75px;
+    opacity: 0.9;
+}
+
+.transitionHeadline {
+    font-family: var(--font-playfair), serif;
+    font-size: 3rem;
+    color: #1A1A1A;
+    margin-bottom: 1.25rem;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+}
+
+.transitionSupportingText {
+    font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+    font-size: 1.25rem;
+    color: #6B7280;
+    margin-bottom: 4rem;
+    font-weight: 400;
+    line-height: 1.5;
+}
+
+.progressTrack {
+    width: 240px;
+    height: 2px;
+    background: rgba(212, 175, 55, 0.15);
+    border-radius: 100px;
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+
+.progressFill {
+    height: 100%;
+    background: #D4AF37;
+    border-radius: 100px;
+}
+
+.reassuranceContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.reassurancePrimary {
+    font-size: 0.8125rem;
+    color: #9CA3AF;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.reassuranceSecondary {
+    font-size: 0.8125rem;
+    color: #D1D5DB;
+    font-weight: 400;
+    font-style: italic;
+}
+
 @media (max-width: 1200px) {
     .prevBtn {
         left: -4.5rem;
@@ -786,7 +877,8 @@
 /* Utilities */
 /* Default: Mobile hidden, Desktop visible */
 .desktopOnly {
-    /* No default display to allow flex/grid to work */
+    /* Base styles for desktop elements */
+    display: initial;
 }
 
 .mobileOnly {

@@ -1,13 +1,13 @@
 .page {
     min-height: 100vh;
-    padding-bottom: 100px;
-    background-color: #F7F5EF;
-    /* Slightly darker background for form separation */
+    padding-bottom: 60px;
+    background-color: #FDFBF7;
+    /* Match Landing Page warm off-white */
 }
 
 .header {
     padding: 1.5rem 0;
-    background-color: var(--background);
+    background-color: #FDFBF7;
     border-bottom: 1px solid var(--border);
     margin-bottom: 2rem;
     text-align: left;
@@ -127,21 +127,69 @@
     color: white;
 }
 
-.footer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: white;
-    border-top: 1px solid var(--border);
-    padding: 1rem 0;
-    z-index: 10;
+.formInlineActions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 3rem;
+    margin-top: 2.5rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
 }
 
-.footerContainer {
+.footerRight {
     display: flex;
-    justify-content: space-between;
-    width: 100%;
+    align-items: center;
+    gap: 3rem;
+}
+
+.formSuccessMessage {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+    color: #6B7280;
+    font-size: 0.9375rem;
+    padding: 0.5rem 0;
+}
+
+.backBtn {
+    background: none;
+    border: none;
+    color: #4B5563;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.backBtn:hover {
+    color: #111827;
+}
+
+.continueBtn {
+    display: flex;
+    align-items: center;
+    background: #1A1A1A;
+    color: white;
+    padding: 0.875rem 2.5rem;
+    border-radius: 100px;
+    font-size: 1rem;
+    font-weight: 500;
+    border: 1.5px solid #D4AF37;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.continueBtn:hover:not(:disabled) {
+    background: #262626;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(212, 175, 55, 0.15);
+}
+
+.continueBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 /* Wizard Styles */
@@ -165,20 +213,20 @@
     align-items: center;
     position: relative;
     flex: 1;
-    color: #9CA3AF;
+    color: #111827; /* Rich black */
 }
 
 .stepIcon {
     width: 48px;
     height: 48px;
     border-radius: 50%;
-    background: #F3F4F6;
+    background: white; /* Pure white interior */
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 1.25rem;
     margin-bottom: 0.5rem;
-    border: 2px solid transparent;
+    border: 1px solid rgba(212, 175, 55, 0.4); /* Fine golden border */
     transition: all 0.3s ease;
     z-index: 1;
 }
@@ -195,63 +243,249 @@
     top: 24px;
     left: calc(50% + 24px);
     width: calc(100% - 48px);
-    height: 2px;
-    background: #F3F4F6;
+    height: 1px;
+    background: rgba(212, 175, 55, 0.3); /* Fine golden line */
     z-index: 0;
 }
 
 .stepActive {
-    color: #E11D48;
+    color: #111827;
 }
 
 .stepActive .stepIcon {
-    background: #FFE4E6;
-    border-color: #E11D48;
-    color: #E11D48;
-    box-shadow: 0 0 0 4px #FFF1F2;
+    background: #D4AF37;
+    border-color: #D4AF37;
+    color: white;
+    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
 }
 
 .stepDone {
-    color: #059669;
+    color: #111827;
 }
 
 .stepDone .stepIcon {
-    background: #D1FAE5;
-    color: #059669;
+    background: white;
+    color: #D4AF37;
+    border-color: #D4AF37; /* Also make the border golden when done */
 }
 
 .stepDone .stepLine {
-    background: #059669;
+    background: #D4AF37;
+}
+
+.formSide {
+    background: white;
+    padding: 4rem 3.5rem;
+    border-radius: 24px;
+    box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.05);
 }
 
 .wizardContainer {
-    max-width: 900px;
+    max-width: 1300px;
     margin: 0 auto 5rem;
 }
 
-.wizardCard {
+.sectionHeaderInner {
+    margin-bottom: 3rem;
+    text-align: left;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.sectionHeaderMain {
+    flex: 1;
+}
+
+.sectionTitleMain {
+    font-family: var(--font-playfair), serif;
+    font-size: 3rem;
+    font-weight: 400;
+    color: #111827;
+    margin-bottom: 1rem;
+    letter-spacing: -0.02em;
+}
+
+.sectionSubtitleMain {
+    font-size: 1.125rem;
+    color: #6B7280;
+    line-height: 1.6;
+    max-width: 600px;
+}
+
+.stepHeaderInfo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: #F9FAFB;
+    padding: 0.5rem 1rem;
+    border-radius: 100px;
+    font-size: 0.875rem;
+    color: #4B5563;
+    font-weight: 500;
+}
+
+.stepBadge {
+    width: 24px;
+    height: 24px;
+    background: #F3E8D2;
+    color: #D4AF37;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.stepStepText {
+    color: #111827;
+    font-weight: 600;
+}
+
+.stepDot {
+    width: 4px;
+    height: 4px;
+    background: #D1D5DB;
+    border-radius: 50%;
+}
+
+.stepTiming {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.splitLayout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+}
+
+@media (min-width: 1024px) {
+    .splitLayout {
+        grid-template-columns: 460px 1fr;
+        gap: 2.5rem;
+        align-items: flex-start;
+    }
+}
+
+.previewContainer {
+    position: sticky;
+    top: 2rem;
+}
+
+@media (min-width: 1024px) {
+    .previewContainer {
+        padding-right: 3.5rem;
+    }
+}
+
+.invitePreview {
     background: white;
-    border-radius: 24px;
-    padding: 2.5rem;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+    width: 100%;
+    max-width: 330px; /* Refined for elegant smartphone proportion */
+    margin: 0 auto;
+    aspect-ratio: 9/16;
+    border-radius: 12px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    color: #111827;
+}
+
+.previewInner {
+    margin: 20px;
+    flex: 1;
+    border: 1px solid #EBE2D5;
+    position: relative;
+    padding: 3.5rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.previewOrnament {
+    color: #D4AF37;
+    margin-bottom: 2rem;
+    opacity: 0.8;
+}
+
+.previewIntro {
+    text-transform: uppercase;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    color: #6B7280;
+    margin-bottom: 2.5rem;
+    font-weight: 500;
+}
+
+.previewName {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.5rem;
+    font-weight: 400;
+}
+
+.previewAmpersand {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    color: #D4AF37;
+    margin: 0.5rem 0;
+    font-style: italic;
+}
+
+.previewDivider {
+    width: 40px;
+    height: 1px;
+    background: #EBE2D5;
+    margin: 2rem 0;
+}
+
+.previewDate {
+    text-transform: uppercase;
+    font-size: 0.8125rem;
+    letter-spacing: 0.15em;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.previewVenue {
+    font-size: 0.75rem;
+    line-height: 1.6;
+    color: #4B5563;
+    max-width: 280px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.previewVenueName {
+    font-weight: 600;
+    color: #111827;
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.wizardCard {
+    background: transparent;
+    border-radius: 0;
+    padding: 0;
+    box-shadow: none;
 }
 
 .venueSection {
     grid-column: span 2;
-    background: #FFF5F7;
-    border-radius: 12px;
-    padding: 1.5rem;
-    margin-top: 1rem;
-    border: 1px dashed #FDA4AF;
+    margin-top: 0.5rem;
 }
 
 .venueHeading {
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     font-weight: 700;
-    color: #E11D48;
-    margin-bottom: 1rem;
+    color: #6B7280;
+    margin-bottom: 1.5rem;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.1em;
 }
 
 /* Pick Events Step */
@@ -438,4 +672,312 @@
     font-size: 0.7rem;
     font-weight: 700;
     letter-spacing: 0.025em;
+}
+
+.eventTimelineSection {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.eventCard {
+    background: white;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.eventCardHeader {
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    cursor: pointer;
+    background: white;
+    user-select: none;
+}
+
+.eventCardNumber {
+    width: 28px;
+    height: 28px;
+    background: #FDFBF7;
+    border: 1px solid #F3E8D2;
+    color: #D4AF37;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8125rem;
+    font-weight: 700;
+}
+
+.eventCardTitle {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #111827;
+    flex: 1;
+}
+
+.eventCardToggle {
+    color: #9CA3AF;
+    transition: transform 0.3s ease;
+}
+
+.eventCardActive .eventCardToggle {
+    transform: rotate(180deg);
+}
+
+.eventCardBody {
+    padding: 0 1.5rem 1.5rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.03);
+    padding-top: 1.5rem;
+}
+
+.removeEventBtn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #6B7280;
+    background: none;
+    border: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    margin-left: auto;
+    margin-top: 1.5rem;
+    padding: 0.5rem;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.removeEventBtn:hover {
+    color: #EF4444;
+    background: #FEF2F2;
+}
+
+.addEventBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 1.25rem;
+    background: white;
+    border: 1px dashed #D1D5DB;
+    border-radius: 12px;
+    color: #4B5563;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 1rem;
+}
+
+.addEventBtn:hover {
+    border-color: #D4AF37;
+    color: #D4AF37;
+    background: #FDFBF7;
+}
+
+.eventTimelineHeader {
+    margin-bottom: 2rem;
+}
+
+.eventTimelineTitle {
+    font-family: var(--font-playfair), serif;
+    font-size: 1.75rem;
+    font-weight: 400;
+    color: #111827;
+    margin-bottom: 0.25rem;
+}
+
+.eventTimelineSubtitle {
+    font-size: 0.9375rem;
+    color: #6B7280;
+}
+
+.eventFieldRow {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.eventInputLabel {
+    display: block;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #D4AF37;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+/* Timeline Preview Styles */
+.timelinePreviewArea {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+}
+
+.timelineLineContainer {
+    position: relative;
+    width: fit-content;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 3.5rem;
+}
+
+.timelineGoldLine {
+    position: absolute;
+    left: 11.5px; /* Center of 24px node minus half-pixel width */
+    top: 0;
+    width: 1px;
+    background: linear-gradient(to bottom, #C8A75A 0%, rgba(200, 167, 90, 0.1) 100%);
+    height: 100%;
+    z-index: 1;
+}
+
+.timelineNodeWrapper {
+    display: flex;
+    align-items: flex-start;
+    gap: 2rem;
+    position: relative;
+    z-index: 2;
+    opacity: 0;
+    transform: translateY(12px) scale(0.92);
+    animation: timelineNodeEntry 420ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes timelineNodeEntry {
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.timelineNode {
+    width: 24px;
+    height: 24px;
+    background: white;
+    border: 1.5px solid #C8A75A;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 10px rgba(200, 167, 90, 0.1);
+}
+
+.timelineNodeActive {
+    background: #C8A75A;
+}
+
+.miniEventCard {
+    background: white;
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+    width: 240px;
+    border: 1px solid rgba(0, 0, 0, 0.02);
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(8px);
+}
+
+.miniEventActive {
+    transform: scale(1.06);
+    box-shadow: 0 10px 25px rgba(200, 167, 90, 0.15);
+    border-color: rgba(200, 167, 90, 0.2);
+}
+
+.miniEventActive::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 2px;
+    background: #C8A75A;
+    width: 0;
+    animation: goldUnderline 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.3s forwards;
+}
+
+@keyframes goldUnderline {
+    to {
+        width: 100%;
+    }
+}
+
+.miniEventName {
+    font-family: var(--font-playfair), serif;
+    font-size: 1.125rem;
+    color: #111827;
+    margin-bottom: 0.25rem;
+}
+
+.miniEventDetail {
+    font-size: 0.75rem;
+    color: #6B7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: flex;
+    gap: 0.75rem;
+}
+
+.weddingHighlight {
+    animation: weddingPulse 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes weddingPulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(200, 167, 90, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 15px rgba(200, 167, 90, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(200, 167, 90, 0);
+    }
+}
+
+.completionMessage {
+    margin-top: 4rem;
+    font-size: 0.9375rem;
+    color: #6B7280;
+    font-style: italic;
+    opacity: 0;
+    animation: fadeIn 0.8s ease forwards 1s;
+    text-align: center;
+}
+
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+    }
+}
+
+.shimmerEffect {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.6) 50%,
+        rgba(255, 255, 255, 0) 100%
+    );
+    transform: translateX(-100%);
+    animation: shimmerTravel 1.2s ease-in-out;
+}
+
+@keyframes shimmerTravel {
+    to {
+        transform: translateX(100%);
+    }
 }

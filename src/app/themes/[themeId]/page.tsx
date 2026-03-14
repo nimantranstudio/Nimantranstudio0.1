@@ -4,7 +4,7 @@ import { use } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { ChevronRight, ChevronDown, CheckCircle, Smartphone, Headphones, ShieldCheck, Share2, X, ChevronLeft, Clock, Printer, Languages, Download } from 'lucide-react';
+import { ChevronRight, ChevronDown, CheckCircle, Smartphone, Headphones, ShieldCheck, Share2, X, ChevronLeft, Clock, Printer, Languages, Download, Heart } from 'lucide-react';
 import type { Theme } from '@/lib/constants/themes';
 import { useWeddingStore } from '@/store/wedding-store';
 import { ThemeCard } from '@/components/ui/ThemeCard';
@@ -124,6 +124,8 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
     const [selectedAssetIndex, setSelectedAssetIndex] = useState(0);
     const [activeSlide, setActiveSlide] = useState(0);
     const [showStickyBar, setShowStickyBar] = useState(false);
+    const [isPersonalising, setIsPersonalising] = useState(false);
+    const [showConfetti, setShowConfetti] = useState(false);
 
     // Reset index if image list changes and index is out of bounds
     useEffect(() => {
@@ -168,11 +170,21 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
 
     const handleCreateNow = () => {
         if (!theme) return;
-        resetForm();
-        setThemeId(theme.id);
-        const items = activeBundle?.bundleItems || [];
-        setBundleData(selectedPlan, imageList, items);
-        router.push('/details');
+        setIsPersonalising(true);
+        setShowConfetti(true);
+
+        // Sequence timing:
+        // 0s: Confetti burst + Overlay fade-in
+        // 0.6s: Headline fades in (handled via motion delay)
+        // 1.5s: Confetti begins to fade out (handled via component duration)
+
+        setTimeout(() => {
+            resetForm();
+            setThemeId(theme.id);
+            const items = activeBundle?.bundleItems || [];
+            setBundleData(selectedPlan, imageList, items);
+            router.push('/details');
+        }, 5000); // Increased to 5s for a more leisurely, premium feel
     };
 
     const handleShare = () => {
@@ -299,6 +311,72 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
     return (
         <div className={styles.page}>
             {/* Header with Breadcrumb and Separator */}
+            {/* Personalization Transition Screen */}
+            {isPersonalising && (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className={styles.transitionOverlay}
+                >
+                    {showConfetti && <WeddingCelebration />}
+
+                    <motion.div
+                        initial={{ scale: 0.95, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+                        className={styles.transitionContent}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{ duration: 1.2, ease: "easeOut", delay: 0.5 }}
+                            className={styles.transitionIconWrapper}
+                        >
+                            <Heart className={styles.transitionHeartOutline} size={48} strokeWidth={0.75} />
+                        </motion.div>
+
+                        <motion.h2
+                            initial={{ y: 10, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            transition={{ delay: 1.0, duration: 1.2 }}
+                            className={styles.transitionHeadline}
+                        >
+                            Great choice.
+                        </motion.h2>
+
+                        <motion.p
+                            initial={{ y: 10, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            transition={{ delay: 1.5, duration: 1.2 }}
+                            className={styles.transitionSupportingText}
+                        >
+                            Now let’s personalise your wedding invitation suite.
+                        </motion.p>
+
+                        {/* Animated progress bar */}
+                        <div className={styles.progressTrack}>
+                            <motion.div
+                                initial={{ width: 0 }}
+                                animate={{ width: '100%' }}
+                                transition={{ duration: 2.5, ease: "easeInOut", delay: 2.0 }}
+                                className={styles.progressFill}
+                            />
+                        </div>
+
+                        {/* Micro reassurance text */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 3.5, duration: 0.8 }}
+                            className={styles.reassuranceContainer}
+                        >
+                            <span className={styles.reassurancePrimary}>Setting up your wedding workspace…</span>
+                            <span className={styles.reassuranceSecondary}>Everything will be ready in a moment.</span>
+                        </motion.div>
+                    </motion.div>
+                </motion.div>
+            )}
+
             <header style={{
                 borderBottom: '1px solid var(--border)',
                 backgroundColor: 'var(--background)',
@@ -726,6 +804,93 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
                     Create Now
                 </button>
             </div>
+        </div>
+    );
+}
+
+// --- Sub Components ---
+
+function WeddingCelebration() {
+    const particles = useRef(
+        Array.from({ length: 45 }).map((_, i) => ({
+            id: i,
+            x: Math.random() * 100, // percentage
+            y: -10 - Math.random() * 20,
+            size: 8 + Math.random() * 12,
+            type: ['heart', 'petal', 'sparkle', 'flake'][Math.floor(Math.random() * 4)],
+            color: ['#D4AF37', '#FDFBF7', '#FDA4AF', '#EBCDC3'][Math.floor(Math.random() * 4)],
+            duration: 4.0 + Math.random() * 2.0, // Slowed down fall speed
+            delay: Math.random() * 0.8,
+            rotation: Math.random() * 360,
+            drift: (Math.random() - 0.5) * 40
+        }))
+    );
+
+    return (
+        <div style={{
+            position: 'absolute',
+            inset: 0,
+            pointerEvents: 'none',
+            overflow: 'hidden',
+            zIndex: 0
+        }}>
+            {particles.current.map((p) => (
+                <motion.div
+                    key={p.id}
+                    initial={{
+                        x: `${p.x}vw`,
+                        y: `${p.y}vh`,
+                        rotate: p.rotation,
+                        opacity: 1,
+                        scale: 0.5
+                    }}
+                    animate={{
+                        y: '110vh',
+                        x: `${p.x + p.drift}vw`,
+                        rotate: p.rotation + 720,
+                        opacity: [1, 1, 0],
+                        scale: [0.8, 1, 0.7]
+                    }}
+                    transition={{
+                        duration: p.duration,
+                        delay: p.delay,
+                        ease: "linear"
+                    }}
+                    style={{
+                        position: 'absolute',
+                        color: p.color,
+                        filter: p.size < 12 ? 'blur(1px)' : 'none',
+                        opacity: 0.8
+                    }}
+                >
+                    {p.type === 'heart' && <Heart size={p.size} fill="currentColor" stroke="none" />}
+                    {p.type === 'petal' && (
+                        <div style={{
+                            width: p.size,
+                            height: p.size * 0.7,
+                            background: 'currentColor',
+                            borderRadius: '50% 0 50% 0',
+                            transform: 'rotate(45deg)'
+                        }} />
+                    )}
+                    {p.type === 'sparkle' && (
+                        <div style={{
+                            width: 2,
+                            height: p.size,
+                            background: 'currentColor',
+                            boxShadow: `0 0 ${p.size / 2}px currentColor`
+                        }} />
+                    )}
+                    {p.type === 'flake' && (
+                        <div style={{
+                            width: p.size / 2,
+                            height: p.size / 2,
+                            background: 'currentColor',
+                            borderRadius: '2px'
+                        }} />
+                    )}
+                </motion.div>
+            ))}
         </div>
     );
 }

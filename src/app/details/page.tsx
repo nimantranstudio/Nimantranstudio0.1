@@ -9,7 +9,7 @@ import formStyles from '@/components/form/Form.module.css';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { clsx } from 'clsx';
-import { ArrowLeftRight, CheckCircle, ChevronDown, Sun, Music, Leaf, Circle, Wine, MoreHorizontal, Clock, Info, ShieldCheck, MapPin, Calendar, Users, AlertCircle } from 'lucide-react';
+import { ArrowLeftRight, CheckCircle, ChevronDown, Sun, Music, Leaf, Circle, Wine, MoreHorizontal, Clock, Info, ShieldCheck, MapPin, Calendar, Users, AlertCircle, Heart, Sparkles, ArrowRight, ChevronUp, Trash2, Plus } from 'lucide-react';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import type { Theme } from '@/lib/constants/themes';
 import { DEFAULT_EVENTS, type WeddingEvent } from '@/lib/schemas/wedding-form';
@@ -21,7 +21,8 @@ import { LoginModal } from '@/components/auth/LoginModal';
 export default function DetailsPage() {
     const router = useRouter();
     const { formData, updateFormData, saveWedding, selectedThemeId, bundleImages, selectedPlan } = useWeddingStore();
-    const [step, setStep] = useState(1); // 1: Couple, 2: Events, 3: Timeline, 4: Summary/Architecture
+    const [step, setStep] = useState(1); // 1: Couple, 2: Ceremony, 3: Events, 4: Summary
+    const [expandedEventId, setExpandedEventId] = useState<string | null>(formData.events?.[0]?.id || null);
     const [isSaving, setIsSaving] = useState(false);
     const [saveError, setSaveError] = useState<string | null>(null);
     const [showLoginModal, setShowLoginModal] = useState(false);
@@ -59,7 +60,7 @@ export default function DetailsPage() {
                 updateFormData({ groomName: e.target.value });
                 if (errors.groomName) setErrors(e => ({ ...e, groomName: '' }));
             }}
-            placeholder="First & Last Name"
+            placeholder="First Name"
             error={errors.groomName}
             maxLength={25}
         />
@@ -74,7 +75,7 @@ export default function DetailsPage() {
                 updateFormData({ brideName: e.target.value });
                 if (errors.brideName) setErrors(e => ({ ...e, brideName: '' }));
             }}
-            placeholder="First & Last Name"
+            placeholder="First Name"
             error={errors.brideName}
             maxLength={25}
         />
@@ -121,11 +122,34 @@ export default function DetailsPage() {
         }
     };
 
+    const formatDate = (dateStr: string) => {
+        if (!dateStr) return "DECEMBER 15, 2026";
+        try {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-US', {
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric'
+            }).toUpperCase();
+        } catch (e) {
+            return dateStr.toUpperCase();
+        }
+    };
+
     const handleNext = async () => {
         if (step === 1) {
             const newErrors: Record<string, string> = {};
             if (!formData.groomName?.trim()) newErrors.groomName = "Groom's name is required";
             if (!formData.brideName?.trim()) newErrors.brideName = "Bride's name is required";
+
+            if (Object.keys(newErrors).length > 0) {
+                setErrors(newErrors);
+                return;
+            }
+            setErrors({});
+            setStep(2);
+        } else if (step === 2) {
+            const newErrors: Record<string, string> = {};
             if (!formData.primaryDate) newErrors.primaryDate = "Wedding date is required";
             if (!formData.primaryTime) newErrors.primaryTime = "Wedding time is required";
             if (!formData.defaultVenueName?.trim()) newErrors.defaultVenueName = "Venue address is required";
@@ -135,8 +159,8 @@ export default function DetailsPage() {
                 return;
             }
             setErrors({});
-            setStep(2);
-        } else if (step === 2) {
+            setStep(3);
+        } else if (step === 3) {
             if (formData.events) {
                 const newErrors: Record<string, string> = {};
                 for (const event of formData.events) {
@@ -153,7 +177,7 @@ export default function DetailsPage() {
                 }
             }
             setErrors({});
-            setStep(3);
+            setStep(4);
         } else {
             // Final step: Summary -> Login and Save
             setShowLoginModal(true);
@@ -166,9 +190,10 @@ export default function DetailsPage() {
     };
 
     const STEPS = [
-        { id: 1, label: 'THE COUPLE', icon: '❤️' },
-        { id: 2, label: 'TIMELINE', icon: '📅' },
-        { id: 3, label: 'ARCHITECTURE', icon: '🏛️' },
+        { id: 1, label: 'The Couple', icon: <Heart size={20} strokeWidth={2.5} /> },
+        { id: 2, label: 'Ceremony', icon: <MapPin size={20} strokeWidth={2.5} /> },
+        { id: 3, label: 'Timeline', icon: <Calendar size={20} strokeWidth={2.5} /> },
+        { id: 4, label: 'Summary', icon: <Sparkles size={20} strokeWidth={2.5} /> },
     ];
 
     return (
@@ -187,60 +212,145 @@ export default function DetailsPage() {
             </header>
 
             <main className="container">
-                <div className={styles.wizardHeader}>
-                    <div className={styles.stepIndicator}>
-                        {STEPS.map((s, i) => (
-                            <div key={s.id} className={clsx(styles.stepItem, step === s.id && styles.stepActive, step > s.id && styles.stepDone)}>
-                                <div className={styles.stepIcon}>{s.icon}</div>
-                                <span className={styles.stepLabel}>{s.label}</span>
-                                {i < STEPS.length - 1 && <div className={styles.stepLine} />}
-                            </div>
-                        ))}
-                    </div>
-                </div>
+
 
                 <div className={styles.wizardContainer}>
                     {step === 1 && (
-                        <div className={styles.wizardCard}>
-                            <div className={formStyles.grid}>
-                                {isGroomFirst ? (
-                                    <>
-                                        {groomNameField}
-                                        {brideNameField}
-                                        {groomParentsField}
-                                        {brideParentsField}
-                                    </>
-                                ) : (
-                                    <>
-                                        {brideNameField}
-                                        {groomNameField}
-                                        {brideParentsField}
-                                        {groomParentsField}
-                                    </>
-                                )}
-                                <Input
-                                    label="Primary Wedding Date"
-                                    type="date"
-                                    value={formData.primaryDate || ''}
-                                    onChange={(e) => {
-                                        updateFormData({ primaryDate: e.target.value });
-                                        if (errors.primaryDate) setErrors(errs => ({ ...errs, primaryDate: '' }));
-                                    }}
-                                    error={errors.primaryDate}
-                                />
-                                <Input
-                                    label="Time"
-                                    type="time"
-                                    value={formData.primaryTime || ''}
-                                    onChange={(e) => {
-                                        updateFormData({ primaryTime: e.target.value });
-                                        if (errors.primaryTime) setErrors(errs => ({ ...errs, primaryTime: '' }));
-                                    }}
-                                    error={errors.primaryTime}
-                                />
-                                <div className={styles.venueSection}>
-                                    <h3 className={styles.venueHeading}>VENUE ADDRESS</h3>
+                        <div className={styles.splitLayout}>
+                            <div className={styles.previewContainer}>
+                                <div className={styles.invitePreview}>
+                                    <div className={styles.previewInner}>
+                                        <div className={styles.previewOrnament}>
+                                            <Sparkles size={32} />
+                                        </div>
+                                        <div className={styles.previewIntro}>Together with their families</div>
+                                        <div className={styles.previewName}>{isGroomFirst ? (formData.groomName || 'Groom Name') : (formData.brideName || 'Bride Name')}</div>
+                                        <div className={styles.previewAmpersand}>&</div>
+                                        <div className={styles.previewName}>{isGroomFirst ? (formData.brideName || 'Bride Name') : (formData.groomName || 'Groom Name')}</div>
+                                        <div className={styles.previewDivider} />
+                                        <div className={styles.previewDate}>{formatDate(formData.primaryDate || '')}</div>
+                                        <div className={styles.previewVenue}>
+                                            <span className={styles.previewVenueName}>{formData.defaultVenueName?.split(',')[0] || 'THE GRAND HOTEL'}</span>
+                                            {formData.defaultVenueName?.split(',').slice(1).join(',') || 'JODHPUR, RAJASTHAN'}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className={styles.formSide}>
+                                <div className={styles.sectionHeaderInner}>
+                                    <div className={styles.sectionHeaderMain}>
+                                        <h2 className={styles.sectionTitleMain}>About the Couple.</h2>
+                                        <p className={styles.sectionSubtitleMain}>
+                                            Introduce the beautiful couple. This will be the heart of your wedding identity.
+                                        </p>
+                                    </div>
+                                    <div className={styles.stepHeaderInfo}>
+                                        <div className={styles.stepBadge}>1</div>
+                                        <span className={styles.stepStepText}>Step 1 of 4</span>
+                                        <div className={styles.stepDot} />
+                                        <div className={styles.stepTiming}>
+                                            <Clock size={16} />
+                                            <span>Takes 15 seconds</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className={styles.wizardCard}>
                                     <div className={formStyles.grid}>
+                                        {isGroomFirst ? (
+                                            <>
+                                                {groomNameField}
+                                                {brideNameField}
+                                                {groomParentsField}
+                                                {brideParentsField}
+                                            </>
+                                        ) : (
+                                            <>
+                                                {brideNameField}
+                                                {groomNameField}
+                                                {brideParentsField}
+                                                {groomParentsField}
+                                            </>
+                                        )}
+                                        <div style={{ gridColumn: 'span 2' }}>
+                                            <div className={styles.formInlineActions}>
+                                                <button className={styles.backBtn} onClick={handleBack}>
+                                                    Back
+                                                </button>
+                                                <button className={styles.continueBtn} onClick={handleNext} disabled={isSaving}>
+                                                    Continue Setup
+                                                    <ArrowRight size={18} style={{ marginLeft: '12px' }} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {step === 2 && (
+                        <div className={styles.splitLayout}>
+                            <div className={styles.previewContainer}>
+                                <div className={styles.invitePreview}>
+                                    <div className={styles.previewInner}>
+                                        <div className={styles.previewOrnament}>
+                                            <Sparkles size={32} />
+                                        </div>
+                                        <div className={styles.previewIntro}>Together with their families</div>
+                                        <div className={styles.previewName}>{isGroomFirst ? (formData.groomName || 'Groom Name') : (formData.brideName || 'Bride Name')}</div>
+                                        <div className={styles.previewAmpersand}>&</div>
+                                        <div className={styles.previewName}>{isGroomFirst ? (formData.brideName || 'Bride Name') : (formData.groomName || 'Groom Name')}</div>
+                                        <div className={styles.previewDivider} />
+                                        <div className={styles.previewDate}>{formatDate(formData.primaryDate || '')}</div>
+                                        <div className={styles.previewVenue}>
+                                            <span className={styles.previewVenueName}>{formData.defaultVenueName?.split(',')[0] || 'THE GRAND HOTEL'}</span>
+                                            {formData.defaultVenueName?.split(',').slice(1).join(',') || 'JODHPUR, RAJASTHAN'}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className={styles.formSide}>
+                                <div className={styles.sectionHeaderInner}>
+                                    <div className={styles.sectionHeaderMain}>
+                                        <h2 className={styles.sectionTitleMain}>Ceremony Details.</h2>
+                                        <p className={styles.sectionSubtitleMain}>
+                                            Define the foundational venue and timing for your primary wedding ceremony.
+                                        </p>
+                                    </div>
+                                    <div className={styles.stepHeaderInfo}>
+                                        <div className={styles.stepBadge}>2</div>
+                                        <span className={styles.stepStepText}>Step 2 of 4</span>
+                                        <div className={styles.stepDot} />
+                                        <div className={styles.stepTiming}>
+                                            <Clock size={16} />
+                                            <span>Takes 20 seconds</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className={styles.wizardCard}>
+                                    <div className={formStyles.grid}>
+                                        <Input
+                                            label="Primary Wedding Date"
+                                            type="date"
+                                            value={formData.primaryDate || ''}
+                                            onChange={(e) => {
+                                                updateFormData({ primaryDate: e.target.value });
+                                                if (errors.primaryDate) setErrors(errs => ({ ...errs, primaryDate: '' }));
+                                            }}
+                                            error={errors.primaryDate}
+                                        />
+                                        <Input
+                                            label="Time"
+                                            type="time"
+                                            value={formData.primaryTime || ''}
+                                            onChange={(e) => {
+                                                updateFormData({ primaryTime: e.target.value });
+                                                if (errors.primaryTime) setErrors(errs => ({ ...errs, primaryTime: '' }));
+                                            }}
+                                            error={errors.primaryTime}
+                                        />
                                         <div style={{ gridColumn: 'span 2' }}>
                                             <Input
                                                 label="Address"
@@ -254,6 +364,21 @@ export default function DetailsPage() {
                                                 error={errors.defaultVenueName}
                                                 maxLength={500}
                                             />
+
+                                            <div className={styles.formSuccessMessage}>
+                                                <CheckCircle size={18} color="#D4AF37" />
+                                                <span>Nice start — your invite identity is taking shape.</span>
+                                            </div>
+
+                                            <div className={styles.formInlineActions}>
+                                                <button className={styles.backBtn} onClick={handleBack}>
+                                                    Back
+                                                </button>
+                                                <button className={styles.continueBtn} onClick={handleNext} disabled={isSaving}>
+                                                    Continue Setup
+                                                    <ArrowRight size={18} style={{ marginLeft: '12px' }} />
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -261,35 +386,121 @@ export default function DetailsPage() {
                         </div>
                     )}
 
-                    {step === 2 && (
-                        <div className={styles.wizardCard}>
-                            <TimelineStep errors={errors} setErrors={setErrors} />
+                    {step === 3 && (
+                        <div className={styles.splitLayout}>
+                            <div className={clsx(styles.previewContainer, styles.formSide)}>
+                                <div className={styles.timelinePreviewArea}>
+                                    <div className={styles.timelineLineContainer}>
+                                        <div className={styles.timelineGoldLine} />
+                                        {(formData.events || []).map((event) => (
+                                            <div
+                                                key={`preview-${event.id}`}
+                                                className={clsx(
+                                                    styles.timelineNodeWrapper,
+                                                    expandedEventId === event.id && styles.timelineNodeEntryActive
+                                                )}
+                                            >
+                                                <div className={clsx(
+                                                    styles.timelineNode,
+                                                    expandedEventId === event.id && styles.timelineNodeActive,
+                                                    event.name?.toLowerCase().includes('wedding') && styles.weddingNode
+                                                )}>
+                                                    {event.name?.toLowerCase().includes('wedding') && <div className={styles.shimmerEffect} />}
+                                                </div>
+                                                <div className={clsx(
+                                                    styles.miniEventCard,
+                                                    expandedEventId === event.id && styles.miniEventActive,
+                                                    event.name?.toLowerCase().includes('wedding') && styles.weddingHighlight
+                                                )}>
+                                                    <div className={styles.miniEventName}>{event.name}</div>
+                                                    <div className={styles.miniEventDetail}>
+                                                        <span>{event.time || '--:--'}</span>
+                                                        <span>{formatDateDisplay(event.date || formData.primaryDate)}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className={styles.completionMessage}>
+                                        “Your wedding celebration is beautifully coming together.”
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className={styles.formSide}>
+                                <div className={styles.sectionHeaderInner}>
+                                    <div className={styles.sectionHeaderMain}>
+                                        <h2 className={styles.sectionTitleMain}>Celebration Timeline.</h2>
+                                        <p className={styles.sectionSubtitleMain}>
+                                            Define the key ceremonies and moments of your wedding celebration.
+                                        </p>
+                                    </div>
+                                    <div className={styles.stepHeaderInfo}>
+                                        <div className={styles.stepBadge}>3</div>
+                                        <span className={styles.stepStepText}>Step 3 of 4</span>
+                                        <div className={styles.stepDot} />
+                                        <div className={styles.stepTiming}>
+                                            <Clock size={16} />
+                                            <span>Takes 30 seconds</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className={styles.wizardCard}>
+                                    <CelebrationTimeline
+                                        errors={errors}
+                                        setErrors={setErrors}
+                                        expandedEventId={expandedEventId}
+                                        setExpandedEventId={setExpandedEventId}
+                                    />
+                                    <div className={styles.formInlineActions} style={{ marginTop: '3rem', justifyContent: 'flex-end', gap: '3rem' }}>
+                                        <button className={styles.backBtn} onClick={handleBack}>
+                                            Back
+                                        </button>
+                                        <button className={styles.continueBtn} onClick={handleNext} disabled={isSaving}>
+                                            Continue Setup
+                                            <ArrowRight size={18} style={{ marginLeft: '12px' }} />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     )}
 
-                    {step === 3 && (
-                        <div className={styles.wizardCard}>
-                            <ArchitectureSummary />
+                    {step === 4 && (
+                        <div className={styles.formSide}>
+                            <div className={styles.sectionHeaderInner}>
+                                <div className={styles.sectionHeaderMain}>
+                                    <h2 className={styles.sectionTitleMain}>Summary & Preview.</h2>
+                                    <p className={styles.sectionSubtitleMain}>
+                                        Review your wedding details. Once finalized, you can preview and share your elegant invitation.
+                                    </p>
+                                </div>
+                                <div className={styles.stepHeaderInfo}>
+                                    <div className={styles.stepBadge}>4</div>
+                                    <span className={styles.stepStepText}>Step 4 of 4</span>
+                                    <div className={styles.stepDot} />
+                                    <div className={styles.stepTiming}>
+                                        <Clock size={16} />
+                                        <span>Review and Finalize</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className={styles.wizardCard}>
+                                <ArchitectureSummary />
+                                <div className={styles.formInlineActions} style={{ marginTop: '3rem', justifyContent: 'flex-end', gap: '3rem' }}>
+                                    <button className={styles.backBtn} onClick={handleBack}>
+                                        Back
+                                    </button>
+                                    <button className={styles.continueBtn} onClick={handleNext} disabled={isSaving}>
+                                        {isSaving ? 'Finalizing...' : 'Finalize & Preview'}
+                                        <ArrowRight size={18} style={{ marginLeft: '12px' }} />
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     )}
                 </div>
             </main>
-
-            <footer className={styles.footer}>
-                <div className={clsx("container", styles.footerContainer)}>
-                    <button className="btn btn-secondary" onClick={handleBack}>
-                        {step === 1 ? 'Previous' : 'Previous'}
-                    </button>
-                    {saveError && (
-                        <div style={{ color: '#E55B5B', fontSize: '0.875rem' }}>
-                            {saveError}
-                        </div>
-                    )}
-                    <button className="btn btn-primary" onClick={handleNext} disabled={isSaving}>
-                        {step === 3 ? (isSaving ? 'Generating...' : 'Finalize & Preview') : 'Next Step →'}
-                    </button>
-                </div>
-            </footer>
 
             <LoginModal
                 isOpen={showLoginModal}
@@ -333,130 +544,103 @@ function getDefaultHeading(eventName: string): string {
 
 // --- Sub Components ---
 
-function TimelineStep({ errors, setErrors }: { errors: Record<string, string>, setErrors: any }) {
-    const { formData, updateFormData, bundleItems } = useWeddingStore();
-    const [activeEventId, setActiveEventId] = useState(formData.events?.[0]?.id || '');
-    const currentEvents = formData.events || [];
-    const activeEvent = currentEvents.find(e => e.id === activeEventId) || currentEvents[0];
+function CelebrationTimeline({ errors, setErrors, expandedEventId, setExpandedEventId }: { errors: Record<string, string>, setErrors: any, expandedEventId: string | null, setExpandedEventId: any }) {
+    const { formData, updateFormData, addEvent, removeEvent, updateEvent } = useWeddingStore();
 
-    const updateActiveEvent = (data: Partial<typeof currentEvents[0]>) => {
-        updateFormData({
-            events: currentEvents.map(e => e.id === activeEventId ? { ...e, ...data } : e)
-        });
+    const toggleEvent = (id: string) => {
+        setExpandedEventId(expandedEventId === id ? null : id);
     };
-
-    // Map event name to BundleItem eventType
-    const getMatchingEventType = (eventName: string): string | null => {
-        if (!bundleItems || bundleItems.length === 0) return null;
-        // Normalize: "Haldi" -> "HALDI", "Save The Date" -> "SAVE_THE_DATE" or "SAVE_DATE"
-        const normalized = eventName.toUpperCase().replace(/\s+/g, '_');
-        const match = bundleItems.find(bi => {
-            const biType = bi.eventType.toUpperCase();
-            return biType === normalized || biType === eventName.toUpperCase() ||
-                biType.replace(/_/g, '') === normalized.replace(/_/g, '');
-        });
-        return match ? match.eventType : null;
-    };
-
-    const matchedEventType = activeEvent ? getMatchingEventType(activeEvent.name) : null;
-
-    if (currentEvents.length === 0) return <div>Please go back and select events.</div>;
 
     return (
-        <div className={styles.timelineLayout}>
-            <div className={styles.timelineSidebar}>
-                {currentEvents.map(e => (
+        <div className={styles.eventTimelineContainer}>
+            <div className={styles.eventTimelineSection}>
+                {(formData.events || []).map((event, index) => (
                     <div
-                        key={e.id}
-                        className={clsx(styles.timelineItem, activeEventId === e.id && styles.timelineItemActive)}
-                        onClick={() => setActiveEventId(e.id)}
+                        key={event.id}
+                        className={clsx(
+                            styles.eventCard,
+                            expandedEventId === event.id && styles.eventCardActive
+                        )}
                     >
-                        <div style={{ fontWeight: 600 }}>{e.name}</div>
-                        <div style={{ fontSize: '0.75rem', opacity: 0.8 }}>{formatDateDisplay(e.date || formData.primaryDate)}</div>
-                    </div>
-                ))}
-            </div>
-
-            <div className={styles.timelineContent}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                    <h2 style={{ fontSize: '1.5rem', margin: 0 }}>{activeEvent.name} Settings</h2>
-                    {matchedEventType && (
-                        <span style={{ fontSize: '0.75rem', background: '#E5E7EB', padding: '2px 8px', borderRadius: '100px' }}>{matchedEventType}</span>
-                    )}
-                </div>
-
-                <div className={formStyles.grid}>
-                    <Input
-                        label="Date"
-                        type="date"
-                        value={activeEvent.date || ''}
-                        onChange={(e) => {
-                            updateActiveEvent({ date: e.target.value });
-                            setErrors((prev: any) => ({ ...prev, [`${activeEvent.id}-date`]: '' }));
-                        }}
-                        helperText={`Default: ${formatDateDisplay(formData.primaryDate)}`}
-                        error={errors[`${activeEvent.id}-date`]}
-                    />
-                    <Input
-                        label="Time"
-                        type="time"
-                        value={activeEvent.time || ''}
-                        onChange={(e) => {
-                            updateActiveEvent({ time: e.target.value });
-                            setErrors((prev: any) => ({ ...prev, [`${activeEvent.id}-time`]: '' }));
-                        }}
-                        error={errors[`${activeEvent.id}-time`]}
-                    />
-                    <div style={{ gridColumn: 'span 2' }}>
-                        <Input
-                            label="Event Heading"
-                            value={activeEvent.heading || getDefaultHeading(activeEvent.name)}
-                            onChange={(e) => updateActiveEvent({ heading: e.target.value })}
-                            placeholder="Enter heading"
-                            helperText="Custom heading displayed on the invitation card."
-                            maxLength={25}
-                        />
-                    </div>
-                    <div style={{ gridColumn: 'span 2' }}>
-                        <Input
-                            label="Welcome Message"
-                            value={activeEvent.tagline || getDefaultWelcomeMessage(activeEvent.name)}
-                            onChange={(e) => updateActiveEvent({ tagline: e.target.value })}
-                            placeholder="Enter welcome message"
-                            helperText="Change welcome message if you want."
-                            type="textarea"
-                            maxLength={108}
-                        />
-                    </div>
-
-                    <div style={{ gridColumn: 'span 2', padding: '1rem', background: 'white', borderRadius: '12px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                            <span style={{ fontWeight: 600, fontSize: '0.875rem', textTransform: 'uppercase' }}>VENUE</span>
-                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-                                <span style={{ fontSize: '0.75rem' }}>Custom Venue?</span>
-                                <input
-                                    type="checkbox"
-                                    checked={activeEvent.isCustomVenue}
-                                    onChange={(e) => updateActiveEvent({ isCustomVenue: e.target.checked })}
-                                />
-                            </label>
+                        <div
+                            className={styles.eventCardHeader}
+                            onClick={() => toggleEvent(event.id)}
+                        >
+                            <div className={styles.eventCardNumber}>{index + 1}</div>
+                            <div className={styles.eventCardTitle}>{event.name}</div>
+                            <div className={styles.eventCardToggle}>
+                                <ChevronDown size={20} />
+                            </div>
                         </div>
-                        {activeEvent.isCustomVenue ? (
-                            <Input
-                                label="Custom Venue for this Event"
-                                value={activeEvent.venue || ''}
-                                onChange={(e) => updateActiveEvent({ venue: e.target.value })}
-                                placeholder="Enter specific venue name"
-                                type="textarea"
-                                maxLength={500}
-                            />
-                        ) : (
-                            <p style={{ fontSize: '0.8125rem', color: '#666', fontStyle: 'italic', margin: 0 }}>
-                                Inheriting from Global: {formData.defaultVenueName || 'Not Set'}
-                            </p>
+
+                        {expandedEventId === event.id && (
+                            <div className={styles.eventCardBody}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                                    <Input
+                                        label="Event Name"
+                                        value={event.name}
+                                        onChange={(e) => updateEvent(event.id, { name: e.target.value })}
+                                        placeholder="e.g. Mehendi"
+                                    />
+
+                                    <div className={styles.eventFieldRow}>
+                                        <Input
+                                            label="Date"
+                                            type="date"
+                                            value={event.date || ''}
+                                            onChange={(e) => {
+                                                updateEvent(event.id, { date: e.target.value });
+                                                setErrors((prev: any) => ({ ...prev, [`${event.id}-date`]: '' }));
+                                            }}
+                                            error={errors[`${event.id}-date`]}
+                                        />
+                                        <Input
+                                            label="Time"
+                                            type="time"
+                                            value={event.time || ''}
+                                            onChange={(e) => {
+                                                updateEvent(event.id, { time: e.target.value });
+                                                setErrors((prev: any) => ({ ...prev, [`${event.id}-time`]: '' }));
+                                            }}
+                                            error={errors[`${event.id}-time`]}
+                                        />
+                                    </div>
+
+                                    <Input
+                                        label="Venue"
+                                        value={event.venue || ''}
+                                        onChange={(e) => updateEvent(event.id, { venue: e.target.value, isCustomVenue: !!e.target.value })}
+                                        placeholder="Inherits from Global if empty"
+                                        type="textarea"
+                                    />
+
+                                    <button
+                                        className={styles.removeEventBtn}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            removeEvent(event.id);
+                                        }}
+                                    >
+                                        <Trash2 size={16} />
+                                        Remove Event
+                                    </button>
+                                </div>
+                            </div>
                         )}
                     </div>
-                </div>
+                ))}
+
+                <button
+                    className={styles.addEventBtn}
+                    onClick={() => {
+                        const newId = crypto.randomUUID();
+                        addEvent({ id: newId, name: 'New Celebration' });
+                        setExpandedEventId(newId);
+                    }}
+                >
+                    <Plus size={20} />
+                    Add Another Event
+                </button>
             </div>
         </div>
     );
