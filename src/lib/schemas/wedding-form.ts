@@ -45,6 +45,9 @@ export const WeddingFormSchema = z.object({
     // Contact / RSVP
     rsvpContact: z.string().optional(),
     rsvpDeadline: z.string().optional(),
+    allowCompanions: z.boolean().default(false).optional(),
+    collectDietary: z.boolean().default(false).optional(),
+    eventType: z.string().optional(),
 
     // Custom Message
     invitationMessage: z.string().max(108, "Maximum 108 characters").optional(),

@@ -164,17 +164,19 @@ export const RSVPForm = ({ wedding }: RSVPFormProps) => {
 
                         {/* Guests & Phone */}
                         <div className={styles.row}>
-                            <div className={styles.field}>
-                                <label>Number of Guests</label>
-                                <input
-                                    type="number"
-                                    min="1"
-                                    className={styles.input}
-                                    value={adultCount}
-                                    onChange={(e) => setAdultCount(parseInt(e.target.value) || 1)}
-                                />
-                            </div>
-                            <div className={styles.field}>
+                            {wedding.allowCompanions && (
+                                <div className={styles.field}>
+                                    <label>Number of Guests</label>
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        className={styles.input}
+                                        value={adultCount}
+                                        onChange={(e) => setAdultCount(parseInt(e.target.value) || 1)}
+                                    />
+                                </div>
+                            )}
+                            <div className={styles.field} style={{ gridColumn: !wedding.allowCompanions ? 'span 2' : 'span 1' }}>
                                 <label>Phone Number</label>
                                 <input
                                     type="tel"
@@ -187,21 +189,23 @@ export const RSVPForm = ({ wedding }: RSVPFormProps) => {
                         </div>
 
                         {/* Dietary */}
-                        <div className={styles.field}>
-                            <label>Dietary Preference</label>
-                            <div className={styles.dietaryGrid}>
-                                {['Veg', 'Non-Veg', 'Jain', 'Other'].map((opt) => (
-                                    <button
-                                        key={opt}
-                                        type="button"
-                                        className={clsx(styles.dietaryBtn, dietary === opt && styles.dietaryBtnActive)}
-                                        onClick={() => setDietary(opt)}
-                                    >
-                                        {opt}
-                                    </button>
-                                ))}
+                        {wedding.collectDietary && (
+                            <div className={styles.field}>
+                                <label>Dietary Preference</label>
+                                <div className={styles.dietaryGrid}>
+                                    {['Veg', 'Non-Veg', 'Jain', 'Other'].map((opt) => (
+                                        <button
+                                            key={opt}
+                                            type="button"
+                                            className={clsx(styles.dietaryBtn, dietary === opt && styles.dietaryBtnActive)}
+                                            onClick={() => setDietary(opt)}
+                                        >
+                                            {opt}
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
-                        </div>
+                        )}
 
                         <button type="submit" className={styles.submit} disabled={isSubmitting}>
                             {isSubmitting ? 'Submitting...' : 'Submit Response'}
@@ -229,6 +233,12 @@ export const RSVPForm = ({ wedding }: RSVPFormProps) => {
                 </header>
 
                 <main className={styles.main}>
+                    <div className={styles.welcomeBox}>
+                        <p className={styles.welcomeText}>
+                            {wedding.invitationMessage || "We can't wait to celebrate with you!"}
+                        </p>
+                    </div>
+
                     <div className={styles.eventsList}>
                         {wedding.events.map((event: any) => (
                             <div key={event.id} className={styles.eventCard}>
@@ -238,7 +248,7 @@ export const RSVPForm = ({ wedding }: RSVPFormProps) => {
                                 </div>
                                 <div className={styles.eventRow}>
                                     <Calendar size={18} className={styles.icon} />
-                                    <span>{event.date || 'Date TBD'} • {event.time || 'Time TBD'} onwards</span>
+                                    <span>{event.date ? new Date(event.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Date TBD'} • {event.time || 'Time TBD'} onwards</span>
                                 </div>
                             </div>
                         ))}

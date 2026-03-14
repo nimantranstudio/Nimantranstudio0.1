@@ -54,7 +54,23 @@
     color: #d4af37;
     font-style: italic;
     margin-bottom: 2rem;
-    font-family: 'Times New Roman', serif;
+    font-family: var(--font-playfair), serif;
+}
+
+.welcomeBox {
+    margin-bottom: 2.5rem;
+    padding: 1.5rem;
+    background: #FFFAF0;
+    border-radius: 16px;
+    border: 1px dashed rgba(212, 175, 55, 0.3);
+}
+
+.welcomeText {
+    font-size: 1.125rem;
+    line-height: 1.6;
+    color: #4B5563;
+    font-family: var(--font-playfair), serif;
+    font-style: italic;
 }
 
 .eventCard {

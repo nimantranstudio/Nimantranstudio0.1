@@ -178,8 +178,8 @@ export default function DetailsPage() {
             }
             setErrors({});
             setStep(4);
-        } else {
-            // Final step: Summary -> Login and Save
+        } else if (step === 4) {
+            // Final step: RSVP -> Login and Save
             setShowLoginModal(true);
         }
     };
@@ -193,7 +193,7 @@ export default function DetailsPage() {
         { id: 1, label: 'The Couple', icon: <Heart size={20} strokeWidth={2.5} /> },
         { id: 2, label: 'Ceremony', icon: <MapPin size={20} strokeWidth={2.5} /> },
         { id: 3, label: 'Timeline', icon: <Calendar size={20} strokeWidth={2.5} /> },
-        { id: 4, label: 'Summary', icon: <Sparkles size={20} strokeWidth={2.5} /> },
+        { id: 4, label: 'RSVP', icon: <Users size={20} strokeWidth={2.5} /> },
     ];
 
     return (
@@ -246,8 +246,8 @@ export default function DetailsPage() {
                                         </p>
                                     </div>
                                     <div className={styles.stepHeaderInfo}>
-                                        <div className={styles.stepBadge}>1</div>
-                                        <span className={styles.stepStepText}>Step 1 of 4</span>
+                                        <div className={styles.stepBadge}>{step}</div>
+                                        <span className={styles.stepStepText}>Step {step} of 4</span>
                                         <div className={styles.stepDot} />
                                         <div className={styles.stepTiming}>
                                             <Clock size={16} />
@@ -320,8 +320,8 @@ export default function DetailsPage() {
                                         </p>
                                     </div>
                                     <div className={styles.stepHeaderInfo}>
-                                        <div className={styles.stepBadge}>2</div>
-                                        <span className={styles.stepStepText}>Step 2 of 4</span>
+                                        <div className={styles.stepBadge}>{step}</div>
+                                        <span className={styles.stepStepText}>Step {step} of 4</span>
                                         <div className={styles.stepDot} />
                                         <div className={styles.stepTiming}>
                                             <Clock size={16} />
@@ -402,7 +402,7 @@ export default function DetailsPage() {
                                             >
                                                 <div className={clsx(
                                                     styles.timelineNode,
-                                                    expandedEventId === event.id && styles.timelineNodeActive,
+                                                    (expandedEventId === event.id || !!event.date) && styles.timelineNodeActive,
                                                     event.name?.toLowerCase().includes('wedding') && styles.weddingNode
                                                 )}>
                                                     {event.name?.toLowerCase().includes('wedding') && <div className={styles.shimmerEffect} />}
@@ -410,12 +410,13 @@ export default function DetailsPage() {
                                                 <div className={clsx(
                                                     styles.miniEventCard,
                                                     expandedEventId === event.id && styles.miniEventActive,
+                                                    (!event.date && !event.time) && styles.miniEventBlank,
                                                     event.name?.toLowerCase().includes('wedding') && styles.weddingHighlight
                                                 )}>
                                                     <div className={styles.miniEventName}>{event.name}</div>
                                                     <div className={styles.miniEventDetail}>
-                                                        <span>{event.time || '--:--'}</span>
-                                                        <span>{formatDateDisplay(event.date || formData.primaryDate)}</span>
+                                                        <span>{event.time || ''}</span>
+                                                        <span>{event.date ? formatDateDisplay(event.date) : ''}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -436,8 +437,8 @@ export default function DetailsPage() {
                                         </p>
                                     </div>
                                     <div className={styles.stepHeaderInfo}>
-                                        <div className={styles.stepBadge}>3</div>
-                                        <span className={styles.stepStepText}>Step 3 of 4</span>
+                                        <div className={styles.stepBadge}>{step}</div>
+                                        <span className={styles.stepStepText}>Step {step} of 5</span>
                                         <div className={styles.stepDot} />
                                         <div className={styles.stepTiming}>
                                             <Clock size={16} />
@@ -467,38 +468,143 @@ export default function DetailsPage() {
                     )}
 
                     {step === 4 && (
-                        <div className={styles.formSide}>
-                            <div className={styles.sectionHeaderInner}>
-                                <div className={styles.sectionHeaderMain}>
-                                    <h2 className={styles.sectionTitleMain}>Summary & Preview.</h2>
-                                    <p className={styles.sectionSubtitleMain}>
-                                        Review your wedding details. Once finalized, you can preview and share your elegant invitation.
-                                    </p>
-                                </div>
-                                <div className={styles.stepHeaderInfo}>
-                                    <div className={styles.stepBadge}>4</div>
-                                    <span className={styles.stepStepText}>Step 4 of 4</span>
-                                    <div className={styles.stepDot} />
-                                    <div className={styles.stepTiming}>
-                                        <Clock size={16} />
-                                        <span>Review and Finalize</span>
+                        <div className={styles.splitLayout}>
+                            <div className={styles.rsvpPreviewContainer}>
+                                <div className={styles.miniCard}>
+                                    <div className={styles.miniCardIcon}>
+                                        <Calendar size={28} />
+                                    </div>
+                                    <div className={styles.miniCardTopText}>
+                                        You are joyfully invited <br /> to the wedding of
+                                    </div>
+                                    <div className={styles.miniCardNames}>
+                                        {formData.groomName || 'Rahul'} 
+                                        <span className={styles.miniCardAmpersand}>&</span> 
+                                        {formData.brideName || 'Anjalee'}
+                                    </div>
+                                    
+                                    <div className={styles.miniCardMessageBox}>
+                                        <p className={styles.miniCardMessageText}>
+                                            {formData.invitationMessage || "We're so excited to celebrate our special day with our dearest friends and family! Please join us for an evening of love and laughter."}
+                                        </p>
+                                    </div>
+
+                                    <div className={styles.miniCardDivider} />
+                                    
+                                    <div className={styles.miniCardEventTitle}>
+                                        THE {formData.eventType?.toUpperCase() || 'WEDDING'} CEREMONY
+                                    </div>
+                                    <div className={styles.miniCardDate}>
+                                        {formData.primaryDate ? new Date(formData.primaryDate).toLocaleDateString('en-GB', { 
+                                            weekday: 'long', 
+                                            day: 'numeric', 
+                                            month: 'long', 
+                                            year: 'numeric' 
+                                        }) : 'Sunday, 15th of March 2026'}
+                                        {' • '}
+                                        {formData.primaryTime || '19:00'} onwards
+                                    </div>
+
+                                    <div className={styles.miniCardButton}>
+                                        Respond to Invitation
+                                        <ArrowRight size={18} />
+                                    </div>
+
+                                    <div className={styles.miniCardFooter}>
+                                        POWERED BY NIMANTRANSTUDIO
                                     </div>
                                 </div>
                             </div>
-                            <div className={styles.wizardCard}>
-                                <ArchitectureSummary />
-                                <div className={styles.formInlineActions} style={{ marginTop: '3rem', justifyContent: 'flex-end', gap: '3rem' }}>
-                                    <button className={styles.backBtn} onClick={handleBack}>
-                                        Back
-                                    </button>
-                                    <button className={styles.continueBtn} onClick={handleNext} disabled={isSaving}>
-                                        {isSaving ? 'Finalizing...' : 'Finalize & Preview'}
-                                        <ArrowRight size={18} style={{ marginLeft: '12px' }} />
-                                    </button>
+
+                            <div className={styles.formSide}>
+                                <div className={styles.sectionHeaderInner}>
+                                    <div className={styles.sectionHeaderMain}>
+                                        <h1 className={styles.rsvpTitle} style={{ marginTop: 0 }}>Host Your Event</h1>
+                                        <p className={styles.rsvpSubtitle}>
+                                            Create a beautiful, distraction-free RSVP link to share with your loved ones via WhatsApp
+                                        </p>
+                                    </div>
+                                    <div className={styles.stepHeaderInfo}>
+                                        <div className={styles.stepBadge}>4</div>
+                                        <span className={styles.stepStepText}>Step 4 of 4</span>
+                                        <div className={styles.stepDot} />
+                                        <div className={styles.stepTiming}>
+                                            <Clock size={16} />
+                                            <span>Takes 30 seconds</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className={styles.wizardCard}>
+                                    <div className={formStyles.grid}>
+                                        <div style={{ gridColumn: 'span 2' }}>
+                                            <Input
+                                                label="EVENT NAME"
+                                                value={`${formData.groomName || 'Rahul'} and ${formData.brideName || 'Anjalee'}'s Wedding`}
+                                                readOnly
+                                            />
+                                        </div>
+                                        <div style={{ gridColumn: 'span 2' }}>
+                                            <Input
+                                                label="WELCOME MESSAGE"
+                                                placeholder="Ex: We can't wait to celebrate with you!"
+                                                type="textarea"
+                                                value={formData.invitationMessage || ''}
+                                                onChange={(e) => updateFormData({ invitationMessage: e.target.value })}
+                                            />
+                                        </div>
+                                        <Input
+                                            label="DATE"
+                                            type="date"
+                                            value={formData.primaryDate || ''}
+                                            onChange={(e) => updateFormData({ primaryDate: e.target.value })}
+                                        />
+                                        <Input
+                                            label="TIME"
+                                            type="time"
+                                            value={formData.primaryTime || ''}
+                                            onChange={(e) => updateFormData({ primaryTime: e.target.value })}
+                                        />
+                                        <div className={formStyles.field}>
+                                            <label className={formStyles.label}>EVENT TYPE</label>
+                                            <select 
+                                                className={styles.selectInput}
+                                                value={formData.eventType || 'Wedding'}
+                                                onChange={(e) => updateFormData({ eventType: e.target.value })}
+                                            >
+                                                <option value="Wedding">Wedding</option>
+                                                <option value="Reception">Reception</option>
+                                                <option value="Sangeet">Sangeet</option>
+                                                <option value="Engagement">Engagement</option>
+                                                <option value="Other">Other</option>
+                                            </select>
+                                        </div>
+                                        <Input
+                                            label="RSVP DEADLINE (OPTIONAL)"
+                                            type="date"
+                                            value={formData.rsvpDeadline || ''}
+                                            onChange={(e) => updateFormData({ rsvpDeadline: e.target.value })}
+                                        />
+
+
+                                        <div style={{ gridColumn: 'span 2' }}>
+                                            <div className={styles.formInlineActions}>
+                                                <button className={styles.backBtn} onClick={handleBack}>
+                                                    Back
+                                                </button>
+                                                <button className={styles.continueBtn} onClick={handleNext} disabled={isSaving}>
+                                                    {isSaving ? 'Finalizing...' : 'Finalize & Preview'}
+                                                    <ArrowRight size={18} style={{ marginLeft: '12px' }} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     )}
+
+
                 </div>
             </main>
 
@@ -566,7 +672,6 @@ function CelebrationTimeline({ errors, setErrors, expandedEventId, setExpandedEv
                             className={styles.eventCardHeader}
                             onClick={() => toggleEvent(event.id)}
                         >
-                            <div className={styles.eventCardNumber}>{index + 1}</div>
                             <div className={styles.eventCardTitle}>{event.name}</div>
                             <div className={styles.eventCardToggle}>
                                 <ChevronDown size={20} />
@@ -576,13 +681,6 @@ function CelebrationTimeline({ errors, setErrors, expandedEventId, setExpandedEv
                         {expandedEventId === event.id && (
                             <div className={styles.eventCardBody}>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                                    <Input
-                                        label="Event Name"
-                                        value={event.name}
-                                        onChange={(e) => updateEvent(event.id, { name: e.target.value })}
-                                        placeholder="e.g. Mehendi"
-                                    />
-
                                     <div className={styles.eventFieldRow}>
                                         <Input
                                             label="Date"
@@ -630,17 +728,7 @@ function CelebrationTimeline({ errors, setErrors, expandedEventId, setExpandedEv
                     </div>
                 ))}
 
-                <button
-                    className={styles.addEventBtn}
-                    onClick={() => {
-                        const newId = crypto.randomUUID();
-                        addEvent({ id: newId, name: 'New Celebration' });
-                        setExpandedEventId(newId);
-                    }}
-                >
-                    <Plus size={20} />
-                    Add Another Event
-                </button>
+
             </div>
         </div>
     );
