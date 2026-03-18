@@ -1,0 +1,173 @@
+.processingPage {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    min-height: 100vh;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(12px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    overflow: hidden;
+}
+
+.transitionCard {
+    background: #000000;
+    padding: 4.5rem 4rem;
+    border-radius: 48px;
+    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.6);
+    max-width: 900px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    z-index: 10;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.headline {
+    font-family: var(--font-playfair), serif;
+    font-size: 2.75rem;
+    font-weight: 500;
+    line-height: 1.1;
+    margin-bottom: 1.25rem;
+    color: #FFFFFF;
+    letter-spacing: -0.02em;
+}
+
+.subtext {
+    font-size: 1.125rem;
+    color: #9CA3AF;
+    line-height: 1.6;
+    margin-bottom: 4rem;
+    max-width: 500px;
+}
+
+.mainGrid {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: center;
+    width: 100%;
+    gap: 6rem;
+    margin-bottom: 4rem;
+    padding: 0 1rem;
+}
+
+@media (max-width: 800px) {
+    .mainGrid {
+        flex-direction: column;
+        align-items: center;
+        gap: 3rem;
+    }
+}
+
+.checklist {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    width: 100%;
+    text-align: left;
+    max-width: 380px;
+    padding-top: 1rem;
+}
+
+.step {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    opacity: 0.2;
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.stepActive {
+    opacity: 1;
+    transform: translateX(8px);
+}
+
+.stepCompleted {
+    opacity: 0.6;
+}
+
+.stepIndicator {
+    width: 22px;
+    height: 22px;
+    border: 1.5px solid rgba(212, 175, 55, 0.3);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    position: relative;
+}
+
+.stepActive .stepIndicator {
+    border-color: #D4AF37;
+}
+
+.stepCompleted .stepIndicator {
+    background-color: #D4AF37;
+    border-color: #D4AF37;
+}
+
+.checkMark {
+    color: white;
+}
+
+.stepText {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #9CA3AF;
+}
+
+.stepCompleted .stepText {
+    color: #FFFFFF;
+}
+
+.progressBarContainer {
+    width: 400px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 100px;
+    overflow: hidden;
+    margin-bottom: 2.5rem;
+}
+
+@media (max-width: 500px) {
+    .progressBarContainer {
+        width: 100%;
+        max-width: 300px;
+    }
+}
+
+.progressBar {
+    height: 100%;
+    background: #D4AF37;
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+}
+
+.previewBtn {
+    padding: 1.125rem 4rem;
+    background-color: #FFFFFF;
+    color: #000000;
+    font-weight: 700;
+    border: none;
+    border-radius: 100px;
+    font-size: 1.125rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.previewBtn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 35px rgba(255, 255, 255, 0.25);
+    background-color: #F8FAFC;
+}
+
+.backgroundGlow, .floralTexture {
+    display: none;
+}

@@ -170,21 +170,15 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
 
     const handleCreateNow = () => {
         if (!theme) return;
-        setIsPersonalising(true);
-        setShowConfetti(true);
-
-        // Sequence timing:
-        // 0s: Confetti burst + Overlay fade-in
-        // 0.6s: Headline fades in (handled via motion delay)
-        // 1.5s: Confetti begins to fade out (handled via component duration)
-
-        setTimeout(() => {
-            resetForm();
-            setThemeId(theme.id);
-            const items = activeBundle?.bundleItems || [];
-            setBundleData(selectedPlan, imageList, items);
-            router.push('/details');
-        }, 5000); // Increased to 5s for a more leisurely, premium feel
+        
+        // Prepare store before navigation
+        resetForm();
+        setThemeId(theme.id);
+        const items = activeBundle?.bundleItems || [];
+        setBundleData(selectedPlan, imageList, items);
+        
+        // Navigate immediately with trigger
+        router.push('/details?welcome=true');
     };
 
     const handleShare = () => {
@@ -311,71 +305,7 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
     return (
         <div className={styles.page}>
             {/* Header with Breadcrumb and Separator */}
-            {/* Personalization Transition Screen */}
-            {isPersonalising && (
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className={styles.transitionOverlay}
-                >
-                    {showConfetti && <WeddingCelebration />}
-
-                    <motion.div
-                        initial={{ scale: 0.95, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
-                        className={styles.transitionContent}
-                    >
-                        <motion.div
-                            initial={{ scale: 0.8, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            transition={{ duration: 1.2, ease: "easeOut", delay: 0.5 }}
-                            className={styles.transitionIconWrapper}
-                        >
-                            <Heart className={styles.transitionHeartOutline} size={48} strokeWidth={0.75} />
-                        </motion.div>
-
-                        <motion.h2
-                            initial={{ y: 10, opacity: 0 }}
-                            animate={{ y: 0, opacity: 1 }}
-                            transition={{ delay: 1.0, duration: 1.2 }}
-                            className={styles.transitionHeadline}
-                        >
-                            Great choice.
-                        </motion.h2>
-
-                        <motion.p
-                            initial={{ y: 10, opacity: 0 }}
-                            animate={{ y: 0, opacity: 1 }}
-                            transition={{ delay: 1.5, duration: 1.2 }}
-                            className={styles.transitionSupportingText}
-                        >
-                            Now let’s personalise your wedding invitation suite.
-                        </motion.p>
-
-                        {/* Animated progress bar */}
-                        <div className={styles.progressTrack}>
-                            <motion.div
-                                initial={{ width: 0 }}
-                                animate={{ width: '100%' }}
-                                transition={{ duration: 2.5, ease: "easeInOut", delay: 2.0 }}
-                                className={styles.progressFill}
-                            />
-                        </div>
-
-                        {/* Micro reassurance text */}
-                        <motion.div
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 3.5, duration: 0.8 }}
-                            className={styles.reassuranceContainer}
-                        >
-                            <span className={styles.reassurancePrimary}>Setting up your wedding workspace…</span>
-                            <span className={styles.reassuranceSecondary}>Everything will be ready in a moment.</span>
-                        </motion.div>
-                    </motion.div>
-                </motion.div>
-            )}
+            {/* Personalization Transition Screen removed - moved to /details */}
 
             <header style={{
                 borderBottom: '1px solid var(--border)',

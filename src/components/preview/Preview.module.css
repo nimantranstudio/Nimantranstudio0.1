@@ -1,7 +1,7 @@
 .previewPage {
     min-height: 100vh;
     padding-bottom: 5rem;
-    background-color: #fff;
+    background-color: #FDFBF7; /* Brand Ivory Background */
 }
 
 .header {
@@ -11,13 +11,16 @@
 }
 
 .previewHeaderTitle {
-    font-size: 2.5rem;
+    color: #000000;
+    font-size: 1.875rem;
     margin-bottom: 0.5rem;
+    font-weight: 700;
 }
 
 .previewHeaderSubtitle {
-    color: #666;
-    font-size: 1rem;
+    color: #6B7280;
+    font-size: 0.9375rem;
+    margin-bottom: 1rem;
 }
 
 /* 2-Column Layout */
@@ -34,23 +37,154 @@
     }
 }
 
-/* Left Column: Grid */
+/* Left Column: Suite List */
 .leftColumn {
     display: flex;
     flex-direction: column;
 }
 
-.grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    /* 3 columns in the left side of 2-col */
-    gap: 0.75rem;
+.suiteCard {
+    background-color: #FFFFFF;
+    border-radius: 24px;
+    padding: 2.5rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+    border: 1px solid #F3F4F6;
 }
 
-@media (max-width: 768px) {
-    .grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
+.suiteHeaderTitle {
+    font-family: var(--font-serif);
+    font-size: 1.75rem;
+    color: #111827;
+    margin-bottom: 2rem;
+    font-weight: 500;
+}
+
+.suiteList {
+    display: flex;
+    flex-direction: column;
+}
+
+.suiteItem {
+    display: flex;
+    align-items: center;
+    padding: 1.5rem 0;
+    border-bottom: 1px solid #F3F4F6;
+    gap: 1.5rem;
+}
+
+.suiteItem:last-child {
+    border-bottom: none;
+}
+
+.suiteThumbContainer {
+    width: 100px;
+    height: 100px;
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    background: #F9FAFB;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+.suitePreviewOverlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.3);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    opacity: 1;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.suiteThumbCard {
+    width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 9/16 !important;
+    transform: none !important;
+    box-shadow: none !important;
+    border: none !important;
+}
+
+.suiteInfo {
+    flex: 1;
+}
+
+.suiteItemTitle {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 0.25rem;
+}
+
+.suiteItemDesc {
+    font-size: 0.875rem;
+    color: #6B7280;
+    margin-bottom: 0.125rem;
+}
+
+.suiteItemActionHint {
+    font-size: 0.8125rem;
+    color: #9CA3AF;
+}
+
+.suiteActionButton {
+    padding: 0.625rem 1.25rem;
+    background-color: #F3F4F6;
+    color: #4B5563;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+}
+
+.suiteActionButton:hover {
+    background-color: #E5E7EB;
+    color: #111827;
+}
+
+.suiteActions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: flex-end;
+}
+
+.suiteQuickActions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.suiteQuickActionBtn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #F9FAFB;
+    border: 1px solid #F3F4F6;
+    border-radius: 6px;
+    color: #6B7280;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.suiteQuickActionBtn:hover {
+    background: #FFFFFF;
+    color: #111827;
+    border-color: #D1D5DB;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 /* Right Column: Summary & Info */
@@ -63,21 +197,26 @@
 }
 
 .bundleTitle {
-    font-size: 1.5rem;
+    font-size: 1.125rem;
     font-weight: 600;
-    line-height: 1.3;
-    margin-bottom: 0.5rem;
-    color: #111;
+    line-height: 1.4;
+    color: #111827;
+}
+
+.bundleHeader {
+    margin-bottom: 2rem;
+    border-bottom: 1px solid #F3F4F6;
+    padding-bottom: 1.5rem;
 }
 
 /* Summary Card (Dark Theme) */
 .summaryCard {
-    background-color: var(--secondary);
-    /* Mehendi Green */
-    color: #fff;
+    background-color: #FFFFFF;
+    color: #111827;
     padding: 2.5rem;
     border-radius: 24px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.04);
+    border: 1px solid #F3F4F6;
 }
 
 .summaryHeader {
@@ -87,8 +226,9 @@
 
 .summaryHeader h2 {
     font-family: var(--font-serif);
-    font-size: 1.75rem;
-    font-weight: 500;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #111827;
 }
 
 .detailsList {
@@ -111,11 +251,12 @@
 
 .detailValue {
     font-weight: 600;
+    color: #111827;
 }
 
 .divider {
     height: 1px;
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: #F3F4F6;
     margin: 1.5rem 0;
 }
 
@@ -134,7 +275,7 @@
 .priceTitle {
     font-size: 1rem;
     font-weight: 500;
-    color: #d1d5db;
+    color: #4B5563;
 }
 
 .priceSub {
@@ -152,20 +293,30 @@
 
 .confirmBtn {
     width: 100%;
-    background-color: #fff;
-    color: #0f1c16;
+    background-color: #C5A352; /* Goldan */
+    color: #fff;
     border: none;
     padding: 1.25rem;
     border-radius: 50px;
     font-size: 1.125rem;
     font-weight: 700;
     cursor: pointer;
-    transition: transform 0.2s;
+    transition: all 0.2s;
 }
 
 .confirmBtn:hover {
     transform: translateY(-2px);
-    background-color: #f9fafb;
+    background-color: #B38F3D;
+    box-shadow: 0 8px 20px rgba(197, 163, 82, 0.3);
+}
+
+.ctaSubtext {
+    display: block;
+    text-align: center;
+    font-size: 0.8125rem;
+    color: #6B7280;
+    margin-top: 1rem;
+    line-height: 1.4;
 }
 
 /* Info Blocks */
@@ -268,13 +419,13 @@
     align-items: center;
     pointer-events: none;
     z-index: 5;
-    opacity: 0.05;
+    opacity: 0.2;
     transform: rotate(-30deg);
     white-space: nowrap;
 }
 
 .watermark span {
-    font-size: 1.5rem;
+    font-size: 2.2rem;
     font-weight: 900;
     letter-spacing: 0.2rem;
     text-transform: uppercase;

@@ -4,13 +4,15 @@ import { useWeddingStore } from '@/store/wedding-store';
 import type { Theme } from '@/lib/constants/themes';
 import { InvitationCard, InvitationCardRef } from '@/components/preview/InvitationCard';
 import styles from '@/components/preview/Preview.module.css';
-import { ChevronLeft, Headphones, Play } from 'lucide-react';
+import { ChevronLeft, Headphones, Play, Edit, Download, Share2 } from 'lucide-react';
 import Link from 'next/link';
 import { clsx } from 'clsx';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { LoginModal } from '@/components/auth/LoginModal';
+import confetti from 'canvas-confetti';
+import { Suspense } from 'react';
 
 const ALL_ASSETS = [
     { id: 'poster', name: "Wedding poster", type: 'image' },
@@ -28,6 +30,16 @@ const ALL_ASSETS = [
 ];
 
 export default function PreviewPage() {
+    return (
+        <Suspense fallback={<div>Loading preview...</div>}>
+            <PreviewContent />
+        </Suspense>
+    );
+}
+
+import { ProcessingOverlay } from '@/components/processing/ProcessingOverlay';
+
+function PreviewContent() {
     const { formData, selectedThemeId, isAuthenticated, login, bundleImages, bundleItems } = useWeddingStore();
     const [isSecuring, setIsSecuring] = useState(false);
     const [theme, setTheme] = useState<Theme | null>(null);
@@ -36,9 +48,35 @@ export default function PreviewPage() {
     const [isEditMode, setIsEditMode] = useState(false);
     const [resetKey, setResetKey] = useState(0);
     const cardRef = useRef<InvitationCardRef>(null);
+    const suiteRefs = useRef<Record<string, InvitationCardRef | null>>({});
     const router = useRouter();
+    const searchParams = useSearchParams();
+    
+    // Fluid transition state
+    const [showProcessing, setShowProcessing] = useState(searchParams.get('processing') === 'true');
 
     const { updateFormData, updateEvent } = useWeddingStore();
+
+    // Trigger seamless celebratory confetti if coming from old processing route
+    useEffect(() => {
+        if (searchParams.get('confetti') === 'true') {
+            const trigger = (delay: number) => {
+                setTimeout(() => {
+                    confetti({
+                        particleCount: 150,
+                        spread: 160,
+                        origin: { y: 0.6 },
+                        colors: ['#D4AF37', '#AA861E', '#FFFFFF'],
+                        gravity: 0.5,
+                        scalar: 1.4,
+                        zIndex: 20000
+                    });
+                }, delay);
+            };
+            trigger(0);
+            trigger(1500);
+        }
+    }, [searchParams]);
 
     useEffect(() => {
         async function fetchTheme() {
@@ -205,7 +243,20 @@ export default function PreviewPage() {
         return items;
     };
 
+    const getItemDescription = (name: string) => {
+        const n = name.toLowerCase();
+        if (n.includes('video')) return "Short modern invite announcement video";
+        if (n.includes('rsvp')) return "Personalized link to collect responses";
+        if (n.includes('save the date')) return "WhatsApp and story-formatted image";
+        if (n.includes('haldi')) return "Delightful WhatsApp-ready image card";
+        if (n.includes('mehendi')) return "Delightful WhatsApp-ready image card";
+        if (n.includes('sangeet')) return "Sophisticated WhatsApp-ready image card";
+        if (n.includes('reception')) return "Classy WhatsApp-ready image card";
+        return "Elegant WhatsApp-ready image card";
+    };
+
     const previewItems = buildPreviewItems();
+
 
 
 
@@ -265,7 +316,7 @@ export default function PreviewPage() {
                             isPlaceholder={true}
                             type='image'
                             customImage={previewItems[selectedPreviewIndex]?.image}
-                            isSecured={false} // Preview always has watermarks unless downloaded
+                            isSecured={true} // Preview always has watermarks unless downloaded
                             showSizingBoxes={isEditMode}
                         />
 
@@ -290,19 +341,14 @@ export default function PreviewPage() {
                                     }}
                                     onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
                                     onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                                    title="Download Invitation"
+                                    title="Download High Res"
                                 >
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                        <polyline points="7 10 12 15 17 10"></polyline>
-                                        <line x1="12" y1="15" x2="12" y2="3"></line>
-                                    </svg>
+                                    <Download size={24} />
                                 </button>
-
                                 <button
                                     onClick={() => setIsEditMode(true)}
                                     style={{
-                                        background: '#1a4d2e', color: 'white', border: 'none', borderRadius: '50%',
+                                        background: '#10B981', color: 'white', border: 'none', borderRadius: '50%',
                                         width: '48px', height: '48px', cursor: 'pointer',
                                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                                         boxShadow: '0 4px 14px rgba(0,0,0,0.3)',
@@ -310,15 +356,31 @@ export default function PreviewPage() {
                                     }}
                                     onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
                                     onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                                    title="Edit Layout"
+                                    title="Live Edit"
                                 >
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                                    </svg>
+                                    <Edit size={24} />
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        const text = encodeURIComponent(`Check out our wedding invitation!\n\n${window.location.href}`);
+                                        window.open(`https://wa.me/?text=${text}`, '_blank');
+                                    }}
+                                    style={{
+                                        background: '#F59E0B', color: 'white', border: 'none', borderRadius: '50%',
+                                        width: '48px', height: '48px', cursor: 'pointer',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        boxShadow: '0 4px 14px rgba(0,0,0,0.3)',
+                                        transition: 'transform 0.2s',
+                                    }}
+                                    onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
+                                    onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                                    title="Share Link"
+                                >
+                                    <Share2 size={24} />
                                 </button>
                             </div>
                         ) : (
+                            /* Done Editing Button */
                             <div style={{
                                 position: 'absolute', top: '1.5rem', right: '1.5rem',
                                 display: 'flex', gap: '1rem', zIndex: 10
@@ -348,11 +410,14 @@ export default function PreviewPage() {
                                     onClick={() => {
                                         if (cardRef.current && selectedPreviewIndex !== null) {
                                             const edits = cardRef.current.saveEdits();
+                                            console.log("Saving invitation edits:", edits);
+                                            
+                                            // Apply global edits
                                             const newFormData = { ...formData };
                                             let formDataChanged = false;
                                             
-                                            const currentEventId = previewItems[selectedPreviewIndex]?.event?.id;
-                                            const currentEvent = formData.events?.find(e => e.id === currentEventId);
+                                            const currentItem = previewItems[selectedPreviewIndex];
+                                            const currentEvent = currentItem?.event;
 
                                             if (edits['groom-name'] !== undefined && edits['groom-name'] !== formData.groomName) {
                                                 newFormData.groomName = edits['groom-name'];
@@ -470,99 +535,127 @@ export default function PreviewPage() {
 
             <main className="container">
                 <div className={styles.mainLayout}>
-                    {/* Left Column: 12-Card Grid */}
+                    {/* Left Column: Suite List */}
                     <div className={styles.leftColumn}>
-                        <div className={styles.grid}>
-                            {(previewItems.length > 0) ? (
-                                previewItems.map((item, index) => (
-                                    <InvitationCard
-                                        key={item.id}
-                                        event={item.event}
-                                        theme={theme}
-                                        groomName={formData.groomName || undefined}
-                                        brideName={formData.brideName || undefined}
-                                        groomParents={formData.groomParents || undefined}
-                                        brideParents={formData.brideParents || undefined}
-                                        welcomeMessage={formData.invitationMessage || undefined}
-                                        isPlaceholder={true}
-                                        type='image'
-                                        customImage={item.image}
-                                        onClick={() => setSelectedPreviewIndex(index)}
-                                        isSecured={false}
-                                    />
-                                ))
-                            ) : (
-                                <div className={styles.noPreviews} style={{ gridColumn: '1/-1', textAlign: 'center', padding: '2rem', color: '#666' }}>
-                                    No preview images available for this theme.
-                                </div>
-                            )}
+                        <div className={styles.suiteCard}>
+                            <h2 className={styles.suiteHeaderTitle}>Your Wedding Invite Suite is Ready!</h2>
+                            <div className={styles.suiteList}>
+                                {(previewItems.length > 0) ? (
+                                    previewItems.map((item, index) => (
+                                        <div key={item.id} className={styles.suiteItem}>
+                                            <div className={styles.suiteThumbContainer} onClick={() => setSelectedPreviewIndex(index)}>
+                                                <InvitationCard 
+                                                    ref={el => { suiteRefs.current[item.id] = el; }}
+                                                    event={item.event}
+                                                    theme={theme}
+                                                    groomName={formData.groomName || ''}
+                                                    brideName={formData.brideName || ''}
+                                                    groomParents={formData.groomParents}
+                                                    brideParents={formData.brideParents}
+                                                    welcomeMessage={formData.invitationMessage}
+                                                    isPlaceholder={true}
+                                                    customImage={item.image}
+                                                    className={styles.suiteThumbCard}
+                                                    isSecured={true}
+                                                />
+                                                <div className={styles.suitePreviewOverlay}>Preview</div>
+                                            </div>
+                                            <div className={styles.suiteInfo}>
+                                                <h3 className={styles.suiteItemTitle}>{item.name.includes('Invite') ? item.name : `${item.name} Invite`}</h3>
+                                                <p className={styles.suiteItemDesc}>{getItemDescription(item.name)}</p>
+                                                <p className={styles.suiteItemActionHint}>Share instantly after unlock</p>
+                                            </div>
+                                            <div className={styles.suiteActions}>
+                                                <button className={styles.suiteActionButton} onClick={() => setSelectedPreviewIndex(index)}>
+                                                    Preview - Unlock to Share
+                                                </button>
+                                                <div className={styles.suiteQuickActions}>
+                                                    <button 
+                                                        className={styles.suiteQuickActionBtn}
+                                                        onClick={() => { setSelectedPreviewIndex(index); setIsEditMode(true); }}
+                                                        title="Edit"
+                                                    >
+                                                        <Edit size={16} />
+                                                    </button>
+                                                    <button 
+                                                        className={styles.suiteQuickActionBtn}
+                                                        onClick={() => { 
+                                                            const ref = suiteRefs.current[item.id];
+                                                            if (ref) ref.downloadImage();
+                                                        }}
+                                                        title="Download"
+                                                    >
+                                                        <Download size={16} />
+                                                    </button>
+                                                    <button 
+                                                        className={styles.suiteQuickActionBtn}
+                                                        onClick={() => {
+                                                            const text = encodeURIComponent(`Check out our ${item.name}!\n\n${window.location.href}`);
+                                                            window.open(`https://wa.me/?text=${text}`, '_blank');
+                                                        }}
+                                                        title="Share"
+                                                    >
+                                                        <Share2 size={16} />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className={styles.noPreviews} style={{ textAlign: 'center', padding: '2rem', color: '#666' }}>
+                                        No preview images available for this theme.
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
 
                     {/* Right Column: Title and Summary Card */}
                     <div className={styles.rightColumn}>
                         <div className={styles.summaryView}>
-                                <div>
-                                    <h1 className={styles.previewHeaderTitle} style={{
-                                        fontSize: '2rem',
-                                        marginBottom: '0.5rem',
-                                        color: '#1a4d2e',
-                                        lineHeight: 1.2
-                                    }}>
-                                        Your Wedding Bundle is Ready!
+                            <div className={styles.summaryCard}>
+                                <div className={styles.bundleHeader}>
+                                    <h1 className={styles.previewHeaderTitle}>
+                                        Unlock Your Wedding Experience
                                     </h1>
-                                    <p className={styles.previewHeaderSubtitle} style={{
-                                        fontSize: '0.9rem',
-                                        color: '#666',
-                                        marginBottom: '1.5rem'
-                                    }}>
-                                        Generated automatically from your details. Ready for high-res delivery.
+                                    <p className={styles.previewHeaderSubtitle}>
+                                        Preview all your invitation assets below.
                                     </p>
-                                    <h2 className={styles.bundleTitle}>
-                                        {theme.name} theme invitation bundle complete pack of 12
-                                    </h2>
                                 </div>
 
-                                <div className={styles.summaryCard}>
-                                    <div className={styles.summaryHeader}>
-                                        <h2>Bundle Summary</h2>
+                                <div className={styles.detailsList}>
+                                    <div className={styles.detailRow}>
+                                        <span className={styles.detailLabel} style={{ color: '#111827' }}>Invite Suite Creation</span>
+                                        <span className={styles.detailValue}>₹2400</span>
                                     </div>
-                                    <div className={styles.detailsList}>
-                                        <div className={styles.detailRow}>
-                                            <span className={styles.detailLabel}>Theme:</span>
-                                            <span className={styles.detailValue}>Royal {theme.name}</span>
-                                        </div>
-                                        <div className={styles.detailRow}>
-                                            <span className={styles.detailLabel}>Invitation Items:</span>
-                                            <span className={styles.detailValue}>12 Total</span>
-                                        </div>
-                                        <div className={styles.detailRow}>
-                                            <span className={styles.detailRow}>
-                                                <span className={styles.detailLabel}>Video Format:</span>
-                                            </span>
-                                            <span className={styles.detailValue}>Full HD (1080p)</span>
-                                        </div>
-                                        <div className={styles.detailRow}>
-                                            <span className={styles.detailLabel}>RSVP Support:</span>
-                                            <span className={styles.detailValue}>Included</span>
-                                        </div>
+                                    <div className={styles.detailRow}>
+                                        <span className={styles.detailLabel} style={{ color: '#111827' }}>RSVP System</span>
+                                        <span className={styles.detailValue}>₹1200</span>
                                     </div>
-                                    <div className={styles.divider}></div>
-                                    <div className={styles.priceSection}>
-                                        <div className={styles.priceInfo}>
-                                            <span className={styles.priceTitle}>Gold Bundle</span>
-                                            <span className={styles.priceSub}>INCLUSIVE OF ALL TAXES</span>
-                                        </div>
-                                        <div className={styles.priceValue}>₹1,200</div>
+                                    <div className={styles.detailRow}>
+                                        <span className={styles.detailLabel} style={{ color: '#111827' }}>Guest Dashboard</span>
+                                        <span className={styles.detailValue}>₹400</span>
                                     </div>
-                                    <button
-                                        className={styles.confirmBtn}
-                                        onClick={handleCheckout}
-                                    >
-                                        Confirm & Pay
-                                    </button>
                                 </div>
+                                <div className={styles.divider}></div>
+                                <div className={styles.priceSection}>
+                                    <div className={styles.priceInfo}>
+                                        <span className={styles.priceTitle}>Gold Bundle</span>
+                                        <span className={styles.priceSub}>INCLUSIVE OF ALL TAXES</span>
+                                    </div>
+                                    <div className={styles.priceValue}>₹1,200</div>
+                                </div>
+                                <button
+                                    className={styles.confirmBtn}
+                                    onClick={handleCheckout}
+                                >
+                                    Confirm & Pay
+                                </button>
+                                <span className={styles.ctaSubtext}>
+                                    Most couples complete sharing within 10 minutes after payment.
+                                </span>
                             </div>
+                        </div>
 
                         {/* Info Blocks below the card */}
                         <div className={styles.infoGrid}>
@@ -602,6 +695,9 @@ export default function PreviewPage() {
                 onClose={() => setShowLoginModal(false)}
                 onSuccess={handleLoginSuccess}
             />
+            {showProcessing && (
+                <ProcessingOverlay onComplete={() => setShowProcessing(false)} />
+            )}
         </div>
     );
 }
