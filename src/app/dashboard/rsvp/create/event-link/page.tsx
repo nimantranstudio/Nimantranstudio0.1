@@ -42,7 +42,7 @@ export default function EventLinkPage() {
             <aside className={dashboardStyles.sidebar}>
                 <nav className={dashboardStyles.nav}>
                     <Link href="/dashboard" className={dashboardStyles.navItem}>
-                        My Ordered Bundle
+                        Wedding Assets
                     </Link>
                     <div className={`${dashboardStyles.navItem} ${dashboardStyles.active}`}>
                         RSVP Manager

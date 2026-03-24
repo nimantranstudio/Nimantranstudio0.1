@@ -696,9 +696,6 @@ export default function DetailsPage() {
                             >
                             <div className={styles.rsvpPreviewContainer}>
                                 <div className={styles.miniCard}>
-                                    <div className={styles.miniCardIcon}>
-                                        <Calendar size={28} />
-                                    </div>
                                     <div className={styles.miniCardTopText}>
                                         You are joyfully invited <br /> to the wedding of
                                     </div>
@@ -714,7 +711,7 @@ export default function DetailsPage() {
                                         </p>
                                     </div>
 
-                                    <div className={styles.miniCardDivider} />
+                                    <div className={styles.miniCardRSVPLabel}>RSVP</div>
                                     
                                     <div className={styles.miniCardEventTitle}>
                                         THE {formData.eventType?.toUpperCase() || 'WEDDING'} CEREMONY
@@ -732,7 +729,6 @@ export default function DetailsPage() {
 
                                     <div className={styles.miniCardButton}>
                                         Respond to Invitation
-                                        <ArrowRight size={18} />
                                     </div>
 
                                     <div className={styles.miniCardFooter}>

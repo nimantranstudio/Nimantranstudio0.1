@@ -1233,10 +1233,6 @@ input:checked + .slider:before {
 
 .miniCardMessageBox {
     margin: 1.5rem 0;
-    padding: 1.5rem;
-    background: #FFFAF0;
-    border-radius: 20px;
-    border: 1px dashed rgba(212, 175, 55, 0.3);
     width: 100%;
 }
 
@@ -1248,11 +1244,13 @@ input:checked + .slider:before {
     font-style: italic;
 }
 
-.miniCardDivider {
-    width: 60px;
-    height: 1px;
-    background: #E5E7EB;
-    margin: 1.5rem 0;
+.miniCardRSVPLabel {
+    text-transform: uppercase;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #9CA3AF;
+    letter-spacing: 0.15em;
+    margin: 2rem 0 1rem 0;
 }
 
 .miniCardEventTitle {

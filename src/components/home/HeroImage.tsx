@@ -39,44 +39,42 @@ const HeroImage = () => {
                 <FloatingTag
                     icon={<Smartphone size={18} />}
                     text="Create Invites"
-                    delay={0.5}
+                    delay={1.0}
                     top="15%"
                     left="0%"
                 />
                 <FloatingTag
-                    icon={<Calendar size={18} />}
-                    text="Multi Event Control"
-                    delay={0.7}
-                    top="25%"
-                    right="-5%"
-                />
-                <FloatingTag
                     icon={<MessageCircle size={18} />}
                     text="WhatsApp Invite"
-                    delay={0.6}
+                    delay={1.4}
                     top="35%"
                     left="-8%"
                 />
                 <FloatingTag
                     icon={<Users size={18} />}
                     text="Guest Management"
-                    delay={0.7}
+                    delay={1.8}
                     top="60%"
                     left="-2%"
                 />
-
-                {/* Floating Tags - Right Side */}
+                <FloatingTag
+                    icon={<Calendar size={18} />}
+                    text="Multi Event Control"
+                    delay={2.2}
+                    top="25%"
+                    right="-5%"
+                />
                 <FloatingTag
                     icon={<ClipboardCheck size={18} />}
                     text="RSVP Tracking"
-                    delay={0.9}
+                    delay={2.6}
                     top="40%"
                     right="-10%"
                 />
                 <FloatingTag
                     icon={<BarChart size={18} />}
                     text="Analytics Dashboard"
-                    delay={1.0}
+                    delay={3.0}
                     top="65%"
                     right="2%"
                 />
@@ -93,12 +91,18 @@ const FloatingTag = ({ icon, text, delay, top, left, right, bottom }: { icon: Re
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{
                 opacity: 1,
-                scale: 1
+                scale: 1,
+                y: [0, -6, 0] 
             }}
             transition={{
-                duration: 0.8,
-                delay: delay,
-                ease: "easeOut"
+                opacity: { duration: 0.8, delay: delay },
+                scale: { duration: 0.8, delay: delay },
+                y: { 
+                    duration: 3, 
+                    repeat: Infinity, 
+                    ease: "easeInOut",
+                    delay: delay
+                }
             }}
             style={{ top, left, right, bottom }}
             whileHover={{ scale: 1.05, transition: { duration: 0.2, repeat: 0 } }}

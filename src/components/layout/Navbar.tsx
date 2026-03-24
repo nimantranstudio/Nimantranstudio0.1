@@ -21,6 +21,7 @@ export const Navbar = () => {
     const router = useRouter();
     const [isOpen, setIsOpen] = useState(false); // Mobile Menu
     const [isProfileOpen, setIsProfileOpen] = useState(false); // Profile Dropdown
+    const [isScrolled, setIsScrolled] = useState(false);
 
     const { isAuthenticated, isAdmin, userPhone, logout } = useWeddingStore();
     const [hasMounted, setHasMounted] = useState(false);
@@ -40,6 +41,14 @@ export const Navbar = () => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    useEffect(() => {
+        const handleScroll = () => {
+            setIsScrolled(window.scrollY > 20);
+        };
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
     const handleLogout = () => {
         logout();
         setIsProfileOpen(false);
@@ -54,7 +63,7 @@ export const Navbar = () => {
     };
 
     return (
-        <nav className={styles.navbar}>
+        <nav className={clsx(styles.navbar, isScrolled && styles.scrolled)}>
             <div className={clsx("container", styles.navContainer)}>
                 <Link href="/" className={styles.logo}>
                     <Image
@@ -88,7 +97,8 @@ export const Navbar = () => {
                                     className={clsx(styles.profileBtn, isProfileOpen && styles.active)}
                                     onClick={() => setIsProfileOpen(!isProfileOpen)}
                                 >
-                                    <User size={20} />
+                                    <span>Login</span>
+                                    <ChevronDown size={14} className={clsx(styles.chevron, isProfileOpen && styles.rotated)} />
                                 </button>
 
                                 {isProfileOpen && (
@@ -113,8 +123,9 @@ export const Navbar = () => {
                                 )}
                             </div>
                         ) : (
-                            <Link href="/login" className="btn btn-secondary">
-                                Login
+                            <Link href="/login" className={styles.profileBtn}>
+                                <span>Login</span>
+                                <ChevronDown size={14} className={styles.chevron} />
                             </Link>
                         )}
                     </div>

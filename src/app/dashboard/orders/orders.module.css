@@ -1,0 +1,423 @@
+.header {
+    margin-bottom: 2rem;
+}
+
+.backBtn {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.25rem;
+    font-family: var(--font-serif);
+    color: var(--foreground);
+    padding: 0;
+}
+
+/* Success Banner */
+.successBanner {
+    background: white;
+    border: 1px solid #F3F4F6;
+    border-radius: 20px;
+    padding: 3.5rem 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 2.5rem;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+}
+
+.successBanner::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 300px;
+    height: 100%;
+    background: radial-gradient(circle at top right, rgba(166, 124, 0, 0.05), transparent);
+    pointer-events: none;
+}
+
+.bannerLeft {
+    max-width: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.successHeader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+}
+
+.headerInfo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+}
+
+.checkIcon {
+    width: 44px;
+    height: 44px;
+    background: #1B4332;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bannerTitle {
+    font-size: 2.25rem;
+    font-family: var(--font-serif);
+    color: #1B4332;
+    margin: 0;
+}
+
+.bannerSub {
+    font-size: 0.9375rem;
+    color: #888;
+    margin: 0;
+}
+
+.planTitle {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #333;
+    margin: 0 0 0.4rem 0;
+}
+
+.planSub {
+    color: #666;
+    margin-bottom: 1.5rem;
+}
+
+.badgeRow {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-bottom: 0; /* Let parent padding handle the bottom space */
+}
+
+.badge {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.8rem;
+    background: rgba(27, 67, 50, 0.05);
+    border: 1px solid rgba(27, 67, 50, 0.1);
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #1B4332;
+}
+
+.btnRow {
+    display: flex;
+    gap: 1rem;
+}
+
+.shareBtn {
+    background: #1B4332;
+    color: white;
+    text-decoration: none;
+    padding: 0.75rem 1.75rem;
+    border-radius: 10px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    transition: transform 0.2s;
+}
+
+.shareBtn:hover {
+    transform: translateY(-2px);
+    background: #153527;
+}
+
+.invoiceBtnMid {
+    background: white;
+    border: 1px solid #E5D9B6;
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    font-weight: 600;
+    color: #1B4332;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+}
+
+/* Top Price Display */
+.topPriceContainer {
+    margin: 1.25rem 0;
+}
+
+.amountLabelSmall {
+    font-size: 0.8125rem;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+}
+
+.amountValueLarge {
+    font-size: 3.5rem;
+    font-family: var(--font-serif);
+    color: #333;
+    line-height: 1.1;
+}
+
+.statusPillSmall {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #2E7D32;
+    background: #E8F5E9;
+    padding: 0.25rem 0.6rem;
+    border-radius: 4px;
+    margin-top: 0.75rem;
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.amountLabel {
+    font-size: 0.75rem;
+    color: #888;
+    text-align: center;
+    margin-bottom: 0.5rem;
+}
+
+.amountValue {
+    font-size: 2.5rem;
+    font-family: var(--font-serif);
+    color: #333;
+    text-align: center;
+    margin-bottom: 0.75rem;
+}
+
+.statusPill {
+    background: #E8F5E9;
+    color: #2E7D32;
+    padding: 0.4rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.paymentMeta {
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    padding-top: 1rem;
+}
+
+.metaRow {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.8125rem;
+    color: #555;
+    margin-bottom: 0.5rem;
+}
+
+/* Purchase Details Card */
+.detailsCard {
+    background: white;
+    border: 1px solid #F3F4F6;
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2.5rem;
+}
+
+.detailsHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.sectionTitleSmall {
+    font-size: 1.25rem;
+    font-family: var(--font-serif);
+    margin: 0;
+}
+
+.downloadTaxBtn {
+    background: white;
+    border: 1px solid #E5D9B6;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+
+.detailsGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem 4rem;
+}
+
+.detailsItem .label {
+    font-size: 0.8125rem;
+    color: #888;
+    margin-bottom: 0.5rem;
+}
+
+.valueRow {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+}
+
+.copyBtn {
+    background: #F3F4F6;
+    border: none;
+    padding: 0.25rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #666;
+    cursor: pointer;
+}
+
+.valueLarge {
+    font-size: 1.125rem;
+    font-weight: 700;
+    font-family: var(--font-serif);
+}
+
+.planPill {
+    background: #FFF9E5;
+    color: #8B4513;
+    padding: 0.25rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: inline-block;
+}
+
+.validityPill {
+    background: #E0F2F1;
+    color: #004D40;
+    padding: 0.25rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: inline-block;
+}
+
+.themeValue {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 600;
+}
+
+.themeThumb {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid #ddd;
+}
+
+.valuePlain {
+    font-size: 0.9375rem;
+    font-weight: 600;
+}
+
+/* Kit Section */
+.kitHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.75rem;
+    font-family: var(--font-serif);
+    margin: 0 0 0.5rem 0;
+}
+
+.sparkleIcon {
+    color: #A67C00;
+}
+
+.kitSub {
+    color: #666;
+    margin-bottom: 2rem;
+}
+
+.kitCard {
+    background: white;
+    border: 1px solid #F3F4F6;
+    border-radius: 20px;
+    padding: 2rem;
+}
+
+.kitTitle {
+    font-size: 1.125rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+}
+
+.kitGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+    margin-bottom: 2.5rem;
+}
+
+.kitItem {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.9375rem;
+    color: #444;
+}
+
+.kitCheck {
+    color: #A67C00;
+}
+
+.kitFooter {
+    border-top: 1px solid #E5D9B6;
+    padding-top: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.875rem;
+    color: #666;
+}
+
+.kitHomeIcon {
+    width: 24px;
+    height: 24px;
+    background: #F3E8D2;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #A67C00;
+}

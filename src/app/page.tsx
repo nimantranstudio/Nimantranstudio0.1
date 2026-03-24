@@ -30,7 +30,6 @@ export default function Home() {
   const [themes, setThemes] = useState<Theme[]>([]);
   const [loading, setLoading] = useState(true);
   const [showStrip, setShowStrip] = useState(true);
-
   useEffect(() => {
     const fetchThemes = async () => {
       try {
@@ -63,26 +62,33 @@ export default function Home() {
 
   return (
     <main className={styles.main}>
-      {/* Announcement Strip */}
+      {/* Announcement Strip - Now as floating animated text */}
       <AnimatePresence>
         {showStrip && (
-          <motion.div
-            className={styles.announcementStrip}
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <div className={styles.stripContent}>
-              <span className={styles.stripIcon}>✦</span>
-              <span className={styles.stripMessage}><strong>Launch Offer</strong> - Create Your Complete Wedding Invitation Suite in Minutes</span>
-              <span className={styles.stripBadge}>New<span className={styles.stripBadgeIcon}>🎉</span></span>
-              <Link href="/themes" className={styles.stripCta}>CREATE NOW</Link>
-            </div>
+          <div className={styles.announcementContainer}>
+            <motion.div
+              className={styles.animatedTextWrapper}
+              animate={{ 
+                opacity: [0, 1, 1, 0],
+                scale: [0.98, 1, 1, 1.02]
+              }}
+              transition={{ 
+                duration: 6, 
+                repeat: Infinity, 
+                times: [0, 0.15, 0.85, 1],
+                ease: "easeInOut"
+              }}
+            >
+              <div className={styles.stripContent}>
+                <span className={styles.stripIcon}>✦</span>
+                <span className={styles.stripMessage}><strong>Launch Offer</strong> - Create Your Complete Wedding Invitation Suite in Minutes</span>
+                <span className={styles.stripBadge}>New<span className={styles.stripBadgeIcon}>🎉</span></span>
+              </div>
+            </motion.div>
             <button className={styles.stripClose} onClick={() => setShowStrip(false)} aria-label="Close">
               <X size={14} />
             </button>
-          </motion.div>
+          </div>
         )}
       </AnimatePresence>
 

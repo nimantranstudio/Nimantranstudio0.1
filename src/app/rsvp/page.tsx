@@ -24,71 +24,81 @@ export default function RSVPPage() {
 
     return (
         <div className={styles.page}>
-            <header className={styles.header}>
+            <section className={styles.introOuter}>
                 <div className="container">
-                    <Breadcrumbs
-                        items={[
-                            { label: 'Home', href: '/' },
-                            { label: 'RSVP', active: true },
-                        ]}
-                    />
-                </div>
-            </header>
-
-            <section className={styles.hero}>
-                <ConnectingDots color="#1B5E20" count={40} />
-                <div className="container" style={{ position: 'relative', zIndex: 1 }}>
-                    <div className={styles.heroGrid}>
-                        <div className={styles.heroContent}>
-                            <motion.h1
-                                className={styles.title}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.8 }}
+                    <div className={styles.introGrid}>
+                        <div className={styles.introContent}>
+                            <motion.span 
+                                className={styles.category}
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ duration: 0.6 }}
                             >
-                                <span style={{ display: 'block', whiteSpace: 'nowrap' }}>Elegant RSVPs for</span>
-                                <span style={{ display: 'block', whiteSpace: 'nowrap' }}>Indian Weddings</span>
-                            </motion.h1>
-                            <motion.p
-                                className={styles.subtitle}
+                                RSVP MANAGER
+                            </motion.span>
+                            <motion.h1 
+                                className={styles.introTitle}
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.8, delay: 0.2 }}
                             >
-                                Coordinate your guest list with ease. Digital tracking
-                                for the modern wedding coordinator.
-                            </motion.p>
-                            <motion.div
+                                Digital RSVPs <br /> made simple
+                            </motion.h1>
+                            <motion.p 
+                                className={styles.introSub}
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.8, delay: 0.4 }}
                             >
-                                <button onClick={handleCreateRSVP} className="btn btn-primary">
-                                    CREATE RSVP EVENT
-                                </button>
+                                Coordinate your guest list with ease. Send elegant digital invitations and track responses in real-time on your dashboard.
+                            </motion.p>
+                            <motion.div
+                                className={styles.introOfferBox}
+                                initial={{ opacity: 0, scale: 0.98 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ duration: 0.8, delay: 0.6 }}
+                            >
+                                <div className={styles.offerCard}>
+                                    <h2 className={styles.offerTitle}>
+                                        <span className={styles.sparkleIcon}>✦</span>
+                                        Free for your first 20 guest responses
+                                    </h2>
+                                    <p className={styles.offerSubtitle}>Perfect to try for your close family circle.</p>
+                                    
+                                    <button onClick={handleCreateRSVP} className={styles.greenBtn}>
+                                        Create My Free RSVP
+                                    </button>
+                                    
+                                    <p className={styles.offerFooter}>No payment required • Setup takes under 30 seconds</p>
+                                </div>
+
+                                <div className={styles.offerTrustLine}>
+                                    <span>⭐ Used by 5000+ wedding couples</span>
+                                    <span className={styles.separator}>✦</span>
+                                    <span>Most couples start sharing within minutes</span>
+                                </div>
                             </motion.div>
                         </div>
-                        <div className={styles.featuresList}>
-                            {[
-                                "Automated WhatsApp reminders for pending RSVPs.",
-                                "Dietary preferences and plus-one tracking.",
-                                "Real-time guest list dashboard for parents and couples."
-                            ].map((feature, i) => (
-                                <motion.div
-                                    key={i}
-                                    className={styles.featureItem}
-                                    initial={{ opacity: 0, y: 30 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.6, delay: 0.4 + (i * 0.1) }} // Delayed after content
-                                >
-                                    <Check className={styles.checkIcon} size={20} />
-                                    <p>{feature}</p>
-                                </motion.div>
-                            ))}
+                        <div className={styles.introVisual}>
+                            <motion.div 
+                                className={styles.imageFloat}
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ duration: 1, ease: "easeOut" }}
+                            >
+                                <Image 
+                                    src="/assets/rsvp-landing.jpg" 
+                                    alt="RSVP Dashboard" 
+                                    width={700}
+                                    height={500}
+                                    className={styles.introImg}
+                                />
+                            </motion.div>
                         </div>
                     </div>
                 </div>
             </section>
+
             <section className={styles.process}>
                 <div className="container">
                     <motion.h2
@@ -98,7 +108,7 @@ export default function RSVPPage() {
                         viewport={{ once: true }}
                         transition={{ duration: 0.8 }}
                     >
-                        Why Families Love Nimantran
+                        RSVP for Indian Weddings
                     </motion.h2>
                     <div className={styles.processGrid}>
                         {/* Card 1 */}
@@ -179,6 +189,18 @@ export default function RSVPPage() {
                             </div>
                         </motion.div>
                     </div>
+
+                    <motion.div
+                        className={styles.ctaWrapper}
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.6, delay: 0.4 }}
+                    >
+                        <button onClick={handleCreateRSVP} className="btn btn-primary">
+                            CREATE RSVP EVENT
+                        </button>
+                    </motion.div>
                 </div>
             </section>
         </div>

@@ -6,6 +6,7 @@ import { useWeddingStore } from '@/store/wedding-store';
 import { LogOut, ArrowLeft, Calendar, MapPin, Download, Share2, Search } from 'lucide-react';
 import styles from './guest-list.module.css';
 import dashboardStyles from '../../dashboard.module.css';
+import { DashboardSidebar } from '@/components/layout/DashboardSidebar';
 import { useMemo, useState } from 'react';
 
 export default function GuestListPage() {
@@ -111,23 +112,7 @@ export default function GuestListPage() {
     return (
         <div className={styles.container}>
             {/* Sidebar Reuse */}
-            <aside className={dashboardStyles.sidebar}>
-                <nav className={dashboardStyles.nav}>
-                    <Link href="/dashboard" className={dashboardStyles.navItem}>
-                        My Ordered Bundle
-                    </Link>
-                    <div className={`${dashboardStyles.navItem} ${dashboardStyles.active}`}>
-                        RSVP Manager
-                    </div>
-                </nav>
-
-                <div className={dashboardStyles.sidebarFooter}>
-                    <button onClick={handleLogout} className={dashboardStyles.logoutBtn}>
-                        <LogOut size={18} />
-                        <span>Logout</span>
-                    </button>
-                </div>
-            </aside>
+            <DashboardSidebar />
 
             <main className={styles.main}>
                 <div className={styles.header}>

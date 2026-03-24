@@ -10,6 +10,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useWeddingStore } from '@/store/wedding-store';
 import dashboardStyles from '../../dashboard.module.css';
+import { DashboardSidebar } from '@/components/layout/DashboardSidebar';
 
 export default function RSVPCreatePage() {
     const router = useRouter();
@@ -76,23 +77,7 @@ export default function RSVPCreatePage() {
 
     return (
         <div className={styles.container}>
-            <aside className={dashboardStyles.sidebar}>
-                <nav className={dashboardStyles.nav}>
-                    <Link href="/dashboard" className={dashboardStyles.navItem}>
-                        My Ordered Bundle
-                    </Link>
-                    <div className={`${dashboardStyles.navItem} ${dashboardStyles.active}`}>
-                        RSVP Manager
-                    </div>
-                </nav>
-
-                <div className={dashboardStyles.sidebarFooter}>
-                    <button onClick={handleLogout} className={dashboardStyles.logoutBtn}>
-                        <LogOut size={18} />
-                        <span>Logout</span>
-                    </button>
-                </div>
-            </aside>
+            <DashboardSidebar />
 
             <main className={styles.main}>
                 {/* Breadcrumb */}

@@ -1,8 +1,7 @@
 .page {
     min-height: 100vh;
-    background-color: #FFFCF6;
-    /* Cream background */
-    padding: 2rem 1rem;
+    background-color: #FDFBF7;
+    padding: 2.5rem 1.25rem;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -30,39 +29,40 @@
 
 /* INVITE VIEW */
 .inviteIcon {
-    width: 48px;
-    height: 48px;
-    background-color: #FDF4E7;
+    width: 64px;
+    height: 64px;
+    background-color: #FDFBF7;
+    border: 1px solid #F3E8D2;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto 1.5rem;
-    color: #1a4d2e;
+    margin: 0 auto 2rem;
+    color: #1B4332;
 }
 
 .heading {
-    font-size: 2.5rem;
-    font-family: var(--font-serif);
-    color: #1a4d2e;
-    margin-bottom: 0.5rem;
+    font-size: 3rem;
+    font-family: var(--font-playfair), serif;
+    color: #1B4332;
+    margin-bottom: 0.75rem;
     font-weight: 700;
 }
 
 .subheading {
-    font-size: 1.1rem;
-    color: #d4af37;
+    font-size: 1.25rem;
+    color: #B38F3D;
     font-style: italic;
-    margin-bottom: 2rem;
+    margin-bottom: 2.5rem;
     font-family: var(--font-playfair), serif;
 }
 
 .welcomeBox {
-    margin-bottom: 2.5rem;
-    padding: 1.5rem;
-    background: #FFFAF0;
-    border-radius: 16px;
-    border: 1px dashed rgba(212, 175, 55, 0.3);
+    margin-bottom: 3rem;
+    padding: 2rem;
+    background: #FDFBF7;
+    border-radius: 20px;
+    border: 1px dashed #F3E8D2;
 }
 
 .welcomeText {
@@ -93,23 +93,25 @@
 }
 
 .confirmBtn {
-    background-color: #1a4d2e;
+    background-color: #1B4332;
     color: white;
-    padding: 1rem 2.5rem;
+    padding: 1.25rem 3.5rem;
     border-radius: 99px;
-    font-size: 1rem;
-    font-weight: 600;
+    font-size: 1.125rem;
+    font-weight: 700;
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    margin-top: 1rem;
-    transition: all 0.2s;
-    box-shadow: 0 4px 12px rgba(26, 77, 46, 0.2);
+    gap: 0.75rem;
+    margin-top: 2rem;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    border: none;
+    cursor: pointer;
 }
 
 .confirmBtn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(26, 77, 46, 0.3);
+    background-color: #143d24;
+    box-shadow: 0 8px 30px rgba(27, 67, 50, 0.25);
 }
 
 /* FORM VIEW */

@@ -2,8 +2,8 @@
   min-height: 100vh;
 }
 
-/* Announcement Strip */
-.announcementStrip {
+/* Announcement Container - Black */
+.announcementContainer {
   width: 100%;
   background-color: #111111;
   color: #fff;
@@ -15,6 +15,12 @@
   position: relative;
   overflow: hidden;
   z-index: 999;
+}
+
+.animatedTextWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .stripContent {
@@ -34,7 +40,7 @@
   font-size: 0.85rem;
   font-weight: 400;
   letter-spacing: 0.02em;
-  color: #d0d0d0;
+  color: #fff;
 }
 
 .stripBadge {

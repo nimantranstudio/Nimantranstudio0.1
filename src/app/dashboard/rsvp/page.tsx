@@ -7,10 +7,12 @@ import { useWeddingStore } from '@/store/wedding-store';
 import {
     LogOut, User, Plus, Edit2, Link2, FileText, Trash2,
     Calendar, MapPin, Clock, Users, CheckCircle2, XCircle,
-    HelpCircle, Copy, Share2, Download, Eye
+    HelpCircle, Copy, Share2, Download, Eye, Search,
+    ChevronLeft, ChevronRight, ShieldCheck, Zap, Lock
 } from 'lucide-react';
 import styles from './rsvp-list.module.css';
 import dashboardStyles from '../dashboard.module.css';
+import { DashboardSidebar } from '@/components/layout/DashboardSidebar';
 
 export default function RSVPListPage() {
     const router = useRouter();
@@ -63,9 +65,13 @@ export default function RSVPListPage() {
         return { totalResponses, attending, declined, maybe, headcount };
     };
 
-    const copyLink = (link: string) => {
+    // State for copy feedback
+    const [copiedId, setCopiedId] = useState<string | null>(null);
+
+    const copyLink = (id: string, link: string) => {
         navigator.clipboard.writeText(link);
-        alert('Link copied to clipboard!');
+        setCopiedId(id);
+        setTimeout(() => setCopiedId(null), 2000);
     };
 
     const openWhatsApp = (link: string) => {
@@ -75,32 +81,9 @@ export default function RSVPListPage() {
 
     return (
         <div className={styles.container}>
-            <aside className={dashboardStyles.sidebar}>
-                <nav className={dashboardStyles.nav}>
-                    <Link href="/dashboard" className={dashboardStyles.navItem}>
-                        My Ordered Bundle
-                    </Link>
-                    <div className={`${dashboardStyles.navItem} ${dashboardStyles.active}`}>
-                        RSVP Manager
-                    </div>
-                </nav>
-
-                <div className={dashboardStyles.sidebarFooter}>
-                    <button onClick={handleLogout} className={dashboardStyles.logoutBtn}>
-                        <LogOut size={18} />
-                        <span>Logout</span>
-                    </button>
-                </div>
-            </aside>
+            <DashboardSidebar />
 
             <main className={styles.main}>
-                {/* Breadcrumb */}
-                <div className={styles.breadcrumb}>
-                    <span className={styles.breadcrumbLink}>Rsvp Manager</span>
-                    <span className={styles.separator}>/</span>
-                    <span className={styles.activeBreadcrumb}>Event list</span>
-                </div>
-
                 <header className={styles.header}>
                     <h1 className={styles.title}>RSVP Dashboard</h1>
                     <Link href="/dashboard/rsvp/create" className={styles.createBtn}>
@@ -129,128 +112,191 @@ export default function RSVPListPage() {
                         const rsvpLink = `${origin}/rsvp/${evt.id}`;
 
                         return (
-                            <div key={evt.id} className={styles.card}>
-                                {/* A. Header */}
-                                <div className={styles.cardHeader}>
-                                    <div className={styles.headerLeft}>
-                                        <span className={styles.eventTypeBadge}>{evt.eventType || 'Wedding Event'}</span>
-                                        <h3 className={styles.eventName}>{evt.name}</h3>
+                            <div key={evt.id} className={styles.eventGroup}>
+                                <div className={styles.card}>
+                                    <div className={styles.cardBody}>
+                                        {/* A. Header */}
+                                        <div className={styles.cardHeader}>
+                                            <div className={styles.headerLeft}>
+                                                <div className={styles.nameRow}>
+                                                    <h3 className={styles.eventName}>{evt.name}</h3>
+                                                    <div className={styles.statusLive}>
+                                                        <div className={styles.statusDot}></div>
+                                                        RSVP LIVE
+                                                    </div>
+                                                </div>
+
+                                                <div className={styles.detailsRow}>
+                                                    <div className={styles.detailItem}>
+                                                        <div className={styles.detailText}>
+                                                            <span className={styles.detailLabel}>Date & Time</span>
+                                                            <span className={styles.detailValue}>
+                                                                {evt.date || 'TBD'} • {evt.time || 'TBD'}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div className={styles.detailItem}>
+                                                        <div className={styles.detailText}>
+                                                            <span className={styles.detailLabel}>Venue</span>
+                                                            <span className={styles.detailValue} title={evt.venue}>
+                                                                {evt.venue || 'TBD'}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div className={styles.detailItem}>
+                                                        <div className={styles.detailText}>
+                                                            <span className={styles.detailLabel}>RSVP Deadline</span>
+                                                            <span className={styles.detailValue}>
+                                                                {evt.rsvpDeadline ? `Respond by ${evt.rsvpDeadline}` : 'No deadline'}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className={styles.headerRight}>
+                                                <button 
+                                                    className={styles.footerBtnOutline}
+                                                    onClick={() => copyLink(evt.id, rsvpLink)}
+                                                >
+                                                    {copiedId === evt.id ? <CheckCircle2 size={16} /> : <Copy size={16} />}
+                                                    <span>{copiedId === evt.id ? 'Copied!' : 'Copy Link'}</span>
+                                                </button>
+                                                <button className={styles.footerBtnWhatsApp}>
+                                                     <Share2 size={16} />
+                                                     <span>WhatsApp</span>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        {/* C. Stats Grid */}
+                                        <div className={styles.statsRow}>
+                                            <div className={`${styles.statBlock} ${styles.statTotal}`}>
+                                                <div className={styles.statContent}>
+                                                    <div className={`${styles.statIconBox} ${styles.iconTotal}`}>
+                                                        <FileText size={24} />
+                                                    </div>
+                                                    <div className={styles.statInfo}>
+                                                        <span className={styles.statTitle}>Responses Received</span>
+                                                        <span className={styles.statMainNumber}>{stats.totalResponses}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className={`${styles.statBlock} ${styles.statAttending}`}>
+                                                <div className={styles.statContent}>
+                                                    <div className={`${styles.statIconBox} ${styles.iconAttending}`}>
+                                                        <Users size={24} />
+                                                    </div>
+                                                    <div className={styles.statInfo}>
+                                                        <span className={styles.statTitle}>Attending</span>
+                                                        <span className={styles.statMainNumber}>{stats.attending}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className={`${styles.statBlock} ${styles.statDecline}`}>
+                                                <div className={styles.statContent}>
+                                                    <div className={`${styles.statIconBox} ${styles.iconDecline}`}>
+                                                        <XCircle size={24} />
+                                                    </div>
+                                                    <div className={styles.statInfo}>
+                                                        <span className={styles.statTitle}>Not Attending</span>
+                                                        <span className={styles.statMainNumber}>{stats.declined}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className={`${styles.statBlock} ${styles.statMaybe}`}>
+                                                <div className={styles.statContent}>
+                                                    <div className={`${styles.statIconBox} ${styles.iconMaybe}`}>
+                                                        <HelpCircle size={24} />
+                                                    </div>
+                                                    <div className={styles.statInfo}>
+                                                        <span className={styles.statTitle}>Maybe</span>
+                                                        <span className={styles.statMainNumber}>{stats.maybe}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className={styles.statusLive}>
-                                        <div className={styles.statusDot}></div>
-                                        RSVP LIVE
+
+
+                                     {/* E. Footer Actions */}
+                                    <div className={styles.cardFooter}>
+                                        <p className={styles.footerInstruction}>
+                                            Share this link with family and guests to collect confirmations instantly.
+                                        </p>
+                                        <div className={styles.footerActionsRow}>
+                                            <Link 
+                                                href={rsvpLink} 
+                                                target="_blank" 
+                                                className={styles.previewAction}
+                                            >
+                                                <Eye size={16} /> Preview RSVP
+                                            </Link>
+                                            <button
+                                                className={styles.deleteAction}
+                                                onClick={() => handleDeleteClick(evt.id)}
+                                            >
+                                                <Trash2 size={16} /> Delete event
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
 
-                                {/* B. Details Row */}
-                                <div className={styles.detailsRow}>
-                                    <div className={styles.detailItem}>
-                                        <div className={styles.detailIcon}>
-                                            <Calendar size={20} />
+                                {/* CARD 2: GUEST LIST */}
+                                <div className={`${styles.card} ${styles.guestListCard}`}>
+                                    <div className={styles.guestListSection}>
+                                        <div className={styles.guestListHeader}>
+                                            <h3 className={styles.guestListTitle}>{evt.name} Guest List</h3>
+                                            <div className={styles.guestListActions}>
+                                                <div className={styles.searchWrapper}>
+                                                    <Search size={16} className={styles.searchIcon} />
+                                                    <input type="text" placeholder="Search guests..." className={styles.searchInput} />
+                                                </div>
+                                                <button className={styles.btnActionSecondary}>
+                                                    <Share2 size={16} />
+                                                    <span>Copy for WhatsApp</span>
+                                                </button>
+                                                <button className={styles.btnActionOutline}>
+                                                    <Download size={16} />
+                                                    <span>Export CSV</span>
+                                                </button>
+                                            </div>
                                         </div>
-                                        <div className={styles.detailText}>
-                                            <span className={styles.detailLabel}>Date & Time</span>
-                                            <span className={styles.detailValue}>
-                                                {evt.date || 'TBD'} • {evt.time || 'TBD'}
-                                            </span>
+
+                                        <div className={styles.tableContainer}>
+                                            <table className={styles.guestTable}>
+                                                <thead>
+                                                    <tr>
+                                                        <th>GUEST NAME</th>
+                                                        <th>STATUS</th>
+                                                        <th>COUNTS</th>
+                                                        <th>PHONE</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td colSpan={4} className={styles.emptyTable}>
+                                                            No guests have RSVP'd yet.
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div className={styles.paginationRow}>
+                                            <div className={styles.paginationActions}>
+                                                <button className={styles.pageBtn} disabled>
+                                                    <ChevronLeft size={16} />
+                                                </button>
+                                                <span className={styles.pageIndicator}>1</span>
+                                                <button className={styles.pageBtnNext}>
+                                                    <span>Next</span>
+                                                    <ChevronRight size={16} />
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div className={styles.detailItem}>
-                                        <div className={styles.detailIcon}>
-                                            <MapPin size={20} />
-                                        </div>
-                                        <div className={styles.detailText}>
-                                            <span className={styles.detailLabel}>Venue</span>
-                                            <span className={styles.detailValue} title={evt.venue}>
-                                                {evt.venue || 'TBD'}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div className={styles.detailItem}>
-                                        <div className={styles.detailIcon}>
-                                            <Clock size={20} />
-                                        </div>
-                                        <div className={styles.detailText}>
-                                            <span className={styles.detailLabel}>RSVP Deadline</span>
-                                            <span className={styles.detailValue}>
-                                                {evt.rsvpDeadline ? `Respond by ${evt.rsvpDeadline}` : 'No deadline'}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* C. Stats Grid */}
-                                <div className={styles.statsRow}>
-                                    <div className={`${styles.statBlock} ${styles.statTotal}`}>
-                                        <div className={styles.statIcon}><Users size={20} color="#555" /></div>
-                                        <div className={styles.statNumber}>{stats.totalResponses}</div>
-                                        <div className={styles.statLabel}>TOTAL RESPONSES</div>
-                                    </div>
-                                    <div className={`${styles.statBlock} ${styles.statAttending}`}>
-                                        <div className={styles.statIcon}><CheckCircle2 size={20} color="#1B5E20" /></div>
-                                        <div className={styles.statNumber}>{stats.attending}</div>
-                                        <div className={styles.statLabel}>ATTENDING</div>
-                                    </div>
-                                    <div className={`${styles.statBlock} ${styles.statDecline}`}>
-                                        <div className={styles.statIcon}><XCircle size={20} color="#C62828" /></div>
-                                        <div className={styles.statNumber}>{stats.declined}</div>
-                                        <div className={styles.statLabel}>NOT ATTENDING</div>
-                                    </div>
-                                    <div className={`${styles.statBlock} ${styles.statMaybe}`}>
-                                        <div className={styles.statIcon}><HelpCircle size={20} color="#F57F17" /></div>
-                                        <div className={styles.statNumber}>{stats.maybe}</div>
-                                        <div className={styles.statLabel}>MAYBE</div>
-                                    </div>
-                                </div>
-
-                                <div className={styles.totalHeadcount}>
-                                    👥 TOTAL HEADCOUNT: {stats.headcount} GUESTS
-                                </div>
-
-                                {/* D. Link Section */}
-                                <div className={styles.linkSection}>
-                                    <div className={styles.linkLabel}>Your RSVP Link</div>
-                                    <div className={styles.linkBox}>
-                                        <span className={styles.linkUrl}>{rsvpLink}</span>
-                                        <button className={styles.copyBtn} onClick={() => copyLink(rsvpLink)}>
-                                            <Copy size={14} /> Copy
-                                        </button>
-                                    </div>
-
-                                    <div className={styles.buttonGroup}>
-                                        {/* Primary "View Event" Button FIRST */}
-                                        <button
-                                            className={styles.viewEventBtn}
-                                            onClick={() => router.push(`/dashboard/rsvp/${evt.id}`)}
-                                        >
-                                            <Eye size={20} />
-                                            View Event
-                                        </button>
-
-                                        <button className={styles.whatsappBtn} onClick={() => openWhatsApp(rsvpLink)}>
-                                            <Share2 size={20} />
-                                            WhatsApp
-                                        </button>
-                                    </div>
-                                </div>
-
-                                {/* E. Footer Actions */}
-                                <div className={styles.cardFooter}>
-                                    <div className={styles.footerActionsRow}>
-                                        <button className={styles.footerAction}>
-                                            <Edit2 size={16} /> Edit details
-                                        </button>
-
-                                        <button
-                                            className={styles.deleteAction}
-                                            onClick={() => handleDeleteClick(evt.id)}
-                                        >
-                                            <Trash2 size={16} /> Delete event
-                                        </button>
-                                    </div>
-                                    <p className={styles.shareHint}>
-                                        Share this link with family and guests to collect confirmations instantly.
-                                    </p>
                                 </div>
                             </div>
                         );

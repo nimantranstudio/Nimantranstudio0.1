@@ -1,13 +1,14 @@
 .container {
     display: flex;
     min-height: 100vh;
-    background-color: #FDFBF7;
+    background-color: var(--background);
 }
 
 .main {
     flex: 1;
-    padding: 2.5rem 3rem;
+    padding: 2.5rem 1.5rem;
     overflow-y: auto;
+    width: 100%;
 }
 
 /* Breadcrumb Styles */
@@ -51,7 +52,7 @@
 }
 
 .createBtn {
-    background-color: #1B5E20;
+    background-color: #1F1F1F;
     color: white;
     padding: 0.75rem 1.5rem;
     border-radius: 99px;
@@ -61,32 +62,48 @@
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    transition: background-color 0.2s;
+    transition: all 0.2s ease;
 }
 
 .createBtn:hover {
-    background-color: #144418;
+    background-color: #000000;
+    transform: translateY(-1px);
 }
 
 .listContainer {
     display: flex;
     flex-direction: column;
     gap: 2rem;
-    max-width: 700px;
-    /* Slightly wider for details */
-    margin: 0 auto;
+    width: 100%;
+}
+
+.eventGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    margin-bottom: 4rem;
 }
 
 /* Premium Card Styles */
 .card {
-    background: #FFFEFA;
-    border: none;
+    background: #FFFFFF;
+    border: 1px solid #F1F5F9;
     border-radius: 24px;
-    padding: 2rem;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+}
+
+.cardBody {
+    padding: 2.5rem;
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+}
+
+.guestListCard {
+    margin-top: -1rem; /* Slightly pull up to keep visual group, or keep positive gap */
 }
 
 /* A. Header */
@@ -94,6 +111,9 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
+    padding-bottom: 1.5rem;
+    margin-bottom: 0.5rem;
+    border-bottom: 1px solid #F1F5F9;
 }
 
 .headerLeft {
@@ -117,18 +137,82 @@
 .eventName {
     font-family: var(--font-serif);
     font-size: 2.25rem;
-    color: #1B5E20;
+    color: #1F1F1F;
     margin: 0;
-    line-height: 1.2;
+    line-height: 1.1;
+}
+
+.nameRow {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.headerInstruction {
+    margin: 0;
+    font-size: 0.8125rem;
+    color: #64748B;
+    font-weight: 500;
+}
+
+.headerRight {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
+.compactLinkBox {
+    background: #FFFFFF;
+    border: 1px solid #F1F5F9;
+    padding: 0.35rem 0.35rem 0.35rem 1.25rem;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.compactLinkUrl {
+    color: #475569;
+    font-size: 1.15rem;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+}
+
+.compactCopyBtn {
+    background: #F1F5F9;
+    border: none;
+    color: #1E293B;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.compactCopyBtn:hover {
+    background: #E2E8F0;
+    transform: scale(1.05);
+}
+
+.copySuccess {
+    background-color: #ECFDF5 !important;
+    color: #10B981 !important;
+    border: 1px solid #10B981 !important;
 }
 
 .statusLive {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    color: #25D366;
+    gap: 0.6rem;
+    color: #22C55E;
     font-weight: 700;
-    font-size: 0.9rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-top: 4px; /* Opcally nudge for visual center with large serif text */
 }
 
 @keyframes pulse {
@@ -157,16 +241,16 @@
 /* B. Details Row - Fixed Alignment */
 .detailsRow {
     display: flex;
-    gap: 2rem;
+    gap: 1.5rem;
+    /* Increased from 2rem to spread better now that icons are gone, wait, user said "move closer" */
+    /* Wait, "move closer" probably means the 3 columns closer together if they were spread? */
+    /* Actually, with flex: 1 on items, they spread. */
     align-items: flex-start;
-    padding: 1.5rem 0;
-    border-top: 1px solid #F0EAE0;
-    border-bottom: 1px solid #F0EAE0;
+    padding: 0;
+    margin-top: 0.5rem;
 }
 
 .detailItem {
-    flex: 1;
-    /* Forces equal width columns */
     display: flex;
     gap: 0.8rem;
     align-items: flex-start;
@@ -213,52 +297,113 @@
 
 .statBlock {
     flex: 1;
-    border-radius: 16px;
-    padding: 1.25rem 0.5rem;
-    text-align: center;
+    border-radius: 20px;
+    padding: 1.15rem; /* Reduced for compactness */
+    background: white;
+    border: 1px solid rgba(226, 187, 97, 0.15); /* Subtly golden border */
     display: flex;
     flex-direction: column;
+    gap: 0.75rem; /* Reduced for compactness */
+    box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+    position: relative;
+    overflow: hidden;
+}
+
+.statBlock::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(to right, #E2BB61, #C1B088);
+    opacity: 0.5;
+}
+
+.statContent {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.statIconBox {
+    display: flex;
     align-items: center;
-    gap: 0.5rem;
+    justify-content: center;
+    flex-shrink: 0;
+    /* Removed fixed boxes for a cleaner look */
 }
 
-.statTotal {
-    background: #F8F9FA;
-    color: #444;
+.iconTotal {
+    color: #F59E0B;
 }
 
-.statAttending {
-    background: #E8F5E9;
-    color: #1B5E20;
+.iconAttending {
+    color: #10B981;
 }
 
-.statDecline {
-    background: #FFEBEE;
-    color: #C62828;
+.iconDecline {
+    color: #EF4444;
 }
 
-.statMaybe {
-    background: #FFF8E1;
-    color: #F57F17;
+.iconMaybe {
+    color: #D97706;
 }
 
-.statIcon {
-    margin-bottom: 0.25rem;
-    opacity: 0.8;
+.statInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
 }
 
-.statNumber {
-    font-family: var(--font-serif);
-    font-size: 1.75rem;
+.statTitle {
+    font-size: 0.95rem;
+    color: #64748B;
     font-weight: 500;
+}
+
+.statMainNumber {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #0F172A;
     line-height: 1;
 }
 
-.statLabel {
-    font-size: 0.65rem;
+.statSubtext {
+    font-size: 0.8rem;
+    color: #94A3B8;
+    margin-top: 0.25rem;
+}
+
+.progressContainer {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.progressBase {
+    flex: 1;
+    height: 6px;
+    border-radius: 10px;
+    background-color: #F1F5F9;
+    position: relative;
+    overflow: hidden;
+}
+
+.progressFill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.3s ease;
+}
+
+.progressLabel {
+    font-size: 0.75rem;
     font-weight: 700;
-    opacity: 0.7;
-    text-transform: uppercase;
+    color: #64748B;
+    min-width: 2rem;
 }
 
 .totalHeadcount {
@@ -377,18 +522,52 @@
 
 /* E. Action Footer */
 .cardFooter {
+    background: #FFFFFF;
+    padding: 1.25rem 2.5rem;
     display: flex;
-    flex-direction: column;
+    justify-content: space-between;
     align-items: center;
-    gap: 1rem;
-    padding-top: 2rem;
-    border-top: 1px solid #F0EAE0;
+    border-top: 1px solid rgba(232, 212, 162, 0.2);
+    border-bottom-left-radius: 24px;
+    border-bottom-right-radius: 24px;
+}
+
+.footerInstruction {
+    margin: 0;
+    font-size: 0.875rem;
+    color: #64748B;
+    font-weight: 500;
+}
+
+.footerMetadata {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.metadataItem {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: #6B7280;
+    font-size: 0.8125rem;
+    font-weight: 500;
+}
+
+.metaIcon {
+    color: #C1B088;
+    opacity: 0.8;
+}
+
+.metaDivider {
+    color: #E2E8F0;
+    font-size: 0.75rem;
 }
 
 .footerActionsRow {
     display: flex;
-    justify-content: center;
-    gap: 3rem;
+    justify-content: flex-end;
+    gap: 1rem;
 }
 
 .footerAction {
@@ -427,6 +606,25 @@
     background-color: #FFEBEE;
     padding: 0.5rem 1rem;
     border-radius: 20px;
+}
+
+.previewAction {
+    background: none;
+    border: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #64748B;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    padding: 0;
+    text-decoration: none;
+}
+
+.previewAction:hover {
+    color: #1F1F1F;
 }
 
 .shareHint {
@@ -588,4 +786,231 @@
         transform: scale(1);
         opacity: 1;
     }
+}
+/* Guest List Table Section */
+.guestListSection {
+    margin-top: 0;
+    padding: 2.5rem;
+}
+
+.guestListHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.guestListTitle {
+    font-family: var(--font-serif);
+    font-size: 2rem; /* Increased from 1.75rem for better balance */
+    color: #1F1F1F;
+    margin: 0;
+}
+
+.guestListActions {
+    display: flex;
+    gap: 1.25rem; /* Increased from 1rem */
+    align-items: center;
+}
+
+.searchWrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.searchIcon {
+    position: absolute;
+    left: 1rem;
+    color: #999;
+}
+
+.searchInput {
+    padding: 0.6rem 1rem 0.6rem 2.85rem;
+    border: 1px solid #E2E8F0;
+    border-radius: 99px;
+    width: 340px;
+    font-size: 0.9rem;
+    background: #FFFEFA;
+    transition: width 0.3s ease;
+}
+
+.btnActionSecondary {
+    background-color: #DEF2EE;
+    color: #1B5E20;
+    padding: 0.65rem 1.25rem;
+    border-radius: 99px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: none;
+    cursor: pointer;
+}
+
+.btnActionOutline {
+    background-color: white;
+    color: #444;
+    padding: 0.65rem 1.25rem;
+    border-radius: 99px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: 1px solid #E2E8F0;
+    cursor: pointer;
+}
+
+.tableContainer {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.guestTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+.guestTable th {
+    text-align: left;
+    padding: 1rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid #F0EAE0;
+}
+
+.guestTable td {
+    padding: 1.25rem 1rem;
+    font-size: 0.9375rem;
+    color: #333;
+    border-bottom: 1px solid #F8F9FA;
+}
+
+.emptyTable {
+    padding: 4rem 1rem !important;
+    text-align: center;
+    color: #999;
+    font-style: italic;
+    background: #FDFBF7;
+    border-radius: 12px;
+}
+
+/* Pagination Styles */
+.paginationRow {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 1.5rem 1rem 0;
+    margin-top: 1rem;
+    border-top: 1px solid #F8F9FA;
+}
+
+.paginationActions {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.pageBtn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    border: 1px solid #E2E8F0;
+    background: white;
+    color: #94A3B8;
+    cursor: not-allowed;
+    transition: all 0.2s;
+}
+
+.pageIndicator {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #334E68;
+    min-width: 1.5rem;
+    text-align: center;
+}
+
+.footerBtnOutline,
+.footerBtnWhatsApp {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.25rem;
+    border-radius: 100px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.footerBtnOutline {
+    background: white;
+    border: 1px solid #E2E8F0;
+    color: #475569;
+}
+
+.footerBtnOutline:hover {
+    background: #F8FAFC;
+    border-color: #CBD5E1;
+}
+
+.footerBtnWhatsApp {
+    background: white;
+    border: 1px solid #25D366;
+    color: #25D366;
+}
+
+.footerBtnWhatsApp:hover {
+    background: #F8FAFC;
+    color: #22c35e;
+    border-color: #CBD5E1;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37, 211, 102, 0.1);
+}
+
+.deleteAction {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: none;
+    border: none;
+    color: #ef4444;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    transition: background 0.2s;
+    margin-left: 0.5rem;
+}
+
+.pageBtnNext {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: none;
+    border: none;
+    color: #64748B;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    transition: color 0.2s;
+}
+
+.pageBtnNext:hover {
+    color: #1B5E20;
+}
+
+.pageBtnNext svg {
+    margin-top: 1px;
 }

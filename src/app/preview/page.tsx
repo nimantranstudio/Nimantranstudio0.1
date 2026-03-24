@@ -4,7 +4,7 @@ import { useWeddingStore } from '@/store/wedding-store';
 import type { Theme } from '@/lib/constants/themes';
 import { InvitationCard, InvitationCardRef } from '@/components/preview/InvitationCard';
 import styles from '@/components/preview/Preview.module.css';
-import { ChevronLeft, Headphones, Play, Edit, Download, Share2 } from 'lucide-react';
+import { ChevronLeft, Headphones, Play, Edit, Download, Share2, Check, Lock, Link as LinkIcon, Copy, Sparkles, MessageCircle, Activity, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 import { clsx } from 'clsx';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
@@ -46,6 +46,7 @@ function PreviewContent() {
     const [showLoginModal, setShowLoginModal] = useState(false);
     const [selectedPreviewIndex, setSelectedPreviewIndex] = useState<number | null>(null);
     const [isEditMode, setIsEditMode] = useState(false);
+    const [isButtonHovered, setIsButtonHovered] = useState(false);
     const [resetKey, setResetKey] = useState(0);
     const cardRef = useRef<InvitationCardRef>(null);
     const suiteRefs = useRef<Record<string, InvitationCardRef | null>>({});
@@ -54,6 +55,31 @@ function PreviewContent() {
     
     // Fluid transition state
     const [showProcessing, setShowProcessing] = useState(searchParams.get('processing') === 'true');
+    const [copyStatus, setCopyStatus] = useState(false);
+
+    // Generate RSVP Link based on couple names
+    const rsvpSlug = `${formData.groomName?.toLowerCase().split(' ')[0] || 'wedding'}-${formData.brideName?.toLowerCase().split(' ')[0] || 'rsvp'}`;
+    const rsvpFullUrl = `https://nimantran.app/rsvp/${rsvpSlug}`;
+
+    const handleCopyRsvpLink = async () => {
+        try {
+            await navigator.clipboard.writeText(rsvpFullUrl);
+            setCopyStatus(true);
+            // Brief celebratory micro-burst
+            confetti({
+                particleCount: 30,
+                spread: 40,
+                origin: { y: 0.7 },
+                colors: ['#D4AF37', '#F3E8D2'],
+                gravity: 0.8,
+                scalar: 0.8,
+                zIndex: 1000
+            });
+            setTimeout(() => setCopyStatus(false), 2000);
+        } catch (err) {
+            console.error('Copy failed:', err);
+        }
+    };
 
     const { updateFormData, updateEvent } = useWeddingStore();
 
@@ -519,19 +545,6 @@ function PreviewContent() {
                 </div>
             )}
 
-            <header className={styles.header}>
-                <div className="container">
-                    <Breadcrumbs
-                        items={[
-                            { label: 'Home', href: '/' },
-                            { label: 'Themes', href: '/themes' },
-                            { label: theme.name, href: `/themes/${selectedThemeId}` },
-                            { label: 'wedding details', href: '/details' },
-                            { label: 'preview', active: true },
-                        ]}
-                    />
-                </div>
-            </header>
 
             <main className="container">
                 <div className={styles.mainLayout}>
@@ -566,9 +579,6 @@ function PreviewContent() {
                                                 <p className={styles.suiteItemActionHint}>Share instantly after unlock</p>
                                             </div>
                                             <div className={styles.suiteActions}>
-                                                <button className={styles.suiteActionButton} onClick={() => setSelectedPreviewIndex(index)}>
-                                                    Preview - Unlock to Share
-                                                </button>
                                                 <div className={styles.suiteQuickActions}>
                                                     <button 
                                                         className={styles.suiteQuickActionBtn}
@@ -606,6 +616,62 @@ function PreviewContent() {
                                         No preview images available for this theme.
                                     </div>
                                 )}
+
+                                {/* RSVP Link Card */}
+                                <div className={styles.suiteItem} style={{ alignItems: 'flex-start' }}>
+                                    <div className={styles.rsvpPreviewPlaceholder}>
+                                        <div style={{ textAlign: 'center', marginBottom: '0.25rem' }}>
+                                            <div style={{ fontSize: '0.65rem', fontFamily: 'var(--font-playfair)', fontWeight: 'bold' }}>{formData.groomName?.split(' ')[0]} & {formData.brideName?.split(' ')[0]}</div>
+                                        </div>
+                                        <div className={styles.rsvpPreviewForm}>
+                                            <div className={styles.rsvpPreviewLine}></div>
+                                            <div className={styles.rsvpPreviewLine} style={{ width: '80%' }}></div>
+                                            <div style={{ display: 'flex', gap: '4px', marginTop: '4px' }}>
+                                                <div style={{ height: '12px', width: '12px', background: '#F3F4F6', borderRadius: '2px' }}></div>
+                                                <div style={{ height: '12px', width: '12px', background: '#F3F4F6', borderRadius: '2px' }}></div>
+                                            </div>
+                                            <div className={styles.rsvpPreviewBtn}></div>
+                                        </div>
+                                    </div>
+
+                                    <div className={styles.suiteInfo}>
+                                        <h3 className={styles.suiteItemTitle}>RSVP Link</h3>
+                                        <p className={styles.suiteItemDesc}>Smart guest response collection page</p>
+                                        
+                                        <div className={styles.rsvpUrlSection}>
+                                            <div className={styles.rsvpUrlBox}>
+                                                <span className={styles.rsvpUrlText}>{rsvpFullUrl.replace('https://', '')}</span>
+                                                <button 
+                                                    className={styles.copyPill} 
+                                                    onClick={handleCopyRsvpLink}
+                                                    title={copyStatus ? "Copied!" : "Copy Link"}
+                                                    style={{ background: copyStatus ? '#10B981' : '#F1F5F9', color: copyStatus ? 'white' : '#1E293B' }}
+                                                >
+                                                    {copyStatus ? <Check size={16} /> : <Copy size={16} />}
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                    </div>
+
+                                    <div className={styles.suiteActions}>
+                                        <div className={styles.suiteQuickActions} style={{ marginTop: '0.5rem' }}>
+                                            <button className={styles.suiteQuickActionBtn} title="Edit RSVP Template">
+                                                <Edit size={16} />
+                                            </button>
+                                            <button 
+                                                className={styles.suiteQuickActionBtn} 
+                                                title="Share on WhatsApp"
+                                                onClick={() => {
+                                                    const text = encodeURIComponent(`We would love to have you at our wedding! \n\nPlease RSVP here: ${rsvpFullUrl}`);
+                                                    window.open(`https://wa.me/?text=${text}`, '_blank');
+                                                }}
+                                            >
+                                                <Share2 size={16} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -614,75 +680,113 @@ function PreviewContent() {
                     <div className={styles.rightColumn}>
                         <div className={styles.summaryView}>
                             <div className={styles.summaryCard}>
-                                <div className={styles.bundleHeader}>
-                                    <h1 className={styles.previewHeaderTitle}>
-                                        Unlock Your Wedding Experience
-                                    </h1>
-                                    <p className={styles.previewHeaderSubtitle}>
-                                        Preview all your invitation assets below.
-                                    </p>
+                                <h1 className={styles.designTitle}>
+                                    Unlock Your Wedding Suite
+                                </h1>
+
+                                <div className={styles.breakdownBox}>
+                                    <div className={styles.popularBadge}>
+                                        <div className={styles.badgeCheck}>
+                                            <Check size={10} strokeWidth={4} />
+                                        </div>
+                                        <span>Popular this month</span>
+                                    </div>
+                                    <div className={styles.designDetailsList}>
+                                        <div className={styles.designDetailSubheader}>WhatsApp Essentials</div>
+                                        <div className={styles.themeNameLabel}>{theme?.name || 'Wedding Theme ✨'}</div>
+                                        <div className={styles.designDetailRow}>
+                                            <span>Invitation design suite (8 assets)</span>
+                                            <span>₹1,540</span>
+                                        </div>
+                                        <div className={styles.designDetailRow}>
+                                            <span>RSVP management & tracking</span>
+                                            <span>₹735</span>
+                                        </div>
+                                        <div className={styles.designDetailRow}>
+                                            <span>Guest dashboard + hosting</span>
+                                            <span>₹400</span>
+                                        </div>
+                                        <div className={styles.designDivider}></div>
+                                        <div className={styles.totalValueRow}>
+                                            <span>Total Wedding Suite Value</span>
+                                            <span>₹2,675</span>
+                                        </div>
+                                    </div>
+
+                                    <div className={styles.offerRow}>
+                                        <span>Launch Offer Discount</span>
+                                        <span>-₹1,676</span>
+                                    </div>
+
+                                    <div className={styles.finalPriceSection}>
+                                        <div className={styles.priceLeft}>
+                                            <span className={styles.originalPrice}>Total Amount</span>
+                                        </div>
+                                        <div className={styles.finalPriceRight}>
+                                            <span className={styles.strikethroughPrice}>₹2,675</span>
+                                            <span className={`${styles.finalPrice} ${isButtonHovered ? styles.finalPriceMagnetic : ''}`}>₹999</span>
+                                        </div>
+                                    </div>
+
+                                    <div className={styles.savingsBanner}>
+                                        ✨ You saved ₹1,676 on your wedding communication suite
+                                    </div>
+                                    <div className={styles.socialProofLine}>
+                                        ✨ Chosen by 24 families this month
+                                    </div>
                                 </div>
 
-                                <div className={styles.detailsList}>
-                                    <div className={styles.detailRow}>
-                                        <span className={styles.detailLabel} style={{ color: '#111827' }}>Invite Suite Creation</span>
-                                        <span className={styles.detailValue}>₹2400</span>
-                                    </div>
-                                    <div className={styles.detailRow}>
-                                        <span className={styles.detailLabel} style={{ color: '#111827' }}>RSVP System</span>
-                                        <span className={styles.detailValue}>₹1200</span>
-                                    </div>
-                                    <div className={styles.detailRow}>
-                                        <span className={styles.detailLabel} style={{ color: '#111827' }}>Guest Dashboard</span>
-                                        <span className={styles.detailValue}>₹400</span>
-                                    </div>
-                                </div>
-                                <div className={styles.divider}></div>
-                                <div className={styles.priceSection}>
-                                    <div className={styles.priceInfo}>
-                                        <span className={styles.priceTitle}>Gold Bundle</span>
-                                        <span className={styles.priceSub}>INCLUSIVE OF ALL TAXES</span>
-                                    </div>
-                                    <div className={styles.priceValue}>₹1,200</div>
-                                </div>
+                                <div className={styles.partitionLine}></div>
+
                                 <button
-                                    className={styles.confirmBtn}
+                                    className={styles.unlockButton}
                                     onClick={handleCheckout}
+                                    onMouseEnter={() => setIsButtonHovered(true)}
+                                    onMouseLeave={() => setIsButtonHovered(false)}
                                 >
-                                    Confirm & Pay
+                                    Unlock My Wedding Invites
                                 </button>
-                                <span className={styles.ctaSubtext}>
-                                    Most couples complete sharing within 10 minutes after payment.
-                                </span>
+
+                                <div className={styles.featureList}>
+                                    <div className={styles.featureItem}>
+                                        <div className={styles.checkWrapper}><Check size={10} strokeWidth={4} /></div>
+                                        <span>Instant delivery</span>
+                                    </div>
+                                    <div className={styles.featureItem}>
+                                        <div className={styles.checkWrapper}><Check size={10} strokeWidth={4} /></div>
+                                        <span>Secure Payments</span>
+                                    </div>
+                                    <div className={styles.featureItem}>
+                                        <div className={styles.checkWrapper}><Check size={10} strokeWidth={4} /></div>
+                                        <span>Free edits for 15 days</span>
+                                    </div>
+                                </div>
+
+                                <p className={styles.footerNote}>
+                                    Most couples start sharing invites within 10 minutes after payment.
+                                </p>
                             </div>
                         </div>
 
                         {/* Info Blocks below the card */}
-                        <div className={styles.infoGrid}>
-                            <div className={styles.infoBlock}>
-                                <h3 className={styles.infoBlockTitle}>Satisfaction Guaranteed</h3>
-                                <p className={styles.infoBlockText}>
+                        <div className={styles.infoBlockContainer}>
+                            <div className={styles.infoBoxFull}>
+                                <h3 className={styles.infoBoxTitle}>SATISFACTION GUARANTEED</h3>
+                                <p className={styles.infoBoxText}>
                                     Final assets will be generated without watermarks in high definition immediately after payment. Editing allowed for next 15 days.
                                 </p>
                             </div>
-
-                            <div className={styles.infoBlock}>
-                                <div className={styles.helpBlock}>
-                                    <div className={styles.helpItem}>
-                                        <Headphones size={20} color="#71717a" />
-                                        <div className={styles.helpText}>
-                                            Need Help? Contact Us <strong>+91 96250 28849</strong><br />
-                                            <span style={{ fontSize: '0.625rem', opacity: 0.8 }}>Monday - Saturday 9:00 AM - 6:00 PM</span>
-                                        </div>
+                            <div className={styles.infoBoxSplit}>
+                                <div className={styles.infoBoxHalf}>
+                                    <Headphones size={24} className={styles.infoIcon} />
+                                    <div className={styles.infoContent}>
+                                        <span className={styles.infoLabel}>Need Help? Contact Us</span>
+                                        <span className={styles.infoValue}>+91 96250 28649</span>
                                     </div>
-                                    <div className={styles.paymentRow}>
-                                        <div className={styles.paymentBadges}>
-                                            <div className={styles.cardIcon}></div>
-                                            <div className={styles.cardIcon}></div>
-                                            <div className={styles.cardIcon}></div>
-                                        </div>
-                                        <span className={styles.secureLabel}>SECURE PAYMENTS</span>
-                                    </div>
+                                </div>
+                                <div className={styles.infoBoxHalf}>
+                                    <ShieldCheck size={24} className={styles.infoIcon} />
+                                    <span className={styles.infoValue}>SECURE PAYMENTS</span>
                                 </div>
                             </div>
                         </div>
