@@ -2,7 +2,7 @@ export interface BundleItemData {
     id: string;
     eventType: string;
     templateName: string;
-    templateFile: string;
+    templatePath: string;
 }
 
 export interface BundleData {
@@ -13,6 +13,10 @@ export interface BundleData {
     completePrice: number;
     description?: string;
     itemImages?: string; // JSON string
+    packageDisplayOptions?: any[];
+    packageDisplayOption?: any; // Fallback for backward compatibility
+    bundleInvoices?: any[];
+    bundleInvoice?: any;
     bundleItems?: BundleItemData[];
 }
 

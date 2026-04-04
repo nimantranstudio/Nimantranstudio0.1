@@ -4,9 +4,11 @@ import { WeddingFormData, DEFAULT_EVENTS } from '@/lib/schemas/wedding-form';
 
 interface BundleItemInfo {
     id: string;
-    eventType: string;
+    eventId: string;
+    eventType?: string; // Kept for legacy support
+    event?: { eventName: string };
     templateName: string;
-    templateFile: string;
+    templatePath: string;
 }
 
 interface WeddingState {

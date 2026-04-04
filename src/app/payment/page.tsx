@@ -4,11 +4,11 @@ import { useWeddingStore } from '@/store/wedding-store';
 import styles from './payment.module.css';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft, Lock } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function PaymentPage() {
     const router = useRouter();
-    const { formData, selectedThemeId } = useWeddingStore();
+    const { formData, selectedThemeId, selectedPlan } = useWeddingStore();
     
     // In a real flow, this would integrate Razorpay or similar
     const handlePay = () => {
@@ -18,6 +18,33 @@ export default function PaymentPage() {
     };
 
     const [isDownloading, setIsDownloading] = useState(false);
+    const [invoiceData, setInvoiceData] = useState<any>(null);
+    const [themeBundle, setThemeBundle] = useState<any>(null);
+
+    useEffect(() => {
+        if (!selectedThemeId || !selectedPlan) return;
+        
+        Promise.all([
+            fetch(`/api/themes/${selectedThemeId}`),
+            fetch('/api/admin/packages')
+        ]).then(async ([themeRes, pkgsRes]) => {
+            const themeData = await themeRes.json();
+            const pkgsData = await pkgsRes.json();
+            
+            const bundle = themeData.theme?.bundles?.[0];
+            setThemeBundle(bundle);
+            
+            if (bundle && pkgsData.packages) {
+                const pkg = pkgsData.packages.find((p: any) => p.name === selectedPlan);
+                if (pkg && bundle.bundleInvoices) {
+                    const invoice = bundle.bundleInvoices.find((inv: any) => inv.packageId === pkg.id);
+                    if (invoice) {
+                        setInvoiceData(invoice);
+                    }
+                }
+            }
+        }).catch(err => console.error("Failed to load invoice", err));
+    }, [selectedThemeId, selectedPlan]);
 
     const generateBundleBlobs = async () => {
         const currentStore = useWeddingStore.getState();
@@ -32,7 +59,7 @@ export default function PaymentPage() {
         } else {
             const weddingEvents = currentStore.formData.events || [];
             actualBundleItems.forEach(bi => {
-                if (!bi.templateFile) return;
+                if (!bi.templatePath) return; // Renamed
                 const biType = bi.eventType.toUpperCase().replace(/_/g, '');
                 let matchedEvent = weddingEvents.find(evt => {
                     const evtId = evt.id.toUpperCase();
@@ -45,7 +72,7 @@ export default function PaymentPage() {
                 });
                 items.push({
                     name: bi.templateName || bi.eventType,
-                    file: bi.templateFile,
+                    file: bi.templatePath, // Renamed
                     event: matchedEvent
                 });
             });
@@ -206,19 +233,56 @@ export default function PaymentPage() {
                     <div className={styles.leftColumn}>
                         <div className={styles.sectionCard}>
                             <h2 className={styles.sectionTitle}>Order Summary</h2>
-                            <div className={styles.summaryItem}>
-                                <span>Theme Complete Bundle</span>
-                                <span>₹1,200</span>
-                            </div>
-                            <div className={styles.summaryItem}>
-                                <span>Taxes (18% GST incl.)</span>
-                                <span>₹0</span>
-                            </div>
-                            <div className={styles.divider}></div>
-                            <div className={`${styles.summaryItem} ${styles.totalItem}`}>
-                                <span>Total Amount to Pay</span>
-                                <span>₹1,200</span>
-                            </div>
+                            {invoiceData ? (
+                                <>
+                                    {invoiceData.invitationDesignSuite > 0 && (
+                                        <div className={styles.summaryItem}>
+                                            <span>Invitation Design Suite</span>
+                                            <span>₹{invoiceData.invitationDesignSuite}</span>
+                                        </div>
+                                    )}
+                                    {invoiceData.rsvpManagementTracking > 0 && (
+                                        <div className={styles.summaryItem}>
+                                            <span>RSVP Management Tracking</span>
+                                            <span>₹{invoiceData.rsvpManagementTracking}</span>
+                                        </div>
+                                    )}
+                                    {invoiceData.guestDashboard > 0 && (
+                                        <div className={styles.summaryItem}>
+                                            <span>Guest Dashboard & Hosting</span>
+                                            <span>₹{invoiceData.guestDashboard}</span>
+                                        </div>
+                                    )}
+                                    <div className={styles.divider}></div>
+                                    <div className={styles.summaryItem}>
+                                        <span>Total Wedding Suite Value</span>
+                                        <span>₹{invoiceData.totalWeddingSuiteValue}</span>
+                                    </div>
+                                    {invoiceData.discount > 0 && (
+                                        <div className={styles.summaryItem} style={{ color: '#16a34a' }}>
+                                            <span>Offer / Discount ({invoiceData.discount}%)</span>
+                                            <span>- ₹{invoiceData.totalWeddingSuiteValue - invoiceData.discountedPrice}</span>
+                                        </div>
+                                    )}
+                                    <div className={styles.divider}></div>
+                                    <div className={`${styles.summaryItem} ${styles.totalItem}`}>
+                                        <span>Total Amount to Pay</span>
+                                        <span>₹{invoiceData.finalSellingPrice || invoiceData.discountedPrice}</span>
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    <div className={styles.summaryItem}>
+                                        <span>{selectedPlan || 'Theme Complete Bundle'}</span>
+                                        <span>...</span>
+                                    </div>
+                                    <div className={styles.divider}></div>
+                                    <div className={`${styles.summaryItem} ${styles.totalItem}`}>
+                                        <span>Total Amount to Pay</span>
+                                        <span>...</span>
+                                    </div>
+                                </>
+                            )}
                         </div>
 
                         <div className={styles.sectionCard}>

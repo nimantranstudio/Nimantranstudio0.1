@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { X, Package, CheckCircle, Info, Upload, Image as ImageIcon, AlertCircle } from 'lucide-react';
+import { X, Package, CheckCircle, Info, Upload, Image as ImageIcon, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import styles from './BundleModal.module.css';
 import { clsx } from 'clsx';
 
@@ -16,6 +16,11 @@ interface PackageModel {
     level: number;
     price: number;
     allowedItems: string;
+}
+
+interface EventModel {
+    id: string;
+    eventName: string;
 }
 
 interface BundleModalProps {
@@ -38,15 +43,67 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
 
     const [themes, setThemes] = useState<Theme[]>([]);
     const [packages, setPackages] = useState<PackageModel[]>([]);
+    const [allEvents, setAllEvents] = useState<EventModel[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    type InvoiceData = {
+        invitationDesignSuite: string;
+        rsvpManagementTracking: string;
+        guestDashboard: string;
+        totalWeddingSuiteValue: string;
+        discount: string;
+        discountedPrice: string;
+        finalSellingPrice: string;
+    };
+
+    const defaultInvoiceData: InvoiceData = {
+        invitationDesignSuite: '0',
+        rsvpManagementTracking: '0',
+        guestDashboard: '0',
+        totalWeddingSuiteValue: '0',
+        discount: '0',
+        discountedPrice: '0',
+        finalSellingPrice: '0',
+        isDisplay: true, // Support for isDisplay from screenshot
+    } as any;
+
+    const [bundleInvoices, setBundleInvoices] = useState<{ [packageId: string]: InvoiceData }>({});
+    const [expandedInvoices, setExpandedInvoices] = useState<{ [packageId: string]: boolean }>({});
+
+    const toggleInvoiceExpand = (packageId: string) => {
+        setExpandedInvoices(prev => ({ ...prev, [packageId]: !prev[packageId] }));
+    };
 
     // New Event Type Bundle Items
-    const [activeEventType, setActiveEventType] = useState('SAVE_DATE');
+    const [activeEventType, setActiveEventType] = useState('');
     const [activeTemplateName, setActiveTemplateName] = useState('');
     const [activeTemplateFile, setActiveTemplateFile] = useState<File | null>(null);
-    const [bundleItemsList, setBundleItemsList] = useState<Array<{ id: string, eventType: string, templateName: string, file: File | null, previewUrl: string | null }>>([]);
+    const [bundleItemsList, setBundleItemsList] = useState<Array<{ id: string, eventType: string, eventId: string, templateName: string, file: File | null, previewUrl: string | null }>>([]);
     const templateFileRef = useRef<HTMLInputElement>(null);
+
+    const [packageDisplayConfig, setPackageDisplayConfig] = useState<{ [key: string]: boolean }>({});
+
+    // Collect all unique event types (allowed items) across all packages
+    const availableEventTypes = Array.from(new Set(packages.flatMap(pkg => {
+        try {
+            return JSON.parse(pkg.allowedItems) || [];
+        } catch {
+            return [];
+        }
+    }))).sort() as string[];
+
+    // Fallback if no packages are loaded yet
+    const displayEventTypes = availableEventTypes.length > 0 ? availableEventTypes : [
+        "Save the date", "Wedding Invitation", "Haldi Invitation", "Mehendi Invitation", 
+        "Sangeet Invitation", "Reception", "RSVP", "Thank You Card", "Video"
+    ];
+
+    // Ensure activeEventType is valid when the list changes
+    useEffect(() => {
+        if (allEvents.length > 0 && !activeEventType) {
+            setActiveEventType(allEvents[0].id);
+        }
+    }, [allEvents, activeEventType]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -54,9 +111,10 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
             setIsLoading(true);
             setError(null);
             try {
-                const [themesRes, packagesRes] = await Promise.all([
+                const [themesRes, packagesRes, eventsRes] = await Promise.all([
                     fetch('/api/admin/themes'),
-                    fetch('/api/admin/packages')
+                    fetch('/api/admin/packages'),
+                    fetch('/api/admin/events')
                 ]);
 
                 if (themesRes.ok) {
@@ -77,6 +135,11 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
                     const errData = await packagesRes.json().catch(() => ({}));
                     setError(errData.error || `HTTP ${packagesRes.status}`);
                 }
+
+                if (eventsRes.ok) {
+                    const data = await eventsRes.json();
+                    setAllEvents(data.events || []);
+                }
             } catch (err: any) {
                 setError(err.message || "Network Error");
             } finally {
@@ -89,9 +152,9 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
 
     useEffect(() => {
         if (initialData) {
-            setName(initialData.name || '');
+            setName(initialData.BundleName || '');
             setPrice(initialData.price || '');
-            setDescription(initialData.description || '');
+            setDescription(initialData.bundleDescription || '');
             setIsActive(initialData.isActive ?? true);
             setIsPopular(initialData.isPopular || false);
             setThemeId(initialData.themeId || '');
@@ -112,13 +175,38 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
             } else {
                 setItemPreviews({});
             }
+
+            if (initialData.bundleInvoices && Array.isArray(initialData.bundleInvoices)) {
+                const invoiceMap: { [key: string]: InvoiceData } = {};
+                const displayMap: { [key: string]: boolean } = {};
+                initialData.bundleInvoices.forEach((inv: any) => {
+                    invoiceMap[inv.packageId] = {
+                        invitationDesignSuite: String(inv.invitationDesignSuite || 0),
+                        rsvpManagementTracking: String(inv.rsvpManagementTracking || 0),
+                        guestDashboard: String(inv.guestDashboard || 0),
+                        totalWeddingSuiteValue: String(inv.totalWeddingSuiteValue || 0),
+                        discount: String(inv.discount || 0),
+                        discountedPrice: String(inv.discountedPrice || 0),
+                        finalSellingPrice: String(inv.finalSellingPrice || 0),
+                        isDisplay: inv.isDisplay ?? true
+                    } as any;
+                    displayMap[inv.packageId] = inv.isDisplay ?? true;
+                });
+                setBundleInvoices(invoiceMap);
+                setPackageDisplayConfig(displayMap);
+            } else {
+                setBundleInvoices({});
+                setPackageDisplayConfig({});
+            }
+
             if (initialData.bundleItems && Array.isArray(initialData.bundleItems)) {
                 setBundleItemsList(initialData.bundleItems.map((item: any) => ({
                     id: item.id || Math.random().toString(),
-                    eventType: item.eventType,
+                    eventType: item.event?.eventName || 'Unknown',
+                    eventId: item.eventId,
                     templateName: item.templateName,
                     file: null,
-                    previewUrl: item.templateFile
+                    previewUrl: item.templatePath
                 })));
             } else {
                 setBundleItemsList([]);
@@ -136,13 +224,71 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
             setActiveTemplateName('');
             setActiveTemplateFile(null);
             setBundleItemsList([]);
+            setPackageDisplayConfig({});
+            setBundleInvoices({});
         }
     }, [initialData, isOpen]);
 
     if (!isOpen) return null;
 
-    const handleTierPriceChange = (packageName: string, value: string) => {
-        setTierPrices(prev => ({ ...prev, [packageName]: value }));
+    const handleTierPriceChange = (packageId: string, value: string, skipInvoiceSync: boolean = false) => {
+        setTierPrices(prev => ({ ...prev, [packageId]: value }));
+        
+        if (!skipInvoiceSync) {
+            // Give event loop a beat to prevent state queue freezing from loop
+            setTimeout(() => {
+                handleInvoiceChange(packageId, 'discountedPrice', value, true);
+            }, 0);
+        }
+    };
+
+    const handlePackageDisplayChange = (packageName: string, value: boolean) => {
+        setPackageDisplayConfig(prev => ({ ...prev, [packageName]: value }));
+    };
+
+    const handleInvoiceChange = (packageId: string, field: keyof InvoiceData | 'discountedPrice', value: string, skipTierSync: boolean = false) => {
+        setBundleInvoices(prev => {
+            const oldInvoice = prev[packageId] || { ...defaultInvoiceData };
+            const newInvoice = { ...oldInvoice, [field]: value };
+            
+            const design = parseFloat(newInvoice.invitationDesignSuite) || 0;
+            const rsvp = parseFloat(newInvoice.rsvpManagementTracking) || 0;
+            const guest = parseFloat(newInvoice.guestDashboard) || 0;
+            
+            const totalSuiteValue = design + rsvp + guest;
+            newInvoice.totalWeddingSuiteValue = totalSuiteValue.toString();
+            
+            let finalAmountFormatted = '0';
+
+            if (field === 'discountedPrice') {
+                const requestedFinalPrice = parseFloat(value) || 0;
+                let reverseDiscountPercent = 0;
+                if (totalSuiteValue > 0) {
+                     reverseDiscountPercent = ((totalSuiteValue - requestedFinalPrice) / totalSuiteValue) * 100;
+                }
+                newInvoice.discount = parseFloat(reverseDiscountPercent.toFixed(2)).toString();
+                finalAmountFormatted = parseFloat(requestedFinalPrice.toFixed(2)).toString();
+                newInvoice.discountedPrice = value; // Preserve exact text while typing
+            } else {
+                const discountPercent = parseFloat(newInvoice.discount) || 0;
+                const finalAmount = totalSuiteValue - (totalSuiteValue * (discountPercent / 100));
+                finalAmountFormatted = parseFloat(finalAmount.toFixed(2)).toString();
+                newInvoice.discountedPrice = finalAmountFormatted;
+            }
+
+            newInvoice.finalSellingPrice = finalAmountFormatted;
+
+            if (!skipTierSync) {
+                setTimeout(() => {
+                    handleTierPriceChange(packageId, finalAmountFormatted, true);
+                }, 0);
+            }
+
+            return {
+                ...prev,
+                [packageId]: newInvoice
+            };
+        });
     };
 
     const handleItemFileChange = (itemName: string, file: File) => {
@@ -166,12 +312,14 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
 
     const handleAddBundleItem = () => {
         const previewUrl = activeTemplateFile ? URL.createObjectURL(activeTemplateFile) : null;
-        const autoName = activeEventType.replace(/_/g, ' ');
+        const selectedEvent = allEvents.find(e => e.id === activeEventType);
+        const eventName = selectedEvent ? selectedEvent.eventName : 'Unknown';
 
         setBundleItemsList(prev => [...prev, {
             id: Math.random().toString(),
-            eventType: activeEventType,
-            templateName: autoName,
+            eventType: eventName,
+            eventId: activeEventType,
+            templateName: eventName,
             file: activeTemplateFile,
             previewUrl
         }]);
@@ -192,13 +340,19 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
 
         try {
             const formData = new FormData();
-            formData.append('name', name);
+            formData.append('BundleName', name); // Renamed
             formData.append('price', price || "0");
-            formData.append('description', description);
+            formData.append('bundleDescription', description); // Renamed
             formData.append('isActive', String(isActive));
             formData.append('isPopular', String(isPopular));
             formData.append('themeId', themeId);
             formData.append('tierPrices', JSON.stringify(tierPrices));
+            formData.append('packageDisplayOptions', JSON.stringify(packageDisplayConfig));
+            formData.append('bundleInvoices', JSON.stringify(bundleInvoices));
+            
+            // Temporary placeholder for logged in user name. Replace with actual auth context.
+            const currentUserName = typeof window !== 'undefined' ? (localStorage.getItem('adminUserName') || 'Admin User') : 'Admin User';
+            formData.append('userName', currentUserName);
 
             Object.entries(itemFiles).forEach(([name, file]) => {
                 formData.append(`itemFile_${name}`, file);
@@ -207,9 +361,9 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
             formData.append('existingItemImages', JSON.stringify(itemPreviews));
 
             // Append specific structured bundle items
-            const structuredItems = bundleItemsList.map(item => ({
+            const structuredItems = bundleItemsList.map((item: any) => ({
                 id: item.id,
-                eventType: item.eventType,
+                eventId: item.eventId, // New
                 templateName: item.templateName,
                 existingUrl: !item.file ? item.previewUrl : null
             }));
@@ -282,25 +436,86 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
 
                         <div className={styles.row}>
                             <div className={styles.formGroup} style={{ gridColumn: 'span 2' }}>
-                                <label className={styles.label}>Pricing by Package</label>
+                                <label className={styles.label}>Pricing & Invoices by Package</label>
                                 <div className={styles.pricingContainer}>
                                     {packages.length > 0 ? (
-                                        packages.map(p => (
-                                            <div key={p.id} className={styles.packagePricingRow}>
-                                                <span className={styles.packageName}>{p.name}</span>
-                                                <div className={styles.priceInputWrapper}>
-                                                    <span className={styles.currencyPrefix}>₹</span>
-                                                    <input
-                                                        type="text"
-                                                        className={styles.input}
-                                                        style={{ paddingLeft: '1.8rem' }}
-                                                        placeholder={String(p.price)}
-                                                        value={tierPrices[p.name] || ''}
-                                                        onChange={e => handleTierPriceChange(p.name, e.target.value)}
-                                                    />
+                                        packages.map(p => {
+                                            const isActive = packageDisplayConfig[p.id] === true;
+                                            const isExpanded = expandedInvoices[p.id] === true;
+                                            const currentInvoice = bundleInvoices[p.id] || defaultInvoiceData;
+
+                                            return (
+                                                <div key={p.id} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px solid #e2e8f0' }}>
+                                                    <div className={styles.packagePricingRow} style={{ display: 'flex', alignItems: 'center', gap: '1rem', border: 'none', padding: 0, margin: 0 }}>
+                                                        <label className={styles.toggle} style={{ marginBottom: 0 }}>
+                                                            <input
+                                                                type="checkbox"
+                                                                className={styles.toggleInput}
+                                                                checked={isActive}
+                                                                onChange={e => handlePackageDisplayChange(p.id, e.target.checked)}
+                                                            />
+                                                            <span className={styles.toggleSwitch} style={{ transform: 'scale(0.8)' }}></span>
+                                                        </label>
+                                                        <span className={styles.packageName} style={{ flex: 1, cursor: 'pointer' }} onClick={() => isActive && toggleInvoiceExpand(p.id)}>
+                                                            {p.name}
+                                                        </span>
+                                                        <div className={styles.priceInputWrapper}>
+                                                            <span className={styles.currencyPrefix}>₹</span>
+                                                            <input
+                                                                type="text"
+                                                                className={styles.input}
+                                                                style={{ paddingLeft: '1.8rem' }}
+                                                                placeholder={String(p.price)}
+                                                                value={tierPrices[p.id] || tierPrices[p.name] || ''}
+                                                                onChange={e => handleTierPriceChange(p.id, e.target.value)}
+                                                            />
+                                                        </div>
+                                                        <button 
+                                                            type="button" 
+                                                            style={{ background: 'transparent', border: 'none', cursor: isActive ? 'pointer' : 'not-allowed', color: isActive ? '#6366f1' : '#cbd5e1', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.5rem' }}
+                                                            onClick={() => isActive && toggleInvoiceExpand(p.id)}
+                                                            disabled={!isActive}
+                                                            title="Toggle Invoice Details"
+                                                        >
+                                                            {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                                                        </button>
+                                                    </div>
+
+                                                    {isActive && isExpanded && (
+                                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem', background: '#f8fafc', border: '1px solid #e2e8f0', padding: '1.5rem', borderRadius: '8px', marginLeft: '3rem' }}>
+                                                            <div style={{ gridColumn: 'span 2', fontWeight: 600, color: '#334155', borderBottom: '1px solid #e2e8f0', paddingBottom: '0.5rem', marginBottom: '0.5rem' }}>
+                                                                Invoice Breakdown for {p.name}
+                                                            </div>
+                                                            {[
+                                                                { key: 'invitationDesignSuite', label: 'Invitation Design Suite', prefix: '₹' },
+                                                                { key: 'rsvpManagementTracking', label: 'RSVP Management Tracking', prefix: '₹' },
+                                                                { key: 'guestDashboard', label: 'Guest Dashboard + hosting', prefix: '₹' },
+                                                                { key: 'totalWeddingSuiteValue', label: 'Total Wedding Suite Value', prefix: '₹', readOnly: true },
+                                                                { key: 'discount', label: 'Offer / Discount (%)', prefix: '%' },
+                                                                { key: 'discountedPrice', label: 'Discounted Price', prefix: '₹' }
+                                                            ].map(({ key, label, prefix, readOnly }) => (
+                                                                <div key={key} style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                                                                    <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#475569' }}>{label}</label>
+                                                                    <div className={styles.priceInputWrapper}>
+                                                                        <span className={styles.currencyPrefix}>{prefix}</span>
+                                                                        <input
+                                                                            type={readOnly ? "text" : "number"}
+                                                                            step="any"
+                                                                            className={styles.input}
+                                                                            style={{ paddingLeft: '1.8rem', backgroundColor: readOnly ? '#f1f5f9' : '#fff', cursor: readOnly ? 'not-allowed' : 'text' }}
+                                                                            placeholder="0"
+                                                                            value={currentInvoice[key as keyof InvoiceData] || ''}
+                                                                            onChange={e => handleInvoiceChange(p.id, key as keyof InvoiceData, e.target.value)}
+                                                                            readOnly={readOnly}
+                                                                        />
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
                                                 </div>
-                                            </div>
-                                        ))
+                                            );
+                                        })
                                     ) : (
                                         <div className={styles.emptyPackages}>
                                             {isLoading ? (
@@ -318,13 +533,7 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
                                                     ) : (
                                                         <p>No active packages found in database.</p>
                                                     )}
-                                                    <button
-                                                        type="button"
-                                                        className={styles.retryBtn}
-                                                        onClick={() => window.location.reload()}
-                                                    >
-                                                        Retry Connection
-                                                    </button>
+                                                    <button type="button" className={styles.retryBtn} onClick={() => window.location.reload()}>Retry Connection</button>
                                                 </div>
                                             )}
                                         </div>
@@ -382,14 +591,9 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
                                         value={activeEventType}
                                         onChange={(e) => setActiveEventType(e.target.value)}
                                     >
-                                        <option value="SAVE_DATE">Save The Date</option>
-                                        <option value="HALDI">Haldi</option>
-                                        <option value="MEHENDI">Mehendi</option>
-                                        <option value="SANGEET">Sangeet</option>
-                                        <option value="WEDDING">Wedding</option>
-                                        <option value="RECEPTION">Reception</option>
-                                        <option value="RSVP">RSVP</option>
-                                        <option value="THANK_YOU">Thank You</option>
+                                        {allEvents.map(e => (
+                                            <option key={e.id} value={e.id}>{e.eventName}</option>
+                                        ))}
                                     </select>
                                 </div>
                                 <div>

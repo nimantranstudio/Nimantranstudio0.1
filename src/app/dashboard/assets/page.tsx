@@ -108,7 +108,7 @@ export default function DashboardPage() {
             return {
                 id: bi.id,
                 name: bi.templateName || bi.eventType,
-                image: ensureLeadingSlash(bi.templateFile),
+                image: ensureLeadingSlash(bi.templatePath), // Renamed
                 event: matchedEvent
             };
         });

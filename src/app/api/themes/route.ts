@@ -8,7 +8,14 @@ export async function GET() {
     try {
         const themes = await prisma.theme.findMany({
             orderBy: { createdAt: 'desc' },
-            include: { bundles: true }
+            include: { 
+                bundles: {
+                    include: { 
+                        bundleInvoices: true,
+                        bundleItems: true
+                    }
+                } 
+            }
         });
 
         try {
@@ -18,16 +25,17 @@ export async function GET() {
                 description: theme.description || '',
                 thumbnail: theme.thumbnailUrl || '/placeholder-theme.jpg',
                 previewImages: theme.previewImages ? JSON.parse(theme.previewImages as string) : [],
-                bundleName: theme.bundles?.[0]?.name || 'Theme Invitation Bundle',
+                bundleName: theme.bundles?.[0]?.BundleName || 'Theme Invitation Bundle',
                 bundles: (theme.bundles || []).map((b: any) => ({
                     id: b.id,
-                    name: b.name,
+                    name: b.BundleName,
                     whatsappPrice: b.whatsappPrice,
                     printablePrice: b.printablePrice,
                     completePrice: b.completePrice,
-                    description: b.description || '',
+                    description: b.bundleDescription || '',
                     itemImages: b.itemImages,
-                    bundleItems: []
+                    bundleInvoices: (b as any).bundleInvoices,
+                    bundleItems: b.bundleItems || []
                 })),
                 isBestSeller: theme.isBestSeller || false,
                 isPopular: theme.isPopular || false,

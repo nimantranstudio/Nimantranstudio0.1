@@ -11,12 +11,21 @@ export async function GET(
         const { id } = await params;
         const theme = await prisma.theme.findUnique({
             where: { id },
-            include: { bundles: true }
+            include: { 
+                bundles: {
+                    include: { 
+                        bundleInvoices: true,
+                        bundleItems: {
+                            include: { event: true }
+                        }
+                    }
+                }
+            }
         });
 
-        console.log(`Fetching theme ${id}:`, theme ? `Found with ${theme.bundles.length} bundles` : 'Not found');
-        if (theme?.bundles.length > 0) {
-            console.log('First Bundle Name:', theme.bundles[0].name);
+        console.log(`Fetching theme ${id}:`, theme ? `Found with ${(theme as any).bundles?.length || 0} bundles` : 'Not found');
+        if ((theme as any)?.bundles?.length > 0) {
+            console.log('First Bundle Name:', (theme as any).bundles[0].name);
         }
 
         if (!theme) {
@@ -32,7 +41,12 @@ export async function GET(
             description: theme.description || '',
             thumbnail: theme.thumbnailUrl || '/placeholder-theme.jpg',
             previewImages: theme.previewImages ? JSON.parse(theme.previewImages as string) : [],
-            bundleName: theme.bundles[0]?.name || 'Theme Invitation Bundle',
+            bundleName: (theme as any).bundles[0]?.BundleName || 'Theme Invitation Bundle',
+            bundles: (theme as any).bundles.map((b: any) => ({
+                ...b,
+                name: b.BundleName,
+                description: b.bundleDescription || ''
+            })) || [],
             tag: undefined
         };
 

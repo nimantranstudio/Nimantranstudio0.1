@@ -144,6 +144,42 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
+    const activeBundleObj = theme && theme.bundles && theme.bundles.length > 0 ? theme.bundles[0] : null;
+
+    let initialDisplayConfig = {
+        enabled: true,
+        items: {
+            'WhatsApp Essentials': false,
+            'WhatsApp + Posters': false,
+            'Complete Wedding Suite': false
+        } as Record<string, boolean>
+    };
+
+    if (activeBundleObj && activeBundleObj.bundleInvoices) {
+        activeBundleObj.bundleInvoices.forEach((inv: any) => {
+            const pkg = packages.find(p => p.id === inv.packageId);
+            if (pkg && pkg.name) {
+                initialDisplayConfig.items[pkg.name] = inv.isDisplay === true;
+            }
+        });
+        const hasAnyEnabled = Object.values(initialDisplayConfig.items).some(v => v === true);
+        initialDisplayConfig.enabled = hasAnyEnabled;
+    } else {
+        initialDisplayConfig.enabled = false;
+    }
+
+    // Auto-select the first available plan if current is disabled
+    useEffect(() => {
+        if (!initialDisplayConfig.enabled) return;
+        const currentPlanObj = PLANS[selectedPlan];
+        if (currentPlanObj && initialDisplayConfig.items[currentPlanObj.label] === false) {
+            const firstEnabledId = Object.keys(PLANS).find(k => initialDisplayConfig.items[PLANS[k as keyof typeof PLANS].label]);
+            if (firstEnabledId) {
+                setSelectedPlan(firstEnabledId as keyof typeof PLANS);
+            }
+        }
+    }, [theme, selectedPlan]);
+
     const carouselRef = useRef<HTMLDivElement>(null);
 
     // Handle carousel scroll for dots
@@ -175,7 +211,7 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
         resetForm();
         setThemeId(theme.id);
         const items = activeBundle?.bundleItems || [];
-        setBundleData(selectedPlan, imageList, items);
+        setBundleData(selectedPlan, imageList.map(a => a.image), items);
         
         // Navigate immediately with trigger
         router.push('/details?welcome=true');
@@ -190,65 +226,68 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
         });
     };
 
-    const formatPrice = (price: string | number) => {
+    const formatPrice = (price: string | number | undefined | null) => {
+        if (price === undefined || price === null) return "0";
         const num = typeof price === 'string' ? parseInt(price.replace(/,/g, '')) || 0 : price;
-        return num.toLocaleString('en-IN');
+        return (num || 0).toLocaleString('en-IN');
     };
 
     // Find active bundle (default to first one)
     const activeBundle = theme && theme.bundles && theme.bundles.length > 0 ? theme.bundles[0] : null;
 
-    // Dynamic Plans logic
+    // Helper to find specific invoice price
+    const getPackagePrice = (pkgLabel: string, fallback: string) => {
+        const pkg = packages.find(p => p.name === pkgLabel);
+        if (pkg && activeBundle && activeBundle.bundleInvoices) {
+            const invoice = activeBundle.bundleInvoices.find((inv: any) => inv.packageId === pkg.id);
+            if (invoice) return formatPrice(invoice.finalSellingPrice);
+        }
+        return fallback;
+    };
+
+    // Dynamic Plans logic using the new bundleInvoices table
     const DYNAMIC_PLANS = {
         essentials: {
             ...PLANS.essentials,
-            price: activeBundle ? formatPrice(activeBundle.whatsappPrice) : PLANS.essentials.price,
+            price: getPackagePrice('WhatsApp Essentials', PLANS.essentials.price),
         },
         posters: {
             ...PLANS.posters,
-            price: activeBundle ? formatPrice(activeBundle.printablePrice) : PLANS.posters.price,
+            price: getPackagePrice('WhatsApp + Posters', PLANS.posters.price),
         },
         complete: {
             ...PLANS.complete,
-            price: activeBundle ? formatPrice(activeBundle.completePrice) : PLANS.complete.price,
+            price: getPackagePrice('Complete Wedding Suite', PLANS.complete.price),
         }
     };
 
-    const selectedPackageName = DYNAMIC_PLANS[selectedPlan].label;
+    let displayConfig = initialDisplayConfig;
+
+    const selectedPackageName = DYNAMIC_PLANS[selectedPlan] ? DYNAMIC_PLANS[selectedPlan].label : '';
     const currentPackage = packages.find(p => p.name === selectedPackageName);
 
-    // Use theme.previewImages or fallback to empty array
-    let imageList: string[] = [];
-    if (activeBundle && activeBundle.itemImages) {
-        try {
-            const itemImagesObj = JSON.parse(activeBundle.itemImages);
-
-            if (currentPackage) {
-                const allowedItems = JSON.parse(currentPackage.allowedItems || '[]');
-                // Filter items that are in the allowedItems list
-                const filteredItems = Object.entries(itemImagesObj)
-                    .filter(([itemName]) => allowedItems.includes(itemName))
-                    .map(([_, imgUrl]) => imgUrl as string);
-
-                imageList = filteredItems;
-            } else {
-                // Fallback to all images if package not found
-                imageList = Object.values(itemImagesObj) as string[];
-            }
-        } catch (e) {
-            imageList = theme?.previewImages || [];
-        }
-    } else {
-        imageList = theme?.previewImages || [];
+    // Use theme.bundleItems from the relational table or fallback to previewImages
+    let imageList: { name: string, image: string }[] = [];
+    
+    if (activeBundle && activeBundle.bundleItems && activeBundle.bundleItems.length > 0) {
+        const allowedItems = currentPackage ? JSON.parse(currentPackage.allowedItems || '[]') : [];
+        
+        const filtered = activeBundle.bundleItems
+            .filter((item: any) => !currentPackage || allowedItems.includes(item.eventId))
+            .map((item: any) => ({
+                name: item.event?.eventName || 'Design',
+                image: item.templatePath
+            }));
+            
+        imageList = filtered;
     }
 
     // Create a normalized assets structure for rendering
-    const assets = imageList.length > 0 ? imageList.map((img, i) => ({
-        name: `Design ${i + 1}`,
-        image: img // Store full URL here
-    })) : [
-        { name: "No Preview", image: theme?.thumbnail || '/placeholder-theme.jpg' }
-    ];
+    const assets = imageList.length > 0 ? imageList : (
+        theme?.previewImages && theme.previewImages.length > 0 
+            ? theme.previewImages.map((img: string, i: number) => ({ name: `Preview ${i+1}`, image: img }))
+            : [{ name: "Preview", image: theme?.thumbnail || '/placeholder-theme.jpg' }]
+    );
 
 
     const toggleAccordion = (id: string) => {
@@ -488,10 +527,13 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
                             <hr style={{ border: 'none', borderTop: '1px solid #E5E7EB', margin: '0 0 0.75rem 0' }} />
 
                             {/* Package Selector (Universal) */}
+                            {displayConfig.enabled && (
                             <div className={styles.stackedSelectorContainer}>
                                 <h3 className={styles.sectionLabel}>SELECT PACKAGE</h3>
                                 <div className={styles.stackedSelector}>
-                                    {(Object.values(DYNAMIC_PLANS) as Array<typeof PLANS['essentials']>).map((plan) => (
+                                    {(Object.values(DYNAMIC_PLANS) as Array<typeof PLANS['essentials']>)
+                                        .filter(plan => displayConfig.items[plan.label])
+                                        .map((plan) => (
                                         <div
                                             key={plan.id}
                                             className={clsx(styles.stackedOption, selectedPlan === plan.id && styles.stackedOptionActive)}
@@ -516,6 +558,7 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
                                     ))}
                                 </div>
                             </div>
+                            )}
                         </div>
 
 

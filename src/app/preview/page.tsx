@@ -40,9 +40,33 @@ export default function PreviewPage() {
 import { ProcessingOverlay } from '@/components/processing/ProcessingOverlay';
 
 function PreviewContent() {
-    const { formData, selectedThemeId, isAuthenticated, login, bundleImages, bundleItems } = useWeddingStore();
+    const { formData, selectedThemeId, isAuthenticated, login, bundleImages, bundleItems, selectedPlan } = useWeddingStore();
     const [isSecuring, setIsSecuring] = useState(false);
-    const [theme, setTheme] = useState<Theme | null>(null);
+    const [packages, setPackages] = useState<any[]>([]);
+    const [theme, setTheme] = useState<any | null>(null);
+
+    // Dynamic pricing lookup based on selected plan and available packages
+    const planLabelMap: Record<string, string> = {
+        'essentials': 'WhatsApp Essentials',
+        'posters': 'WhatsApp + Posters',
+        'complete': 'Complete Wedding Suite'
+    };
+
+    const targetPackage = packages.find(p => p.name === planLabelMap[selectedPlan || 'essentials']);
+    const activeBundle = theme?.bundles?.[0];
+    const activeInvoice = activeBundle?.bundleInvoices?.find((inv: any) => inv.packageId === targetPackage?.id);
+
+    // Pricing values from DB with fallbacks
+    const pricing = {
+        packageName: targetPackage?.name || 'WhatsApp Essentials',
+        designSuite: activeInvoice?.invitationDesignSuite ?? 1540,
+        rsvpTracking: activeInvoice?.rsvpManagementTracking ?? 735,
+        guestDashboard: activeInvoice?.guestDashboard ?? 400,
+        totalValue: activeInvoice?.totalWeddingSuiteValue ?? 2675,
+        discount: activeInvoice?.discount ?? 1676,
+        discountedPrice: activeInvoice?.discountedPrice ?? 2675,
+        finalPrice: activeInvoice?.finalSellingPrice ?? 999
+    };
     const [showLoginModal, setShowLoginModal] = useState(false);
     const [selectedPreviewIndex, setSelectedPreviewIndex] = useState<number | null>(null);
     const [isEditMode, setIsEditMode] = useState(false);
@@ -105,19 +129,26 @@ function PreviewContent() {
     }, [searchParams]);
 
     useEffect(() => {
-        async function fetchTheme() {
-            if (!selectedThemeId) return;
+        async function fetchData() {
             try {
+                // Fetch packages first
+                const pkgRes = await fetch('/api/admin/packages');
+                if (pkgRes.ok) {
+                    const pkgData = await pkgRes.json();
+                    setPackages(pkgData.packages || []);
+                }
+
+                if (!selectedThemeId) return;
                 const res = await fetch(`/api/themes/${selectedThemeId}`);
                 if (res.ok) {
                     const data = await res.json();
                     setTheme(data.theme);
                 }
             } catch (error) {
-                console.error("Failed to fetch theme", error);
+                console.error("Failed to fetch theme or packages", error);
             }
         }
-        fetchTheme();
+        fetchData();
     }, [selectedThemeId]);
 
     // Auto-close modal if auth state changes to true (e.g. cross-tab login or delayed hydration)
@@ -204,36 +235,59 @@ function PreviewContent() {
             }));
         }
 
-        // Match bundleItems to wedding events by eventType
+        const ID_MAPPING: Record<string, string> = {
+            'evt_1': 'wedding',              // Initials logo
+            'evt_2': 'wedding',              // Wedding contract
+            'evt_3': 'wedding',              // Do not disturb
+            'evt_4': 'wedding',              // Ladke wale tag
+            'evt_5': 'wedding',              // Ladki wale tag
+            'evt_6': 'save_the_date',        // Save the date
+            'evt_7': 'wedding',              // Wedding Invitation
+            'evt_8': 'haldi',                // Haldi Invitation
+            'evt_9': 'sangeet',              // Sangeet Invitation
+            'evt_10': 'mehendi',             // Mehendi Invitation
+            'evt_11': 'wedding',             // Cinematic Video 
+            'evt_12': 'rsvp',                // RSVP
+            'evt_13': 'reception',           // Reception
+            'evt_14': 'wedding',             // Welcome Wedding Poster
+            'evt_15': 'haldi',               // Welcome Haldi Poster
+            'evt_16': 'mehendi',             // Welcome Mehendi Poster
+            'evt_17': 'wedding'              // Thank you card
+        };
+
+        // Match bundleItems to wedding events by eventType or ID mapping
         const weddingEvents = formData.events || [];
         const items: Array<{ id: string; name: string; image: string; event: any }> = [];
 
         for (const bi of bundleItems) {
-            if (!bi.templateFile) continue;
+            if (!bi.templatePath) continue; 
 
-            const biType = bi.eventType.toUpperCase().replace(/_/g, '');
+            const rawType = bi.eventType || bi.event?.eventName || '';
+            const biType = rawType.toUpperCase().replace(/_/g, '');
+            const dbEventId = bi.eventId;
 
             // Find matching wedding event using multiple fallbacks
             let matchedEvent = weddingEvents.find(evt => {
-                const evtId = evt.id.toUpperCase();
+                const masterId = evt.id.toLowerCase();
+                
+                // 1. Check ID Mapping first for precision (Highly reliable)
+                if (dbEventId && ID_MAPPING[dbEventId] === masterId) return true;
+
+                // Only if mapping fails, try name matching
+                if (!biType) return false;
+
                 const evtType = (evt.eventType || '').toUpperCase();
                 const evtName = (evt.name || '').toUpperCase();
 
-                // 1. Check ID (e.g. 'wedding')
-                if (biType.includes(evtId) || evtId.includes(biType)) return true;
+                // 2. Check name (Avoid empty string matching)
+                if (evtName && biType.includes(evtName)) return true;
 
-                // 2. Check eventType field
-                if (evtType && (biType.includes(evtType) || evtType.includes(biType))) return true;
-
-                // 3. Check name
-                if (biType.includes(evtName) || evtName.includes(biType)) return true;
-
-                // 4. Special cases for common naming
-                if (biType.includes('WEDDING') && evtId === 'WEDDING') return true;
-                if (biType.includes('HALDI') && evtId === 'HALDI') return true;
-                if (biType.includes('MEHENDI') && evtId === 'MEHENDI') return true;
-                if (biType.includes('SANGEET') && evtId === 'SANGEET') return true;
-                if (biType.includes('RECEPTION') && evtId === 'RECEPTION') return true;
+                // 3. Special cases for common naming
+                if (biType.includes('WEDDING') && masterId.includes('wedding')) return true;
+                if (biType.includes('HALDI') && masterId.includes('haldi')) return true;
+                if (biType.includes('MEHENDI') && masterId.includes('mehendi')) return true;
+                if (biType.includes('SANGEET') && masterId.includes('sangeet')) return true;
+                if (biType.includes('RECEPTION') && masterId.includes('reception')) return true;
 
                 return false;
             });
@@ -243,10 +297,12 @@ function PreviewContent() {
                 matchedEvent = weddingEvents.find(e => e.id === 'wedding');
             }
 
+            const displayName = matchedEvent?.heading || matchedEvent?.name || bi.event?.eventName || bi.templateName || bi.eventType || 'Invitation';
+
             items.push({
                 id: bi.id,
-                name: matchedEvent?.heading || matchedEvent?.name || bi.templateName || bi.eventType,
-                image: bi.templateFile,
+                name: displayName,
+                image: bi.templatePath,
                 event: matchedEvent ? {
                     id: matchedEvent.id,
                     name: matchedEvent.heading || matchedEvent.name,
@@ -258,7 +314,7 @@ function PreviewContent() {
                     heading: matchedEvent.heading
                 } : {
                     id: bi.id,
-                    name: bi.templateName || bi.eventType,
+                    name: displayName,
                     date: formData.primaryDate,
                     time: formData.primaryTime,
                     venue: formData.defaultVenueName
@@ -692,30 +748,30 @@ function PreviewContent() {
                                         <span>Popular this month</span>
                                     </div>
                                     <div className={styles.designDetailsList}>
-                                        <div className={styles.designDetailSubheader}>WhatsApp Essentials</div>
+                                        <div className={styles.designDetailSubheader}>{pricing.packageName}</div>
                                         <div className={styles.themeNameLabel}>{theme?.name || 'Wedding Theme ✨'}</div>
                                         <div className={styles.designDetailRow}>
-                                            <span>Invitation design suite (8 assets)</span>
-                                            <span>₹1,540</span>
+                                            <span>Invitation design suite</span>
+                                            <span>₹{pricing.designSuite}</span>
                                         </div>
                                         <div className={styles.designDetailRow}>
                                             <span>RSVP management & tracking</span>
-                                            <span>₹735</span>
+                                            <span>₹{pricing.rsvpTracking}</span>
                                         </div>
                                         <div className={styles.designDetailRow}>
                                             <span>Guest dashboard + hosting</span>
-                                            <span>₹400</span>
+                                            <span>₹{pricing.guestDashboard}</span>
                                         </div>
                                         <div className={styles.designDivider}></div>
                                         <div className={styles.totalValueRow}>
                                             <span>Total Wedding Suite Value</span>
-                                            <span>₹2,675</span>
+                                            <span>₹{pricing.totalValue}</span>
                                         </div>
                                     </div>
 
                                     <div className={styles.offerRow}>
                                         <span>Launch Offer Discount</span>
-                                        <span>-₹1,676</span>
+                                        <span>-₹{pricing.discount}</span>
                                     </div>
 
                                     <div className={styles.finalPriceSection}>
@@ -723,13 +779,13 @@ function PreviewContent() {
                                             <span className={styles.originalPrice}>Total Amount</span>
                                         </div>
                                         <div className={styles.finalPriceRight}>
-                                            <span className={styles.strikethroughPrice}>₹2,675</span>
-                                            <span className={`${styles.finalPrice} ${isButtonHovered ? styles.finalPriceMagnetic : ''}`}>₹999</span>
+                                            <span className={styles.strikethroughPrice}>₹{pricing.discountedPrice}</span>
+                                            <span className={`${styles.finalPrice} ${isButtonHovered ? styles.finalPriceMagnetic : ''}`}>₹{pricing.finalPrice}</span>
                                         </div>
                                     </div>
 
                                     <div className={styles.savingsBanner}>
-                                        ✨ You saved ₹1,676 on your wedding communication suite
+                                        ✨ You saved ₹{pricing.discount} on your wedding communication suite
                                     </div>
                                     <div className={styles.socialProofLine}>
                                         ✨ Chosen by 24 families this month

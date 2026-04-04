@@ -1,6 +1,6 @@
 generator client {
   provider      = "prisma-client-js"
-  output        = "../src/generated/client"
+  output        = "../src/generated/client_new"
   binaryTargets = ["native", "darwin-arm64", "windows"]
 }
 
@@ -38,39 +38,52 @@ model OTPRequest {
 }
 
 model Bundle {
-  id             String       @id @default(cuid())
-  name           String
-  whatsappPrice  Int          @default(0)
-  printablePrice Int          @default(0)
-  completePrice  Int          @default(0)
-  isPopular      Boolean      @default(false)
-  theme          String       @default("default")
-  description    String?
-  isActive       Boolean      @default(true)
-  themeId        String?
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
-  previewImages  String?
-  thumbnailUrl   String?
-  itemImages     String?
-  themeRef       Theme?       @relation(fields: [themeId], references: [id])
-  bundleItems    BundleItem[]
-  orders         Order[]
+  id                String          @id @default(cuid())
+  themeId           String?
+  BundleName        String
+  isActive          Boolean         @default(true)
+  isPopular         Boolean         @default(false)
+  bundleDescription String?
+  createdDate       DateTime        @default(now())
+  modifiedDate      DateTime        @updatedAt
+  
+  // UI Assets (preserving these as they are needed for preview)
+  previewImages     String?
+  thumbnailUrl      String?
+  itemImages        String?
+
+  themeRef          Theme?          @relation(fields: [themeId], references: [id])
+  bundleItems       BundleItem[]
+  orders                Order[]
+  bundleInvoices        BundleInvoice[]
 
   @@map("Bundle")
 }
 
 model BundleItem {
-  id           String   @id @default(cuid())
-  bundleId     String
-  eventType    String
-  templateName String
-  templateFile String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  bundle       Bundle   @relation(fields: [bundleId], references: [id], onDelete: Cascade)
+  id             String   @id @default(cuid())
+  bundleId       String
+  eventId        String
+  templateName   String
+  templatePath   String
+  createdDate    DateTime @default(now())
+  modifiedDate   DateTime @updatedAt
+
+  bundle         Bundle   @relation(fields: [bundleId], references: [id], onDelete: Cascade)
+  event          Event    @relation(fields: [eventId], references: [id])
 
   @@map("BundleItems")
+}
+
+model Event {
+  id           String       @id @default(cuid())
+  eventName    String
+  createdDate  DateTime     @default(now())
+  modifiedDate DateTime     @updatedAt
+  
+  bundleItems  BundleItem[]
+
+  @@map("Event")
 }
 
 model Order {
@@ -117,7 +130,7 @@ model Wedding {
   invitationMessage String?
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
-  events            Event[]
+  events            WeddingEvent[]
   rsvps             RSVP[]
   owner             User      @relation(fields: [ownerId], references: [id])
   theme             Theme     @relation(fields: [themeId], references: [id])
@@ -125,7 +138,7 @@ model Wedding {
   @@map("Wedding")
 }
 
-model Event {
+model WeddingEvent {
   id              String   @id @default(cuid())
   weddingId       String
   name            String
@@ -143,7 +156,7 @@ model Event {
   updatedAt       DateTime @updatedAt
   wedding         Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
 
-  @@map("Event")
+  @@map("WeddingEvent")
 }
 
 model RSVP {
@@ -176,5 +189,29 @@ model Package {
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
+  bundleInvoices        BundleInvoice[]
+
   @@map("Package")
+}
+
+model BundleInvoice {
+  id                      String   @id @default(cuid())
+  bundleId                String
+  packageId               String
+  isDisplay               Boolean  @default(false)
+  invitationDesignSuite   Float    @default(0)
+  rsvpManagementTracking  Float    @default(0)
+  guestDashboard          Float    @default(0)
+  totalWeddingSuiteValue  Float    @default(0)
+  discount                Float    @default(0)
+  discountedPrice         Float    @default(0)
+  finalSellingPrice       Float    @default(0)
+  createdDate             DateTime @default(now())
+  modifiedDate            DateTime @updatedAt
+
+  bundle  Bundle  @relation(fields: [bundleId], references: [id], onDelete: Cascade)
+  package Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
+
+  @@unique([bundleId, packageId])
+  @@map("BundleInvoice")
 }

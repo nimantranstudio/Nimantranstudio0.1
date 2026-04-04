@@ -82,7 +82,7 @@ export default function DashboardPage() {
         return bundleItems.map((bi) => ({
             id: bi.id,
             name: bi.templateName || bi.eventType,
-            image: ensureLeadingSlash(bi.templateFile),
+            image: ensureLeadingSlash(bi.templatePath), // Renamed
             event: formData.events?.find(e => e.eventType?.toUpperCase() === bi.eventType.toUpperCase()) || formData.events?.[0] || { name: 'Wedding' }
         }));
     };

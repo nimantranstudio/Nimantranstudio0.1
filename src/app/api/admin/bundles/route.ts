@@ -8,8 +8,8 @@ export async function GET() {
         const prisma = getPrisma();
 
         const bundles = await prisma.bundle.findMany({
-            orderBy: { createdAt: 'desc' },
-            include: { themeRef: true, bundleItems: true }
+            orderBy: { createdDate: 'desc' },
+            include: { themeRef: true, bundleItems: { include: { event: true } }, bundleInvoices: true }
         });
 
         return NextResponse.json({ bundles });
@@ -26,8 +26,8 @@ export async function POST(request: NextRequest) {
 
         const formData = await request.formData();
 
-        const name = formData.get('name') as string;
-        const description = formData.get('description') as string;
+        const name = formData.get('BundleName') as string;
+        const description = formData.get('bundleDescription') as string;
         const isActive = formData.get('isActive') === 'true';
         const isPopular = formData.get('isPopular') === 'true';
         const themeId = formData.get('themeId') as string;
@@ -65,6 +65,34 @@ export async function POST(request: NextRequest) {
             bundleItemsMeta = JSON.parse(bundleItemsMetaRaw);
         }
 
+        const bundleInvoicesRaw = formData.get('bundleInvoices');
+        let parsedInvoices: any[] = [];
+        if (typeof bundleInvoicesRaw === 'string') {
+            try {
+                const invoicesData = JSON.parse(bundleInvoicesRaw);
+                parsedInvoices = Object.entries(invoicesData).map(([packageId, bi]: [string, any]) => ({
+                    packageId,
+                    invitationDesignSuite: parseFloat(bi.invitationDesignSuite) || 0,
+                    rsvpManagementTracking: parseFloat(bi.rsvpManagementTracking) || 0,
+                    guestDashboard: parseFloat(bi.guestDashboard) || 0,
+                    totalWeddingSuiteValue: parseFloat(bi.totalWeddingSuiteValue) || 0,
+                    discount: parseFloat(bi.discount) || 0,
+                    discountedPrice: parseFloat(bi.discountedPrice) || 0,
+                    finalSellingPrice: parseFloat(bi.finalSellingPrice) || 0
+                }));
+            } catch (e) {}
+        }
+
+        const packageDisplayOptionsRaw = formData.get('packageDisplayOptions') as string;
+        let packageDisplayOptions: Record<string, boolean> = {};
+        if (packageDisplayOptionsRaw) {
+            try {
+                packageDisplayOptions = JSON.parse(packageDisplayOptionsRaw);
+            } catch (e) {
+                console.error("Failed to parse packageDisplayOptions", e);
+            }
+        }
+
         const bundleItemsDataToCreate = [];
         for (const meta of bundleItemsMeta) {
             let templateFileStr = meta.existingUrl;
@@ -81,31 +109,41 @@ export async function POST(request: NextRequest) {
             }
 
             bundleItemsDataToCreate.push({
-                eventType: meta.eventType,
+                eventId: meta.eventId,
                 templateName: meta.templateName,
-                templateFile: templateFileStr || ''
+                templatePath: templateFileStr || ''
             });
         }
 
         const itemImagePaths = Object.values(itemImages);
         const bundle = await prisma.bundle.create({
             data: {
-                name,
-                whatsappPrice: parseInt(tierPrices['WhatsApp Essentials']) || 0,
-                printablePrice: parseInt(tierPrices['WhatsApp + Posters']) || 0,
-                completePrice: parseInt(tierPrices['Complete Wedding Suite']) || 0,
-                description,
+                BundleName: name,
+                bundleDescription: description,
                 isActive,
                 isPopular,
                 themeId: themeId || null,
-                thumbnailUrl: itemImagePaths.length > 0 ? itemImagePaths[0] : (bundleItemsDataToCreate.length > 0 ? bundleItemsDataToCreate[0].templateFile : null),
+                bundleInvoices: {
+                    create: parsedInvoices.map((inv: any) => ({
+                        ...inv,
+                        isDisplay: Boolean(packageDisplayOptions[inv.packageId] ?? true)
+                    }))
+                },
+                thumbnailUrl: itemImagePaths.length > 0 ? itemImagePaths[0] : (bundleItemsDataToCreate.length > 0 ? bundleItemsDataToCreate[0].templatePath : null),
                 itemImages: JSON.stringify(itemImages),
                 bundleItems: {
-                    create: bundleItemsDataToCreate
+                    create: bundleItemsDataToCreate.map((item: any) => ({
+                        eventId: item.eventId,
+                        templateName: item.templateName,
+                        templatePath: item.templatePath
+                    }))
                 }
             },
             include: {
-                bundleItems: true
+                bundleItems: {
+                    include: { event: true }
+                },
+                bundleInvoices: true
             }
         });
 
