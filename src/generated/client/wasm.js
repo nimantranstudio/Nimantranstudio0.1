@@ -146,17 +146,13 @@ exports.Prisma.OTPRequestScalarFieldEnum = {
 
 exports.Prisma.BundleScalarFieldEnum = {
   id: 'id',
-  name: 'name',
-  whatsappPrice: 'whatsappPrice',
-  printablePrice: 'printablePrice',
-  completePrice: 'completePrice',
-  isPopular: 'isPopular',
-  theme: 'theme',
-  description: 'description',
-  isActive: 'isActive',
   themeId: 'themeId',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
+  BundleName: 'BundleName',
+  isActive: 'isActive',
+  isPopular: 'isPopular',
+  bundleDescription: 'bundleDescription',
+  createdDate: 'createdDate',
+  modifiedDate: 'modifiedDate',
   previewImages: 'previewImages',
   thumbnailUrl: 'thumbnailUrl',
   itemImages: 'itemImages'
@@ -165,11 +161,18 @@ exports.Prisma.BundleScalarFieldEnum = {
 exports.Prisma.BundleItemScalarFieldEnum = {
   id: 'id',
   bundleId: 'bundleId',
-  eventType: 'eventType',
+  eventId: 'eventId',
   templateName: 'templateName',
-  templateFile: 'templateFile',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  templatePath: 'templatePath',
+  createdDate: 'createdDate',
+  modifiedDate: 'modifiedDate'
+};
+
+exports.Prisma.EventScalarFieldEnum = {
+  id: 'id',
+  eventName: 'eventName',
+  createdDate: 'createdDate',
+  modifiedDate: 'modifiedDate'
 };
 
 exports.Prisma.OrderScalarFieldEnum = {
@@ -210,7 +213,7 @@ exports.Prisma.WeddingScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
-exports.Prisma.EventScalarFieldEnum = {
+exports.Prisma.WeddingEventScalarFieldEnum = {
   id: 'id',
   weddingId: 'weddingId',
   name: 'name',
@@ -256,6 +259,22 @@ exports.Prisma.PackageScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.BundleInvoiceScalarFieldEnum = {
+  id: 'id',
+  bundleId: 'bundleId',
+  packageId: 'packageId',
+  isDisplay: 'isDisplay',
+  invitationDesignSuite: 'invitationDesignSuite',
+  rsvpManagementTracking: 'rsvpManagementTracking',
+  guestDashboard: 'guestDashboard',
+  totalWeddingSuiteValue: 'totalWeddingSuiteValue',
+  discount: 'discount',
+  discountedPrice: 'discountedPrice',
+  finalSellingPrice: 'finalSellingPrice',
+  createdDate: 'createdDate',
+  modifiedDate: 'modifiedDate'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -277,12 +296,14 @@ exports.Prisma.ModelName = {
   OTPRequest: 'OTPRequest',
   Bundle: 'Bundle',
   BundleItem: 'BundleItem',
+  Event: 'Event',
   Order: 'Order',
   Theme: 'Theme',
   Wedding: 'Wedding',
-  Event: 'Event',
+  WeddingEvent: 'WeddingEvent',
   RSVP: 'RSVP',
-  Package: 'Package'
+  Package: 'Package',
+  BundleInvoice: 'BundleInvoice'
 };
 
 /**

@@ -1,0 +1,18 @@
+INSERT INTO "Event" ("id", "eventName", "createdDate", "modifiedDate") VALUES 
+('evt_1', 'Initials logo', NOW(), NOW()),
+('evt_2', 'Wedding contract', NOW(), NOW()),
+('evt_3', 'Do not disturb', NOW(), NOW()),
+('evt_4', 'Ladke wale tag', NOW(), NOW()),
+('evt_5', 'Ladki wale tag', NOW(), NOW()),
+('evt_6', 'Save the date', NOW(), NOW()),
+('evt_7', 'Wedding Invitation', NOW(), NOW()),
+('evt_8', 'Haldi Invitation', NOW(), NOW()),
+('evt_9', 'Sangeet Invitation', NOW(), NOW()),
+('evt_10', 'Mehendi Invitation', NOW(), NOW()),
+('evt_11', 'Video', NOW(), NOW()),
+('evt_12', 'RSVP', NOW(), NOW()),
+('evt_13', 'Reception', NOW(), NOW()),
+('evt_14', 'Welcome Wedding Poster', NOW(), NOW()),
+('evt_15', 'Welcome Haldi Poster', NOW(), NOW()),
+('evt_16', 'Welcome Mehendi Poster', NOW(), NOW()),
+('evt_17', 'Thank you', NOW(), NOW());
