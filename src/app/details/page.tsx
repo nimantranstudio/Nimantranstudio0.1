@@ -14,6 +14,7 @@ import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import type { Theme } from '@/lib/constants/themes';
 import { DEFAULT_EVENTS, type WeddingEvent } from '@/lib/schemas/wedding-form';
 
+import Link from 'next/link';
 import { LoginModal } from '@/components/auth/LoginModal';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -495,7 +496,7 @@ export default function DetailsPage() {
                                             />
                                             <div style={{ gridColumn: 'span 2' }}>
                                                 <Input
-                                                    label="Address"
+                                                    label="Venue Address"
                                                     value={formData.defaultVenueName || ''}
                                                     onChange={(e) => {
                                                         updateFormData({ defaultVenueName: e.target.value });
@@ -503,10 +504,34 @@ export default function DetailsPage() {
                                                     }}
                                                     placeholder="e.g. The Grand Palace, 123 Royal Road, Jaipur"
                                                     type="textarea"
+                                                    className={styles.textareaInput}
                                                     error={errors.defaultVenueName}
                                                     maxLength={500}
                                                 />
+                                            </div>
 
+                                            <div style={{ gridColumn: 'span 2' }}>
+                                                <div className={styles.mapFieldHeader}>
+                                                    <label className={formStyles.label}>Venue Location (Google Maps)</label>
+                                                    <a 
+                                                        href="https://www.google.com/maps" 
+                                                        target="_blank" 
+                                                        className={styles.mapHelperLink}
+                                                    >
+                                                        Find Coordinates on Maps
+                                                    </a>
+                                                </div>
+                                                <Input
+                                                    label="Google Maps Link"
+                                                    hideLabel
+                                                    value={formData.primaryMapLink || ''}
+                                                    onChange={(e) => {
+                                                        const val = e.target.value;
+                                                        updateFormData({ primaryMapLink: val });
+                                                    }}
+                                                    placeholder="e.g. https://www.google.com/maps/search/?api=1&query=26.9124,75.7873"
+                                                    helperText="Guests will use this link for one-tap navigation from their invitation."
+                                                />
                                             </div>
                                         </div>
                                     </div>
@@ -731,9 +756,9 @@ export default function DetailsPage() {
                                         Respond to Invitation
                                     </div>
 
-                                    <div className={styles.miniCardFooter}>
+                                    <Link href="/" className={styles.miniCardFooter}>
                                         POWERED BY NIMANTRANSTUDIO
-                                    </div>
+                                    </Link>
                                 </div>
                             </div>
 

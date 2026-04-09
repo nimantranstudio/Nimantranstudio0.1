@@ -6,16 +6,19 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement | HTMLTe
     error?: string;
     helperText?: string;
     type?: string;
+    hideLabel?: boolean;
 }
 
-export const Input = ({ label, error, helperText, className, id, type, ...props }: InputProps) => {
+export const Input = ({ label, error, helperText, className, id, type, hideLabel, ...props }: InputProps) => {
     const inputId = id || label.toLowerCase().replace(/\s+/g, '-');
 
     return (
         <div className={styles.field}>
-            <label htmlFor={inputId} className={styles.label}>
-                {label}
-            </label>
+            {!hideLabel && (
+                <label htmlFor={inputId} className={styles.label}>
+                    {label}
+                </label>
+            )}
             {type === 'textarea' ? (
                 <textarea
                     id={inputId}

@@ -152,18 +152,36 @@ export default function RSVPListPage() {
                                                         </div>
                                                     </div>
                                                 </div>
+
+                                                <p className={styles.headerInstruction} style={{ marginTop: '1.25rem', color: '#64748B', fontSize: '0.875rem' }}>
+                                                    Share this link with family and guests to collect confirmations instantly.
+                                                </p>
                                             </div>
                                             <div className={styles.headerRight}>
                                                 <button 
-                                                    className={styles.footerBtnOutline}
+                                                    className={styles.iconBtn}
                                                     onClick={() => copyLink(evt.id, rsvpLink)}
+                                                    title={copiedId === evt.id ? 'Copied!' : 'Copy Link'}
                                                 >
-                                                    {copiedId === evt.id ? <CheckCircle2 size={16} /> : <Copy size={16} />}
-                                                    <span>{copiedId === evt.id ? 'Copied!' : 'Copy Link'}</span>
+                                                    {copiedId === evt.id ? <CheckCircle2 size={18} color="#22C55E" /> : <Copy size={18} />}
                                                 </button>
-                                                <button className={styles.footerBtnWhatsApp}>
-                                                     <Share2 size={16} />
-                                                     <span>WhatsApp</span>
+                                                <button className={styles.iconBtn} onClick={() => openWhatsApp(rsvpLink)} title="Share on WhatsApp">
+                                                     <Share2 size={18} />
+                                                </button>
+                                                <Link 
+                                                    href={rsvpLink} 
+                                                    target="_blank" 
+                                                    className={styles.iconBtn}
+                                                    title="Preview RSVP"
+                                                >
+                                                    <Eye size={18} />
+                                                </Link>
+                                                <button
+                                                    className={`${styles.iconBtn} ${styles.btnDelete}`}
+                                                    onClick={() => handleDeleteClick(evt.id)}
+                                                    title="Delete event"
+                                                >
+                                                    <Trash2 size={18} />
                                                 </button>
                                             </div>
                                         </div>
@@ -221,27 +239,6 @@ export default function RSVPListPage() {
                                     </div>
 
 
-                                     {/* E. Footer Actions */}
-                                    <div className={styles.cardFooter}>
-                                        <p className={styles.footerInstruction}>
-                                            Share this link with family and guests to collect confirmations instantly.
-                                        </p>
-                                        <div className={styles.footerActionsRow}>
-                                            <Link 
-                                                href={rsvpLink} 
-                                                target="_blank" 
-                                                className={styles.previewAction}
-                                            >
-                                                <Eye size={16} /> Preview RSVP
-                                            </Link>
-                                            <button
-                                                className={styles.deleteAction}
-                                                onClick={() => handleDeleteClick(evt.id)}
-                                            >
-                                                <Trash2 size={16} /> Delete event
-                                            </button>
-                                        </div>
-                                    </div>
                                 </div>
 
                                 {/* CARD 2: GUEST LIST */}
@@ -254,9 +251,8 @@ export default function RSVPListPage() {
                                                     <Search size={16} className={styles.searchIcon} />
                                                     <input type="text" placeholder="Search guests..." className={styles.searchInput} />
                                                 </div>
-                                                <button className={styles.btnActionSecondary}>
-                                                    <Share2 size={16} />
-                                                    <span>Copy for WhatsApp</span>
+                                                <button className={styles.iconBtn} onClick={() => copyLink(evt.id, rsvpLink)} title="Copy for WhatsApp">
+                                                    <Share2 size={18} />
                                                 </button>
                                                 <button className={styles.btnActionOutline}>
                                                     <Download size={16} />

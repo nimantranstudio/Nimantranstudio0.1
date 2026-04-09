@@ -45,6 +45,7 @@ const INITIAL_FORM_DATA: WeddingFormData = {
     timezone: 'Asia/Kolkata',
     defaultVenueName: '',
     defaultVenueAddress: '',
+    primaryMapLink: '',
     globalTagline: '',
     events: DEFAULT_EVENTS,
     rsvpContact: '',

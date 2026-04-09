@@ -54,9 +54,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} ${playfair.variable}`} suppressHydrationWarning>
         <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-          <Navbar />
           <RootWrapper>{children}</RootWrapper>
-          <FloatingWhatsApp />
         </div>
       </body>
     </html>

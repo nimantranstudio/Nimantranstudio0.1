@@ -32,11 +32,13 @@ export const WeddingFormSchema = z.object({
     brideName: z.string().max(25, "Maximum 25 characters").optional(),
     groomParents: z.string().max(100, "Maximum 100 characters").optional(),
     brideParents: z.string().max(100, "Maximum 100 characters").optional(),
+    // Step 2: Ceremony Details
     primaryDate: z.string().optional(),
     primaryTime: z.string().optional(),
     timezone: z.string().default('Asia/Kolkata').optional(),
     defaultVenueName: z.string().max(500, "Maximum 500 characters").optional(),
     defaultVenueAddress: z.string().max(500, "Maximum 500 characters").optional(),
+    primaryMapLink: z.string().nullable().optional(),
     globalTagline: z.string().optional(),
 
     // Events

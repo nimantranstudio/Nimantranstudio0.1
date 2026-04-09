@@ -97,7 +97,8 @@ export default function DashboardPage() {
         }
 
         return bundleItems.map((bi) => {
-            const matchedEvent = formData.events?.find(e => e.eventType?.toUpperCase() === bi.eventType.toUpperCase()) || formData.events?.[0] || {
+            const biType = bi.eventType || '';
+            const matchedEvent = formData.events?.find(e => (e.eventType || '').toUpperCase() === biType.toUpperCase()) || formData.events?.[0] || {
                 id: 'wedding',
                 name: 'Wedding Ceremony',
                 date: formData.primaryDate,
@@ -117,7 +118,7 @@ export default function DashboardPage() {
     const previewItems = buildPreviewItems();
 
     // Generate RSVP Link based on couple names
-    const rsvpSlug = `${formData.groomName?.toLowerCase().split(' ')[0] || 'wedding'}-${formData.brideName?.toLowerCase().split(' ')[0] || 'rsvp'}`;
+    const rsvpSlug = `${formData.groomName?.toLowerCase()?.split(' ')[0] || 'wedding'}-${formData.brideName?.toLowerCase()?.split(' ')[0] || 'rsvp'}`;
     const rsvpFullUrl = `https://nimantran.app/rsvp/${rsvpSlug}`;
     const [copyStatus, setCopyStatus] = useState(false);
 

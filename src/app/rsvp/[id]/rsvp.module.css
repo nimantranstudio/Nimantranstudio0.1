@@ -1,6 +1,6 @@
 .page {
     min-height: 100vh;
-    background-color: #FDFBF7;
+    background-color: #FAF9F6;
     padding: 2.5rem 1.25rem;
     display: flex;
     justify-content: center;
@@ -18,100 +18,186 @@
 }
 
 .card {
-    background: white;
-    border-radius: 24px;
+    background: #FFFFFF; /* Solid Premium White Card */
+    border-radius: 32px;
     width: 100%;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06);
-    overflow: hidden;
-    padding: 2.5rem;
+    height: 720px; /* Locked height guarantees button coordinates never move */
+    min-height: 720px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04);
+    z-index: 10;
+    overflow-y: auto; /* Handles edge cases on small screens */
+    overflow-x: hidden;
+    padding: 3rem 2.5rem 2rem; /* Fixed bottom padding to anchor footer */
     text-align: center;
+    position: relative;
+    /* justify-content: center removed to rely on flex: 1 for content */
 }
 
-/* INVITE VIEW */
-.inviteIcon {
-    width: 64px;
-    height: 64px;
-    background-color: #FDFBF7;
-    border: 1px solid #F3E8D2;
-    border-radius: 50%;
+/* Ensure the main content area takes up the available space, pushing buttons to the bottom */
+.main,
+.form {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 1.5rem;
+}
+
+.buttonWrapper {
+    position: relative;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.respondBtn,
+.submit {
+    margin-bottom: 2rem; /* Consistent space since it is no longer pushed inside the form */
+    position: relative;
+    width: auto;
+    min-width: 240px;
+}
+
+.backButton {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    top: calc(100% - 1.25rem); /* Nests perfectly in the 2rem margin without extending past */
+    color: #475569;
+    font-weight: 600;
+    font-size: 0.9rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    display: inline-block;
+    transition: color 0.2s;
+    opacity: 0.8;
+    white-space: nowrap;
+}
+
+.poweredByCard {
+    margin-top: auto; /* Pushes to bottom of the fixed-height card */
+    padding-top: 1.5rem; 
+    border-top: 1px dashed #F3E8D2;
+    color: #C5A059;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    opacity: 0.8;
+    text-decoration: none;
+    display: block;
+    width: 100%;
+    transition: all 0.2s;
+}
+
+.poweredByCard:hover {
+    opacity: 1;
+    color: #b8a67d;
+}
+
+.joyfullyText {
+    font-size: 0.8rem;
+    letter-spacing: 0.25em;
+    line-height: 1.8;
+    color: #64748b;
+    font-weight: 500;
+    margin-bottom: 2rem;
+    text-transform: uppercase;
+}
+
+.namesContainer {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto 2rem;
-    color: #1B4332;
-}
-
-.heading {
-    font-size: 3rem;
-    font-family: var(--font-playfair), serif;
-    color: #1B4332;
-    margin-bottom: 0.75rem;
-    font-weight: 700;
-}
-
-.subheading {
-    font-size: 1.25rem;
-    color: #B38F3D;
-    font-style: italic;
+    gap: 1rem;
+    flex-wrap: wrap;
     margin-bottom: 2.5rem;
+}
+
+.groomName,
+.brideName {
+    font-size: 3.5rem;
+    color: #1e293b;
     font-family: var(--font-playfair), serif;
+    font-weight: 600;
+}
+
+.ampersand {
+    font-size: 2.5rem;
+    color: #D4AF37;
+    font-family: var(--font-serif);
+    font-style: italic;
+    margin: 0 0.25rem;
 }
 
 .welcomeBox {
-    margin-bottom: 3rem;
-    padding: 2rem;
-    background: #FDFBF7;
-    border-radius: 20px;
-    border: 1px dashed #F3E8D2;
+    margin-bottom: 4rem;
+    padding: 0 1rem;
+    background: transparent;
 }
 
 .welcomeText {
-    font-size: 1.125rem;
-    line-height: 1.6;
-    color: #4B5563;
+    font-size: 1.15rem;
+    line-height: 1.8;
+    color: #475569;
     font-family: var(--font-playfair), serif;
     font-style: italic;
 }
 
 .eventCard {
-    margin-bottom: 1.5rem;
-    color: var(--foreground);
+    margin-bottom: 2rem;
 }
 
-.eventRow {
+.rsvpTitle {
+    font-size: 0.9rem;
+    letter-spacing: 0.3em;
+    color: #94a3b8;
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.eventRoleTitle {
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: #334155;
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+}
+
+.eventRowSimple {
+    font-size: 1.05rem;
+    color: #64748b;
+    font-weight: 400;
+}
+
+.respondBtn {
+    background-color: #C5A059;
+    color: white;
+    padding: 1rem 2.5rem;
+    width: auto;
+    min-width: 240px;
+    border-radius: 99px;
+    font-weight: 600;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.75rem;
-    margin-bottom: 0.75rem;
-    color: #4B5563;
-    font-size: 1rem;
-}
-
-.icon {
-    color: #4B5563;
-}
-
-.confirmBtn {
-    background-color: #1B4332;
-    color: white;
-    padding: 1.25rem 3.5rem;
-    border-radius: 99px;
-    font-size: 1.125rem;
-    font-weight: 700;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin-top: 2rem;
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: all 0.3s ease;
     border: none;
     cursor: pointer;
+    box-shadow: 0 4px 15px rgba(209, 188, 138, 0.2);
 }
 
-.confirmBtn:hover {
+.respondBtn:hover {
+    background-color: #b8a67d;
     transform: translateY(-2px);
-    background-color: #143d24;
-    box-shadow: 0 8px 30px rgba(27, 67, 50, 0.25);
+    box-shadow: 0 6px 20px rgba(209, 188, 138, 0.3);
 }
 
 /* FORM VIEW */
@@ -120,10 +206,11 @@
 }
 
 .formTitle {
-    font-size: 2rem;
-    font-family: var(--font-serif);
-    color: #1a4d2e;
-    margin-bottom: 0.5rem;
+    font-size: 2.5rem;
+    font-family: var(--font-playfair), serif;
+    color: #1e293b;
+    font-weight: 600;
+    margin-bottom: 1rem;
 }
 
 .formSubtitle {
@@ -154,14 +241,32 @@
     border-radius: 12px;
     font-size: 1rem;
     outline: none;
-    transition: border-color 0.2s;
-    background-color: #F9FAFB;
+    transition: all 0.2s ease-in-out;
+    background-color: white;
+    color: #1e293b;
 }
 
 .input:focus {
-    border-color: #1a4d2e;
-    background-color: white;
-    box-shadow: 0 0 0 3px rgba(26, 77, 46, 0.1);
+    border-color: #C5A059;
+    box-shadow: 0 0 0 2px rgba(197, 160, 89, 0.1);
+}
+
+.feedbackMessage {
+    font-size: 0.85rem;
+    color: #b8a67d; /* Soft premium gold matching the hover */
+    margin-top: 0.5rem;
+    padding-left: 0.25rem;
+    font-style: italic;
+    opacity: 0;
+    transform: translateY(-4px);
+    animation: fadeFeedback 0.3s forwards ease-out;
+}
+
+@keyframes fadeFeedback {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .statusGrid,
@@ -171,7 +276,7 @@
 }
 
 .statusGrid {
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr; /* Stacking them gives enough room for expressive text strings */
 }
 
 .dietaryGrid {
@@ -185,28 +290,28 @@
     border-radius: 12px;
     background: white;
     font-size: 0.95rem;
-    color: #374151;
+    color: #475569;
     transition: all 0.2s;
     font-weight: 500;
 }
 
 .statusBtn:hover,
 .dietaryBtn:hover {
-    border-color: #D1D5DB;
-    background-color: #F3F4F6;
+    border-color: #C5A059;
+    background-color: #FDFBF7;
 }
 
 .statusBtnActive,
 .dietaryBtnActive {
-    background-color: #1a4d2e;
+    background-color: #000000;
     color: white;
-    border-color: #1a4d2e;
+    border-color: #000000;
 }
 
 .statusBtnActive:hover,
 .dietaryBtnActive:hover {
-    background-color: #143d24;
-    border-color: #143d24;
+    background-color: #000000;
+    border-color: #000000;
     opacity: 1;
 }
 
@@ -217,19 +322,24 @@
 }
 
 .submit {
-    width: 100%;
-    background-color: #1a4d2e;
+    background-color: #C5A059;
     color: white;
-    padding: 1rem;
-    border-radius: 12px;
+    padding: 0.85rem 2.5rem;
+    width: auto;
+    min-width: 220px;
+    border-radius: 99px;
     font-size: 1rem;
     font-weight: 600;
-    margin-top: 1rem;
-    transition: background-color 0.2s;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(197, 180, 143, 0.2);
 }
 
 .submit:hover {
-    background-color: #143d24;
+    background-color: #b8a67d;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(197, 180, 143, 0.3);
 }
 
 .submit:disabled {
@@ -239,52 +349,91 @@
 
 /* SUCCESS VIEW */
 .successContent {
+    flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 2rem 0;
+    justify-content: center;
+    text-align: center;
+    width: 100%;
+    position: relative;
 }
 
 .successIcon {
-    width: 96px;
-    height: 96px;
-    background-color: #d1fae5;
+    width: 100px;
+    height: 100px;
+    background-color: #FEF9E7; /* Ultra light gold circle */
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 2rem;
-    color: #1a4d2e;
+    margin-bottom: 2.5rem;
+    color: #C5A059;
 }
 
 .successTitle {
     font-size: 2.25rem;
-    font-family: var(--font-serif);
-    color: #1a4d2e;
-    margin-bottom: 1rem;
+    font-family: var(--font-playfair), serif;
+    color: #000000; /* Sophisticated Black from reference */
+    margin-bottom: 1.25rem;
     font-weight: 700;
 }
 
 .successText {
     color: #4B5563;
     line-height: 1.6;
+    margin-bottom: 3rem;
+    font-size: 1.1rem;
+    max-width: 320px;
+}
+
+.successDivider {
+    width: 100%;
+    border-top: 1px dashed #E5E7EB;
+    margin-bottom: 2.5rem;
+}
+
+.actionButtons {
+    display: flex;
+    gap: 1rem;
+    width: 100%;
     margin-bottom: 2rem;
-    font-size: 1.05rem;
 }
 
-.backButton {
-    color: #1a4d2e;
-    font-weight: 700;
-    font-size: 1rem;
-    background: none;
-    border: none;
+.actionBtn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 0.85rem;
+    border: 1.5px solid #E5E7EB;
+    border-radius: 99px;
+    background: white;
+    color: #475569;
+    font-size: 0.9rem;
+    font-weight: 600;
     cursor: pointer;
-    text-decoration: none;
+    transition: all 0.2s;
 }
 
-.backButton:hover {
-    text-decoration: underline;
+.actionBtn:hover {
+    border-color: #C5A059;
+    color: #C5A059;
+    background-color: #FDFBF7;
 }
+
+.poweredByCardSuccess {
+    color: #C5A059;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    text-decoration: none;
+    margin-bottom: auto; /* Pushes back button to bottom */
+}
+
+/* Moved to top for absolute positioning control */
 
 .footer {
     font-size: 0.75rem;
@@ -297,3 +446,7 @@
     border-radius: 99px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 }
+ 
+/* Consolidated in top definition */
+
+

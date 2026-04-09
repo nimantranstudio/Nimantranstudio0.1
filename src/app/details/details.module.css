@@ -292,7 +292,7 @@
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
-    padding: 4rem 3.5rem 1rem;
+    padding: 4rem 3.5rem 4.5rem;
     scrollbar-width: thin;
     scrollbar-color: #D4AF37 transparent;
 }
@@ -1305,8 +1305,16 @@ input:checked + .slider:before {
     font-size: 0.65rem;
     font-weight: 700;
     letter-spacing: 0.15em;
-    color: #9CA3AF;
+    color: #C5A059;
     text-transform: uppercase;
+    text-decoration: none;
+    display: inline-block;
+    transition: opacity 0.2s;
+    cursor: pointer;
+}
+
+.miniCardFooter:hover {
+    opacity: 0.7;
 }
 
 /* Premium Transition Screen Styles */
@@ -1397,4 +1405,33 @@ input:checked + .slider:before {
 .reassuranceSecondary {
     font-size: 0.75rem;
     color: #9CA3AF;
+}
+
+.mapFieldHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 2.5rem 0 0.75rem;
+}
+
+.mapHelperLink {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #C5A352;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding-bottom: 2px;
+    border-bottom: 1px solid rgba(197, 163, 82, 0.3);
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.mapHelperLink:hover {
+    color: #A6873D;
+    border-color: #A6873D;
+}
+
+.textareaInput {
+    resize: none !important;
 }

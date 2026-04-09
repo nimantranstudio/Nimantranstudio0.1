@@ -79,16 +79,21 @@ export default function DashboardPage() {
             }));
         }
 
-        return bundleItems.map((bi) => ({
-            id: bi.id,
-            name: bi.templateName || bi.eventType,
-            image: ensureLeadingSlash(bi.templatePath), // Renamed
-            event: formData.events?.find(e => e.eventType?.toUpperCase() === bi.eventType.toUpperCase()) || formData.events?.[0] || { name: 'Wedding' }
-        }));
+        return bundleItems.map((bi) => {
+            const biType = bi.eventType || '';
+            const matchedEvent = formData.events?.find(e => (e.eventType || '').toUpperCase() === biType.toUpperCase()) || formData.events?.[0] || { name: 'Wedding' };
+            
+            return {
+                id: bi.id,
+                name: bi.templateName || bi.eventType,
+                image: ensureLeadingSlash(bi.templatePath), // Renamed
+                event: matchedEvent
+            };
+        });
     };
 
     const previewItems = buildPreviewItems();
-    const rsvpSlug = `${formData.groomName?.toLowerCase().split(' ')[0] || 'wedding'}-${formData.brideName?.toLowerCase().split(' ')[0] || 'rsvp'}`;
+    const rsvpSlug = `${formData.groomName?.toLowerCase()?.split(' ')[0] || 'wedding'}-${formData.brideName?.toLowerCase()?.split(' ')[0] || 'rsvp'}`;
     const rsvpFullUrl = `https://nimantran.app/rsvp/${rsvpSlug}`;
     const [copyStatus, setCopyStatus] = useState(false);
 
