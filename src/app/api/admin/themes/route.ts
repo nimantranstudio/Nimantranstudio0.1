@@ -74,6 +74,8 @@ export async function POST(request: NextRequest) {
                     name,
                     description,
                     isActive,
+                    isBestSeller,
+                    isPopular,
                     thumbnailUrl: thumbUrl,
                     previewImages: previewImagesJson,
                 },

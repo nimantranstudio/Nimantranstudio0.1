@@ -96,23 +96,31 @@ export default function DashboardPage() {
             });
         }
 
-        return bundleItems.map((bi) => {
-            const biType = bi.eventType || '';
-            const matchedEvent = formData.events?.find(e => (e.eventType || '').toUpperCase() === biType.toUpperCase()) || formData.events?.[0] || {
-                id: 'wedding',
-                name: 'Wedding Ceremony',
-                date: formData.primaryDate,
-                time: formData.primaryTime,
-                venue: formData.defaultVenueName
-            };
-            
-            return {
-                id: bi.id,
-                name: bi.templateName || bi.eventType,
-                image: ensureLeadingSlash(bi.templatePath), // Renamed
-                event: matchedEvent
-            };
-        });
+        return bundleItems
+            .sort((a, b) => {
+                const aIsHtml = a.templatePath?.toLowerCase().endsWith('.html');
+                const bIsHtml = b.templatePath?.toLowerCase().endsWith('.html');
+                if (aIsHtml && !bIsHtml) return -1;
+                if (!aIsHtml && bIsHtml) return 1;
+                return 0;
+            })
+            .map((bi) => {
+                const biType = bi.eventType || '';
+                const matchedEvent = formData.events?.find(e => (e.eventType || '').toUpperCase() === biType.toUpperCase()) || formData.events?.[0] || {
+                    id: 'wedding',
+                    name: 'Wedding Ceremony',
+                    date: formData.primaryDate,
+                    time: formData.primaryTime,
+                    venue: formData.defaultVenueName
+                };
+                
+                return {
+                    id: bi.id,
+                    name: bi.templateName || bi.eventType || 'Wedding',
+                    image: ensureLeadingSlash(bi.templatePath), // Renamed
+                    event: matchedEvent
+                };
+            });
     };
 
     const previewItems = buildPreviewItems();

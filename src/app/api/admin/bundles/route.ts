@@ -102,7 +102,8 @@ export async function POST(request: NextRequest) {
                 const bytes = await file.arrayBuffer();
                 const buffer = Buffer.from(bytes);
                 const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-                const filename = `template-${meta.eventType}-${uniqueSuffix}${path.extname(file.name)}`;
+                const typeSlug = (meta.eventType || meta.templateName || meta.id || 'template').replace(/\s+/g, '_');
+                const filename = `template-${typeSlug}-${uniqueSuffix}${path.extname(file.name)}`;
                 const filepath = path.join(uploadDir, filename);
                 await writeFile(filepath, buffer);
                 templateFileStr = `/Image/bundle/${filename}`;

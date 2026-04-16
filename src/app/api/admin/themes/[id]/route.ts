@@ -71,6 +71,8 @@ export async function PUT(
                 name,
                 description,
                 isActive,
+                isBestSeller,
+                isPopular,
                 thumbnailUrl: savedImagePaths.length > 0 ? savedImagePaths[0] : existingTheme.thumbnailUrl,
                 previewImages: JSON.stringify(savedImagePaths),
             }

@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import fs from 'fs';
+import path from 'path';
 
 export const dynamic = 'force-dynamic';
 
@@ -45,7 +47,45 @@ export async function GET(
             bundles: (theme as any).bundles.map((b: any) => ({
                 ...b,
                 name: b.BundleName,
-                description: b.bundleDescription || ''
+                description: b.bundleDescription || '',
+                bundleItems: (b.bundleItems || []).map((item: any) => {
+                    let p = item.templatePath || '';
+                    if (p.startsWith('public/')) p = '/' + p.substring(7);
+                    if (p && !p.startsWith('/')) p = '/' + p;
+
+                    // SELF-HEALING: If file doesn't exist, try to find a fallback
+                    if (p && p.toLowerCase().endsWith('.html')) {
+                        const fullPath = path.join(process.cwd(), 'public', p);
+                        if (!fs.existsSync(fullPath)) {
+                            console.log(`[Self-Healing] Template not found: ${fullPath}. Searching for fallback...`);
+                            try {
+                                const bundleDir = path.join(process.cwd(), 'public/Image/bundle');
+                                if (fs.existsSync(bundleDir)) {
+                                    const files = fs.readdirSync(bundleDir);
+                                    // Find all html templates
+                                    const htmlTemplates = files
+                                        .filter(f => f.toLowerCase().endsWith('.html'))
+                                        .map(f => ({
+                                            name: f,
+                                            time: fs.statSync(path.join(bundleDir, f)).mtime.getTime()
+                                        }))
+                                        .sort((a, b) => b.time - a.time);
+
+                                    if (htmlTemplates.length > 0) {
+                                        // Use the newest one
+                                        const newest = htmlTemplates[0].name;
+                                        console.log(`[Self-Healing] Found fallback: /Image/bundle/${newest}`);
+                                        p = `/Image/bundle/${newest}`;
+                                    }
+                                }
+                            } catch (e) {
+                                console.error("[Self-Healing] Failed to find fallback:", e);
+                            }
+                        }
+                    }
+
+                    return { ...item, templatePath: p };
+                })
             })) || [],
             tag: undefined
         };

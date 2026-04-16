@@ -30,6 +30,7 @@ interface InvitationCardProps {
     className?: string; // Added className to props
     isSecured?: boolean; // Added isSecured to props
     showSizingBoxes?: boolean; // Added showSizingBoxes
+    isRawPreview?: boolean; // Added to just show the HTML as is
 }
 
 export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>(({
@@ -47,12 +48,13 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
     variant = 'default',
     className,
     isSecured = false,
-    showSizingBoxes = false
+    showSizingBoxes = false,
+    isRawPreview = isPlaceholder // Default to raw preview for placeholders (previews)
 }, ref) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const [containerScale, setContainerScale] = useState(1);
-    const isHTMLDesign = customImage?.endsWith('.html') || customImage?.includes('item-Wedding_Invitation') && customImage.includes('.html'); // Robust check
+    const isHTMLDesign = customImage?.toLowerCase().endsWith('.html') || (customImage?.includes('item-Wedding_Invitation') && customImage.toLowerCase().includes('.html')); // Robust check
 
     useImperativeHandle(ref, () => ({
         saveEdits: () => {
@@ -139,7 +141,7 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
 
     // Map user fields to HTML template IDs
     useEffect(() => {
-        if (!isHTMLDesign || !iframeRef.current) return;
+        if (!isHTMLDesign || !iframeRef.current || isRawPreview) return;
 
         const updateContent = () => {
             const doc = iframeRef.current?.contentDocument || iframeRef.current?.contentWindow?.document;
@@ -414,7 +416,7 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
             currentIframe.addEventListener('load', handleLoad);
             return () => currentIframe.removeEventListener('load', handleLoad);
         }
-    }, [isHTMLDesign, event, welcomeMessage, groomName, brideName, groomParents, brideParents, customImage, showSizingBoxes]);
+    }, [isHTMLDesign, event, welcomeMessage, groomName, brideName, groomParents, brideParents, customImage, showSizingBoxes, isRawPreview]);
 
     const isHaldi = event.name?.toLowerCase().includes('haldi');
     const isContract = variant === 'contract';

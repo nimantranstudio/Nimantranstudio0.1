@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-// Initializing theme cache for performance
-export const revalidate = 3600; // Cache for 1 hour
+// Cache disabled for real-time updates from admin
+export const dynamic = 'force-dynamic';
 
 // Fallback static themes for database connection failure
 const STATIC_THEMES = [
@@ -58,7 +58,12 @@ export async function GET() {
                 description: b.bundleDescription || '',
                 itemImages: b.itemImages,
                 bundleInvoices: (b as any).bundleInvoices,
-                bundleItems: b.bundleItems || []
+                bundleItems: (b.bundleItems || []).map((item: any) => {
+                    let p = item.templatePath || '';
+                    if (p.startsWith('public/')) p = '/' + p.substring(7);
+                    if (p && !p.startsWith('/')) p = '/' + p;
+                    return { ...item, templatePath: p };
+                })
             })),
             isBestSeller: theme.isBestSeller || false,
             isPopular: theme.isPopular || false,

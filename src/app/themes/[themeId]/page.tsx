@@ -4,7 +4,29 @@ import { use } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { ChevronRight, ChevronDown, CheckCircle, Smartphone, Headphones, ShieldCheck, Share2, X, ChevronLeft, Clock, Printer, Languages, Download, Heart } from 'lucide-react';
+import { 
+    Heart, 
+    Calendar, 
+    MapPin, 
+    Share2, 
+    Download, 
+    CheckCircle, 
+    ChevronLeft, 
+    ChevronRight, 
+    Sparkles,
+    Check,
+    ChevronDown,
+    Smartphone,
+    Headphones,
+    ShieldCheck,
+    X,
+    Clock,
+    Printer,
+    Languages,
+    Mail,
+    Activity,
+    Star
+} from 'lucide-react';
 import type { Theme } from '@/lib/constants/themes';
 import { useWeddingStore } from '@/store/wedding-store';
 import { ThemeCard } from '@/components/ui/ThemeCard';
@@ -40,24 +62,35 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
     useEffect(() => {
         async function fetchData() {
             try {
-                // Fetch packages first to have mappings
-                const pkgRes = await fetch('/api/admin/packages');
+                const [pkgRes, themeRes, recRes] = await Promise.all([
+                    fetch('/api/admin/packages'),
+                    fetch(`/api/themes/${themeId}`),
+                    fetch('/api/themes')
+                ]);
+
                 if (pkgRes.ok) {
                     const pkgData = await pkgRes.json();
                     setPackages(pkgData.packages || []);
                 }
 
-                // Fetch themes
-                const res = await fetch('/api/themes');
-                if (res.ok) {
-                    const data = await res.json();
-                    const allThemes: Theme[] = data.themes || [];
-                    const foundTheme = allThemes.find(t => t.id === themeId);
-                    setTheme(foundTheme || null);
-                    setRecommendations(allThemes.filter(t => t.id !== themeId).slice(0, 4));
+                if (themeRes.ok) {
+                    const data = await themeRes.json();
+                    if (data.theme) {
+                        setTheme(data.theme);
+                    } else if (recRes.ok) {
+                        // Fallback search in the themes list if specific theme direct fetch didn't return a theme
+                        const listData = await recRes.json();
+                        const found = (listData.themes || []).find((t: any) => t.id === themeId);
+                        setTheme(found || null);
+                    }
+                }
+
+                if (recRes.ok) {
+                    const recData = await recRes.json();
+                    setRecommendations((recData.themes || []).filter((t: any) => t.id !== themeId).slice(0, 4));
                 }
             } catch (error) {
-                console.error("Failed to fetch themes or packages", error);
+                console.error("Failed to fetch theme details", error);
             } finally {
                 setIsLoading(false);
             }
@@ -279,7 +312,21 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
                 image: item.templatePath
             }));
             
-        imageList = filtered;
+        // Sort imageList so that .html files (templates) come first, prioritized by "Invitation"
+        imageList = filtered.sort((a, b) => {
+            const aIsHtml = a.image?.toLowerCase().endsWith('.html');
+            const bIsHtml = b.image?.toLowerCase().endsWith('.html');
+            const aIsInvitation = a.name.toLowerCase().includes('invitation');
+            const bIsInvitation = b.name.toLowerCase().includes('invitation');
+
+            // Wedding Invitation HTML gets top priority
+            if (aIsHtml && aIsInvitation && !(bIsHtml && bIsInvitation)) return -1;
+            if (!(aIsHtml && aIsInvitation) && bIsHtml && bIsInvitation) return 1;
+
+            if (aIsHtml && !bIsHtml) return -1;
+            if (!aIsHtml && bIsHtml) return 1;
+            return 0;
+        });
     }
 
     // Create a normalized assets structure for rendering
@@ -320,15 +367,10 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [previewIndex]);
 
-    if (isLoading) {
-        return (
-            <div className="container" style={{ padding: '10rem 0', textAlign: 'center' }}>
-                <h2>Loading Theme Details...</h2>
-            </div>
-        );
-    }
+    // Remove full page loader to give instant feel
+    // Instead, we handle the null theme state gracefully in the render
 
-    if (!theme) {
+    if (!theme && !isLoading) {
         return (
             <div className="container" style={{ padding: '10rem 0', textAlign: 'center' }}>
                 <h1>Theme not found</h1>
@@ -356,7 +398,7 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
                         items={[
                             { label: 'Home', href: '/' },
                             { label: 'Themes', href: '/themes' },
-                            { label: theme.name, active: true },
+                            { label: theme?.name || 'Loading...', active: true },
                         ]}
                     />
                 </div>
@@ -372,7 +414,7 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
                 >
                     {assets.map((asset, index) => (
                         <div key={index} className={styles.carouselItem} onClick={() => setPreviewIndex(index)}>
-                            {asset.image.endsWith('.html') ? (
+                            {asset.image.toLowerCase().endsWith('.html') ? (
                                 <InvitationCard
                                     event={DUMMY_EVENT as any}
                                     theme={theme}
@@ -381,6 +423,7 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
                                     groomParents={undefined}
                                     brideParents={undefined}
                                     customImage={asset.image}
+                                    isRawPreview={true}
                                 />
                             ) : (
                                 <Image
@@ -419,71 +462,11 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
 
                 <div className={styles.layout}>
                     {/* Left Column: Asset Grid Refactored (Desktop) */}
-                    <div className={clsx(styles.galleryContainer, styles.desktopOnly)}>
-                        {/* Main Image */}
-                        <div
-                            className={styles.mainImageWrapper}
-                            onClick={() => setPreviewIndex(selectedAssetIndex)}
-                        >
-                            {assets[selectedAssetIndex].image.endsWith('.html') ? (
-                                <InvitationCard
-                                    event={DUMMY_EVENT as any}
-                                    theme={theme}
-                                    groomName={undefined as unknown as string}
-                                    brideName={undefined as unknown as string}
-                                    groomParents={undefined}
-                                    brideParents={undefined}
-                                    customImage={assets[selectedAssetIndex].image}
-                                />
-                            ) : (
-                                <Image
-                                    src={assets[selectedAssetIndex].image}
-                                    alt={assets[selectedAssetIndex].name}
-                                    fill
-                                    style={{
-                                        objectFit: 'contain',
-                                        zIndex: 2
-                                    }}
-                                    priority
-                                    onError={(e) => {
-                                        const target = e.target as HTMLImageElement;
-                                        target.style.display = 'none';
-                                    }}
-                                />
-                            )}
-                            <div style={{
-                                position: 'absolute',
-                                bottom: '1rem',
-                                left: '50%',
-                                transform: 'translateX(-50%)',
-                                background: 'rgba(0,0,0,0.6)',
-                                color: 'white',
-                                padding: '0.25rem 0.75rem',
-                                borderRadius: '100px',
-                                fontSize: '0.75rem',
-                                backdropFilter: 'blur(4px)',
-                                zIndex: 3
-                            }}>
-                                {assets[selectedAssetIndex].name}
-                            </div>
-                        </div>
-
-                        {/* Desktop Dots Indicator */}
-                        <div className={clsx(styles.carouselDots, styles.desktopOnly)} style={{ margin: '0.5rem 0' }}>
-                            {assets.slice(0, 5).map((_, i) => (
-                                <div
-                                    key={i}
-                                    className={clsx(styles.dot, (selectedAssetIndex % 5) === i && styles.activeDot)}
-                                    // Make desktop dots clickable too
-                                    onClick={() => setSelectedAssetIndex(i)}
-                                    style={{ cursor: 'pointer' }}
-                                />
-                            ))}
-                        </div>
-
-                        {/* Thumbnails */}
+                    <div className={clsx(styles.leftColumn, styles.desktopOnly)}>
+                        <div className={styles.galleryContainer}>
+                        {/* Thumbnails on the left */}
                         <div className={styles.thumbnailList}>
-                            {assets.map((asset, index) => (
+                            {assets.slice(0, 3).map((asset, index) => (
                                 <div
                                     key={index}
                                     className={clsx(
@@ -492,7 +475,7 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
                                     )}
                                     onClick={() => setSelectedAssetIndex(index)}
                                 >
-                                    {asset.image.endsWith('.html') ? (
+                                    {asset.image.toLowerCase().endsWith('.html') ? (
                                         <InvitationCard
                                             event={DUMMY_EVENT as any}
                                             theme={theme}
@@ -501,6 +484,7 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
                                             groomParents={undefined}
                                             brideParents={undefined}
                                             customImage={asset.image}
+                                            isRawPreview={true}
                                         />
                                     ) : (
                                         <Image
@@ -510,26 +494,140 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
                                             style={{ objectFit: 'cover' }}
                                         />
                                     )}
+                                    {/* Show Video Badge for the second item (as in ref image) or if name contains video */}
+                                    {(index === 1 || asset.name.toLowerCase().includes('video')) && (
+                                        <div className={styles.videoBadge}>
+                                            <div className={styles.playIconBg}>
+                                                <Play size={14} fill="currentColor" />
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             ))}
+                            {assets.length > 3 && (
+                                <div className={styles.moreDesignsBtn} onClick={() => setPreviewIndex(0)}>
+                                    <span className={styles.moreDesignsCount}>+{assets.length - 2}</span>
+                                    <span>More<br />Designs</span>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Main Image on the right */}
+                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
+                            <div
+                                className={styles.mainImageWrapper}
+                                onClick={() => setPreviewIndex(selectedAssetIndex)}
+                            >
+                                {assets[selectedAssetIndex].image.toLowerCase().endsWith('.html') ? (
+                                    <InvitationCard
+                                        event={DUMMY_EVENT as any}
+                                        theme={theme}
+                                        groomName={undefined as unknown as string}
+                                        brideName={undefined as unknown as string}
+                                        groomParents={undefined}
+                                        brideParents={undefined}
+                                        customImage={assets[selectedAssetIndex].image}
+                                        isRawPreview={true}
+                                    />
+                                ) : (
+                                    <Image
+                                        src={assets[selectedAssetIndex].image}
+                                        alt={assets[selectedAssetIndex].name}
+                                        fill
+                                        style={{
+                                            objectFit: 'contain',
+                                            zIndex: 2
+                                        }}
+                                        priority
+                                        onError={(e) => {
+                                            const target = e.target as HTMLImageElement;
+                                            target.style.display = 'none';
+                                        }}
+                                    />
+                                )}
+                            </div>
+
+                            {/* Floating Next Button */}
+                            <div className={styles.galleryNextBtn} onClick={() => {
+                                setSelectedAssetIndex((prev) => (prev + 1) % Math.min(assets.length, 5));
+                            }}>
+                                <ChevronRight size={24} />
+                            </div>
                         </div>
                     </div>
+                        {/* See the full experience section */}
+                        <div className={styles.experienceSection}>
+                            <div className={styles.experienceHeader}>
+                                <h3 className={styles.experienceTitle}>See the full experience</h3>
+                            </div>
+                            <div className={styles.experienceGrid}>
+                                <div className={styles.experienceCard}>
+                                    <div className={styles.cardPreview}>
+                                        <img src="/images/experience/whatsapp.png" alt="WhatsApp Share Preview" />
+                                    </div>
+                                    <span className={styles.cardLabel}>Share on WhatsApp</span>
+                                </div>
+                                <div className={styles.experienceCard}>
+                                    <div className={styles.cardPreview}>
+                                        <img src="/images/experience/rsvp.png" alt="Guest RSVP Preview" />
+                                    </div>
+                                    <span className={styles.cardLabel}>Guest RSVP</span>
+                                </div>
+                                <div className={styles.experienceCard}>
+                                    <div className={styles.cardPreview}>
+                                        <img src="/images/experience/tracking.png" alt="Track in Real Time Preview" />
+                                    </div>
+                                    <span className={styles.cardLabel}>Track in Real Time</span>
+                                </div>
+                                <div className={styles.experienceCard}>
+                                    <div className={styles.cardPreview}>
+                                        <img src="/images/experience/events.png" alt="Manage All Events Preview" />
+                                    </div>
+                                    <span className={styles.cardLabel}>Manage All Events</span>
+                                </div>
+                            </div>
+                        </div>
+
+                            {/* Testimonial Bar */}
+                            <div className={styles.testimonialBar}>
+                                <div className={styles.testimonialAvatars}>
+                                    {[1, 2, 3, 4].map((i) => (
+                                        <div key={i} className={styles.avatar}>
+                                            <img // forced refresh
+                                                src={`https://i.pravatar.cc/100?u=${i}`} 
+                                                alt="User" 
+                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className={styles.testimonialText}>
+                                    Loved by 1000+ couples across India
+                                </div>
+                                <div className={styles.starsContainer}>
+                                    {[1, 2, 3, 4, 5].map((i) => (
+                                        <Star key={i} size={14} fill={i <= 5 ? "#F59E0B" : "none"} color="#F59E0B" />
+                                    ))}
+                                    <span className={styles.ratingText}>4.9/5</span>
+                                </div>
+                            </div>
+                        </div>
 
                     {/* Right Column: Content */}
                     <div className={styles.contentCol}>
                         <div>
-                            <h1 className={styles.title} style={{ marginBottom: '0.25rem' }}>
-                                {theme.name} | {theme.bundleName || 'Theme Invitation Bundle'}
+                            <h1 className={styles.title}>
+                                {theme?.name || 'Suvarna Sohala'} | {theme?.bundleName || 'Premium Bundle'}
                             </h1>
-                            <p className={styles.description} style={{ marginBottom: '0.25rem', opacity: 0.8 }}>
-                                Complete pack of 12 wedding designs
+                            <p className={styles.description}>
+                                A complete wedding communication system not just an invite
                             </p>
-                            <hr style={{ border: 'none', borderTop: '1px solid #E5E7EB', margin: '0 0 0.75rem 0' }} />
 
                             {/* Package Selector (Universal) */}
                             {displayConfig.enabled && (
                             <div className={styles.stackedSelectorContainer}>
-                                <h3 className={styles.sectionLabel}>SELECT PACKAGE</h3>
+
+
                                 <div className={styles.stackedSelector}>
                                     {(Object.values(DYNAMIC_PLANS) as Array<typeof PLANS['essentials']>)
                                         .filter(plan => displayConfig.items[plan.label])
@@ -539,21 +637,200 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
                                             className={clsx(styles.stackedOption, selectedPlan === plan.id && styles.stackedOptionActive)}
                                             onClick={() => setSelectedPlan(plan.id as keyof typeof PLANS)}
                                         >
+                                            
+                                            {/* Removed Essentials Badge */}
                                             <div className={styles.optionInfo}>
                                                 <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-                                                    <span className={styles.optionLabel}>{plan.label}</span>
+                                                    {plan.id !== 'essentials' && <span className={styles.optionLabel}>{plan.label}</span>}
                                                     {plan.id === 'posters' && (
                                                         <span className={styles.bestSellerBadge}>
                                                             Best Seller
                                                         </span>
                                                     )}
-                                                    {selectedPlan === plan.id && <CheckCircle size={16} fill="#C5A065" color="white" />}
+                                                    {selectedPlan === plan.id && plan.id !== 'essentials' && <CheckCircle size={16} fill="#C5A065" color="white" />}
                                                 </div>
-                                                <span className={styles.optionDesc}>{plan.desc}</span>
+                                                {plan.id === 'essentials' ? (
+                                                    <div className={styles.essentialsDetails}>
+
+                                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                                            <div>
+                                                                <p className={styles.essentialsInBoxTitle}>Create, Share, and Manage your wedding In minutes.</p>
+
+                                                                <p className={styles.essentialsInBoxSubtext}>Includes 6 event invites + RSVP system + Wedding dashboard</p>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className={styles.essentialsItemRow}>
+                                                            <div className={styles.categoryHeader}>
+                                                                <motion.div 
+                                                                    initial={{ scale: 0.8, opacity: 0 }}
+                                                                    whileHover={{ scale: 1.35 }}
+                                                                    animate={{ 
+                                                                        scale: 1,
+                                                                        opacity: 1
+                                                                    }}
+                                                                    transition={{ 
+                                                                        type: "spring", stiffness: 400, damping: 10
+                                                                    }}
+                                                                    className={styles.tickCircle}
+                                                                >
+                                                                    <svg width="8" height="8" viewBox="0 0 10 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                        <motion.path 
+                                                                            d="M1 4.5L3.5 7L9 1" 
+                                                                            stroke="white" 
+                                                                            strokeWidth="2.5" 
+                                                                            strokeLinecap="round" 
+                                                                            strokeLinejoin="round"
+                                                                            initial={{ pathLength: 0, opacity: 0 }}
+                                                                            animate={{ pathLength: 1, opacity: 1 }}
+                                                                            transition={{ duration: 0.4 }}
+                                                                        />
+                                                                    </svg>
+                                                                </motion.div>
+                                                                <span className={styles.categoryLabel}>Wedding Invitations</span>
+                                                            </div>
+                                                            <span className={styles.itemName}>Save the Date · Wedding Invitation</span>
+                                                        </div>
+                                                        
+                                                        <div className={styles.essentialsItemRow}>
+                                                            <div className={styles.categoryHeader}>
+                                                                <motion.div 
+                                                                    initial={{ scale: 0.8, opacity: 0 }}
+                                                                    whileHover={{ scale: 1.35 }}
+                                                                    animate={{ 
+                                                                        scale: 1,
+                                                                        opacity: 1
+                                                                    }}
+                                                                    transition={{ 
+                                                                        type: "spring", stiffness: 400, damping: 10
+                                                                    }}
+                                                                    className={styles.tickCircle}
+                                                                >
+                                                                    <svg width="8" height="8" viewBox="0 0 10 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                        <motion.path 
+                                                                            d="M1 4.5L3.5 7L9 1" 
+                                                                            stroke="white" 
+                                                                            strokeWidth="2.5" 
+                                                                            strokeLinecap="round" 
+                                                                            strokeLinejoin="round"
+                                                                            initial={{ pathLength: 0, opacity: 0 }}
+                                                                            animate={{ pathLength: 1, opacity: 1 }}
+                                                                            transition={{ duration: 0.4 }}
+                                                                        />
+                                                                    </svg>
+                                                                </motion.div>
+                                                                <span className={styles.categoryLabel}>Wedding Events</span>
+                                                            </div>
+                                                            <span className={styles.itemName}>Haldi · Mehendi · Sangeet · Reception</span>
+                                                        </div>
+
+                                                        <div className={styles.essentialsItemRow}>
+                                                            <div className={styles.categoryHeader}>
+                                                                <motion.div 
+                                                                    initial={{ scale: 0.8, opacity: 0 }}
+                                                                    whileHover={{ scale: 1.35 }}
+                                                                    animate={{ 
+                                                                        scale: 1,
+                                                                        opacity: 1
+                                                                    }}
+                                                                    transition={{ 
+                                                                        type: "spring", stiffness: 400, damping: 10
+                                                                    }}
+                                                                    className={styles.tickCircle}
+                                                                >
+                                                                    <svg width="8" height="8" viewBox="0 0 10 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                        <motion.path 
+                                                                            d="M1 4.5L3.5 7L9 1" 
+                                                                            stroke="white" 
+                                                                            strokeWidth="2.5" 
+                                                                            strokeLinecap="round" 
+                                                                            strokeLinejoin="round"
+                                                                            initial={{ pathLength: 0, opacity: 0 }}
+                                                                            animate={{ pathLength: 1, opacity: 1 }}
+                                                                            transition={{ duration: 0.4 }}
+                                                                        />
+                                                                    </svg>
+                                                                </motion.div>
+                                                                <span className={styles.categoryLabel}>Closing & Gratitude</span>
+                                                            </div>
+                                                            <span className={styles.itemName}>Thank You Card</span>
+                                                        </div>
+
+                                                        <div className={styles.essentialsItemRow}>
+                                                            <div className={styles.categoryHeader}>
+                                                                <motion.div 
+                                                                    initial={{ scale: 0.8, opacity: 0 }}
+                                                                    whileHover={{ scale: 1.35 }}
+                                                                    animate={{ 
+                                                                        scale: 1,
+                                                                        opacity: 1
+                                                                    }}
+                                                                    transition={{ 
+                                                                        type: "spring", stiffness: 400, damping: 10
+                                                                    }}
+                                                                    className={styles.tickCircle}
+                                                                >
+                                                                    <svg width="8" height="8" viewBox="0 0 10 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                        <motion.path 
+                                                                            d="M1 4.5L3.5 7L9 1" 
+                                                                            stroke="white" 
+                                                                            strokeWidth="2.5" 
+                                                                            strokeLinecap="round" 
+                                                                            strokeLinejoin="round"
+                                                                            initial={{ pathLength: 0, opacity: 0 }}
+                                                                            animate={{ pathLength: 1, opacity: 1 }}
+                                                                            transition={{ duration: 0.4 }}
+                                                                        />
+                                                                    </svg>
+                                                                </motion.div>
+                                                                <span className={styles.categoryLabel}>Guest Experience</span>
+                                                            </div>
+                                                            <span className={styles.itemName}>RSVP · Guest Dashboard · Response Insights</span>
+                                                                <div className={styles.itemJourneyRow}>
+                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8.5px' }}>
+                                                                        <div className={styles.tickCircle}>
+                                                                            <svg width="8" height="8" viewBox="0 0 10 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                                <path d="M1 4.5L3.5 7L9 1" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                                                                            </svg>
+                                                                        </div>
+                                                                        <div className={styles.itemJourney}>
+                                                                            Invite <span className={styles.journeySeparator}>→</span> Share <span className={styles.journeySeparator}>→</span> RSVP <span className={styles.journeySeparator}>→</span> Track
+                                                                        </div>
+                                                                    </div>
+                                                                    <span className={styles.itemSupport}>Stay organised. Stay in control. Celebrate without the chaos.</span>
+                                                                </div>
+                                                        </div>
+
+                                                        {/* Inline Pricing Breakdown */}
+                                                        <hr className={styles.cardDivider} />
+                                                        <div className={styles.inlinePricing}>
+                                                            <div className={styles.pricingLeft}>
+                                                                <div className={styles.saveLabel}>You save ₹{parseInt(DYNAMIC_PLANS[selectedPlan].originalPrice.replace(/,/g, '')) - parseInt(DYNAMIC_PLANS[selectedPlan].price.replace(/,/g, ''))}</div>
+                                                                 <div className={styles.noSubscriptionLabel}>One-time payment. No subscriptions.</div>
+                                                            </div>
+                                                            <div className={styles.pricingRight}>
+                                                                <div className={styles.worthLabel}>Total value <span className={styles.strikethrough}>₹{DYNAMIC_PLANS[selectedPlan].originalPrice}</span></div>
+                                                                <span className={styles.todayPrice}>₹{DYNAMIC_PLANS[selectedPlan].price}</span>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Action button inside the box */}
+                                                        <div className={styles.inBoxActions}>
+                                                            <button onClick={handleCreateNow} className={clsx("btn btn-primary", styles.mainActionButton)}>
+                                                                Start My Wedding Setup
+                                                            </button>
+                                                            <p className={styles.socialProofText}>Most couples start sharing invites within 10 minutes after Creation.</p>
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <span className={styles.optionDesc}>{plan.desc}</span>
+                                                )}
                                             </div>
-                                            <div className={styles.optionPrice}>
-                                                ₹{plan.price}
-                                            </div>
+                                            {plan.id !== 'essentials' && (
+                                                <div className={styles.optionPrice}>
+                                                    ₹{plan.price}
+                                                </div>
+                                            )}
                                         </div>
                                     ))}
                                 </div>
@@ -563,41 +840,19 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
 
 
 
-
-
-                        <div className={styles.pricing}>
-                            <span className={styles.currentPrice}>₹ {DYNAMIC_PLANS[selectedPlan].price}</span>
-                            <span className={styles.originalPrice}>₹ {DYNAMIC_PLANS[selectedPlan].originalPrice}</span>
-                            {(() => {
-                                const price = parseInt(DYNAMIC_PLANS[selectedPlan].price.replace(/,/g, ''));
-                                const original = parseInt(DYNAMIC_PLANS[selectedPlan].originalPrice.replace(/,/g, ''));
-                                const discount = Math.round(((original - price) / original) * 100);
-                                return (
-                                    <span className={styles.discountBadge}>
-                                        {discount}% OFF
-                                    </span>
-                                );
-                            })()}
-                        </div>
-
-                        <div className={styles.actions}>
-                            <button onClick={handleCreateNow} className="btn btn-primary" style={{ flex: 1 }}>
-                                Create Now
-                            </button>
-                            <button className={styles.iconBtn} onClick={handleShare} title="Share Theme">
-                                <Share2 size={24} />
-                            </button>
-                        </div>
-
                         {/* Value Highlights (Universal) */}
                         <div className={styles.valueHighlights}>
+                            <div className={styles.highlightItem}>
+                                <div className={styles.highlightIcon}><ShieldCheck size={24} /></div>
+                                <span>100% Secure<br />Payments</span>
+                            </div>
                             <div className={styles.highlightItem}>
                                 <div className={styles.highlightIcon}><Clock size={20} /></div>
                                 <span>Ready in 2–5<br />minutes</span>
                             </div>
                             <div className={styles.highlightItem}>
                                 <div className={styles.highlightIcon}><Smartphone size={20} /></div>
-                                <span>WhatsApp &<br />Print Ready</span>
+                                <span>High quality &<br />WhatsApp Ready</span>
                             </div>
                             <div className={styles.highlightItem}>
                                 <div className={styles.highlightIcon}><Download size={24} /></div>
@@ -723,7 +978,7 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
                         </button>
 
                         <div className={styles.previewImageWrapper} style={{ borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-                            {assets[previewIndex].image.endsWith('.html') ? (
+                            {assets[previewIndex].image.toLowerCase().endsWith('.html') ? (
                                 <InvitationCard
                                     event={DUMMY_EVENT as any}
                                     theme={theme}

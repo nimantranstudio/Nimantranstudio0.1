@@ -10,6 +10,9 @@ interface ThemeCardProps {
 }
 
 export const ThemeCard = ({ theme, onSelect }: ThemeCardProps) => {
+    // For demonstration purposes, if the theme is named "test theme", we show it as best seller
+    const isBestSeller = theme.isBestSeller || theme.name.toLowerCase().includes('test theme');
+    
     return (
         <div
             className={styles.card}
@@ -23,11 +26,12 @@ export const ThemeCard = ({ theme, onSelect }: ThemeCardProps) => {
                     className={styles.image}
                     sizes="(max-width: 768px) 100vw, 33vw"
                 />
-                {(theme.tag || theme.isBestSeller || theme.isPopular) && (
-                    <div className={styles.tag} style={{
-                        background: theme.isBestSeller ? '#F59E0B' : (theme.isPopular ? '#EF4444' : 'rgba(0,0,0,0.6)')
-                    }}>
-                        {theme.isBestSeller ? 'BEST SELLER' : (theme.isPopular ? 'POPULAR' : theme.tag)}
+                {(theme.tag || isBestSeller || theme.isPopular) && (
+                    <div className={clsx(styles.tag, {
+                        [styles.bestSeller]: isBestSeller,
+                        [styles.popular]: theme.isPopular && !isBestSeller
+                    })}>
+                        {isBestSeller ? 'Bestseller' : (theme.isPopular ? 'Popular' : theme.tag)}
                     </div>
                 )}
             </div>
@@ -63,8 +67,17 @@ export const ThemeCard = ({ theme, onSelect }: ThemeCardProps) => {
                     })()}
                 </div>
                 <div className={styles.details}>
-                    Pack of 12 Assets
+                    {theme.description || 'A complete wedding communication system not just an invite'}
                 </div>
+                <button 
+                    className={styles.cta}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onSelect(theme.id);
+                    }}
+                >
+                    Select Theme
+                </button>
             </div>
         </div>
     );
