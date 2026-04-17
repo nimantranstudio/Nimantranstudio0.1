@@ -2,17 +2,35 @@
 
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import styles from './event-link.module.css';
-import { Download, Copy, Phone } from 'lucide-react';
-import { useState } from 'react';
+import { Copy, Phone } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useWeddingStore } from '@/store/wedding-store';
 
 export default function EventLinkPage() {
+    const { lastSavedWeddingId, formData } = useWeddingStore();
     const [copied, setCopied] = useState(false);
-    const link = "nimantran.studio/rsvp/wed-2025";
+    const [link, setLink] = useState('');
+
+    useEffect(() => {
+        if (lastSavedWeddingId) {
+            setLink(`${window.location.origin}/rsvp/${lastSavedWeddingId}`);
+        }
+    }, [lastSavedWeddingId]);
 
     const handleCopy = () => {
+        if (!link) return;
         navigator.clipboard.writeText(link);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
+    };
+
+    const openWhatsApp = () => {
+        if (!link) return;
+        const names = formData.groomName && formData.brideName
+            ? `${formData.groomName} & ${formData.brideName}`
+            : 'our wedding';
+        const text = `You're invited to ${names}! Please RSVP here: ${link}`;
+        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
     };
 
     return (
@@ -34,25 +52,20 @@ export default function EventLinkPage() {
                     <h1 className={styles.cardTitle}>All set!</h1>
                     <p className={styles.cardSubtitle}>Now just share your link!</p>
 
-                    {/* QR Code Placeholder */}
-                    <div className={styles.qrContainer}>
-                        <div className={styles.qrPlaceholder}>
-                            {Array.from({ length: 9 }).map((_, i) => (
-                                <div key={i} className={styles.qrDot} style={{ opacity: Math.random() > 0.5 ? 1 : 0.4 }} />
-                            ))}
-                        </div>
-                    </div>
-
-                    <div className={styles.qrLabel}>Add this QR Code to your invitation</div>
-
-                    <a href="#" className={styles.downloadBtn} onClick={(e) => e.preventDefault()}>
-                        <Download size={14} />
-                        DOWNLOAD IMAGE
-                    </a>
+                    {!link && (
+                        <p style={{ color: '#B91C1C', fontSize: '0.875rem', marginBottom: '1rem', textAlign: 'center' }}>
+                            Wedding not saved yet. Please go back and complete setup.
+                        </p>
+                    )}
 
                     <div className={styles.linkBox}>
-                        <span className={styles.linkText}>{link}</span>
-                        <button onClick={handleCopy} className={styles.copyBtn} title="Copy Link">
+                        <span className={styles.linkText}>{link || 'No link available'}</span>
+                        <button
+                            onClick={handleCopy}
+                            className={styles.copyBtn}
+                            title="Copy Link"
+                            disabled={!link}
+                        >
                             {copied ? (
                                 <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'green' }}>COPIED</span>
                             ) : (
@@ -61,11 +74,10 @@ export default function EventLinkPage() {
                         </button>
                     </div>
 
-                    <button className={styles.whatsappBtn}>
+                    <button className={styles.whatsappBtn} onClick={openWhatsApp} disabled={!link}>
                         <Phone size={18} style={{ fill: 'currentColor' }} />
                         Send on WhatsApp
                     </button>
-
                 </div>
             </main>
         </div>

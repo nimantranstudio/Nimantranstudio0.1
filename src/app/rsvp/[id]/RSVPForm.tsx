@@ -19,6 +19,7 @@ export const RSVPForm = ({ wedding }: RSVPFormProps) => {
     const [step, setStep] = useState<Step>('INVITE');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showSuccessPetals, setShowSuccessPetals] = useState(false);
+    const [submitError, setSubmitError] = useState<string | null>(null);
 
     // Form State
     const [status, setStatus] = useState('attending'); // attending, declined, maybe
@@ -40,6 +41,7 @@ export const RSVPForm = ({ wedding }: RSVPFormProps) => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
+        setSubmitError(null);
 
         const data = {
             guestName,
@@ -65,16 +67,10 @@ export const RSVPForm = ({ wedding }: RSVPFormProps) => {
                 setShowSuccessPetals(true);
                 setTimeout(() => setStep('SUCCESS'), 500);
             } else {
-                // FAILOVER: Allow successful UI state even if database submission fails
-                console.warn('Simulating successful submission due to DB error');
-                setShowSuccessPetals(true);
-                setTimeout(() => setStep('SUCCESS'), 500);
+                setSubmitError('Something went wrong. Please try again in a moment.');
             }
-        } catch (error) {
-            console.error('RSVP submission error:', error);
-            // FAILOVER: Ensure success screen even in network error
-            setShowSuccessPetals(true);
-            setTimeout(() => setStep('SUCCESS'), 500);
+        } catch {
+            setSubmitError('Could not reach the server. Please check your connection and try again.');
         } finally {
             setIsSubmitting(false);
         }
@@ -82,23 +78,20 @@ export const RSVPForm = ({ wedding }: RSVPFormProps) => {
 
     const handleAddToCalendar = () => {
         const event = wedding.events[0];
-        if (!event) return;
+        if (!event || !event.date) return;
 
         const title = encodeURIComponent(`${wedding.groomName} & ${wedding.brideName}'s Wedding`);
-        const location = encodeURIComponent(event.venueName || 'Wedding Venue');
-        
-        // Format dates for Google Calendar (YYYYMMDDTHHMMSSZ)
-        const date = event.date ? new Date(event.date) : new Date('2026-04-20');
-        const startDate = date.toISOString().replace(/-|:|\.\d\d\d/g, "");
-        
+        const location = encodeURIComponent(event.venue || event.venueName || 'Wedding Venue');
+        const startDate = new Date(event.date).toISOString().replace(/-|:|\.\d\d\d/g, '');
         const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startDate}/${startDate}&location=${location}`;
         window.open(googleUrl, '_blank');
     };
 
     const handleOpenMaps = () => {
         const event = wedding.events[0];
-        if (!event || !event.venueName) return;
-        const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.venueName)}`;
+        const venue = event?.venue || event?.venueName;
+        if (!venue) return;
+        const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(venue)}`;
         window.open(url, '_blank');
     };
 
@@ -258,13 +251,18 @@ export const RSVPForm = ({ wedding }: RSVPFormProps) => {
                     </form>
                     
                     <div className={styles.buttonWrapper}>
+                        {submitError && (
+                            <p style={{ color: '#B91C1C', fontSize: '0.875rem', textAlign: 'center', marginBottom: '0.75rem' }}>
+                                {submitError}
+                            </p>
+                        )}
                         <button type="submit" form="rsvp-form" className={styles.submit} disabled={isSubmitting}>
                             {isSubmitting ? 'Submitting...' : 'Submit Response'}
                         </button>
 
-                        <button 
-                            type="button" 
-                            onClick={() => setStep('INVITE')} 
+                        <button
+                            type="button"
+                            onClick={() => setStep('INVITE')}
                             className={styles.backButton}
                         >
                             Back to Invitation
@@ -309,7 +307,10 @@ export const RSVPForm = ({ wedding }: RSVPFormProps) => {
                                     {event.eventName || 'THE WEDDING CEREMONY'}
                                 </div>
                                 <div className={styles.eventRowSimple}>
-                                    {event.date ? new Date(event.date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : 'Monday, 20 April 2026'} • {event.time || '21:01'} onwards
+                                    {event.date
+                                        ? new Date(event.date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+                                        : 'Date TBD'}
+                                    {event.time ? ` • ${event.time} onwards` : ''}
                                 </div>
                             </div>
                         ))}

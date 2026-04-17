@@ -1,82 +1,107 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useWeddingStore } from '@/store/wedding-store';
 import {
-    LogOut, User, Plus, Edit2, Link2, FileText, Trash2,
-    Calendar, MapPin, Clock, Users, CheckCircle2, XCircle,
+    Plus, FileText, Trash2,
+    Users, CheckCircle2, XCircle,
     HelpCircle, Copy, Share2, Download, Eye, Search,
-    ChevronLeft, ChevronRight, ShieldCheck, Zap, Lock
 } from 'lucide-react';
 import styles from './rsvp-list.module.css';
-import dashboardStyles from '../dashboard.module.css';
 import { DashboardSidebar } from '@/components/layout/DashboardSidebar';
 
+interface RSVPEntry {
+    id: string;
+    guestName: string;
+    status: string;
+    adultCount: number;
+    childCount: number;
+    phone?: string;
+    dietary?: string;
+    message?: string;
+    createdAt: string;
+}
+
 export default function RSVPListPage() {
-    const router = useRouter();
-    const { logout, formData, removeEvent } = useWeddingStore();
+    const { formData, removeEvent, lastSavedWeddingId } = useWeddingStore();
 
-    // State for delete modal
     const [deletingEventId, setDeletingEventId] = useState<string | null>(null);
+    const [copiedId, setCopiedId] = useState<string | null>(null);
+    const [rsvps, setRsvps] = useState<RSVPEntry[]>([]);
+    const [rsvpLoading, setRsvpLoading] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
 
-    // Safely access events
     const events = formData?.events || [];
 
-    const handleLogout = () => {
-        logout();
-        router.push('/');
+    useEffect(() => {
+        if (!lastSavedWeddingId) return;
+        setRsvpLoading(true);
+        fetch(`/api/rsvp/${lastSavedWeddingId}`)
+            .then(res => res.json())
+            .then(data => { if (data.success) setRsvps(data.rsvps); })
+            .catch(console.error)
+            .finally(() => setRsvpLoading(false));
+    }, [lastSavedWeddingId]);
+
+    const stats = {
+        totalResponses: rsvps.length,
+        attending: rsvps.filter(r => r.status === 'attending').length,
+        declined: rsvps.filter(r => r.status === 'declined').length,
+        maybe: rsvps.filter(r => r.status === 'maybe').length,
+        headcount: rsvps
+            .filter(r => r.status === 'attending')
+            .reduce((sum, r) => sum + (r.adultCount || 1), 0),
     };
 
-    const handleDeleteClick = (id: string) => {
-        setDeletingEventId(id);
-    };
+    const filteredRsvps = rsvps.filter(r =>
+        r.guestName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (r.phone && r.phone.includes(searchQuery))
+    );
 
+    const handleDeleteClick = (id: string) => setDeletingEventId(id);
     const confirmDelete = () => {
-        if (deletingEventId) {
-            removeEvent(deletingEventId);
-            setDeletingEventId(null);
-        }
+        if (deletingEventId) { removeEvent(deletingEventId); setDeletingEventId(null); }
+    };
+    const cancelDelete = () => setDeletingEventId(null);
+
+    const getRsvpLink = () => {
+        const origin = typeof window !== 'undefined' ? window.location.origin : '';
+        return lastSavedWeddingId ? `${origin}/rsvp/${lastSavedWeddingId}` : '';
     };
 
-    const cancelDelete = () => {
-        setDeletingEventId(null);
-    };
-
-    // Calculate stats per event
-    const getEventStats = (guests: any[]) => {
-        let totalResponses = 0;
-        let attending = 0;
-        let declined = 0;
-        let maybe = 0;
-        let headcount = 0;
-
-        guests.forEach(g => {
-            if (g.status !== 'pending') totalResponses++;
-            if (g.status === 'attending') {
-                attending++;
-                headcount += (1 + (g.companions || 0));
-            }
-            if (g.status === 'declined') declined++;
-            // Assuming maybe might be added later
-        });
-
-        return { totalResponses, attending, declined, maybe, headcount };
-    };
-
-    // State for copy feedback
-    const [copiedId, setCopiedId] = useState<string | null>(null);
-
-    const copyLink = (id: string, link: string) => {
-        navigator.clipboard.writeText(link);
+    const copyLink = (id: string) => {
+        navigator.clipboard.writeText(getRsvpLink());
         setCopiedId(id);
         setTimeout(() => setCopiedId(null), 2000);
     };
 
-    const openWhatsApp = (link: string) => {
-        const text = `Please RSVP for our wedding: ${link}`;
+    const openWhatsApp = () => {
+        const names = formData.groomName && formData.brideName
+            ? `${formData.groomName} & ${formData.brideName}`
+            : 'our wedding';
+        const text = `Please RSVP for ${names}: ${getRsvpLink()}`;
         window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+    };
+
+    const handleExportCSV = () => {
+        const headers = ['Guest Name', 'Status', 'Adults', 'Children', 'Phone', 'Dietary'];
+        const rows = rsvps.map(r => [
+            r.guestName,
+            r.status,
+            String(r.adultCount || 1),
+            String(r.childCount || 0),
+            r.phone || '-',
+            r.dietary || '-',
+        ]);
+        const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `wedding_rsvps.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
     };
 
     return (
@@ -93,7 +118,7 @@ export default function RSVPListPage() {
                 </header>
 
                 <div className={styles.listContainer}>
-                    {(!events || events.length === 0) && (
+                    {events.length === 0 && (
                         <div className={styles.emptyStateContainer}>
                             <h2 className={styles.emptyTitle}>Elegant RSVPs for Indian Weddings</h2>
                             <p className={styles.emptySubtitle}>
@@ -105,17 +130,14 @@ export default function RSVPListPage() {
                         </div>
                     )}
 
-                    {events && [...events].reverse().map((evt) => {
-                        const stats = getEventStats(evt.guests || []);
-                        // Use dynamic origin if on client, else fallback
-                        const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
-                        const rsvpLink = `${origin}/rsvp/${evt.id}`;
+                    {[...events].reverse().map((evt) => {
+                        const rsvpLink = getRsvpLink();
 
                         return (
                             <div key={evt.id} className={styles.eventGroup}>
                                 <div className={styles.card}>
                                     <div className={styles.cardBody}>
-                                        {/* A. Header */}
+                                        {/* Header */}
                                         <div className={styles.cardHeader}>
                                             <div className={styles.headerLeft}>
                                                 <div className={styles.nameRow}>
@@ -153,29 +175,26 @@ export default function RSVPListPage() {
                                                     </div>
                                                 </div>
 
-                                                <p className={styles.headerInstruction} style={{ marginTop: '1.25rem', color: '#64748B', fontSize: '0.875rem' }}>
+                                                <p style={{ marginTop: '1.25rem', color: '#64748B', fontSize: '0.875rem' }}>
                                                     Share this link with family and guests to collect confirmations instantly.
                                                 </p>
                                             </div>
                                             <div className={styles.headerRight}>
-                                                <button 
+                                                <button
                                                     className={styles.iconBtn}
-                                                    onClick={() => copyLink(evt.id, rsvpLink)}
+                                                    onClick={() => copyLink(evt.id)}
                                                     title={copiedId === evt.id ? 'Copied!' : 'Copy Link'}
                                                 >
                                                     {copiedId === evt.id ? <CheckCircle2 size={18} color="#22C55E" /> : <Copy size={18} />}
                                                 </button>
-                                                <button className={styles.iconBtn} onClick={() => openWhatsApp(rsvpLink)} title="Share on WhatsApp">
-                                                     <Share2 size={18} />
+                                                <button className={styles.iconBtn} onClick={openWhatsApp} title="Share on WhatsApp">
+                                                    <Share2 size={18} />
                                                 </button>
-                                                <Link 
-                                                    href={rsvpLink} 
-                                                    target="_blank" 
-                                                    className={styles.iconBtn}
-                                                    title="Preview RSVP"
-                                                >
-                                                    <Eye size={18} />
-                                                </Link>
+                                                {rsvpLink && (
+                                                    <Link href={rsvpLink} target="_blank" className={styles.iconBtn} title="Preview RSVP">
+                                                        <Eye size={18} />
+                                                    </Link>
+                                                )}
                                                 <button
                                                     className={`${styles.iconBtn} ${styles.btnDelete}`}
                                                     onClick={() => handleDeleteClick(evt.id)}
@@ -186,7 +205,7 @@ export default function RSVPListPage() {
                                             </div>
                                         </div>
 
-                                        {/* C. Stats Grid */}
+                                        {/* Stats — from real API data */}
                                         <div className={styles.statsRow}>
                                             <div className={`${styles.statBlock} ${styles.statTotal}`}>
                                                 <div className={styles.statContent}>
@@ -199,7 +218,6 @@ export default function RSVPListPage() {
                                                     </div>
                                                 </div>
                                             </div>
-
                                             <div className={`${styles.statBlock} ${styles.statAttending}`}>
                                                 <div className={styles.statContent}>
                                                     <div className={`${styles.statIconBox} ${styles.iconAttending}`}>
@@ -211,7 +229,6 @@ export default function RSVPListPage() {
                                                     </div>
                                                 </div>
                                             </div>
-
                                             <div className={`${styles.statBlock} ${styles.statDecline}`}>
                                                 <div className={styles.statContent}>
                                                     <div className={`${styles.statIconBox} ${styles.iconDecline}`}>
@@ -223,7 +240,6 @@ export default function RSVPListPage() {
                                                     </div>
                                                 </div>
                                             </div>
-
                                             <div className={`${styles.statBlock} ${styles.statMaybe}`}>
                                                 <div className={styles.statContent}>
                                                     <div className={`${styles.statIconBox} ${styles.iconMaybe}`}>
@@ -237,24 +253,28 @@ export default function RSVPListPage() {
                                             </div>
                                         </div>
                                     </div>
-
-
                                 </div>
 
-                                {/* CARD 2: GUEST LIST */}
+                                {/* Guest List Card */}
                                 <div className={`${styles.card} ${styles.guestListCard}`}>
                                     <div className={styles.guestListSection}>
                                         <div className={styles.guestListHeader}>
-                                            <h3 className={styles.guestListTitle}>{evt.name} Guest List</h3>
+                                            <h3 className={styles.guestListTitle}>Guest List</h3>
                                             <div className={styles.guestListActions}>
                                                 <div className={styles.searchWrapper}>
                                                     <Search size={16} className={styles.searchIcon} />
-                                                    <input type="text" placeholder="Search guests..." className={styles.searchInput} />
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Search guests..."
+                                                        className={styles.searchInput}
+                                                        value={searchQuery}
+                                                        onChange={e => setSearchQuery(e.target.value)}
+                                                    />
                                                 </div>
-                                                <button className={styles.iconBtn} onClick={() => copyLink(evt.id, rsvpLink)} title="Copy for WhatsApp">
+                                                <button className={styles.iconBtn} onClick={openWhatsApp} title="Share on WhatsApp">
                                                     <Share2 size={18} />
                                                 </button>
-                                                <button className={styles.btnActionOutline}>
+                                                <button className={styles.btnActionOutline} onClick={handleExportCSV}>
                                                     <Download size={16} />
                                                     <span>Export CSV</span>
                                                 </button>
@@ -267,30 +287,46 @@ export default function RSVPListPage() {
                                                     <tr>
                                                         <th>GUEST NAME</th>
                                                         <th>STATUS</th>
-                                                        <th>COUNTS</th>
+                                                        <th>ADULTS</th>
                                                         <th>PHONE</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    <tr>
-                                                        <td colSpan={4} className={styles.emptyTable}>
-                                                            No guests have RSVP'd yet.
-                                                        </td>
-                                                    </tr>
+                                                    {rsvpLoading ? (
+                                                        <tr>
+                                                            <td colSpan={4} className={styles.emptyTable}>Loading responses...</td>
+                                                        </tr>
+                                                    ) : filteredRsvps.length === 0 ? (
+                                                        <tr>
+                                                            <td colSpan={4} className={styles.emptyTable}>
+                                                                {rsvps.length === 0
+                                                                    ? "No guests have RSVP'd yet."
+                                                                    : "No matching guests found."}
+                                                            </td>
+                                                        </tr>
+                                                    ) : (
+                                                        filteredRsvps.map(r => (
+                                                            <tr key={r.id}>
+                                                                <td className={styles.guestName}>{r.guestName}</td>
+                                                                <td>
+                                                                    <span className={`${styles.statusBadge} ${
+                                                                        r.status === 'attending' ? styles.statusYes
+                                                                        : r.status === 'declined' ? styles.statusNo
+                                                                        : styles.statusPending
+                                                                    }`}>
+                                                                        {r.status === 'attending' ? 'YES'
+                                                                            : r.status === 'declined' ? 'NO'
+                                                                            : r.status === 'maybe' ? 'MAYBE'
+                                                                            : 'PENDING'}
+                                                                    </span>
+                                                                </td>
+                                                                <td>{r.adultCount || 1}</td>
+                                                                <td>{r.phone || '-'}</td>
+                                                            </tr>
+                                                        ))
+                                                    )}
                                                 </tbody>
                                             </table>
-                                        </div>
-                                        <div className={styles.paginationRow}>
-                                            <div className={styles.paginationActions}>
-                                                <button className={styles.pageBtn} disabled>
-                                                    <ChevronLeft size={16} />
-                                                </button>
-                                                <span className={styles.pageIndicator}>1</span>
-                                                <button className={styles.pageBtnNext}>
-                                                    <span>Next</span>
-                                                    <ChevronRight size={16} />
-                                                </button>
-                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -300,7 +336,6 @@ export default function RSVPListPage() {
                 </div>
             </main>
 
-            {/* Custom Delete Modal */}
             {deletingEventId && (
                 <div className={styles.modalOverlay} onClick={cancelDelete}>
                     <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
@@ -312,12 +347,8 @@ export default function RSVPListPage() {
                             Are you sure you want to delete this event? This action cannot be undone and you will lose all collected RSVPs.
                         </p>
                         <div className={styles.modalActions}>
-                            <button className={styles.btnCancel} onClick={cancelDelete}>
-                                Cancel
-                            </button>
-                            <button className={styles.btnConfirmDelete} onClick={confirmDelete}>
-                                Yes, Delete
-                            </button>
+                            <button className={styles.btnCancel} onClick={cancelDelete}>Cancel</button>
+                            <button className={styles.btnConfirmDelete} onClick={confirmDelete}>Yes, Delete</button>
                         </div>
                     </div>
                 </div>

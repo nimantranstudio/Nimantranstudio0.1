@@ -10,16 +10,15 @@ import { useWeddingStore } from '@/store/wedding-store';
 
 export default function EventLinkPage() {
     const router = useRouter();
-    const { logout } = useWeddingStore();
+    const { logout, lastSavedWeddingId, formData } = useWeddingStore();
     const [copied, setCopied] = useState(false);
-
-    // In a real app, you'd get the actual ID from context or URL params
     const [link, setLink] = useState('');
 
     useEffect(() => {
-        // Just a placeholder example since we don't have the ID here without params
-        setLink(`${window.location.origin}/dashboard/rsvp`);
-    }, []);
+        if (lastSavedWeddingId) {
+            setLink(`${window.location.origin}/rsvp/${lastSavedWeddingId}`);
+        }
+    }, [lastSavedWeddingId]);
 
     const handleLogout = () => {
         logout();
@@ -33,7 +32,10 @@ export default function EventLinkPage() {
     };
 
     const openWhatsApp = () => {
-        const text = `Please RSVP for our wedding: ${link}`;
+        const names = formData.groomName && formData.brideName
+            ? `${formData.groomName} & ${formData.brideName}`
+            : 'our wedding';
+        const text = `You're invited to ${names}! Please RSVP here: ${link}`;
         window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
     };
 
@@ -58,7 +60,6 @@ export default function EventLinkPage() {
             </aside>
 
             <main style={{ flex: 1, padding: '2.5rem 3rem', overflowY: 'auto' }}>
-                {/* Breadcrumb */}
                 <div style={{
                     display: 'flex', alignItems: 'center', gap: '0.5rem',
                     paddingBottom: '1rem', marginBottom: '2rem',
@@ -74,27 +75,22 @@ export default function EventLinkPage() {
                 <div className={styles.container}>
                     <div className={styles.card}>
                         <h1 className={styles.cardTitle}>All set!</h1>
-                        <p className={styles.cardSubtitle}>Now just share your link!</p>
+                        <p className={styles.cardSubtitle}>Share your RSVP link with guests</p>
 
-                        {/* QR Code Placeholder */}
-                        <div className={styles.qrContainer}>
-                            <div className={styles.qrPlaceholder}>
-                                {Array.from({ length: 9 }).map((_, i) => (
-                                    <div key={i} className={styles.qrDot} style={{ opacity: Math.random() > 0.5 ? 1 : 0.4 }} />
-                                ))}
-                            </div>
-                        </div>
-
-                        <div className={styles.qrLabel}>Add this QR Code to your invitation</div>
-
-                        <a href="#" className={styles.downloadBtn} onClick={(e) => e.preventDefault()}>
-                            <Download size={14} />
-                            DOWNLOAD IMAGE
-                        </a>
+                        {!link && (
+                            <p style={{ color: '#B91C1C', fontSize: '0.875rem', marginBottom: '1rem', textAlign: 'center' }}>
+                                Wedding not saved yet. Please go back and complete setup.
+                            </p>
+                        )}
 
                         <div className={styles.linkBox}>
-                            <span className={styles.linkText}>{link}</span>
-                            <button onClick={handleCopy} className={styles.copyBtn} title="Copy Link">
+                            <span className={styles.linkText}>{link || 'No link available'}</span>
+                            <button
+                                onClick={handleCopy}
+                                className={styles.copyBtn}
+                                title="Copy Link"
+                                disabled={!link}
+                            >
                                 {copied ? (
                                     <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'green' }}>COPIED</span>
                                 ) : (
@@ -103,7 +99,7 @@ export default function EventLinkPage() {
                             </button>
                         </div>
 
-                        <button className={styles.whatsappBtn} onClick={openWhatsApp}>
+                        <button className={styles.whatsappBtn} onClick={openWhatsApp} disabled={!link}>
                             <Phone size={18} style={{ fill: 'currentColor' }} />
                             Send on WhatsApp
                         </button>
@@ -113,7 +109,6 @@ export default function EventLinkPage() {
                                 Go to Dashboard
                             </Link>
                         </div>
-
                     </div>
                 </div>
             </main>

@@ -1,108 +1,89 @@
 'use client';
 
-import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import { useWeddingStore } from '@/store/wedding-store';
-import { LogOut, ArrowLeft, Calendar, MapPin, Download, Share2, Search } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, Download, Share2, Search } from 'lucide-react';
 import styles from './guest-list.module.css';
-import dashboardStyles from '../../dashboard.module.css';
 import { DashboardSidebar } from '@/components/layout/DashboardSidebar';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
+
+interface RSVPEntry {
+    id: string;
+    guestName: string;
+    status: string;
+    adultCount: number;
+    childCount: number;
+    phone?: string;
+    dietary?: string;
+}
 
 export default function GuestListPage() {
     const router = useRouter();
     const params = useParams();
-    const { logout, formData } = useWeddingStore();
+    const { formData, lastSavedWeddingId } = useWeddingStore();
 
-    const handleLogout = () => {
-        logout();
-        router.push('/');
-    };
-
-    // 1. Find the event
-    const eventId = params.id;
+    const eventId = params.id as string;
     const event = formData.events.find(e => e.id === eventId);
 
-    // Safely access guest list
-    const guests = event?.guests || [];
-
-    // 2. Calculate Stats
-    const stats = useMemo(() => {
-        let totalAttending = 0;
-        let responses = 0;
-        let confirmedVeg = 0;
-        let notAttending = 0;
-
-        guests.forEach(guest => {
-            if (guest.status !== 'pending') {
-                responses++;
-            }
-
-            if (guest.status === 'attending') {
-                const pax = 1 + (guest.companions || 0);
-                totalAttending += pax;
-
-                if (guest.dietary === 'VEG') {
-                    confirmedVeg += pax;
-                }
-            } else if (guest.status === 'declined') {
-                notAttending++;
-            }
-        });
-
-        return { totalAttending, responses, confirmedVeg, notAttending };
-    }, [guests]);
-
-    // 3. Search State
+    const [rsvps, setRsvps] = useState<RSVPEntry[]>([]);
+    const [loading, setLoading] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
 
-    // Filter logic
-    const filteredGuests = guests.filter(g =>
-        g.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (g.phone && g.phone.includes(searchQuery))
+    useEffect(() => {
+        if (!lastSavedWeddingId) return;
+        setLoading(true);
+        fetch(`/api/rsvp/${lastSavedWeddingId}`)
+            .then(res => res.json())
+            .then(data => { if (data.success) setRsvps(data.rsvps); })
+            .catch(console.error)
+            .finally(() => setLoading(false));
+    }, [lastSavedWeddingId]);
+
+    const stats = useMemo(() => ({
+        totalAttending: rsvps
+            .filter(r => r.status === 'attending')
+            .reduce((sum, r) => sum + (r.adultCount || 1), 0),
+        responses: rsvps.length,
+        notAttending: rsvps.filter(r => r.status === 'declined').length,
+        confirmedVeg: rsvps
+            .filter(r => r.status === 'attending' && r.dietary === 'VEG')
+            .reduce((sum, r) => sum + (r.adultCount || 1), 0),
+    }), [rsvps]);
+
+    const filteredRsvps = rsvps.filter(r =>
+        r.guestName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (r.phone && r.phone.includes(searchQuery))
     );
 
-    // 4. Actions
     const handleWhatsAppShare = () => {
-        const summary = `*Wedding RSVP Summary: ${event?.name || 'My Wedding'}*\n\n` +
+        const summary =
+            `*Wedding RSVP Summary: ${event?.name || 'My Wedding'}*\n\n` +
             `✅ *Attending:* ${stats.totalAttending}\n` +
             `❌ *Not Attending:* ${stats.notAttending}\n` +
             `🍲 *Veg Meals:* ${stats.confirmedVeg}\n` +
             `📝 *Total Responses:* ${stats.responses}\n\n` +
             `_Generated via NimantranStudio_`;
-
-        const encodedSummary = encodeURIComponent(summary);
-        window.open(`https://wa.me/?text=${encodedSummary}`, '_blank');
+        window.open(`https://wa.me/?text=${encodeURIComponent(summary)}`, '_blank');
     };
 
     const handleExportCSV = () => {
-        if (!event) return;
-
-        const headers = ['Guest Name', 'Status', 'Counts', 'Dietary', 'Phone', 'Companions'];
-        const rows = guests.map(g => [
-            g.name,
-            g.status,
-            (1 + (g.companions || 0)).toString(),
-            g.dietary || '-',
-            g.phone || '-',
-            (g.companions || 0).toString()
+        const headers = ['Guest Name', 'Status', 'Adults', 'Children', 'Dietary', 'Phone'];
+        const rows = rsvps.map(r => [
+            r.guestName,
+            r.status,
+            String(r.adultCount || 1),
+            String(r.childCount || 0),
+            r.dietary || '-',
+            r.phone || '-',
         ]);
-
-        const csvContent = [
-            headers.join(','),
-            ...rows.map(r => r.join(','))
-        ].join('\n');
-
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
+        const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
-
-        link.setAttribute('href', url);
-        link.setAttribute('download', `${event.name.replace(/\s+/g, '_')}_guests.csv`);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${(event?.name || 'rsvp').replace(/\s+/g, '_')}_guests.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
     };
 
     if (!event) {
@@ -111,7 +92,6 @@ export default function GuestListPage() {
 
     return (
         <div className={styles.container}>
-            {/* Sidebar Reuse */}
             <DashboardSidebar />
 
             <main className={styles.main}>
@@ -134,29 +114,22 @@ export default function GuestListPage() {
                     </div>
                 </div>
 
-                {/* KPI Cards */}
                 <div className={styles.statsGrid}>
                     <div className={styles.statCard}>
-                        <div className={styles.statLabel}>
-                            TOTAL ATTENDING
-                            <span style={{ opacity: 0.5 }}>👥</span>
-                        </div>
+                        <div className={styles.statLabel}>TOTAL ATTENDING</div>
                         <div className={styles.statValue}>{stats.totalAttending}</div>
                         <div className={styles.statDesc}>Confirmed Guests</div>
                     </div>
-
                     <div className={styles.statCard}>
                         <div className={styles.statLabel}>RESPONSES</div>
                         <div className={styles.statValue}>{stats.responses}</div>
                         <div className={styles.statDesc}>Total Forms Submitted</div>
                     </div>
-
                     <div className={styles.statCard}>
                         <div className={styles.statLabel}>VEG PREFERENCE</div>
                         <div className={styles.statValue}>{stats.confirmedVeg}</div>
                         <div className={styles.statDesc}>Confirmed Veg Meals</div>
                     </div>
-
                     <div className={styles.statCard}>
                         <div className={styles.statLabel}>NOT ATTENDING</div>
                         <div className={styles.statValue}>{stats.notAttending}</div>
@@ -164,11 +137,9 @@ export default function GuestListPage() {
                     </div>
                 </div>
 
-                {/* Guest List Table */}
                 <div className={styles.listContainer}>
                     <div className={styles.listHeader}>
                         <h2 className={styles.listTitle}>Guest List</h2>
-
                         <div className={styles.tableControls}>
                             <div className={styles.searchContainer}>
                                 <Search className={styles.searchIcon} size={16} />
@@ -177,15 +148,13 @@ export default function GuestListPage() {
                                     placeholder="Search guests..."
                                     className={styles.searchInput}
                                     value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    onChange={e => setSearchQuery(e.target.value)}
                                 />
                             </div>
-
                             <button onClick={handleWhatsAppShare} className={styles.btnWhatsapp}>
                                 <Share2 size={16} />
                                 Copy for WhatsApp
                             </button>
-
                             <button onClick={handleExportCSV} className={styles.btnExport}>
                                 <Download size={16} />
                                 Export CSV
@@ -198,43 +167,45 @@ export default function GuestListPage() {
                             <tr>
                                 <th>GUEST NAME</th>
                                 <th>STATUS</th>
-                                <th>COUNTS</th>
+                                <th>ADULTS</th>
                                 <th>DIETARY</th>
                                 <th>PHONE</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredGuests.length === 0 ? (
+                            {loading ? (
+                                <tr>
+                                    <td colSpan={5} style={{ textAlign: 'center', color: '#999' }}>Loading responses...</td>
+                                </tr>
+                            ) : filteredRsvps.length === 0 ? (
                                 <tr>
                                     <td colSpan={5} style={{ textAlign: 'center', color: '#999' }}>
-                                        {guests.length === 0 ? "No guests have RSVP'd yet." : "No matching guests found."}
+                                        {rsvps.length === 0 ? "No guests have RSVP'd yet." : 'No matching guests found.'}
                                     </td>
                                 </tr>
                             ) : (
-                                filteredGuests.map((guest) => {
-                                    const pax = 1 + (guest.companions || 0);
-
-                                    let statusBadgeClass = styles.statusPending;
-                                    let statusLabel = 'PENDING';
-                                    if (guest.status === 'attending') {
-                                        statusBadgeClass = styles.statusYes;
-                                        statusLabel = 'YES';
-                                    } else if (guest.status === 'declined') {
-                                        statusBadgeClass = styles.statusNo;
-                                        statusLabel = 'NO';
-                                    }
+                                filteredRsvps.map(r => {
+                                    const statusClass =
+                                        r.status === 'attending' ? styles.statusYes
+                                        : r.status === 'declined' ? styles.statusNo
+                                        : styles.statusPending;
+                                    const statusLabel =
+                                        r.status === 'attending' ? 'YES'
+                                        : r.status === 'declined' ? 'NO'
+                                        : r.status === 'maybe' ? 'MAYBE'
+                                        : 'PENDING';
 
                                     return (
-                                        <tr key={guest.id}>
-                                            <td className={styles.guestName}>{guest.name}</td>
+                                        <tr key={r.id}>
+                                            <td className={styles.guestName}>{r.guestName}</td>
                                             <td>
-                                                <span className={`${styles.statusBadge} ${statusBadgeClass}`}>
+                                                <span className={`${styles.statusBadge} ${statusClass}`}>
                                                     {statusLabel}
                                                 </span>
                                             </td>
-                                            <td className={styles.pax}>{params.id === 'demo' ? 4 : pax}</td>
-                                            <td className={styles.dietary}>{guest.dietary || '-'}</td>
-                                            <td>{guest.phone || '-'}</td>
+                                            <td className={styles.pax}>{r.adultCount || 1}</td>
+                                            <td className={styles.dietary}>{r.dietary || '-'}</td>
+                                            <td>{r.phone || '-'}</td>
                                         </tr>
                                     );
                                 })

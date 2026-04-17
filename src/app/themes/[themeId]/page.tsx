@@ -475,33 +475,35 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
                                     )}
                                     onClick={() => setSelectedAssetIndex(index)}
                                 >
-                                    {asset.image.toLowerCase().endsWith('.html') ? (
-                                        <InvitationCard
-                                            event={DUMMY_EVENT as any}
-                                            theme={theme}
-                                            groomName={undefined as unknown as string}
-                                            brideName={undefined as unknown as string}
-                                            groomParents={undefined}
-                                            brideParents={undefined}
-                                            customImage={asset.image}
-                                            isRawPreview={true}
-                                        />
-                                    ) : (
-                                        <Image
-                                            src={asset.image}
-                                            alt={asset.name}
-                                            fill
-                                            style={{ objectFit: 'cover' }}
-                                        />
-                                    )}
-                                    {/* Show Video Badge for the second item (as in ref image) or if name contains video */}
-                                    {(index === 1 || asset.name.toLowerCase().includes('video')) && (
-                                        <div className={styles.videoBadge}>
-                                            <div className={styles.playIconBg}>
-                                                <Play size={14} fill="currentColor" />
+                                    <div className={styles.thumbnailItemInner}>
+                                        {asset.image.toLowerCase().endsWith('.html') ? (
+                                            <InvitationCard
+                                                event={DUMMY_EVENT as any}
+                                                theme={theme}
+                                                groomName={undefined as unknown as string}
+                                                brideName={undefined as unknown as string}
+                                                groomParents={undefined}
+                                                brideParents={undefined}
+                                                customImage={asset.image}
+                                                isRawPreview={true}
+                                            />
+                                        ) : (
+                                            <Image
+                                                src={asset.image}
+                                                alt={asset.name}
+                                                fill
+                                                style={{ objectFit: 'cover' }}
+                                            />
+                                        )}
+                                        {/* Show Video Badge for the second item (as in ref image) or if name contains video */}
+                                        {(index === 1 || asset.name.toLowerCase().includes('video')) && (
+                                            <div className={styles.videoBadge}>
+                                                <div className={styles.playIconBg}>
+                                                    <Play size={14} fill="currentColor" />
+                                                </div>
                                             </div>
-                                        </div>
-                                    )}
+                                        )}
+                                    </div>
                                 </div>
                             ))}
                             {assets.length > 3 && (

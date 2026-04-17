@@ -11,12 +11,7 @@ export default async function RSVPPage({
 }) {
     const { id } = await params;
     
-    // Hard-coded mock for preview purposes (Bypass DB until ready)
-    // DEFAULT: Better static defaults for preview instead of random URL parts
-    const groomTitle = 'Vivek';
-    const brideTitle = 'Priyanka';
-    
-    // 1. Try to find the actual wedding in the database (with failover)
+    // Fetch the wedding from the database
     let wedding = null;
     try {
         wedding = await prisma.wedding.findFirst({
@@ -26,43 +21,21 @@ export default async function RSVPPage({
         });
     } catch (e) {
         console.error('Database connection error in /rsvp/[id]:', e);
-        // Silently fail over to mock data to keep the landing page alive
     }
 
-    // 2. Mock Fallback for PREVIEW (Ensures no more 404s for vivek-priyanka)
     if (!wedding) {
-        wedding = {
-            id: 'preview-mode',
-            groomName: 'Vivek',
-            brideName: 'Priyanka',
-            invitationMessage: "We're so excited to celebrate our special day with our dearest friends and family! Please join us for an evening of love and laughter.",
-            themeId: 'default',
-            events: [
-                {
-                    id: 'preview-event',
-                    name: `Wedding Ceremony`,
-                    venue: 'The Grand Palace, Jodhpur',
-                    date: '2026-12-15',
-                    time: '19:00',
-                }
-            ],
-            allowCompanions: true,
-            collectDietary: true
-        } as any;
-    } else {
-        // APPLY SAFETY MASK ON SERVER to prevent hydration errors
-        if (wedding.groomName === 'Reception' || !wedding.groomName) {
-            wedding.groomName = 'Vivek';
-        }
-        if (wedding.brideName === 'Bride' || !wedding.brideName) {
-            wedding.brideName = 'Priyanka';
-        }
+        return (
+            <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-sans)', color: '#6b7280' }}>
+                <div style={{ textAlign: 'center' }}>
+                    <p style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>Invitation not found</p>
+                    <p style={{ fontSize: '0.875rem' }}>This link may be invalid or has expired.</p>
+                </div>
+            </div>
+        );
     }
-
-    const themeColors = ['#D4AF37', '#1B4332', '#FDFBF7'];
 
     return (
-        <div className={styles.page} style={{ '--theme-bg': themeColors[2], '--theme-primary': themeColors[1], position: 'relative' } as any}>
+        <div className={styles.page}>
             <RSVPForm wedding={wedding} />
         </div>
     );
