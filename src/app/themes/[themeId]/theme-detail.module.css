@@ -589,17 +589,7 @@
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
-.mainImageWrapper::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 45%;
-    background: linear-gradient(to top, #FDFBF7 0%, #FDFBF7 15%, rgba(253, 251, 247, 0) 100%);
-    pointer-events: none;
-    z-index: 5;
-}
+
 
 .thumbnailList {
     display: grid;
@@ -660,17 +650,6 @@
     background-color: #f0f0f0;
 }
 
-.carouselItem::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 45%;
-    background: linear-gradient(to top, #FDFBF7 0%, #FDFBF7 15%, rgba(253, 251, 247, 0) 100%);
-    pointer-events: none;
-    z-index: 5;
-}
 
 .carouselDots {
     display: flex;
