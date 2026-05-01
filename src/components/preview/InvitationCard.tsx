@@ -229,7 +229,8 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                 const styleTags = doc.querySelectorAll('style:not(#runtime-preview-fix)');
                 styleTags.forEach(tag => {
                     if (tag.innerHTML.includes('vw')) {
-                        tag.innerHTML = tag.innerHTML.replace(/([\d.]+)vw/g, '$1vmax');
+                        // Use lookahead to ensure we only replace CSS values and not base64 strings
+                        tag.innerHTML = tag.innerHTML.replace(/([\d.]+)vw(?=[\s;},!\)])/g, '$1vmax');
                     }
                 });
                 doc.body.dataset.vwFixed = "true";
