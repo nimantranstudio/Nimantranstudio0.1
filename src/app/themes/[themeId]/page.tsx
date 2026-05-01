@@ -235,30 +235,43 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
     // Find active bundle (default to first one)
     const activeBundle = theme && theme.bundles && theme.bundles.length > 0 ? theme.bundles[0] : null;
 
-    // Helper to find specific invoice price
-    const getPackagePrice = (pkgLabel: string, fallback: string) => {
+    // Helper to find specific invoice
+    const getPackageInvoice = (pkgLabel: string) => {
         const pkg = packages.find(p => p.name === pkgLabel);
         if (pkg && activeBundle && activeBundle.bundleInvoices) {
-            const invoice = activeBundle.bundleInvoices.find((inv: any) => inv.packageId === pkg.id);
-            if (invoice) return formatPrice(invoice.finalSellingPrice);
+            return activeBundle.bundleInvoices.find((inv: any) => inv.packageId === pkg.id);
         }
-        return fallback;
+        return null;
+    };
+
+    const getDynamicPlan = (key: keyof typeof PLANS, label: string) => {
+        const basePlan = PLANS[key];
+        const invoice = getPackageInvoice(label);
+        
+        let price = basePlan.price;
+        let originalPrice = basePlan.originalPrice;
+        
+        if (invoice) {
+            if (invoice.finalSellingPrice !== undefined && invoice.finalSellingPrice !== null) {
+                price = formatPrice(invoice.finalSellingPrice);
+            }
+            if (invoice.totalWeddingSuiteValue !== undefined && invoice.totalWeddingSuiteValue !== null) {
+                originalPrice = formatPrice(invoice.totalWeddingSuiteValue);
+            }
+        }
+        
+        return {
+            ...basePlan,
+            price,
+            originalPrice
+        };
     };
 
     // Dynamic Plans logic using the new bundleInvoices table
     const DYNAMIC_PLANS = {
-        essentials: {
-            ...PLANS.essentials,
-            price: getPackagePrice('WhatsApp Essentials', PLANS.essentials.price),
-        },
-        posters: {
-            ...PLANS.posters,
-            price: getPackagePrice('WhatsApp + Posters', PLANS.posters.price),
-        },
-        complete: {
-            ...PLANS.complete,
-            price: getPackagePrice('Complete Wedding Suite', PLANS.complete.price),
-        }
+        essentials: getDynamicPlan('essentials', 'WhatsApp Essentials'),
+        posters: getDynamicPlan('posters', 'WhatsApp + Posters'),
+        complete: getDynamicPlan('complete', 'Complete Wedding Suite'),
     };
 
     let displayConfig = initialDisplayConfig;
@@ -372,24 +385,15 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
                 >
                     {assets.map((asset, index) => (
                         <div key={index} className={styles.carouselItem} onClick={() => setPreviewIndex(index)}>
-                            {asset.image.endsWith('.html') ? (
-                                <InvitationCard
-                                    event={DUMMY_EVENT as any}
-                                    theme={theme}
-                                    groomName={undefined as unknown as string}
-                                    brideName={undefined as unknown as string}
-                                    groomParents={undefined}
-                                    brideParents={undefined}
-                                    customImage={asset.image}
-                                />
-                            ) : (
-                                <Image
-                                    src={asset.image}
-                                    alt={asset.name}
-                                    fill
-                                    style={{ objectFit: 'cover' }}
-                                />
-                            )}
+                            <InvitationCard
+                                event={DUMMY_EVENT as any}
+                                theme={theme}
+                                groomName={undefined as unknown as string}
+                                brideName={undefined as unknown as string}
+                                groomParents={undefined}
+                                brideParents={undefined}
+                                customImage={asset.image}
+                            />
                             <div style={{
                                 position: 'absolute',
                                 bottom: '10px',
@@ -425,32 +429,15 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
                             className={styles.mainImageWrapper}
                             onClick={() => setPreviewIndex(selectedAssetIndex)}
                         >
-                            {assets[selectedAssetIndex].image.endsWith('.html') ? (
-                                <InvitationCard
-                                    event={DUMMY_EVENT as any}
-                                    theme={theme}
-                                    groomName={undefined as unknown as string}
-                                    brideName={undefined as unknown as string}
-                                    groomParents={undefined}
-                                    brideParents={undefined}
-                                    customImage={assets[selectedAssetIndex].image}
-                                />
-                            ) : (
-                                <Image
-                                    src={assets[selectedAssetIndex].image}
-                                    alt={assets[selectedAssetIndex].name}
-                                    fill
-                                    style={{
-                                        objectFit: 'contain',
-                                        zIndex: 2
-                                    }}
-                                    priority
-                                    onError={(e) => {
-                                        const target = e.target as HTMLImageElement;
-                                        target.style.display = 'none';
-                                    }}
-                                />
-                            )}
+                            <InvitationCard
+                                event={DUMMY_EVENT as any}
+                                theme={theme}
+                                groomName={undefined as unknown as string}
+                                brideName={undefined as unknown as string}
+                                groomParents={undefined}
+                                brideParents={undefined}
+                                customImage={assets[selectedAssetIndex].image}
+                            />
                             <div style={{
                                 position: 'absolute',
                                 bottom: '1rem',
@@ -492,24 +479,15 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
                                     )}
                                     onClick={() => setSelectedAssetIndex(index)}
                                 >
-                                    {asset.image.endsWith('.html') ? (
-                                        <InvitationCard
-                                            event={DUMMY_EVENT as any}
-                                            theme={theme}
-                                            groomName={undefined as unknown as string}
-                                            brideName={undefined as unknown as string}
-                                            groomParents={undefined}
-                                            brideParents={undefined}
-                                            customImage={asset.image}
-                                        />
-                                    ) : (
-                                        <Image
-                                            src={asset.image}
-                                            alt={asset.name}
-                                            fill
-                                            style={{ objectFit: 'cover' }}
-                                        />
-                                    )}
+                                    <InvitationCard
+                                        event={DUMMY_EVENT as any}
+                                        theme={theme}
+                                        groomName={undefined as unknown as string}
+                                        brideName={undefined as unknown as string}
+                                        groomParents={undefined}
+                                        brideParents={undefined}
+                                        customImage={asset.image}
+                                    />
                                 </div>
                             ))}
                         </div>
@@ -569,14 +547,16 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
                             <span className={styles.currentPrice}>₹ {DYNAMIC_PLANS[selectedPlan].price}</span>
                             <span className={styles.originalPrice}>₹ {DYNAMIC_PLANS[selectedPlan].originalPrice}</span>
                             {(() => {
-                                const price = parseInt(DYNAMIC_PLANS[selectedPlan].price.replace(/,/g, ''));
-                                const original = parseInt(DYNAMIC_PLANS[selectedPlan].originalPrice.replace(/,/g, ''));
-                                const discount = Math.round(((original - price) / original) * 100);
-                                return (
+                                const priceStr = DYNAMIC_PLANS[selectedPlan].price?.toString() || "0";
+                                const originalStr = DYNAMIC_PLANS[selectedPlan].originalPrice?.toString() || "0";
+                                const price = parseInt(priceStr.replace(/,/g, '')) || 0;
+                                const original = parseInt(originalStr.replace(/,/g, '')) || 0;
+                                const discount = original > 0 ? Math.round(((original - price) / original) * 100) : 0;
+                                return discount > 0 ? (
                                     <span className={styles.discountBadge}>
                                         {discount}% OFF
                                     </span>
-                                );
+                                ) : null;
                             })()}
                         </div>
 
@@ -723,29 +703,15 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
                         </button>
 
                         <div className={styles.previewImageWrapper} style={{ borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-                            {assets[previewIndex].image.endsWith('.html') ? (
-                                <InvitationCard
-                                    event={DUMMY_EVENT as any}
-                                    theme={theme}
-                                    groomName={undefined as unknown as string}
-                                    brideName={undefined as unknown as string}
-                                    groomParents={undefined}
-                                    brideParents={undefined}
-                                    customImage={assets[previewIndex].image}
-                                />
-                            ) : (
-                                <Image
-                                    src={assets[previewIndex].image}
-                                    alt={assets[previewIndex].name}
-                                    fill
-                                    style={{ objectFit: 'contain', zIndex: 2 }}
-                                    priority
-                                    onError={(e) => {
-                                        const target = e.target as HTMLImageElement;
-                                        target.style.display = 'none';
-                                    }}
-                                />
-                            )}
+                            <InvitationCard
+                                        event={DUMMY_EVENT as any}
+                                        theme={theme}
+                                        groomName={undefined as unknown as string}
+                                        brideName={undefined as unknown as string}
+                                        groomParents={undefined}
+                                        brideParents={undefined}
+                                        customImage={assets[previewIndex].image}
+                                    />
                         </div>
 
                         <div className={styles.previewInfo}>
