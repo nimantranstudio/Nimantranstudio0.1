@@ -143,7 +143,7 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
 
         const updateContent = () => {
             const doc = iframeRef.current?.contentDocument || iframeRef.current?.contentWindow?.document;
-            if (!doc) return;
+            if (!doc || !doc.body || !doc.head) return;
 
             const getDefaultHeading = (eName: string) => {
                 const n = (eName || '').toLowerCase();

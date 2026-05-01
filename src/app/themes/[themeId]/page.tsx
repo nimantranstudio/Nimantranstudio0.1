@@ -286,9 +286,14 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
         const allowedItems = currentPackage ? JSON.parse(currentPackage.allowedItems || '[]') : [];
         
         const filtered = activeBundle.bundleItems
-            .filter((item: any) => !currentPackage || allowedItems.includes(item.eventId))
+            .filter((item: any) => {
+                if (!currentPackage) return true;
+                if (!allowedItems || allowedItems.length === 0) return true;
+                if (!item.eventId) return true;
+                return allowedItems.includes(item.eventId);
+            })
             .map((item: any) => ({
-                name: item.event?.eventName || 'Design',
+                name: item.event?.eventName || item.templateName || 'Design',
                 image: item.templatePath
             }));
             
