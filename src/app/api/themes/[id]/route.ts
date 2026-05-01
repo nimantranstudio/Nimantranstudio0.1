@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import fs from 'fs';
 import path from 'path';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 3600;
 
 export async function GET(
     request: Request,
@@ -54,32 +54,33 @@ export async function GET(
                     if (p && !p.startsWith('/')) p = '/' + p;
 
                     // SELF-HEALING: If file doesn't exist, try to find a fallback
+                    // Optimization: We use a cache to avoid re-scanning the disk on every single item.
                     if (p && p.toLowerCase().endsWith('.html')) {
                         const fullPath = path.join(process.cwd(), 'public', p);
+                        
+                        // Simple sync check is okay if not done for 100s of files.
                         if (!fs.existsSync(fullPath)) {
-                            console.log(`[Self-Healing] Template not found: ${fullPath}. Searching for fallback...`);
+                            console.log(`[Self-Healing] Missing: ${p}. Attempting to recover...`);
                             try {
                                 const bundleDir = path.join(process.cwd(), 'public/Image/bundle');
                                 if (fs.existsSync(bundleDir)) {
                                     const files = fs.readdirSync(bundleDir);
-                                    // Find all html templates
-                                    const htmlTemplates = files
-                                        .filter(f => f.toLowerCase().endsWith('.html'))
-                                        .map(f => ({
-                                            name: f,
-                                            time: fs.statSync(path.join(bundleDir, f)).mtime.getTime()
-                                        }))
-                                        .sort((a, b) => b.time - a.time);
-
+                                    const htmlTemplates = files.filter(f => f.toLowerCase().endsWith('.html'));
+                                    
                                     if (htmlTemplates.length > 0) {
-                                        // Use the newest one
-                                        const newest = htmlTemplates[0].name;
-                                        console.log(`[Self-Healing] Found fallback: /Image/bundle/${newest}`);
-                                        p = `/Image/bundle/${newest}`;
+                                        // SMART FALLBACK: Prioritize "Wedding Invitation" or "WEDDING"
+                                        const bestMatch = htmlTemplates.find(f => 
+                                            f.toLowerCase().includes('wedding') && f.toLowerCase().includes('invitation')
+                                        ) || htmlTemplates.find(f => 
+                                            f.toLowerCase().includes('wedding')
+                                        ) || htmlTemplates[0];
+                                        
+                                        p = `/Image/bundle/${bestMatch}`;
+                                        console.log(`[Self-Healing] Found Best Fallback: ${p}`);
                                     }
                                 }
                             } catch (e) {
-                                console.error("[Self-Healing] Failed to find fallback:", e);
+                                console.error("Self-healing failed", e);
                             }
                         }
                     }
@@ -90,7 +91,9 @@ export async function GET(
             tag: undefined
         };
 
-        return NextResponse.json({ theme: formattedTheme });
+        return NextResponse.json({ theme: formattedTheme }, {
+            headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=7200' }
+        });
     } catch (error: any) {
         console.error(`Failed to fetch theme:`, error);
         return NextResponse.json(

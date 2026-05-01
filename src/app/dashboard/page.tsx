@@ -145,9 +145,57 @@ export default function DashboardPage() {
                                                 </h4>
                                                 <p className={styles.eventMeta}>{event.eventType || 'Main Celebration'} • {event.date || 'TBD'}</p>
                                             </div>
-                                            <div className={styles.responseCount}>
-                                                <span className={styles.countNumber}>{idx === 0 ? '34' : idx === 1 ? '12' : '18'}</span>
-                                                <span className={styles.countLabel}>Responses</span>
+                                            <div className={styles.eventPoster}>
+                                                {(() => {
+                                                    const item = bundleItems?.find(bi => {
+                                                        const biType = (bi.eventType || bi.templateName || '').toUpperCase();
+                                                        const eventKey = (event.eventType || event.id || event.name || '').toUpperCase();
+                                                        // Check for exact match or partial match (e.g. "Haldi" in "Haldi Invitation")
+                                                        return biType === eventKey || 
+                                                               (biType.length > 0 && eventKey.includes(biType)) ||
+                                                               (eventKey.length > 0 && biType.includes(eventKey));
+                                                    });
+                                                    
+                                                    let poster = item?.templatePath;
+                                                    if (poster) {
+                                                        // 1. Handle common prefix issues
+                                                        if (poster.startsWith('public/')) poster = '/' + poster.substring(7);
+                                                        
+                                                        // 2. If it's just a filename, assume it's in /Image/bundle/
+                                                        if (!poster.includes('/') && !poster.startsWith('http')) {
+                                                            poster = '/Image/bundle/' + poster;
+                                                        }
+                                                        
+                                                        // 3. Ensure leading slash
+                                                        if (!poster.startsWith('/') && !poster.startsWith('http')) poster = '/' + poster;
+                                                        
+                                                        // 4. Handle HTML templates - try to find an image version
+                                                        if (poster.toLowerCase().endsWith('.html')) {
+                                                            poster = poster.replace('.html', '.png');
+                                                        }
+                                                    }
+                                                    
+                                                    return poster ? (
+                                                        <img 
+                                                            src={poster} 
+                                                            alt={event.name} 
+                                                            className={styles.posterImage}
+                                                            onError={(e) => {
+                                                                // If the PNG fallback also fails, show the placeholder
+                                                                (e.target as HTMLImageElement).style.display = 'none';
+                                                                const parent = (e.target as HTMLImageElement).parentElement;
+                                                                if (parent) {
+                                                                    const span = document.createElement('span');
+                                                                    span.className = styles.posterPlaceholder;
+                                                                    span.innerText = 'Poster\nNot Available';
+                                                                    parent.appendChild(span);
+                                                                }
+                                                            }}
+                                                        />
+                                                    ) : (
+                                                        <span className={styles.posterPlaceholder}>Poster<br/>Not Available</span>
+                                                    );
+                                                })()}
                                             </div>
                                         </div>
                                     </div>

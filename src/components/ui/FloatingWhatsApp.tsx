@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import styles from './FloatingWhatsApp.module.css';
 
-const WHATSAPP_NUMBER = "918884678194";
+const WHATSAPP_NUMBER = "918010581916";
 const MESSAGE = "Hi Nimantran Studio, I'm interested in creating a digital wedding invitation. I'd love to learn more!";
 
 export const FloatingWhatsApp = () => {

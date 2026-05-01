@@ -68,7 +68,7 @@ const sections = [
     {
         title: '9. Contact Us',
         content: [
-            'For any privacy-related queries or data deletion requests, email us at hello@nimantranstudio.com or call +91 88846 78194.',
+            'For any privacy-related queries or data deletion requests, email us at hello@nimantranstudio.com or call +91 80105 81916.',
         ],
     },
 ];

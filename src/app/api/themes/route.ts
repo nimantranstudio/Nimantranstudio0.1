@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-// Cache disabled for real-time updates from admin
-export const dynamic = 'force-dynamic';
+// Cache enabled for 60 seconds, updates from admin propagate quickly
+export const revalidate = 60;
 
 // Fallback static themes for database connection failure
 const STATIC_THEMES = [

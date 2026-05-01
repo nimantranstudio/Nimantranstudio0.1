@@ -9,8 +9,8 @@
   --primary: #C8A951;
   --primary-foreground: #FFFFFF;
 
-  /* Secondary Accent - Deep Desaturated Teal */
-  --secondary: #0A252C;
+  /* Secondary Accent - Black */
+  --secondary: #000000;
   --secondary-foreground: #FFFFFF;
 
   /* Accent - Removed bright red, using muted gold alternative */

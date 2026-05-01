@@ -837,7 +837,7 @@ function PreviewContent() {
                                     <Headphones size={24} className={styles.infoIcon} />
                                     <div className={styles.infoContent}>
                                         <span className={styles.infoLabel}>Need Help? Contact Us</span>
-                                        <span className={styles.infoValue}>+91 96250 28649</span>
+                                        <span className={styles.infoValue}>+91 80105 81916</span>
                                     </div>
                                 </div>
                                 <div className={styles.infoBoxHalf}>

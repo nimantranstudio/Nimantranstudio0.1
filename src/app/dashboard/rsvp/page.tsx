@@ -130,7 +130,8 @@ export default function RSVPListPage() {
                         </div>
                     )}
 
-                    {[...events].reverse().map((evt) => {
+                    {/* Filter to only show Wedding event or the primary guest list */}
+                    {events.filter(e => e.eventType === 'Wedding' || e.name.toLowerCase().includes('wedding')).slice(0, 1).map((evt) => {
                         const rsvpLink = getRsvpLink();
 
                         return (

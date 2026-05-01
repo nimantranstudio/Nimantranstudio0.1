@@ -93,7 +93,7 @@
 
 .title {
     font-size: 1.5rem;
-    color: #08232B;
+    color: #000000;
     /* Deep Teal */
     font-weight: 700;
     margin-bottom: 0.5rem;
@@ -121,7 +121,7 @@
 }
 
 .input:focus {
-    border-color: #08232B;
+    border-color: #000000;
     box-shadow: 0 0 0 3px rgba(8, 35, 43, 0.1);
     background-color: white;
 }
@@ -138,7 +138,7 @@
     margin-top: 0.25rem;
     width: 1.25rem;
     height: 1.25rem;
-    accent-color: #08232B;
+    accent-color: #000000;
     cursor: pointer;
 }
 
@@ -153,7 +153,7 @@
     width: 100%;
     padding: 1rem;
     border-radius: 100px;
-    background-color: #08232B;
+    background-color: #000000;
     color: white;
     font-size: 1rem;
     font-weight: 600;
@@ -163,7 +163,7 @@
 }
 
 .submitBtn:hover {
-    background-color: #061C22;
+    background-color: #111111;
     transform: translateY(-2px);
 }
 

@@ -145,12 +145,15 @@ export default function RSVPCreatePage() {
                                     onChange={(e) => setEventType(e.target.value)}
                                 >
                                     <option value="Wedding">Wedding</option>
+                                    {/* Temporarily disabled other event types as requested */}
+                                    {/* 
                                     <option value="Reception">Reception</option>
                                     <option value="Sangeet">Sangeet</option>
                                     <option value="Haldi">Haldi</option>
                                     <option value="Engagement">Engagement</option>
                                     <option value="Birthday">Birthday</option>
                                     <option value="Other">Other</option>
+                                    */}
                                 </select>
                             </div>
                             <div>

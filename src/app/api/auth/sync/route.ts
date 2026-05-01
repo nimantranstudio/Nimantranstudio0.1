@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 
 import { adminAuth } from '@/lib/firebase-admin';
 
-const ADMIN_MOBILE = '8884678194';
+const ADMIN_MOBILE = '8010581916';
 
 export async function POST(request: Request) {
     try {

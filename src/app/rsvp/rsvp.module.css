@@ -32,7 +32,7 @@
 
 .introTitle {
     font-size: 4rem;
-    color: #08232B;
+    color: #000000;
     font-family: var(--font-serif);
     line-height: 1.1;
     margin-bottom: 2rem;
@@ -80,7 +80,7 @@
 
 .offerTitle {
     font-size: 1.5rem;
-    color: #08232B;
+    color: #000000;
     font-family: var(--font-serif);
     margin-bottom: 0.5rem;
     display: flex;
@@ -103,7 +103,7 @@
 .greenBtn {
     background-color: #E2BB61;
     /* Balanced Light Gold */
-    color: #08232B;
+    color: #000000;
     padding: 1.25rem 3.5rem;
     border-radius: 14px;
     font-size: 1.125rem;
@@ -182,7 +182,7 @@
 
 .title {
     font-size: 3.5rem;
-    color: #08232B;
+    color: #000000;
     /* Deep Teal */
     font-family: var(--font-serif);
     margin-bottom: 2rem;
@@ -199,7 +199,7 @@
 
 .ctaButton {
     display: inline-block;
-    background-color: #08232B;
+    background-color: #000000;
     color: white;
     padding: 1.25rem 3rem;
     border-radius: 100px;
@@ -214,7 +214,7 @@
 .ctaButton:hover {
     transform: translateY(-4px);
     box-shadow: 0 15px 30px rgba(8, 35, 43, 0.3);
-    background-color: #061C22;
+    background-color: #111111;
 }
 
 .featuresList {
@@ -238,7 +238,7 @@
 
 .featureItem p {
     font-size: 1.25rem;
-    color: #08232B;
+    color: #000000;
     /* Deep Teal */
     line-height: 1.4;
     font-family: var(--font-sans);
@@ -288,7 +288,7 @@
 
 .sectionTitle {
     font-size: 3rem;
-    color: #08232B;
+    color: #000000;
     font-family: var(--font-serif);
     text-align: center;
     margin-bottom: 2.5rem;
@@ -373,7 +373,7 @@
 
 .cardTitle {
     font-size: 1.5rem;
-    color: #08232B;
+    color: #000000;
     /* Deep Teal */
     font-family: var(--font-serif);
     margin-bottom: 1rem;

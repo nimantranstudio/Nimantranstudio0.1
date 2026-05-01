@@ -49,7 +49,7 @@ export default function PricingPage() {
         <main style={{ backgroundColor: 'var(--background)', minHeight: '100vh' }}>
 
             {/* Hero */}
-            <section style={{ padding: '5rem 1.5rem 4rem', textAlign: 'center', background: 'var(--secondary)', color: '#fff' }}>
+            <section style={{ padding: '5rem 1.5rem 4rem', textAlign: 'center', background: '#000', color: '#fff' }}>
                 <div className="container">
                     <p style={{ letterSpacing: '0.15em', fontSize: '0.75rem', color: '#C8A951', fontWeight: 600, marginBottom: '1rem' }}>
                         PRICING
@@ -77,18 +77,22 @@ export default function PricingPage() {
                         <p style={{ letterSpacing: '0.12em', fontSize: '0.7rem', color: 'var(--primary)', fontWeight: 700, marginBottom: '1rem' }}>
                             WHATSAPP ESSENTIALS PLAN
                         </p>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', marginBottom: '0.25rem' }}>
+                            <span style={{ fontSize: '0.95rem', color: '#94A3B8', textDecoration: 'line-through', fontWeight: 500 }}>₹2,500</span>
+                            <span style={{ background: '#DCFCE7', color: '#15803D', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.06em', padding: '3px 10px', borderRadius: '100px' }}>SAVE ₹1,501</span>
+                        </div>
                         <div style={{ marginBottom: '0.5rem' }}>
                             <span style={{ fontFamily: 'var(--font-serif)', fontSize: '4rem', fontWeight: 700, color: 'var(--secondary)', lineHeight: 1 }}>
                                 <span style={{ fontSize: '2rem', verticalAlign: 'super' }}>₹</span>999
                             </span>
                         </div>
-                        <p style={{ color: '#64748B', fontSize: '0.875rem', marginBottom: '2rem' }}>one-time payment</p>
+                        <p style={{ color: '#64748B', fontSize: '0.875rem', marginBottom: '2rem' }}>one-time payment · no subscription ever</p>
 
                         <Link
                             href="/themes"
                             style={{
                                 display: 'block',
-                                background: 'var(--secondary)',
+                                background: '#000',
                                 color: '#fff',
                                 padding: '1rem',
                                 borderRadius: '8px',
@@ -96,11 +100,14 @@ export default function PricingPage() {
                                 fontSize: '0.9rem',
                                 letterSpacing: '0.05em',
                                 textDecoration: 'none',
-                                marginBottom: '2rem',
+                                marginBottom: '0.75rem',
                             }}
                         >
                             GET STARTED — ₹999
                         </Link>
+                        <p style={{ textAlign: 'center', fontSize: '0.78rem', color: '#94A3B8', marginBottom: '1.5rem', lineHeight: 1.6 }}>
+                            Preview free · 7-day refund guarantee · Trusted by Indian couples
+                        </p>
 
                         <ul style={{ listStyle: 'none', padding: 0, margin: 0, textAlign: 'left' }}>
                             {features.map((f) => (

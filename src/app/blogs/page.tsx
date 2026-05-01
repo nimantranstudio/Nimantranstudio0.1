@@ -1,40 +1,23 @@
-"use client";
-
-import Image from "next/image";
-import Link from "next/link";
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import Image from 'next/image';
+import { MoveRight, Clock, BookOpen } from 'lucide-react';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
-import styles from "./blogs.module.css";
-import { MoveRight } from "lucide-react";
-import { motion } from "framer-motion";
+import { BLOG_POSTS } from './blogData';
+import styles from './blogs.module.css';
 
-const BLOG_POSTS = [
-    // ... (posts remain same, but I can't skip lines in replacement) 
-    // Wait, replacing the whole top part is better.
-    {
-        id: 1,
-        title: "The Ultimate Guide to WhatsApp Wedding Invitations",
-        category: "SHARING TIPS",
-        date: "OCT 24, 2024",
-        excerpt: "How to share your joy with relatives and friends in a way that feels personal, respectful, and modern.",
-        image: "https://images.unsplash.com/photo-1519741497674-611481863552?q=80\u0026w=1000\u0026auto=format\u0026fit=crop"
+export const metadata: Metadata = {
+    title: 'Wedding Planning Blog & Insights | Nimantran Studio',
+    description: 'Expert advice on digital wedding invitations, RSVP management, WhatsApp wedding cards, and wedding planning tips for Indian couples. Written by the Nimantran Studio team.',
+    openGraph: {
+        title: 'Wedding Planning Blog | Nimantran Studio',
+        description: 'Expert advice for Indian couples on digital invitations, RSVP management, and wedding planning.',
+        type: 'website',
     },
-    {
-        id: 2,
-        title: "How to Manage Guest Lists for Large Indian Weddings",
-        category: "COORDINATION",
-        date: "OCT 20, 2024",
-        excerpt: "Streamlining your RSVP process using digital tools without losing the 'family-first' touch.",
-        image: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80\u0026w=1000\u0026auto=format\u0026fit=crop"
-    },
-    {
-        id: 3,
-        title: "Traditional vs. Modern: Finding the Perfect Theme",
-        category: "DESIGN",
-        date: "OCT 15, 2024",
-        excerpt: "Why consistency in design across all your wedding functions creates a more memorable experience for your guests.",
-        image: "https://images.unsplash.com/photo-1520854221256-17451cc331bf?q=80\u0026w=1000\u0026auto=format\u0026fit=crop"
-    }
-];
+};
+
+const featured = BLOG_POSTS[0];
+const rest = BLOG_POSTS.slice(1);
 
 export default function BlogsPage() {
     return (
@@ -44,42 +27,55 @@ export default function BlogsPage() {
                     <Breadcrumbs
                         items={[
                             { label: 'Home', href: '/' },
-                            { label: 'Blogs', active: true },
+                            { label: 'Blog', active: true },
                         ]}
                     />
                 </div>
             </header>
 
             <div className="container">
+                {/* Hero */}
                 <div className={styles.hero}>
-                    <motion.h1
-                        className={styles.title}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.8 }}
-                    >
-                        Wedding Insights
-                    </motion.h1>
-                    <motion.p
-                        className={styles.subtitle}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.8, delay: 0.2 }}
-                    >
-                        Thoughtful advice on wedding coordination, digital etiquette, and creating a celebration that stays in hearts forever.
-                    </motion.p>
+                    <span className={styles.heroEyebrow}>THE NIMANTRAN JOURNAL</span>
+                    <h1 className={styles.title}>Wedding Insights</h1>
+                    <p className={styles.subtitle}>
+                        Expert advice on digital invitations, RSVP management, and creating a celebration your guests will remember.
+                    </p>
                 </div>
 
+                {/* Featured Post */}
+                <Link href={`/blogs/${featured.slug}`} className={styles.featuredCard}>
+                    <div className={styles.featuredImage}>
+                        <Image
+                            src={featured.image}
+                            alt={featured.title}
+                            fill
+                            className={styles.image}
+                            priority
+                            sizes="(max-width: 768px) 100vw, 60vw"
+                        />
+                        <span className={styles.featuredBadge}>Featured</span>
+                    </div>
+                    <div className={styles.featuredContent}>
+                        <div className={styles.meta}>
+                            <span className={styles.category}>{featured.category}</span>
+                            <span className={styles.separator}>·</span>
+                            <span className={styles.date}>{featured.date}</span>
+                            <span className={styles.separator}>·</span>
+                            <span className={styles.readTime}><Clock size={13} /> {featured.readTime}</span>
+                        </div>
+                        <h2 className={styles.featuredTitle}>{featured.title}</h2>
+                        <p className={styles.excerpt}>{featured.excerpt}</p>
+                        <span className={styles.readMore}>
+                            READ ARTICLE <MoveRight size={16} />
+                        </span>
+                    </div>
+                </Link>
+
+                {/* Post Grid */}
                 <section className={styles.grid}>
-                    {BLOG_POSTS.map((post, index) => (
-                        <motion.article
-                            key={post.id}
-                            className={styles.card}
-                            initial={{ opacity: 0, y: 30 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.6, delay: index * 0.1 }}
-                        >
+                    {rest.map((post) => (
+                        <Link key={post.slug} href={`/blogs/${post.slug}`} className={styles.card}>
                             <div className={styles.imageWrapper}>
                                 <Image
                                     src={post.image}
@@ -89,19 +85,33 @@ export default function BlogsPage() {
                                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                                 />
                             </div>
-                            <div className={styles.meta}>
-                                <span className={styles.category}>{post.category}</span>
-                                <span className={styles.separator}>•</span>
-                                <span className={styles.date}>{post.date}</span>
+                            <div className={styles.cardBody}>
+                                <div className={styles.meta}>
+                                    <span className={styles.category}>{post.category}</span>
+                                    <span className={styles.separator}>·</span>
+                                    <span className={styles.date}>{post.date}</span>
+                                </div>
+                                <h2 className={styles.blogTitle}>{post.title}</h2>
+                                <p className={styles.excerpt}>{post.excerpt}</p>
+                                <span className={styles.readMore}>
+                                    READ ARTICLE <MoveRight size={16} />
+                                </span>
                             </div>
-                            <h2 className={styles.blogTitle}>{post.title}</h2>
-                            <p className={styles.excerpt}>{post.excerpt}</p>
-                            <Link href={`/blogs/${post.id}`} className={styles.readMore}>
-                                READ ARTICLE <MoveRight size={18} />
-                            </Link>
-                        </motion.article>
+                        </Link>
                     ))}
                 </section>
+
+                {/* Newsletter CTA */}
+                <div className={styles.newsletter}>
+                    <BookOpen size={32} className={styles.newsletterIcon} />
+                    <h3 className={styles.newsletterTitle}>More wedding insights, straight to you</h3>
+                    <p className={styles.newsletterText}>
+                        Join thousands of Indian couples who read our weekly guide on planning a stress-free wedding.
+                    </p>
+                    <Link href="https://nimantranstudio.com" className={styles.newsletterBtn}>
+                        Start Planning Your Wedding →
+                    </Link>
+                </div>
             </div>
         </main>
     );

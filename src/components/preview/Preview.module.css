@@ -798,7 +798,7 @@
     padding: 0 15%;
     /* Constrain width to stay inside the arch */
     text-align: center;
-    color: var(--theme-primary, #08232B);
+    color: var(--theme-primary, #000000);
     text-shadow: 0 1px 3px rgba(255, 255, 255, 0.8);
 }
 

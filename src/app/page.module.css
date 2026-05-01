@@ -259,15 +259,33 @@
 }
 
 .heroNote {
-  font-size: 1rem;
+  font-size: 0.88rem;
   color: #888;
   margin-top: 1.25rem;
   font-weight: 400;
   letter-spacing: 0.01em;
 }
 
+.rsvpTextLink {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #555;
+  text-decoration: none;
+  padding: 0;
+  min-width: unset !important;
+  height: unset !important;
+  transition: color 0.2s;
+}
+
+.rsvpTextLink:hover {
+  color: #111;
+}
+
 .actions a,
-.actions button {
+.actions button:not(.rsvpTextLink) {
   position: relative !important;
   overflow: hidden !important;
   transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease !important;
@@ -280,13 +298,13 @@
 }
 
 .actions a:hover,
-.actions button:hover {
+.actions button:not(.rsvpTextLink):hover {
   transform: scale(1.05) !important;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
 }
 
 .actions a::after,
-.actions button::after {
+.actions button:not(.rsvpTextLink)::after {
   content: "";
   position: absolute;
   top: 0;
@@ -1361,8 +1379,8 @@
   font-size: 3.5rem;
   font-family: var(--font-serif), serif;
   margin-bottom: 2rem;
-  color: #08232B;
-  /* Deep Teal */
+  color: #000000;
+  /* Deep Black */
   line-height: 1.1;
 }
 
@@ -1389,7 +1407,7 @@
 }
 
 .rsvpBtn {
-  background-color: #08232B;
+  background-color: #000000;
   color: white;
   padding: 1rem 2rem;
   border-radius: 50px;
@@ -1403,7 +1421,7 @@
 
 .rsvpBtn:hover {
   opacity: 0.9;
-  background-color: #061C22;
+  background-color: #111111;
 }
 
 .checkIcon {
@@ -1788,7 +1806,7 @@
 /* Features Section Dark */
 .featuresDark {
   padding: 8rem 0;
-  background-color: #08232B;
+  background-color: #000000;
   color: #fff;
 }
 

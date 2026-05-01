@@ -26,7 +26,7 @@
     font-family: var(--font-serif);
     font-size: 1.75rem;
     /* Slightly smaller title */
-    color: #08232B;
+    color: #000000;
     margin-bottom: 0.5rem;
 }
 
@@ -81,7 +81,7 @@
 }
 
 .input:focus {
-    border-color: #08232B;
+    border-color: #000000;
     /* Deep Teal focus */
     box-shadow: 0 0 0 3px rgba(8, 35, 43, 0.05);
 }
@@ -101,7 +101,7 @@
 .linkButton {
     background: none;
     border: none;
-    color: #08232B;
+    color: #000000;
     text-decoration: underline;
     cursor: pointer;
     font-size: 0.875rem;
@@ -111,7 +111,7 @@
 }
 
 .linkButton:hover {
-    color: #061C22;
+    color: #111111;
 }
 
 @keyframes fadeIn {
@@ -149,8 +149,8 @@
 }
 
 .tab.active {
-    color: #08232B;
-    border-bottom-color: #08232B;
+    color: #000000;
+    border-bottom-color: #000000;
     font-weight: 600;
 }
 

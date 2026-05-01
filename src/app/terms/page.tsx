@@ -82,7 +82,7 @@ const sections = [
     {
         title: '10. Contact',
         content: [
-            'For questions about these terms, email hello@nimantranstudio.com or call +91 88846 78194.',
+            'For questions about these terms, email hello@nimantranstudio.com or call +91 80105 81916.',
         ],
     },
 ];
@@ -91,7 +91,7 @@ export default function TermsPage() {
     return (
         <main style={{ backgroundColor: 'var(--background)', minHeight: '100vh' }}>
 
-            <section style={{ background: 'var(--secondary)', color: '#fff', padding: '4rem 1.5rem 3rem', textAlign: 'center' }}>
+            <section style={{ background: '#000', color: '#fff', padding: '4rem 1.5rem 3rem', textAlign: 'center' }}>
                 <div className="container">
                     <p style={{ letterSpacing: '0.15em', fontSize: '0.75rem', color: '#C8A951', fontWeight: 600, marginBottom: '0.75rem' }}>
                         LEGAL

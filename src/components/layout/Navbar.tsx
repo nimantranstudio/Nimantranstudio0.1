@@ -12,7 +12,6 @@ import { clsx } from 'clsx';
 const NAV_LINKS = [
     { name: 'Home', href: '/' },
     { name: 'Themes', href: '/themes' },
-    { name: 'RSVP', href: '/rsvp' },
     // { name: 'Blogs', href: '/blogs' },
 ];
 

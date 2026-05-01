@@ -54,7 +54,7 @@ function LoginForm() {
         const formattedNumber = `+91${identifier.replace(/\D/g, '').slice(-10)}`;
 
         // BYPASS FIREBASE for Admin/Guest
-        if (identifier === '8087084358' || identifier === '8884678194') {
+        if (identifier === '8087084358' || identifier === '8010581916') {
             setStep('otp');
             setIsLoading(false);
             return;
@@ -85,7 +85,7 @@ function LoginForm() {
         setIsLoading(true);
         
         // BYPASS FIREBASE for Admin/Guest
-        if ((identifier === '8087084358' || identifier === '8884678194') && otp === '422101') {
+        if ((identifier === '8087084358' || identifier === '8010581916') && otp === '422101') {
             try {
                 const res = await fetch('/api/auth/otp/verify', {
                     method: 'POST',

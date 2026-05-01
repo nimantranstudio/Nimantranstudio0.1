@@ -934,9 +934,9 @@
 
 .discountBadge {
     display: inline-block;
-    background-color: #E0F7FA;
-    /* Pale Teal */
-    color: #08232B;
+    background-color: #F3F4F6;
+    /* Light Grey */
+    color: #000000;
     /* Deep Teal */
     font-size: 0.75rem;
     font-weight: 700;
@@ -1426,4 +1426,21 @@
     .title {
         font-size: 1.75rem;
     }
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
 }

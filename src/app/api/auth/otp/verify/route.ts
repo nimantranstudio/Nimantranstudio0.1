@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-const ADMIN_MOBILE = '8884678194'; // Updated admin number
+const ADMIN_MOBILE = '8010581916'; // Updated admin number
 
 export async function POST(request: Request) {
     try {

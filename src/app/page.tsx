@@ -1,108 +1,77 @@
-"use client";
-
-import Link from "next/link";
-import { useRouter } from "next/navigation";
 import styles from "./page.module.css";
-import Image from "next/image";
-import { ArrowRight, Check, Sparkles, Heart, Smartphone, Users, CreditCard, Clock, Printer, Languages, ShieldCheck, X, Play } from "lucide-react";
-import { clsx } from 'clsx';
-import { motion, AnimatePresence } from "framer-motion";
-import { ThemeCard } from "@/components/ui/ThemeCard";
+import { Sparkles, Heart, Smartphone, Users, CreditCard, Clock, Printer, Languages, ShieldCheck } from "lucide-react";
 import HeroGradient from "@/components/ui/HeroGradient";
 import { FloatingHearts } from "@/components/ui/FloatingHearts";
 import dynamic from "next/dynamic";
-import { useWeddingStore } from "@/store/wedding-store";
-
-// Lazy load heavy below-the-fold components
-const PricingSection = dynamic(() => import("@/components/home/PricingSection").then(mod => mod.PricingSection), { ssr: false });
-const CTASection = dynamic(() => import("@/components/home/CTASection").then(mod => mod.CTASection), { ssr: false });
-const BundleGridSection = dynamic(() => import("@/components/home/BundleGridSection").then(mod => mod.BundleGridSection), { ssr: false });
-const RsvpFeatureSection = dynamic(() => import("@/components/home/RsvpFeatureSection").then(mod => mod.RsvpFeatureSection), { ssr: false });
-const FaqSection = dynamic(() => import("@/components/home/FaqSection").then(mod => mod.FaqSection), { ssr: false });
-const TestimonialSection = dynamic(() => import("@/components/home/TestimonialSection").then(mod => mod.TestimonialSection), { ssr: false });
 import HeroImage from "@/components/home/HeroImage";
-import { useState, useEffect } from "react";
-import type { Theme } from "@/lib/constants/themes";
+import { AnnouncementStrip } from "@/components/home/AnnouncementStrip";
+import { ThemeShowcase } from "@/components/home/ThemeShowcase";
+import { HeroActions } from "@/components/home/HeroActions";
+import { prisma } from "@/lib/prisma";
+import * as motion from "framer-motion/client";
 
-export default function Home() {
-  const router = useRouter();
-  const { isAuthenticated } = useWeddingStore();
-  const [themes, setThemes] = useState<Theme[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [showStrip, setShowStrip] = useState(true);
-  useEffect(() => {
-    const fetchThemes = async () => {
-      try {
-        const res = await fetch('/api/themes');
-        const data = await res.json();
-        if (data.themes) {
-          setThemes(data.themes);
-        }
-      } catch (error) {
-        console.error('Failed to fetch themes:', error);
-      } finally {
-        setLoading(false);
+import { PricingSection } from "@/components/home/PricingSection";
+import { CTASection } from "@/components/home/CTASection";
+import { BundleGridSection } from "@/components/home/BundleGridSection";
+import { RsvpFeatureSection } from "@/components/home/RsvpFeatureSection";
+import { FaqSection } from "@/components/home/FaqSection";
+import { TestimonialSection } from "@/components/home/TestimonialSection";
+
+async function getThemes() {
+  try {
+    const themes = await prisma.theme.findMany({
+      where: { isActive: true },
+      orderBy: { createdAt: 'desc' },
+      take: 4,
+      include: { 
+        bundles: {
+          include: { 
+            bundleInvoices: true,
+            bundleItems: true
+          }
+        } 
       }
-    };
+    });
 
-    fetchThemes();
-  }, []);
+    return themes.map((theme: any) => ({
+      id: theme.id,
+      name: theme.name,
+      description: theme.description || '',
+      thumbnail: theme.thumbnailUrl || '/placeholder-theme.jpg',
+      previewImages: theme.previewImages ? JSON.parse(theme.previewImages as string) : [],
+      isBestSeller: theme.isBestSeller || false,
+      isPopular: theme.isPopular || false,
+      bundles: (theme.bundles || []).map((b: any) => ({
+        id: b.id,
+        name: b.BundleName,
+        whatsappPrice: b.whatsappPrice,
+        printablePrice: b.printablePrice,
+        completePrice: b.completePrice,
+        description: b.bundleDescription || '',
+        bundleInvoices: b.bundleInvoices,
+      }))
+    }));
+  } catch (error) {
+    console.error('Failed to fetch themes server-side:', error);
+    return [];
+  }
+}
 
-  const handleThemeSelect = (id: string) => {
-    router.push(`/themes/${id}`);
-  };
-
-  const handleCreateRSVP = () => {
-    if (isAuthenticated) {
-      router.push('/dashboard/rsvp');
-    } else {
-      router.push('/login?redirect=/dashboard/rsvp');
-    }
-  };
+export default async function Home() {
+  const themes = await getThemes();
 
   return (
     <main className={styles.main}>
-      {/* Announcement Strip - Now as floating animated text */}
-      <AnimatePresence>
-        {showStrip && (
-          <div className={styles.announcementContainer}>
-            <motion.div
-              className={styles.animatedTextWrapper}
-              animate={{ 
-                opacity: [0, 1, 1, 0],
-                scale: [0.98, 1, 1, 1.02]
-              }}
-              transition={{ 
-                duration: 6, 
-                repeat: Infinity, 
-                times: [0, 0.15, 0.85, 1],
-                ease: "easeInOut"
-              }}
-            >
-              <div className={styles.stripContent}>
-                <span className={styles.stripIcon}>✦</span>
-                <span className={styles.stripMessage}><strong>Launch Offer</strong> - Create Your Complete Wedding Invitation Suite in Minutes</span>
-                <span className={styles.stripBadge}>New<span className={styles.stripBadgeIcon}>🎉</span></span>
-              </div>
-            </motion.div>
-            <button className={styles.stripClose} onClick={() => setShowStrip(false)} aria-label="Close">
-              <X size={14} />
-            </button>
-          </div>
-        )}
-      </AnimatePresence>
+      <AnnouncementStrip />
 
-      {/* ... Hero Section ... */}
+      {/* Hero Section */}
       <section className={styles.hero}>
         <HeroGradient />
         <FloatingHearts />
-        {/* ... Motifs ... */}
 
         <div className={styles.heroContainer}>
           <div className={styles.heroContent}>
             <div className={styles.heroTextSection}>
-              {/* ... Title & Subtitle ... */}
-
               <motion.div
                 className={styles.trustedBadge}
                 initial={{ opacity: 0, y: 20 }}
@@ -125,23 +94,7 @@ export default function Home() {
                 </span>
               </motion.h1>
 
-
-              <motion.div
-                className={styles.actions}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.4 }}
-              >
-                <Link href="/themes" className="btn btn-primary">
-                  Create My Invitation
-                </Link>
-                <button
-                  onClick={handleCreateRSVP}
-                  className={clsx("btn btn-secondary", styles.secondaryBtn)}
-                >
-                  Create RSVP Event
-                </button>
-              </motion.div>
+              <HeroActions />
 
               <motion.p
                 className={styles.heroNote}
@@ -149,16 +102,11 @@ export default function Home() {
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.8, delay: 0.6 }}
               >
-                No design skills needed • Create in under 5 minutes • Family Approved
+                Preview free · Pay once, yours forever · Trusted by Indian couples
               </motion.p>
-
-
-
             </div>
             {/* Right Column - Hero Image */}
             <HeroImage />
-
-
           </div>
         </div>
       </section>
@@ -224,72 +172,12 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Feature Grid & RSVP Sections Replacing Old Bundle */}
       <BundleGridSection />
 
-      {/* Theme Showcase Section */}
-      <section className={styles.showcase}>
-        <div className="container">
-          <div className={styles.showcaseHeader}>
-            <motion.h2
-              className={styles.showcaseTitle}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8 }}
-            >
-              Choose your wedding theme
-            </motion.h2>
-            <motion.p
-              className={styles.showcaseSubtitle}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-            >
-              Select a visual language that resonates with your family's style.
-            </motion.p>
-          </div>
+      <ThemeShowcase initialThemes={themes} />
 
-          <div className={styles.showcaseGrid}>
-            {loading ? (
-              <div style={{ color: '#6b7280', gridColumn: '1/-1', textAlign: 'center' }}>Loading themes...</div>
-            ) : themes.length > 0 ? (
-              themes.slice(0, 4).map((theme, i) => (
-                <motion.div
-                  key={theme.id}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6, delay: i * 0.1 }}
-                >
-                  <ThemeCard
-                    theme={theme}
-                    onSelect={handleThemeSelect}
-                  />
-                </motion.div>
-              ))
-            ) : (
-              <div style={{ color: '#6b7280', gridColumn: '1/-1', textAlign: 'center' }}>No themes available at the moment.</div>
-            )}
-          </div>
-
-          <div className={styles.showcaseActions}>
-            <Link href="/themes" className="btn btn-secondary">
-              BROWSE ALL THEMES
-            </Link>
-          </div>
-        </div>
-      </section>
-
-
-      {/* New Pricing Section */}
       <PricingSection />
-
-      {/* Testimonial Section */}
       <TestimonialSection />
-
-      {/* FAQ Section */}
       <FaqSection />
     </main>
   );

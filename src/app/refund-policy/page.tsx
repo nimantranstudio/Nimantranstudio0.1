@@ -10,7 +10,7 @@ export default function RefundPolicyPage() {
     return (
         <main style={{ backgroundColor: 'var(--background)', minHeight: '100vh' }}>
 
-            <section style={{ background: 'var(--secondary)', color: '#fff', padding: '4rem 1.5rem 3rem', textAlign: 'center' }}>
+            <section style={{ background: '#000', color: '#fff', padding: '4rem 1.5rem 3rem', textAlign: 'center' }}>
                 <div className="container">
                     <p style={{ letterSpacing: '0.15em', fontSize: '0.75rem', color: '#C8A951', fontWeight: 600, marginBottom: '0.75rem' }}>
                         LEGAL
@@ -124,12 +124,12 @@ export default function RefundPolicyPage() {
                         <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
                             <a
                                 href="mailto:hello@nimantranstudio.com"
-                                style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'var(--secondary)', color: '#fff', padding: '0.7rem 1.25rem', borderRadius: '8px', textDecoration: 'none', fontSize: '0.875rem', fontWeight: 600 }}
+                                style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#000', color: '#fff', padding: '0.7rem 1.25rem', borderRadius: '8px', textDecoration: 'none', fontSize: '0.875rem', fontWeight: 600 }}
                             >
                                 <Mail size={15} /> Email Us
                             </a>
                             <a
-                                href="tel:+918884678194"
+                                href="tel:+918010581916"
                                 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', border: '1.5px solid var(--secondary)', color: 'var(--secondary)', padding: '0.7rem 1.25rem', borderRadius: '8px', textDecoration: 'none', fontSize: '0.875rem', fontWeight: 600 }}
                             >
                                 <Phone size={15} /> Call Us

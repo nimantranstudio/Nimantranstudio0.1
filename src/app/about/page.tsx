@@ -90,9 +90,9 @@ export default function AboutPage() {
                             <Mail size={18} color="var(--primary)" />
                             hello@nimantranstudio.com
                         </a>
-                        <a href="tel:+918884678194" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--secondary)', textDecoration: 'none', fontWeight: 500 }}>
+                        <a href="tel:+918010581916" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--secondary)', textDecoration: 'none', fontWeight: 500 }}>
                             <Phone size={18} color="var(--primary)" />
-                            +91 88846 78194
+                            +91 80105 81916
                         </a>
                         <span style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#64748B' }}>
                             <MapPin size={18} color="var(--primary)" />

@@ -301,19 +301,35 @@ export const RSVPForm = ({ wedding }: RSVPFormProps) => {
 
                     <div className={styles.eventsList}>
                         <div className={styles.rsvpTitle}>RSVP</div>
-                        {wedding.events.map((event: any) => (
-                            <div key={event.id} className={styles.eventCard}>
+                        {(wedding.events || [])
+                            .filter((e: any) => e.name?.toLowerCase().includes('wedding') || e.eventType === 'Wedding')
+                            .slice(0, 1) // Only show the primary wedding event for RSVP
+                            .map((event: any) => (
+                                <div key={event.id} className={styles.eventCard}>
+                                    <div className={styles.eventRoleTitle}>
+                                        {event.eventName || event.name || 'THE WEDDING CEREMONY'}
+                                    </div>
+                                    <div className={styles.eventRowSimple}>
+                                        {event.date
+                                            ? new Date(event.date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+                                            : 'Date TBD'}
+                                        {event.time ? ` • ${event.time} onwards` : ''}
+                                    </div>
+                                </div>
+                        ))}
+                        {(wedding.events || []).filter((e: any) => e.name?.toLowerCase().includes('wedding') || e.eventType === 'Wedding').length === 0 && wedding.events?.[0] && (
+                            <div className={styles.eventCard}>
                                 <div className={styles.eventRoleTitle}>
-                                    {event.eventName || 'THE WEDDING CEREMONY'}
+                                    {wedding.events[0].name || 'THE WEDDING CEREMONY'}
                                 </div>
                                 <div className={styles.eventRowSimple}>
-                                    {event.date
-                                        ? new Date(event.date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+                                    {wedding.events[0].date
+                                        ? new Date(wedding.events[0].date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
                                         : 'Date TBD'}
-                                    {event.time ? ` • ${event.time} onwards` : ''}
+                                    {wedding.events[0].time ? ` • ${wedding.events[0].time} onwards` : ''}
                                 </div>
                             </div>
-                        ))}
+                        )}
                     </div>
                 </main>
 
