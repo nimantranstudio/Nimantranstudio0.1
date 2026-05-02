@@ -62,7 +62,7 @@ export default function ThemeDetailClient({
     initialRecommendations: any[]
 }) {
     const router = useRouter();
-    const { setThemeId, setBundleData, resetForm } = useWeddingStore();
+    const { formData, setThemeId, setBundleData, resetForm } = useWeddingStore();
 
     const [theme, setTheme] = useState<Theme | null>(initialTheme);
     const [recommendations, setRecommendations] = useState<Theme[]>(initialRecommendations);
@@ -389,6 +389,7 @@ export default function ThemeDetailClient({
                                     groomParents={undefined}
                                     brideParents={undefined}
                                     customImage={asset.image}
+                                    inviteFor={formData.inviteFor}
                                     isRawPreview={true}
                                 />
                             ) : (
@@ -451,6 +452,7 @@ export default function ThemeDetailClient({
                                                 groomParents={undefined}
                                                 brideParents={undefined}
                                                 customImage={asset.image}
+                                                inviteFor={formData.inviteFor}
                                                 isRawPreview={true}
                                             />
                                         ) : (
@@ -495,6 +497,7 @@ export default function ThemeDetailClient({
                                             groomParents={undefined}
                                             brideParents={undefined}
                                             customImage={assets[selectedAssetIndex].image}
+                                            inviteFor={formData.inviteFor}
                                             isRawPreview={true}
                                         />
                                     ) : (
@@ -953,6 +956,7 @@ export default function ThemeDetailClient({
                                     groomParents={undefined}
                                     brideParents={undefined}
                                     customImage={assets[previewIndex].image}
+                                    inviteFor={formData.inviteFor}
                                 />
                             ) : (
                                 <Image

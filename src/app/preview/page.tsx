@@ -240,26 +240,8 @@ function PreviewContent() {
             }));
         }
 
-        const ID_MAPPING: Record<string, string> = {
-            'evt_1': 'wedding',              // Initials logo
-            'evt_2': 'wedding',              // Wedding contract
-            'evt_3': 'wedding',              // Do not disturb
-            'evt_4': 'wedding',              // Ladke wale tag
-            'evt_5': 'wedding',              // Ladki wale tag
-            'evt_6': 'save_the_date',        // Save the date
-            'evt_7': 'wedding',              // Wedding Invitation
-            'evt_8': 'haldi',                // Haldi Invitation
-            'evt_9': 'sangeet',              // Sangeet Invitation
-            'evt_10': 'mehendi',             // Mehendi Invitation
-            'evt_11': 'wedding',             // Cinematic Video 
-            'evt_12': 'rsvp',                // RSVP
-            'evt_13': 'reception',           // Reception
-            'evt_14': 'wedding',             // Welcome Wedding Poster
-            'evt_15': 'haldi',               // Welcome Haldi Poster
-            'evt_16': 'mehendi',             // Welcome Mehendi Poster
-            'evt_17': 'wedding'              // Thank you card
-        };
-
+        // Strict direct mapping since Event table IDs match CelebrationTimeline IDs
+        // ID_MAPPING removed
         // Match bundleItems to wedding events by eventType or ID mapping
         const weddingEvents = formData.events || [];
         const items: Array<{ id: string; name: string; image: string; event: any }> = [];
@@ -276,7 +258,7 @@ function PreviewContent() {
                 const masterId = evt.id.toLowerCase();
                 
                 // 1. Check ID Mapping first for precision (Highly reliable)
-                if (dbEventId && ID_MAPPING[dbEventId] === masterId) return true;
+                if (dbEventId && dbEventId === masterId) return true;
 
                 // Only if mapping fails, try name matching
                 if (!biType) return false;
@@ -288,21 +270,23 @@ function PreviewContent() {
                 if (evtName && biType.includes(evtName)) return true;
 
                 // 3. Special cases for common naming
-                if (biType.includes('WEDDING') && masterId.includes('wedding')) return true;
-                if (biType.includes('HALDI') && masterId.includes('haldi')) return true;
-                if (biType.includes('MEHENDI') && masterId.includes('mehendi')) return true;
-                if (biType.includes('SANGEET') && masterId.includes('sangeet')) return true;
-                if (biType.includes('RECEPTION') && masterId.includes('reception')) return true;
+                if (biType.includes('WEDDING') && evtName.includes('WEDDING')) return true;
+                if (biType.includes('HALDI') && evtName.includes('HALDI')) return true;
+                if (biType.includes('MEHENDI') && evtName.includes('MEHENDI')) return true;
+                if (biType.includes('SANGEET') && evtName.includes('SANGEET')) return true;
+                if (biType.includes('RECEPTION') && evtName.includes('RECEPTION')) return true;
 
                 return false;
             });
 
             // If no match found, default to 'wedding' for generic wedding items
             if (!matchedEvent && biType.includes('WEDDING')) {
-                matchedEvent = weddingEvents.find(e => e.id === 'wedding');
+                matchedEvent = weddingEvents.find(e => e.id === 'evt_7');
             }
 
             const displayName = matchedEvent?.heading || matchedEvent?.name || bi.event?.eventName || bi.templateName || bi.eventType || 'Invitation';
+
+            const isWedding = matchedEvent?.id === 'evt_7' || biType.includes('WEDDING');
 
             items.push({
                 id: bi.id,
@@ -311,18 +295,21 @@ function PreviewContent() {
                 event: matchedEvent ? {
                     id: matchedEvent.id,
                     name: matchedEvent.heading || matchedEvent.name,
-                    date: matchedEvent.date || formData.primaryDate,
-                    time: matchedEvent.time || formData.primaryTime,
-                    venue: (matchedEvent.isCustomVenue && matchedEvent.venue) ? matchedEvent.venue : formData.defaultVenueName,
+                    // Only fallback to primary details if it's the main wedding event
+                    date: isWedding ? (matchedEvent.date || formData.primaryDate) : (matchedEvent.date || undefined),
+                    time: isWedding ? (matchedEvent.time || formData.primaryTime) : (matchedEvent.time || undefined),
+                    venue: isWedding 
+                        ? ((matchedEvent.isCustomVenue && matchedEvent.venue) ? matchedEvent.venue : formData.defaultVenueName) 
+                        : (matchedEvent.venue || undefined),
                     tagline: matchedEvent.tagline,
                     description: matchedEvent.description,
                     heading: matchedEvent.heading
                 } : {
                     id: bi.id,
                     name: displayName,
-                    date: formData.primaryDate,
-                    time: formData.primaryTime,
-                    venue: formData.defaultVenueName
+                    date: isWedding ? formData.primaryDate : undefined,
+                    time: isWedding ? formData.primaryTime : undefined,
+                    venue: isWedding ? formData.defaultVenueName : undefined
                 }
             });
         }
@@ -400,6 +387,7 @@ function PreviewContent() {
                             groomParents={formData.groomParents || undefined}
                             brideParents={formData.brideParents || undefined}
                             welcomeMessage={formData.invitationMessage || undefined}
+                            inviteFor={formData.inviteFor}
                             isPlaceholder={true}
                             type='image'
                             customImage={previewItems[selectedPreviewIndex]?.image}
@@ -627,6 +615,7 @@ function PreviewContent() {
                                                     groomParents={formData.groomParents}
                                                     brideParents={formData.brideParents}
                                                     welcomeMessage={formData.invitationMessage}
+                                                    inviteFor={formData.inviteFor}
                                                     isPlaceholder={true}
                                                     customImage={item.image}
                                                     className={styles.suiteThumbCard}

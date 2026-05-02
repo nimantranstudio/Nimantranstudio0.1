@@ -31,6 +31,7 @@ interface InvitationCardProps {
     isSecured?: boolean; // Added isSecured to props
     showSizingBoxes?: boolean; // Added showSizingBoxes
     isRawPreview?: boolean; // Added to just show the HTML as is
+    inviteFor?: string; // Newly added field for creating invite for
 }
 
 export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>(({
@@ -49,7 +50,8 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
     className,
     isSecured = false,
     showSizingBoxes = false,
-    isRawPreview = isPlaceholder // Default to raw preview for placeholders (previews)
+    isRawPreview = isPlaceholder, // Default to raw preview for placeholders (previews)
+    inviteFor
 }, ref) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -147,40 +149,47 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
             const doc = iframeRef.current?.contentDocument || iframeRef.current?.contentWindow?.document;
             if (!doc || !doc.body || !doc.head) return;
 
-            const getDefaultHeading = (eName: string) => {
-                const n = (eName || '').toLowerCase();
-                if (n.includes('haldi')) return "Haldi Ceremony";
-                if (n.includes('mehendi')) return "Mehendi Ceremony";
-                if (n.includes('sangeet')) return "Sangeet Ceremoney";
-                if (n.includes('wedding')) return "Wedding Ceremony";
-                if (n.includes('reception')) return "Reception Ceremony";
-                return `${eName || 'Wedding'} Ceremony`;
+            // Removed getDefaultHeading and getDefaultWelcome as user requested not to change them
+
+            const formatDate = (dateStr?: string) => {
+                if (!dateStr) return undefined;
+                try {
+                    const date = new Date(dateStr);
+                    if (isNaN(date.getTime())) return dateStr;
+                    
+                    const day = date.getDate().toString().padStart(2, '0');
+                    const month = date.toLocaleString('en-US', { month: 'long' });
+                    const year = date.getFullYear();
+                    
+                    return `${day}-${month}-${year}`;
+                } catch (e) {
+                    return dateStr;
+                }
             };
 
-            const getDefaultWelcome = (eName: string) => {
-                const n = (eName || '').toLowerCase();
-                if (n.includes('haldi')) return "Bless the couple with showers of yellow health and happiness";
-                if (n.includes('mehendi')) return "Join at the mehendi event, with the \"Hands full of mehendi , hearts full of love\"";
-                if (n.includes('sangeet')) return "Join us to turn up the volume \"Naach. gaana aur full-on hungama!\"";
-                if (n.includes('wedding')) return "We are pleased to invite you to the wedding of";
-                if (n.includes('reception')) return "We are pleased to invite you to the reception of";
-                return "";
+            const formatTime = (timeStr?: string) => {
+                if (!timeStr) return undefined;
+                try {
+                    const [hours, minutes] = timeStr.split(':');
+                    if (!hours || !minutes) return timeStr;
+                    const h = parseInt(hours, 10);
+                    const ampm = h >= 12 ? 'PM' : 'AM';
+                    const h12 = h % 12 || 12;
+                    return `${h12}:${minutes} ${ampm}`;
+                } catch (e) {
+                    return timeStr;
+                }
             };
-
-            const displayEventName = event.heading || (event.name ? getDefaultHeading(event.name) : undefined);
-            const displayWelcome = welcomeMessage || event.tagline || (event.name ? getDefaultWelcome(event.name) : undefined);
 
             const mapping: Record<string, string | undefined> = {
-                'event-name': displayEventName,
-                'welcome-message': displayWelcome,
                 'groom-name': groomName,
                 'bride-name': brideName,
                 'groom-parents': groomParents,
                 'groom-parent-name': groomParents,
                 'bride-parents': brideParents,
                 'bride-parent-name': brideParents,
-                'event-date': event.date,
-                'event-time': event.time,
+                'event-date': formatDate(event.date),
+                'event-time': formatTime(event.time),
                 'event-venue': event.venue,
                 'venue': event.venue
             };
@@ -205,15 +214,38 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
             const brideParentsEl = doc.getElementById('bride-parents') || doc.getElementById('bride-parent-name');
             if (brideParentsEl && brideParents !== undefined) brideParentsEl.innerHTML = brideParents;
 
-            // OVERRIDE: Force user input to take priority for main text elements
-            const eventNameEl = doc.getElementById('event-name');
-            if (eventNameEl && displayEventName !== undefined) {
-                eventNameEl.innerHTML = displayEventName.toString().replace(/\n/g, '<br/>');
-            }
-
-            const welcomeMsgEl = doc.getElementById('welcome-message');
-            if (welcomeMsgEl && displayWelcome !== undefined) {
-                welcomeMsgEl.innerHTML = displayWelcome.toString().replace(/\n/g, '<br/>');
+            // Update event-subheading based on inviteFor
+            const subEl = doc.getElementById('event-subheading');
+            if (subEl) {
+                let nameText = "";
+                if (inviteFor === 'bride' && brideName) {
+                    nameText = brideName;
+                } else if (inviteFor === 'groom' && groomName) {
+                    nameText = groomName;
+                } else if ((!inviteFor || inviteFor === 'both') && brideName && groomName) {
+                    nameText = brideName + " & " + groomName;
+                }
+                
+                if (nameText) {
+                    if (!subEl.dataset.originalText) {
+                        subEl.dataset.originalText = subEl.innerHTML;
+                    }
+                    
+                    const replaceEvents = ['evt_8', 'evt_9', 'evt_10']; // Haldi, Sangeet, Mehendi
+                    if (replaceEvents.includes(event.id)) {
+                        const words = subEl.dataset.originalText.trim().split(/\s+/);
+                        if (words.length > 0) {
+                            words[0] = nameText; // Replace first word
+                            subEl.innerHTML = words.join(' ');
+                        }
+                    } else {
+                        // For other specific events, append at the end as before
+                        const appendEvents = ['evt_13', 'evt_6', 'save_the_date'];
+                        if (appendEvents.includes(event.id)) {
+                            subEl.innerHTML = subEl.dataset.originalText + " " + nameText;
+                        }
+                    }
+                }
             }
 
             // INJECT RUNTIME FIXES (Doesn't touch original file)
