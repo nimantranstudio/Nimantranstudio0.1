@@ -67,6 +67,11 @@ function PreviewContent() {
         discountedPrice: activeInvoice?.discountedPrice ?? 2675,
         finalPrice: activeInvoice?.finalSellingPrice ?? 999
     };
+    
+    const discountPercent = pricing.totalValue > 0 
+        ? Math.round(((pricing.totalValue - pricing.finalPrice) / pricing.totalValue) * 100) 
+        : 0;
+    const amountSaved = pricing.totalValue - pricing.finalPrice;
     const [showLoginModal, setShowLoginModal] = useState(false);
     const [selectedPreviewIndex, setSelectedPreviewIndex] = useState<number | null>(null);
     const [isEditMode, setIsEditMode] = useState(false);
@@ -771,7 +776,7 @@ function PreviewContent() {
 
                                     <div className={styles.offerRow}>
                                         <span>Launch Offer Discount</span>
-                                        <span>-₹{pricing.discount}</span>
+                                        <span>{discountPercent}% OFF</span>
                                     </div>
 
                                     <div className={styles.finalPriceSection}>
@@ -779,13 +784,13 @@ function PreviewContent() {
                                             <span className={styles.originalPrice}>Total Amount</span>
                                         </div>
                                         <div className={styles.finalPriceRight}>
-                                            <span className={styles.strikethroughPrice}>₹{pricing.discountedPrice}</span>
+                                            <span className={styles.strikethroughPrice}>₹{pricing.totalValue}</span>
                                             <span className={`${styles.finalPrice} ${isButtonHovered ? styles.finalPriceMagnetic : ''}`}>₹{pricing.finalPrice}</span>
                                         </div>
                                     </div>
 
                                     <div className={styles.savingsBanner}>
-                                        ✨ You saved ₹{pricing.discount} on your wedding communication suite
+                                        ✨ You saved ₹{pricing.discountedPrice} on your wedding communication suite
                                     </div>
                                     <div className={styles.socialProofLine}>
                                         ✨ Chosen by 24 families this month
