@@ -29,7 +29,10 @@ import {
     Play,
     Copy,
     Link2,
-    ExternalLink
+    ExternalLink,
+    MapPin,
+    Quote,
+    MoreVertical
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -40,9 +43,18 @@ export default function DashboardPage() {
     const [theme, setTheme] = useState<Theme | null>(null);
     const [selectedPreviewIndex, setSelectedPreviewIndex] = useState<number | null>(null);
     const cardRef = useRef<InvitationCardRef>(null);
+    const [lightbox, setLightbox] = useState<{ image: string | null; title: string } | null>(null);
+    const [bundleAssets, setBundleAssets] = useState<Record<string, string>>({});
 
     useEffect(() => {
         setIsMounted(true);
+    }, []);
+
+    useEffect(() => {
+        fetch('/api/bundle-assets')
+            .then(r => r.json())
+            .then(d => setBundleAssets(d.assets || {}))
+            .catch(() => {});
     }, []);
 
     useEffect(() => {
@@ -62,7 +74,6 @@ export default function DashboardPage() {
     }, [selectedThemeId]);
 
     const buildPreviewItems = () => {
-        if (!theme) return [];
         const ensureLeadingSlash = (path: string) => {
             if (!path) return '';
             if (path.startsWith('http') || path.startsWith('/')) return path;
@@ -70,7 +81,21 @@ export default function DashboardPage() {
         };
 
         if (!bundleItems || bundleItems.length === 0) {
-            const displayImages = (bundleImages && bundleImages.length > 0) ? bundleImages : (theme.previewImages || []);
+            // When we have a theme + events, generate event-specific poster paths
+            if (theme?.name && formData.events && formData.events.length > 0) {
+                const themeSlug = theme.name.toLowerCase().replace(/\s+/g, '-');
+                return formData.events.map((event, index) => {
+                    const eventSlug = (event.eventType || event.name || '').toLowerCase().replace(/\s+/g, '-');
+                    return {
+                        id: `event-${index}`,
+                        name: event.name || 'Event',
+                        image: `/assets/themes/${themeSlug}/${eventSlug}-poster.png`,
+                        event: event
+                    };
+                });
+            }
+
+            const displayImages = (bundleImages && bundleImages.length > 0) ? bundleImages : (theme?.previewImages || []);
             return displayImages.map((imgUrl, index) => ({
                 id: `design-${index}`,
                 name: index === 0 ? "Wedding poster" : "Event Design",
@@ -82,17 +107,31 @@ export default function DashboardPage() {
         return bundleItems.map((bi) => {
             const biType = bi.eventType || '';
             const matchedEvent = formData.events?.find(e => (e.eventType || '').toUpperCase() === biType.toUpperCase()) || formData.events?.[0] || { name: 'Wedding' };
-            
+
             return {
                 id: bi.id,
                 name: bi.templateName || bi.eventType,
-                image: ensureLeadingSlash(bi.templatePath), // Renamed
+                image: ensureLeadingSlash(bi.templatePath),
                 event: matchedEvent
             };
         });
     };
 
     const previewItems = buildPreviewItems();
+
+    const getEventImage = (event: { name?: string; eventType?: string }) => {
+        const tryKeys = [
+            `${(event.name || '').toLowerCase()} invitation`,
+            `${(event.eventType || '').toLowerCase()} invitation`,
+            (event.name || '').toLowerCase(),
+            (event.eventType || '').toLowerCase(),
+        ];
+        for (const key of tryKeys) {
+            if (key && bundleAssets[key]) return bundleAssets[key];
+        }
+        return null;
+    };
+
     const rsvpSlug = `${formData.groomName?.toLowerCase()?.split(' ')[0] || 'wedding'}-${formData.brideName?.toLowerCase()?.split(' ')[0] || 'rsvp'}`;
     const rsvpFullUrl = `https://nimantran.app/rsvp/${rsvpSlug}`;
     const [copyStatus, setCopyStatus] = useState(false);
@@ -110,6 +149,7 @@ export default function DashboardPage() {
     if (!isMounted || !isAuthenticated) return null;
 
     return (
+        <>
         <div className={styles.dashboardContainer}>
             <DashboardSidebar />
             
@@ -131,75 +171,93 @@ export default function DashboardPage() {
                             </div>
 
                             <div className={styles.eventList}>
-                                {formData.events?.slice(0, 3).map((event, idx) => (
-                                    <div key={idx} className={styles.eventRow}>
-                                        <div className={styles.eventIconWrapper}>
-                                            <Calendar size={22} />
-                                        </div>
-                                        <div className={styles.eventConnector}></div>
-                                        <div className={styles.eventMain}>
-                                            <div className={styles.eventDetails}>
-                                                <h4>
-                                                    {event.name} 
-                                                    {idx === 0 && <span className={styles.upcomingBadge}>Upcoming</span>}
-                                                </h4>
-                                                <p className={styles.eventMeta}>{event.eventType || 'Main Celebration'} • {event.date || 'TBD'}</p>
+                                {formData.events?.map((event, idx) => {
+                                    // Match against previewItems for better coverage (handles bundleItems OR bundleImages)
+                                    const itemIndex = previewItems?.findIndex(pi => {
+                                        const piName = (pi.name || '').toUpperCase().trim();
+                                        const eventName = (event.name || '').toUpperCase().trim();
+                                        const piType = (pi.event?.eventType || '').toUpperCase().trim();
+                                        const eventType = (event.eventType || '').toUpperCase().trim();
+
+                                        return (piName.length > 0 && eventName.length > 0 && (piName.includes(eventName) || eventName.includes(piName))) ||
+                                               (piType.length > 0 && eventType.length > 0 && piType === eventType);
+                                    });
+
+                                    // Fallback chain: bundle asset → previewItems match → wedding fallback → first item
+                                    const poster = getEventImage(event) ||
+                                                   (itemIndex !== -1 ? previewItems[itemIndex].image : null) ||
+                                                   previewItems.find(pi => (pi.name || '').toUpperCase().includes('WEDDING'))?.image ||
+                                                   previewItems[0]?.image;
+
+                                    return (
+                                        <div key={idx} className={styles.eventCard}>
+                                            <div
+                                                className={styles.eventPosterThumb}
+                                                onClick={() => setLightbox({ image: poster || null, title: event.name })}
+                                                style={{ cursor: 'pointer' }}
+                                                title="Click to view card"
+                                            >
+                                                {poster ? (
+                                                    <img
+                                                        src={poster}
+                                                        alt={event.name}
+                                                        onError={(e) => {
+                                                            (e.currentTarget as HTMLImageElement).style.display = 'none';
+                                                            const placeholder = e.currentTarget.nextElementSibling as HTMLElement;
+                                                            if (placeholder) placeholder.style.display = 'block';
+                                                        }}
+                                                    />
+                                                ) : null}
+                                                {poster ? (
+                                                    <span className={styles.posterPlaceholderSmall} style={{ display: 'none' }}>VIEW<br/>INVITE</span>
+                                                ) : (
+                                                    <span className={styles.posterPlaceholderSmall}>VIEW<br/>INVITE</span>
+                                                )}
                                             </div>
-                                            <div className={styles.eventPoster}>
-                                                {(() => {
-                                                    const item = bundleItems?.find(bi => {
-                                                        const biType = (bi.eventType || bi.templateName || '').toUpperCase();
-                                                        const eventKey = (event.eventType || event.id || event.name || '').toUpperCase();
-                                                        // Check for exact match or partial match (e.g. "Haldi" in "Haldi Invitation")
-                                                        return biType === eventKey || 
-                                                               (biType.length > 0 && eventKey.includes(biType)) ||
-                                                               (eventKey.length > 0 && biType.includes(eventKey));
-                                                    });
-                                                    
-                                                    let poster = item?.templatePath;
-                                                    if (poster) {
-                                                        // 1. Handle common prefix issues
-                                                        if (poster.startsWith('public/')) poster = '/' + poster.substring(7);
-                                                        
-                                                        // 2. If it's just a filename, assume it's in /Image/bundle/
-                                                        if (!poster.includes('/') && !poster.startsWith('http')) {
-                                                            poster = '/Image/bundle/' + poster;
-                                                        }
-                                                        
-                                                        // 3. Ensure leading slash
-                                                        if (!poster.startsWith('/') && !poster.startsWith('http')) poster = '/' + poster;
-                                                        
-                                                        // 4. Handle HTML templates - try to find an image version
-                                                        if (poster.toLowerCase().endsWith('.html')) {
-                                                            poster = poster.replace('.html', '.png');
-                                                        }
-                                                    }
-                                                    
-                                                    return poster ? (
-                                                        <img 
-                                                            src={poster} 
-                                                            alt={event.name} 
-                                                            className={styles.posterImage}
-                                                            onError={(e) => {
-                                                                // If the PNG fallback also fails, show the placeholder
-                                                                (e.target as HTMLImageElement).style.display = 'none';
-                                                                const parent = (e.target as HTMLImageElement).parentElement;
-                                                                if (parent) {
-                                                                    const span = document.createElement('span');
-                                                                    span.className = styles.posterPlaceholder;
-                                                                    span.innerText = 'Poster\nNot Available';
-                                                                    parent.appendChild(span);
-                                                                }
-                                                            }}
-                                                        />
-                                                    ) : (
-                                                        <span className={styles.posterPlaceholder}>Poster<br/>Not Available</span>
-                                                    );
-                                                })()}
+
+                                            <div className={styles.eventCardContent}>
+                                                <div className={styles.eventCardHeaderRow}>
+                                                    <h4>{event.name}</h4>
+                                                </div>
+                                                
+                                                <div className={styles.eventCardMetaRow}>
+                                                    <div className={styles.metaItem}>
+                                                        <Clock size={14} />
+                                                        <span>{event.time || 'TBD'}</span>
+                                                    </div>
+                                                    <span className={styles.metaDivider}>•</span>
+                                                    <div className={styles.metaItem}>
+                                                        <Calendar size={14} />
+                                                        <span>{event.date || 'TBD'}</span>
+                                                    </div>
+                                                    {event.date && event.date !== 'TBD' && (
+                                                        <>
+                                                            <span className={styles.metaDivider}>•</span>
+                                                            <div className={styles.metaItem}>
+                                                                <span className={styles.daysLeftText}>
+                                                                    {(() => {
+                                                                        const eventDate = new Date(event.date);
+                                                                        const today = new Date();
+                                                                        today.setHours(0, 0, 0, 0);
+                                                                        const diff = eventDate.getTime() - today.getTime();
+                                                                        const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+                                                                        if (days < 0) return 'Completed';
+                                                                        if (days === 0) return 'Today';
+                                                                        return `${days} days left`;
+                                                                    })()}
+                                                                </span>
+                                                            </div>
+                                                        </>
+                                                    )}
+                                                </div>
+
+                                                <div className={styles.eventMessageBlock}>
+                                                    <p>{event.description || 'Join us for this special celebration.'}</p>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         </div>
 
@@ -238,11 +296,6 @@ export default function DashboardPage() {
                                 </div>
                             </div>
                             <span className={styles.countdownDate}>12 DEC 2026</span>
-                            <img 
-                                src="/assets/gazebo.png" 
-                                alt="Wedding Gazebo" 
-                                className={styles.countdownImage} 
-                            />
                         </div>
 
                         {/* Wedding Overview Card (NEW) */}
@@ -315,35 +368,71 @@ export default function DashboardPage() {
                         </div>
                     </div>
                 </div>
-
-                {/* 3. Your Wedding Assets Section */}
-                <section className={styles.assetsSection} style={{ marginTop: '4rem' }}>
-                    <div className={styles.sectionHeader}>
-                        <h2 className={styles.sectionTitle}>Your Wedding Assets</h2>
-                        <p className={styles.sectionSub}>Manage all digital assets created for your wedding.</p>
-                    </div>
-
-                    <div className={styles.assetGrid}>
-                        {previewItems.slice(0, 3).map((item, index) => (
-                            <div key={item.id} className={styles.assetCard}>
-                                <div className={styles.assetThumbWrapper}>
-                                    <img src={item.image} alt={item.name} className={styles.assetThumb} />
-                                    <div className={styles.playOverlay}>
-                                        <Eye size={20} color="white" />
-                                    </div>
-                                </div>
-                                <div className={styles.assetInfo}>
-                                    <h3 className={styles.assetName}>{item.name}</h3>
-                                    <div className={styles.assetActions}>
-                                        <button className={styles.btnShare}><MessageCircle size={14} /></button>
-                                        <button className={styles.btnPreview}><Eye size={14} /></button>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </section>
             </main>
         </div>
+
+            {/* Card Lightbox */}
+            {lightbox && (
+                <div
+                    onClick={() => setLightbox(null)}
+                    style={{
+                        position: 'fixed', inset: 0, zIndex: 9999,
+                        background: 'rgba(0,0,0,0.88)',
+                        display: 'flex', flexDirection: 'column',
+                        alignItems: 'center', justifyContent: 'center',
+                        padding: '2rem',
+                    }}
+                >
+                    <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.78rem', marginBottom: '1rem', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                        {lightbox.title} · Click anywhere to close
+                    </p>
+
+                    {lightbox.image ? (
+                        <img
+                            src={lightbox.image}
+                            alt={lightbox.title}
+                            onClick={e => e.stopPropagation()}
+                            style={{
+                                maxHeight: '80vh', maxWidth: '90vw',
+                                borderRadius: '12px',
+                                boxShadow: '0 24px 80px rgba(0,0,0,0.6)',
+                                objectFit: 'contain',
+                            }}
+                        />
+                    ) : (
+                        <div style={{
+                            background: '#1a1a1a', border: '1px solid #333',
+                            borderRadius: '16px', padding: '4rem 5rem',
+                            textAlign: 'center',
+                        }}>
+                            <p style={{ color: '#666', fontSize: '0.85rem', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+                                {lightbox.title}
+                            </p>
+                            <p style={{ color: '#fff', fontSize: '1.25rem', fontWeight: 600 }}>
+                                Card not available yet
+                            </p>
+                            <p style={{ color: '#555', fontSize: '0.85rem', marginTop: '0.5rem' }}>
+                                This event card hasn&apos;t been generated for your theme.
+                            </p>
+                        </div>
+                    )}
+
+                    <Link
+                        href="/preview"
+                        onClick={e => e.stopPropagation()}
+                        style={{
+                            marginTop: '1.5rem',
+                            background: 'rgba(255,255,255,0.1)',
+                            color: '#fff', borderRadius: '100px',
+                            padding: '0.6rem 1.5rem', fontSize: '0.82rem',
+                            fontWeight: 600, textDecoration: 'none',
+                            border: '1px solid rgba(255,255,255,0.15)',
+                        }}
+                    >
+                        Open Full Preview →
+                    </Link>
+                </div>
+            )}
+        </>
     );
 }
