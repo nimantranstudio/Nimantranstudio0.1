@@ -7,7 +7,7 @@ import { EventRepeater } from '@/components/form/EventRepeater';
 import styles from './details.module.css';
 import formStyles from '@/components/form/Form.module.css';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { clsx } from 'clsx';
 import { ChevronRight, ChevronDown, CheckCircle, Sun, Music, Leaf, Circle, Wine, MoreHorizontal, Clock, Info, ShieldCheck, MapPin, Calendar, Users, AlertCircle, Heart, Sparkles, ArrowRight, ChevronUp, Trash2, Plus, ChevronLeft } from 'lucide-react';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
@@ -645,7 +645,7 @@ export default function DetailsPage() {
                                                 >
                                                     <div className={clsx(
                                                         styles.timelineNode,
-                                                        (expandedEventId === event.id || !!event.date) && styles.timelineNodeActive,
+                                                        expandedEventId === event.id && styles.timelineNodeActive,
                                                         event.name?.toLowerCase().includes('wedding') && styles.weddingNode
                                                     )}>
                                                         {event.name?.toLowerCase().includes('wedding') && <div className={styles.shimmerEffect} />}
@@ -653,14 +653,9 @@ export default function DetailsPage() {
                                                     <div className={clsx(
                                                         styles.miniEventCard,
                                                         expandedEventId === event.id && styles.miniEventActive,
-                                                        (!event.date && !event.time) && styles.miniEventBlank,
                                                         event.name?.toLowerCase().includes('wedding') && styles.weddingHighlight
                                                     )}>
                                                         <div className={styles.miniEventName}>{event.name}</div>
-                                                        <div className={styles.miniEventDetail}>
-                                                            <span>{event.time || ''}</span>
-                                                            <span>{event.date ? formatDateDisplay(event.date) : ''}</span>
-                                                        </div>
                                                     </div>
                                                 </div>
                                             ))}
@@ -926,13 +921,9 @@ function CelebrationTimeline({ errors, setErrors, expandedEventId, setExpandedEv
                         onClick={() => setExpandedEventId(expandedEventId === event.id ? null : event.id)}
                     >
                         <div className={styles.timelineHeaderLeft}>
-                            <div className={clsx(styles.timelineStatus, !!event.date && !!event.time && styles.statusComplete)}>
-                                {!!event.date && !!event.time ? <CheckCircle size={14} /> : <Circle size={14} />}
-                            </div>
                             <span className={styles.timelineEventName}>{event.name}</span>
                         </div>
                         <div className={styles.timelineHeaderRight}>
-                            <span className={styles.timelineDateValue}>{event.date ? formatDateDisplay(event.date) : 'Set date'}</span>
                             <ChevronDown size={18} className={clsx(styles.chevron, expandedEventId === event.id && styles.chevronRotate)} />
                         </div>
                     </button>
@@ -963,9 +954,10 @@ function CelebrationTimeline({ errors, setErrors, expandedEventId, setExpandedEv
                                     <div style={{ gridColumn: 'span 2' }}>
                                         <Input
                                             label="Venue"
+                                            type="textarea"
                                             value={event.venue || ''}
                                             onChange={(e) => updateEvent(event.id, { venue: e.target.value })}
-                                            placeholder="Same as wedding venue or specify new"
+                                            placeholder="Inherits from Global if empty"
                                         />
                                     </div>
                                 </div>
