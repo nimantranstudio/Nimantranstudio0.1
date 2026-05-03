@@ -792,15 +792,38 @@ export default function DetailsPage() {
                                                     readOnly
                                                 />
                                             </div>
-                                            <div style={{ gridColumn: 'span 2' }}>
-                                                <Input
-                                                    label="WELCOME MESSAGE"
-                                                    placeholder="Ex: We can't wait to celebrate with you!"
-                                                    type="textarea"
-                                                    value={formData.invitationMessage || ''}
-                                                    onChange={(e) => updateFormData({ invitationMessage: e.target.value })}
-                                                />
+                                            <div className={formStyles.field}>
+                                                <label className={formStyles.label}>EVENT TYPE</label>
+                                                <select
+                                                    className={styles.selectInput}
+                                                    value={formData.eventType || 'Wedding'}
+                                                    onChange={(e) => {
+                                                        const value = e.target.value;
+                                                        const matched = (formData.events || []).find(ev =>
+                                                            ev.id.toLowerCase() === value.toLowerCase() ||
+                                                            ev.name?.toLowerCase().includes(value.toLowerCase())
+                                                        );
+                                                        const updates: Record<string, string> = { eventType: value };
+                                                        if (matched?.date) updates.primaryDate = matched.date;
+                                                        if (matched?.time) updates.primaryTime = matched.time;
+                                                        updateFormData(updates);
+                                                    }}
+                                                >
+                                                    <option value="Wedding">Wedding</option>
+                                                    <option value="Reception">Reception</option>
+                                                    <option value="Sangeet">Sangeet</option>
+                                                    <option value="Haldi">Haldi</option>
+                                                    <option value="Mehendi">Mehendi</option>
+                                                    <option value="Engagement">Engagement</option>
+                                                    <option value="Other">Other</option>
+                                                </select>
                                             </div>
+                                            <Input
+                                                label="RSVP DEADLINE (OPTIONAL)"
+                                                type="date"
+                                                value={formData.rsvpDeadline || ''}
+                                                onChange={(e) => updateFormData({ rsvpDeadline: e.target.value })}
+                                            />
                                             <Input
                                                 label="DATE"
                                                 type="date"
@@ -813,26 +836,15 @@ export default function DetailsPage() {
                                                 value={formData.primaryTime || ''}
                                                 onChange={(e) => updateFormData({ primaryTime: e.target.value })}
                                             />
-                                            <div className={formStyles.field}>
-                                                <label className={formStyles.label}>EVENT TYPE</label>
-                                                <select 
-                                                    className={styles.selectInput}
-                                                    value={formData.eventType || 'Wedding'}
-                                                    onChange={(e) => updateFormData({ eventType: e.target.value })}
-                                                >
-                                                    <option value="Wedding">Wedding</option>
-                                                    <option value="Reception">Reception</option>
-                                                    <option value="Sangeet">Sangeet</option>
-                                                    <option value="Engagement">Engagement</option>
-                                                    <option value="Other">Other</option>
-                                                </select>
+                                            <div style={{ gridColumn: 'span 2' }}>
+                                                <Input
+                                                    label="WELCOME MESSAGE"
+                                                    placeholder="Ex: We can't wait to celebrate with you!"
+                                                    type="textarea"
+                                                    value={formData.invitationMessage || ''}
+                                                    onChange={(e) => updateFormData({ invitationMessage: e.target.value })}
+                                                />
                                             </div>
-                                            <Input
-                                                label="RSVP DEADLINE (OPTIONAL)"
-                                                type="date"
-                                                value={formData.rsvpDeadline || ''}
-                                                onChange={(e) => updateFormData({ rsvpDeadline: e.target.value })}
-                                            />
                                         </div>
                                     </div>
                                 </div>
