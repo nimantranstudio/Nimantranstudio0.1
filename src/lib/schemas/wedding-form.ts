@@ -40,8 +40,6 @@ export const WeddingFormSchema = z.object({
     defaultVenueAddress: z.string().max(500, "Maximum 500 characters").optional(),
     primaryMapLink: z.string().nullable().optional(),
     globalTagline: z.string().optional(),
-    inviteFor: z.enum(['bride', 'groom', 'both']).default('both').optional(),
-
 
     // Events
     events: z.array(EventSchema).optional(),
@@ -62,9 +60,9 @@ export type WeddingFormData = z.infer<typeof WeddingFormSchema>;
 export type WeddingEvent = z.infer<typeof EventSchema>;
 
 export const DEFAULT_EVENTS: WeddingEvent[] = [
-    { id: 'evt_8', name: 'Haldi', date: '', time: '', endTime: '', venue: '', description: 'Yellow vibes only!', tagline: 'Bless the couple with showers of yellow health and happiness', heading: 'Haldi Ceremony', isCustomVenue: false },
-    { id: 'evt_10', name: 'Mehendi', date: '', time: '', endTime: '', venue: '', description: 'Art on hands.', tagline: 'Join at the mehendi event, with the "Hands full of mehendi , hearts full of love"', heading: 'Mehendi Ceremony', isCustomVenue: false },
-    { id: 'evt_9', name: 'Sangeet', date: '', time: '', endTime: '', venue: '', description: 'Night of music and dance.', tagline: 'Join us to turn up the volume "Naach. gaana aur full-on hungama!"', heading: 'Sangeet Ceremoney', isCustomVenue: false },
-    { id: 'evt_7', name: 'Wedding', date: '', time: '', endTime: '', venue: '', description: 'The big day.', tagline: 'We are pleased to invite you to the wedding of', heading: 'Wedding Ceremony', isCustomVenue: false },
-    { id: 'evt_13', name: 'Reception', date: '', time: '', endTime: '', venue: '', description: 'Dinner and celebration.', tagline: 'We are pleased to invite you to the reception of', heading: 'Reception Ceremony', isCustomVenue: false },
+    { id: 'haldi', name: 'Haldi', date: '', time: '', endTime: '', venue: '', description: 'Yellow vibes only!', tagline: 'Bless the couple with showers of yellow health and happiness', heading: 'Haldi Ceremony', isCustomVenue: false },
+    { id: 'mehendi', name: 'Mehendi', date: '', time: '', endTime: '', venue: '', description: 'Art on hands.', tagline: 'Join at the mehendi event, with the "Hands full of mehendi , hearts full of love"', heading: 'Mehendi Ceremony', isCustomVenue: false },
+    { id: 'sangeet', name: 'Sangeet', date: '', time: '', endTime: '', venue: '', description: 'Night of music and dance.', tagline: 'Join us to turn up the volume "Naach. gaana aur full-on hungama!"', heading: 'Sangeet Ceremoney', isCustomVenue: false },
+    { id: 'wedding', name: 'Wedding', date: '', time: '', endTime: '', venue: '', description: 'The big day.', tagline: 'We are pleased to invite you to the wedding of', heading: 'Wedding Ceremony', isCustomVenue: false },
+    { id: 'reception', name: 'Reception', date: '', time: '', endTime: '', venue: '', description: 'Dinner and celebration.', tagline: 'We are pleased to invite you to the reception of', heading: 'Reception Ceremony', isCustomVenue: false },
 ];

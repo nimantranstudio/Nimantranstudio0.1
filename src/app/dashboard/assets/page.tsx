@@ -184,7 +184,6 @@ export default function DashboardPage() {
                             groomParents={formData.groomParents}
                             brideParents={formData.brideParents}
                             welcomeMessage={formData.invitationMessage}
-                            inviteFor={formData.inviteFor}
                             isPlaceholder={true}
                             type={selectedPreviewIndex === 1 ? 'video' : 'image'}
                             customImage={previewItems[selectedPreviewIndex]?.image}
@@ -323,7 +322,6 @@ export default function DashboardPage() {
                                             theme={theme}
                                             groomName={formData.groomName || ''}
                                             brideName={formData.brideName || ''}
-                                            inviteFor={formData.inviteFor}
                                             isPlaceholder={true}
                                             customImage={previewItems[0].image}
                                             isSecured={true}

@@ -146,15 +146,16 @@ export default function DetailsPage() {
     };
 
     const formatDate = (dateStr: string) => {
-        if (!dateStr) return "15-Dec-2026";
+        if (!dateStr) return "DECEMBER 15, 2026";
         try {
             const date = new Date(dateStr);
-            const day = date.getDate().toString().padStart(2, '0');
-            const month = date.toLocaleString('en-US', { month: 'long' });
-            const year = date.getFullYear();
-            return `${day}-${month}-${year}`;
+            return date.toLocaleDateString('en-US', {
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric'
+            }).toUpperCase();
         } catch (e) {
-            return dateStr;
+            return dateStr.toUpperCase();
         }
     };
 
@@ -532,45 +533,6 @@ export default function DetailsPage() {
                                                     helperText="Guests will use this link for one-tap navigation from their invitation."
                                                 />
                                             </div>
-
-                                            <div style={{ gridColumn: 'span 2' }} className={formStyles.field}>
-                                                <label className={formStyles.label}>Creating This Invite For</label>
-                                                <div style={{ display: 'flex', gap: '2rem', marginTop: '0.5rem' }}>
-                                                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.875rem' }}>
-                                                        <input 
-                                                            type="radio" 
-                                                            name="inviteFor" 
-                                                            value="bride" 
-                                                            checked={formData.inviteFor === 'bride'}
-                                                            onChange={(e) => updateFormData({ inviteFor: e.target.value })}
-                                                            style={{ accentColor: '#D4AF37', width: '1.25rem', height: '1.25rem' }}
-                                                        />
-                                                        Bride
-                                                    </label>
-                                                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.875rem' }}>
-                                                        <input 
-                                                            type="radio" 
-                                                            name="inviteFor" 
-                                                            value="groom" 
-                                                            checked={formData.inviteFor === 'groom'}
-                                                            onChange={(e) => updateFormData({ inviteFor: e.target.value })}
-                                                            style={{ accentColor: '#D4AF37', width: '1.25rem', height: '1.25rem' }}
-                                                        />
-                                                        Groom
-                                                    </label>
-                                                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.875rem' }}>
-                                                        <input 
-                                                            type="radio" 
-                                                            name="inviteFor" 
-                                                            value="both" 
-                                                            checked={!formData.inviteFor || formData.inviteFor === 'both'}
-                                                            onChange={(e) => updateFormData({ inviteFor: e.target.value })}
-                                                            style={{ accentColor: '#D4AF37', width: '1.25rem', height: '1.25rem' }}
-                                                        />
-                                                        Both
-                                                    </label>
-                                                </div>
-                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -805,31 +767,73 @@ export default function DetailsPage() {
                                     <div className={styles.sectionHeaderInner}>
                                         <div className={styles.stepHeaderContainer}>
                                             <div className={styles.stepHeaderInfo}>
-                                                <div className={styles.stepBadge}>{step}</div>
-                                                <span className={styles.stepStepText}>Step {step} of 4</span>
+                                                <div className={styles.stepBadge}>4</div>
+                                                <span className={styles.stepStepText}>Step 4 of 4</span>
                                             </div>
                                             <div className={styles.stepTiming}>
                                                 <Clock size={14} />
-                                                <span>Takes 15 seconds</span>
+                                                <span>Takes 30 seconds</span>
                                             </div>
                                         </div>
                                         <div className={styles.sectionHeaderMain}>
-                                            <h2 className={styles.sectionTitleMain}>Personal Message.</h2>
-                                            <p className={styles.sectionSubtitleMain}>
-                                                Add a heart-touching message for your guests.
+                                            <h1 className={styles.rsvpTitle} style={{ marginTop: 0 }}>Host Your Event</h1>
+                                            <p className={styles.rsvpSubtitle}>
+                                                Create a beautiful, distraction-free RSVP link to share with your loved ones via WhatsApp
                                             </p>
                                         </div>
                                     </div>
+
                                     <div className={styles.wizardCard}>
-                                        <Input
-                                            label="Personal Welcome Message"
-                                            value={formData.invitationMessage || ''}
-                                            onChange={(e) => updateFormData({ invitationMessage: e.target.value })}
-                                            placeholder="We're so excited to celebrate our special day with our dearest friends and family! Please join us for an evening of love and laughter."
-                                            type="textarea"
-                                            className={styles.textareaInput}
-                                            maxLength={1000}
-                                        />
+                                        <div className={formStyles.grid}>
+                                            <div style={{ gridColumn: 'span 2' }}>
+                                                <Input
+                                                    label="EVENT NAME"
+                                                    value={`${formData.groomName || 'Rahul'} and ${formData.brideName || 'Anjalee'}'s Wedding`}
+                                                    readOnly
+                                                />
+                                            </div>
+                                            <div style={{ gridColumn: 'span 2' }}>
+                                                <Input
+                                                    label="WELCOME MESSAGE"
+                                                    placeholder="Ex: We can't wait to celebrate with you!"
+                                                    type="textarea"
+                                                    value={formData.invitationMessage || ''}
+                                                    onChange={(e) => updateFormData({ invitationMessage: e.target.value })}
+                                                />
+                                            </div>
+                                            <Input
+                                                label="DATE"
+                                                type="date"
+                                                value={formData.primaryDate || ''}
+                                                onChange={(e) => updateFormData({ primaryDate: e.target.value })}
+                                            />
+                                            <Input
+                                                label="TIME"
+                                                type="time"
+                                                value={formData.primaryTime || ''}
+                                                onChange={(e) => updateFormData({ primaryTime: e.target.value })}
+                                            />
+                                            <div className={formStyles.field}>
+                                                <label className={formStyles.label}>EVENT TYPE</label>
+                                                <select 
+                                                    className={styles.selectInput}
+                                                    value={formData.eventType || 'Wedding'}
+                                                    onChange={(e) => updateFormData({ eventType: e.target.value })}
+                                                >
+                                                    <option value="Wedding">Wedding</option>
+                                                    <option value="Reception">Reception</option>
+                                                    <option value="Sangeet">Sangeet</option>
+                                                    <option value="Engagement">Engagement</option>
+                                                    <option value="Other">Other</option>
+                                                </select>
+                                            </div>
+                                            <Input
+                                                label="RSVP DEADLINE (OPTIONAL)"
+                                                type="date"
+                                                value={formData.rsvpDeadline || ''}
+                                                onChange={(e) => updateFormData({ rsvpDeadline: e.target.value })}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                                 <div className={styles.formFooter}>
@@ -862,7 +866,7 @@ export default function DetailsPage() {
                                                     transition={{ duration: 0.6, delay: 0.2, ease: "easeInOut" }}
                                                     style={{ whiteSpace: 'nowrap' }}
                                                 >
-                                                    <span>Invitation ready for sharing</span>
+                                                    <span>Ready to share</span>
                                                 </motion.div>
                                             </motion.div>
                                         )}
@@ -871,7 +875,7 @@ export default function DetailsPage() {
                                         Back
                                     </button>
                                     <button className={styles.continueBtn} onClick={handleNext} disabled={isSaving}>
-                                        Finish & Preview
+                                        {isSaving ? 'Finalizing...' : 'Finalize & Preview'}
                                         <ArrowRight size={18} style={{ marginLeft: '12px' }} />
                                     </button>
                                 </div>
@@ -880,115 +884,188 @@ export default function DetailsPage() {
                     )}
                     </AnimatePresence>
                 </div>
-
-                <LoginModal 
-                    isOpen={showLoginModal} 
-                    onClose={() => setShowLoginModal(false)}
-                    onSuccess={handleLoginSuccess}
-                />
             </main>
-        </div>
+
+            <LoginModal
+                isOpen={showLoginModal}
+                onClose={() => setShowLoginModal(false)}
+                onSuccess={handleLoginSuccess}
+            />
+        </div >
     );
 }
 
-// --- Internal Components ---
-
-function formatDateDisplay(dateStr: string) {
+// --- Helpers ---
+function formatDateDisplay(dateStr?: string) {
     if (!dateStr) return '';
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+    const parts = dateStr.split('-');
+    if (parts.length !== 3) return dateStr;
+    const [year, month, day] = parts;
+    const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+    const monthStr = date.toLocaleString('default', { month: 'short' });
+    return `${day}-${monthStr}-${year}`;
 }
 
-function CelebrationTimeline({ errors, setErrors, expandedEventId, setExpandedEventId }: any) {
-    const { formData, updateFormData } = useWeddingStore();
-    
-    const updateEvent = (id: string, updates: Partial<WeddingEvent>) => {
-        const newEvents = (formData.events || []).map(e => 
-            e.id === id ? { ...e, ...updates } : e
-        );
-        updateFormData({ events: newEvents });
-        
-        // Clear errors for this field
-        const keyPrefix = `${id}-`;
-        const newErrors = { ...errors };
-        Object.keys(updates).forEach(key => {
-            delete newErrors[keyPrefix + key];
-        });
-        setErrors(newErrors);
+function getDefaultWelcomeMessage(eventName: string): string {
+    const name = eventName.toLowerCase();
+    if (name.includes('haldi')) return "Bless the couple with showers of yellow health and happiness";
+    if (name.includes('mehendi')) return "Join at the mehendi event, with the \"Hands full of mehendi , hearts full of love\"";
+    if (name.includes('sangeet')) return "Join us to turn up the volume \"Naach. gaana aur full-on hungama!\"";
+    if (name.includes('wedding')) return "We are pleased to invite you to the wedding of";
+    if (name.includes('reception')) return "We are pleased to invite you to the reception of";
+    return "";
+}
+
+function getDefaultHeading(eventName: string): string {
+    const name = eventName.toLowerCase();
+    if (name.includes('haldi')) return "Haldi Ceremony";
+    if (name.includes('mehendi')) return "Mehendi Ceremony";
+    if (name.includes('sangeet')) return "Sangeet Ceremoney";
+    if (name.includes('wedding')) return "Wedding Ceremony";
+    if (name.includes('reception')) return "Reception Ceremony";
+    return `${eventName} Ceremony`;
+}
+
+// --- Sub Components ---
+
+function CelebrationTimeline({ errors, setErrors, expandedEventId, setExpandedEventId }: { errors: Record<string, string>, setErrors: any, expandedEventId: string | null, setExpandedEventId: any }) {
+    const { formData, updateFormData, addEvent, removeEvent, updateEvent } = useWeddingStore();
+
+    const toggleEvent = (id: string) => {
+        setExpandedEventId(expandedEventId === id ? null : id);
     };
 
     return (
-        <div className={styles.timelineList}>
-            {(formData.events || []).map((event, index) => (
-                <div key={event.id} className={clsx(styles.timelineItem, expandedEventId === event.id && styles.timelineItemExpanded)}>
-                    <button 
-                        className={styles.timelineHeader}
-                        onClick={() => setExpandedEventId(expandedEventId === event.id ? null : event.id)}
+        <div className={styles.eventTimelineContainer}>
+            <div className={styles.eventTimelineSection}>
+                {(formData.events || []).map((event, index) => (
+                    <div
+                        key={event.id}
+                        className={clsx(
+                            styles.eventCard,
+                            expandedEventId === event.id && styles.eventCardActive
+                        )}
                     >
-                        <div className={styles.timelineHeaderLeft}>
-                            <div className={clsx(styles.timelineStatus, !!event.date && !!event.time && styles.statusComplete)}>
-                                {!!event.date && !!event.time ? <CheckCircle size={14} /> : <Circle size={14} />}
+                        <div
+                            className={styles.eventCardHeader}
+                            onClick={() => toggleEvent(event.id)}
+                        >
+                            <div className={styles.eventCardTitle}>{event.name}</div>
+                            <div className={styles.eventCardToggle}>
+                                <ChevronDown size={20} />
                             </div>
-                            <span className={styles.timelineEventName}>{event.name}</span>
                         </div>
-                        <div className={styles.timelineHeaderRight}>
-                            <span className={styles.timelineDateValue}>{event.date ? formatDateDisplay(event.date) : 'Set date'}</span>
-                            <ChevronDown size={18} className={clsx(styles.chevron, expandedEventId === event.id && styles.chevronRotate)} />
-                        </div>
-                    </button>
-                    
-                    <AnimatePresence>
+
                         {expandedEventId === event.id && (
-                            <motion.div 
-                                initial={{ height: 0, opacity: 0 }}
-                                animate={{ height: 'auto', opacity: 1 }}
-                                exit={{ height: 0, opacity: 0 }}
-                                className={styles.timelineContent}
-                            >
-                                <div className={formStyles.grid}>
-                                    <Input
-                                        label="Date"
-                                        type="date"
-                                        value={event.date || ''}
-                                        onChange={(e) => updateEvent(event.id, { date: e.target.value })}
-                                        error={errors[`${event.id}-date`]}
-                                    />
-                                    <Input
-                                        label="Time"
-                                        type="time"
-                                        value={event.time || ''}
-                                        onChange={(e) => updateEvent(event.id, { time: e.target.value })}
-                                        error={errors[`${event.id}-time`]}
-                                    />
-                                    <div style={{ gridColumn: 'span 2' }}>
+                            <div className={styles.eventCardBody}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                                    <div className={styles.eventFieldRow}>
                                         <Input
-                                            label="Venue"
-                                            value={event.venue || ''}
-                                            onChange={(e) => updateEvent(event.id, { venue: e.target.value })}
-                                            placeholder="Same as wedding venue or specify new"
+                                            label="Date"
+                                            type="date"
+                                            value={event.date || ''}
+                                            onChange={(e) => {
+                                                updateEvent(event.id, { date: e.target.value });
+                                                setErrors((prev: any) => ({ ...prev, [`${event.id}-date`]: '' }));
+                                            }}
+                                            error={errors[`${event.id}-date`]}
+                                        />
+                                        <Input
+                                            label="Time"
+                                            type="time"
+                                            value={event.time || ''}
+                                            onChange={(e) => {
+                                                updateEvent(event.id, { time: e.target.value });
+                                                setErrors((prev: any) => ({ ...prev, [`${event.id}-time`]: '' }));
+                                            }}
+                                            error={errors[`${event.id}-time`]}
                                         />
                                     </div>
+
+                                    <Input
+                                        label="Venue"
+                                        value={event.venue || ''}
+                                        onChange={(e) => updateEvent(event.id, { venue: e.target.value, isCustomVenue: !!e.target.value })}
+                                        placeholder="Inherits from Global if empty"
+                                        type="textarea"
+                                    />
+
+                                    <button
+                                        className={styles.removeEventBtn}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            removeEvent(event.id);
+                                        }}
+                                    >
+                                        <Trash2 size={16} />
+                                        Remove Event
+                                    </button>
                                 </div>
-                            </motion.div>
+                            </div>
                         )}
-                    </AnimatePresence>
-                </div>
-            ))}
+                    </div>
+                ))}
+
+
+            </div>
         </div>
     );
 }
 
+function ArchitectureSummary() {
+    const { formData } = useWeddingStore();
+    return (
+        <div className={styles.summaryScroll}>
+            <div className={styles.summaryHeader}>
+                <ShieldCheck size={28} color="#059669" />
+                <h2 style={{ margin: 0 }}>Global Wedding Identity</h2>
+            </div>
 
+            <div className={styles.summaryList}>
+                <div className={styles.summaryItem}>
+                    <Users size={18} />
+                    <span>{formData.brideName} & {formData.groomName}</span>
+                </div>
+                <div className={styles.summaryItem}>
+                    <Calendar size={18} />
+                    <span>{formatDateDisplay(formData.primaryDate)} (Default Date)</span>
+                </div>
+                <div className={styles.summaryItem}>
+                    <MapPin size={18} />
+                    <span>{formData.defaultVenueName} (Default Venue)</span>
+                </div>
+            </div>
+
+            <div className={styles.eventsTimeline}>
+                {(formData.events || []).map((e, i) => (
+                    <div key={e.id} className={styles.summaryEventCard}>
+                        <div className={styles.eventTimeInfo}>
+                            <div style={{ fontWeight: 700 }}>{e.name}</div>
+                            <div style={{ fontSize: '0.875rem', color: '#666' }}>
+                                {formatDateDisplay(e.date || formData.primaryDate)} @ {e.time || 'TBD'}
+                            </div>
+                        </div>
+                        <div className={styles.inheritanceBadge}>
+                            {!e.date && !e.isCustomVenue ? 'INHERITED' : 'CUSTOMIZED'}
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+}
+
+// --- Confetti Particles Component ---
 function WeddingCelebration() {
-    const particles = useRef(
+    const [particles] = useState(() => 
         Array.from({ length: 45 }).map((_, i) => ({
             id: i,
-            x: Math.random() * 100, // percentage
+            x: Math.random() * 100,
             y: -10 - Math.random() * 20,
             size: 8 + Math.random() * 12,
             type: ['heart', 'petal', 'sparkle', 'flake'][Math.floor(Math.random() * 4)],
             color: ['#D4AF37', '#FDFBF7', '#FDA4AF', '#EBCDC3'][Math.floor(Math.random() * 4)],
-            duration: 4.0 + Math.random() * 2.0, // Slowed down fall speed
+            duration: 4.0 + Math.random() * 2.0,
             delay: Math.random() * 0.8,
             rotation: Math.random() * 360,
             drift: (Math.random() - 0.5) * 40
@@ -996,34 +1073,68 @@ function WeddingCelebration() {
     );
 
     return (
-        <div className={styles.confettiContainer}>
-            {particles.current.map((p) => (
+        <div style={{
+            position: 'absolute',
+            inset: 0,
+            pointerEvents: 'none',
+            overflow: 'hidden',
+            zIndex: 0
+        }}>
+            {particles.map((p) => (
                 <motion.div
                     key={p.id}
-                    initial={{ y: `${p.y}vh`, x: `${p.x}vw`, rotate: p.rotation, opacity: 0 }}
-                    animate={{ 
-                        y: '110vh', 
-                        x: `${p.x + p.drift}vw`,
-                        rotate: p.rotation + 360,
-                        opacity: [0, 1, 1, 0]
+                    initial={{
+                        x: `${p.x}vw`,
+                        y: `${p.y}vh`,
+                        rotate: p.rotation,
+                        opacity: 1,
+                        scale: 0.5
                     }}
-                    transition={{ 
-                        duration: p.duration, 
-                        delay: p.delay, 
-                        repeat: Infinity,
+                    animate={{
+                        y: '110vh',
+                        x: `${p.x + p.drift}vw`,
+                        rotate: p.rotation + 720,
+                        opacity: [1, 1, 0],
+                        scale: [0.8, 1, 0.7]
+                    }}
+                    transition={{
+                        duration: p.duration,
+                        delay: p.delay,
                         ease: "linear"
                     }}
-                    className={styles.particle}
-                    style={{ 
-                        width: p.size, 
-                        height: p.size,
-                        color: p.color
+                    style={{
+                        position: 'absolute',
+                        color: p.color,
+                        filter: p.size < 12 ? 'blur(1px)' : 'none',
+                        opacity: 0.8
                     }}
                 >
-                    {p.type === 'heart' && <Heart size={p.size} fill="currentColor" />}
-                    {p.type === 'petal' && <Leaf size={p.size} fill="currentColor" />}
-                    {p.type === 'sparkle' && <Sparkles size={p.size} fill="currentColor" />}
-                    {p.type === 'flake' && <Sun size={p.size} fill="currentColor" />}
+                    {p.type === 'heart' && <Heart size={p.size} fill="currentColor" stroke="none" />}
+                    {p.type === 'petal' && (
+                        <div style={{
+                            width: p.size,
+                            height: p.size * 0.7,
+                            background: 'currentColor',
+                            borderRadius: '50% 0 50% 0',
+                            transform: 'rotate(45deg)'
+                        }} />
+                    )}
+                    {p.type === 'sparkle' && (
+                        <div style={{
+                            width: 2,
+                            height: p.size,
+                            background: 'currentColor',
+                            boxShadow: `0 0 ${p.size / 2}px currentColor`
+                        }} />
+                    )}
+                    {p.type === 'flake' && (
+                        <div style={{
+                            width: p.size / 2,
+                            height: p.size / 2,
+                            background: 'currentColor',
+                            borderRadius: '2px'
+                        }} />
+                    )}
                 </motion.div>
             ))}
         </div>
