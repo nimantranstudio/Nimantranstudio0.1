@@ -401,9 +401,10 @@ function PreviewContent() {
                             brideParents={formData.brideParents || undefined}
                             welcomeMessage={formData.invitationMessage || undefined}
                             isPlaceholder={true}
+                            isRawPreview={false}
                             type='image'
                             customImage={previewItems[selectedPreviewIndex]?.image}
-                            isSecured={true} // Preview always has watermarks unless downloaded
+                            isSecured={true}
                             showSizingBoxes={isEditMode}
                         />
 
@@ -618,7 +619,7 @@ function PreviewContent() {
                                     previewItems.map((item, index) => (
                                         <div key={item.id} className={styles.suiteItem}>
                                             <div className={styles.suiteThumbContainer} onClick={() => setSelectedPreviewIndex(index)}>
-                                                <InvitationCard 
+                                                <InvitationCard
                                                     ref={el => { suiteRefs.current[item.id] = el; }}
                                                     event={item.event}
                                                     theme={theme}
@@ -628,6 +629,7 @@ function PreviewContent() {
                                                     brideParents={formData.brideParents}
                                                     welcomeMessage={formData.invitationMessage}
                                                     isPlaceholder={true}
+                                                    isRawPreview={false}
                                                     customImage={item.image}
                                                     className={styles.suiteThumbCard}
                                                     isSecured={true}
