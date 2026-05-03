@@ -235,15 +235,14 @@ export default function ThemeDetailClient({
         return (num || 0).toLocaleString('en-IN');
     };
 
-    // Find active bundle (default to first one)
-    const activeBundle = theme && theme.bundles && theme.bundles.length > 0 ? theme.bundles[0] : null;
-
-    // Helper to find specific invoice price
+    // Helper to find specific invoice price across all bundles of this theme
     const getPackagePrice = (pkgLabel: string, fallback: string) => {
         const pkg = packages.find(p => p.name === pkgLabel);
-        if (pkg && activeBundle && activeBundle.bundleInvoices) {
-            const invoice = activeBundle.bundleInvoices.find((inv: any) => inv.packageId === pkg.id);
-            if (invoice) return formatPrice(invoice.finalSellingPrice);
+        if (pkg && theme?.bundles) {
+            for (const b of theme.bundles) {
+                const invoice = (b as any).bundleInvoices?.find((inv: any) => inv.packageId === pkg.id);
+                if (invoice) return formatPrice(invoice.finalSellingPrice);
+            }
         }
         return fallback;
     };
@@ -269,6 +268,14 @@ export default function ThemeDetailClient({
     const selectedPackageName = DYNAMIC_PLANS[selectedPlan] ? DYNAMIC_PLANS[selectedPlan].label : '';
     const currentPackage = packages.find(p => p.name === selectedPackageName);
 
+    // Dynamically find the active bundle associated with the selected package
+    const activeBundle = theme?.bundles?.find((b: any) => 
+        b.bundleInvoices?.some((inv: any) => {
+            const pkg = packages.find(p => p.id === inv.packageId);
+            return pkg?.name === selectedPackageName;
+        })
+    ) || (theme?.bundles?.[0] || null);
+
     // Use theme.bundleItems from the relational table or fallback to previewImages
     let imageList: { name: string, image: string }[] = [];
     
@@ -276,7 +283,7 @@ export default function ThemeDetailClient({
         const allowedItems = currentPackage ? JSON.parse(currentPackage.allowedItems || '[]') : [];
         
         const filtered = activeBundle.bundleItems
-            .filter((item: any) => !currentPackage || allowedItems.includes(item.eventId))
+            .filter((item: any) => !currentPackage || allowedItems.includes(item.eventId) || item.templatePath?.toLowerCase().endsWith('.html'))
             .map((item: any) => ({
                 name: item.event?.eventName || 'Design',
                 image: item.templatePath
@@ -433,7 +440,7 @@ export default function ThemeDetailClient({
                         <div className={styles.galleryContainer}>
                         {/* Thumbnails on the left */}
                         <div className={styles.thumbnailList}>
-                            {assets.slice(0, 3).map((asset, index) => (
+                            {assets.map((asset, index) => (
                                 <div
                                     key={index}
                                     className={clsx(
@@ -463,8 +470,8 @@ export default function ThemeDetailClient({
                                                 style={{ objectFit: 'cover' }}
                                             />
                                         )}
-                                        {/* Show Video Badge for the second item (as in ref image) or if name contains video */}
-                                        {(index === 1 || asset.name.toLowerCase().includes('video')) && (
+                                        {/* Show Video Badge if name contains video or is a video file */}
+                                        {(asset.name.toLowerCase().includes('video') || asset.image.toLowerCase().endsWith('.mp4')) && (
                                             <div className={styles.videoBadge}>
                                                 <div className={styles.playIconBg}>
                                                     <Play size={14} fill="currentColor" />
@@ -474,12 +481,6 @@ export default function ThemeDetailClient({
                                     </div>
                                 </div>
                             ))}
-                            {assets.length > 3 && (
-                                <div className={styles.moreDesignsBtn} onClick={() => setPreviewIndex(0)}>
-                                    <span className={styles.moreDesignsCount}>+{assets.length - 2}</span>
-                                    <span>More<br />Designs</span>
-                                </div>
-                            )}
                         </div>
 
                         {/* Main Image on the right */}
