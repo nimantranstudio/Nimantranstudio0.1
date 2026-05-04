@@ -60,7 +60,7 @@ export default function PaymentPage() {
             const weddingEvents = currentStore.formData.events || [];
             actualBundleItems.forEach(bi => {
                 if (!bi.templatePath) return; // Renamed
-                const biType = bi.eventType.toUpperCase().replace(/_/g, '');
+                const biType = (bi.eventType || bi.event?.eventName || '').toUpperCase().replace(/_/g, '');
                 let matchedEvent = weddingEvents.find(evt => {
                     const evtId = evt.id.toUpperCase();
                     const evtType = (evt.eventType || '').toUpperCase();
@@ -71,7 +71,7 @@ export default function PaymentPage() {
                     return false;
                 });
                 items.push({
-                    name: bi.templateName || bi.eventType,
+                    name: bi.templateName || bi.eventType || bi.event?.eventName || 'Design',
                     file: bi.templatePath, // Renamed
                     event: matchedEvent
                 });
@@ -122,7 +122,7 @@ export default function PaymentPage() {
                     
                     const styleTags = doc.querySelectorAll('style:not(#runtime-preview-fix)');
                     styleTags.forEach(tag => {
-                        if (tag.innerHTML.includes('vw')) tag.innerHTML = tag.innerHTML.replace(/([\d.]+)vw/g, '$1vmax');
+                        if (tag.innerHTML.includes('vw')) tag.innerHTML = tag.innerHTML.replace(/([\d.]+)vw(?=[\s;},!\)])/g, '$1vmax');
                     });
                     
                     const finalHtml = "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
@@ -140,26 +140,61 @@ export default function PaymentPage() {
                             const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
                             if (!iframeDoc) return reject();
                             
-                            setTimeout(() => {
-                                const win = iframe.contentWindow as any;
-                                const execute = () => {
-                                    win.html2canvas(iframeDoc.body, { useCORS: true, scale: 2 }).then((canvas: HTMLCanvasElement) => {
-                                        canvas.toBlob(b => {
-                                            document.body.removeChild(iframe);
-                                            if (b) resolve(b); else reject();
-                                        }, 'image/png');
-                                    });
-                                };
+                            // Inject base tag to handle relative paths correctly
+                            const baseUrl = window.location.origin + item.file.substring(0, item.file.lastIndexOf('/') + 1);
+                            if (!iframeDoc.querySelector('base')) {
+                                const base = iframeDoc.createElement('base');
+                                base.href = baseUrl;
+                                iframeDoc.head.insertBefore(base, iframeDoc.head.firstChild);
+                            }
 
-                                if (!win.html2canvas) {
-                                    const script = iframeDoc.createElement('script');
-                                    script.src = "https://html2canvas.hertzen.com/dist/html2canvas.min.js";
-                                    script.onload = execute;
-                                    iframeDoc.head.appendChild(script);
+                            // Wait for all images to load
+                            const checkLoaded = () => {
+                                const images = Array.from(iframeDoc.querySelectorAll('img'));
+                                const allLoaded = images.every(img => img.complete);
+                                
+                                if (allLoaded) {
+                                    const win = iframe.contentWindow as any;
+                                    const execute = () => {
+                                        // Ensure body has dimensions
+                                        iframeDoc.body.style.width = '500px';
+                                        iframeDoc.body.style.height = '889px';
+                                        iframeDoc.body.style.margin = '0';
+                                        iframeDoc.body.style.padding = '0';
+                                        iframeDoc.body.style.overflow = 'hidden';
+
+                                        win.html2canvas(iframeDoc.body, { 
+                                            useCORS: true, 
+                                            scale: 2,
+                                            width: 500,
+                                            height: 889,
+                                            backgroundColor: '#ffffff' 
+                                        }).then((canvas: HTMLCanvasElement) => {
+                                            canvas.toBlob(b => {
+                                                document.body.removeChild(iframe);
+                                                if (b) resolve(b); else reject(new Error("Canvas toBlob failed"));
+                                            }, 'image/png');
+                                        }).catch((err: any) => {
+                                            document.body.removeChild(iframe);
+                                            reject(err);
+                                        });
+                                    };
+
+                                    if (!win.html2canvas) {
+                                        const script = iframeDoc.createElement('script');
+                                        script.src = "https://html2canvas.hertzen.com/dist/html2canvas.min.js";
+                                        script.onload = execute;
+                                        script.onerror = () => reject(new Error("Failed to load html2canvas in iframe"));
+                                        iframeDoc.head.appendChild(script);
+                                    } else {
+                                        execute();
+                                    }
                                 } else {
-                                    execute();
+                                    setTimeout(checkLoaded, 100);
                                 }
-                            }, 1200); // 1.2s to wait for fonts and layout
+                            };
+
+                            setTimeout(checkLoaded, 500); // Initial delay to start checking
                         };
                         
                         const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
@@ -176,10 +211,23 @@ export default function PaymentPage() {
                     const ext = item.file.split('.').pop() || 'png';
                     blobs.push({ name: item.name, blob, ext });
                 }
-            } catch(e) { console.error("Could not fetch or format", item.file, e); }
+        } catch(e) { 
+            console.error("Could not fetch or format", item.file, e); 
+            // Fallback: just add the raw file if HTML conversion fails
+            try {
+                const res = await fetch(item.file);
+                if (res.ok) {
+                    const blob = await res.blob();
+                    const ext = item.file.split('.').pop() || 'html';
+                    blobs.push({ name: item.name, blob, ext });
+                }
+            } catch (fallbackErr) {
+                console.error("Fallback also failed", fallbackErr);
+            }
         }
-        return blobs;
-    };
+    }
+    return blobs;
+};
 
     const handleDownload = async () => {
         setIsDownloading(true);
@@ -208,9 +256,9 @@ export default function PaymentPage() {
             link.download = `Nimantran-Wedding-Bundle.zip`;
             link.click();
             URL.revokeObjectURL(link.href);
-        } catch (err) {
-            console.error(err);
-            alert("Error generating zip bundle!");
+        } catch (err: any) {
+            console.error("Download Error:", err);
+            alert(`Error generating zip bundle: ${err.message || 'Unknown error'}`);
         } finally {
             setIsDownloading(false);
         }
