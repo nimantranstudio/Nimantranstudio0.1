@@ -53,6 +53,19 @@ export default function DetailsPage() {
 
     const [activeTheme, setActiveTheme] = useState<Theme | null>(null);
 
+    // Warn user before leaving mid-form
+    useEffect(() => {
+        const hasStarted = !!(formData.brideName || formData.groomName || step > 1);
+        if (!hasStarted) return;
+
+        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+            e.preventDefault();
+            e.returnValue = '';
+        };
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    }, [formData.brideName, formData.groomName, step]);
+
     useEffect(() => {
         if (!selectedThemeId) return;
 

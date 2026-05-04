@@ -8,12 +8,12 @@ import { useState, useEffect } from "react";
 const messages = [
   {
     icon: '✦',
-    text: <><strong>Launch Offer</strong> - Create Your Complete Wedding Invitation Suite in Minutes</>,
+    text: <>Your wedding communication ready in <strong>5 mins</strong>. Try now for free.</>,
     badge: 'New 🎉',
   },
   {
     icon: '✦',
-    text: <>₹999 Complete Wedding Suite <strong>(Save ₹1,501)</strong> — 1000+ couples this month</>,
+    text: <><strong>Launch Offer</strong> - Create Your Complete Wedding Invitation Suite in Minutes</>,
     badge: 'Hot 🔥',
   },
 ];

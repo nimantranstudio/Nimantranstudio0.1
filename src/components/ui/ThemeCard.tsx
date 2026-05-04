@@ -40,18 +40,40 @@ export const ThemeCard = ({ theme, onSelect }: ThemeCardProps) => {
                 <div className={styles.pricing}>
                     {(() => {
                         const bundle = theme.bundles?.[0];
-                        if (!bundle || !bundle.bundleInvoices || bundle.bundleInvoices.length === 0) {
-                            return <span className={styles.currentPrice}>Check Details</span>;
+                        const invoices = bundle?.bundleInvoices;
+
+                        if (!bundle || !invoices || invoices.length === 0) {
+                            return (
+                                <>
+                                    <span className={styles.currentPrice}>₹999</span>
+                                    <span className={styles.originalPrice}>₹2,500</span>
+                                    <span className={styles.discount}>60% OFF</span>
+                                </>
+                            );
                         }
 
-                        // Try to find specific invoices or just use min/max
-                        const essentials = bundle.bundleInvoices.find((inv: any) => inv.packageId === 'WhatsApp Essentials' || inv.packageId === 'pkg_1');
-                        const complete = bundle.bundleInvoices.find((inv: any) => inv.packageId === 'Complete Wedding Suite' || inv.packageId === 'pkg_3');
+                        const prices = invoices
+                            .map((inv: any) => inv.finalSellingPrice)
+                            .filter((p: number) => p > 0);
 
-                        const currentPrice = essentials?.finalSellingPrice || bundle.bundleInvoices[0].finalSellingPrice || 0;
-                        const originalPrice = complete?.totalWeddingSuiteValue || bundle.bundleInvoices[bundle.bundleInvoices.length-1].totalWeddingSuiteValue || 0;
-                        
-                        const discount = originalPrice > 0 ? Math.round(((originalPrice - currentPrice) / originalPrice) * 100) : 0;
+                        if (prices.length === 0) {
+                            return (
+                                <>
+                                    <span className={styles.currentPrice}>₹999</span>
+                                    <span className={styles.originalPrice}>₹2,500</span>
+                                    <span className={styles.discount}>60% OFF</span>
+                                </>
+                            );
+                        }
+
+                        const currentPrice = Math.min(...prices);
+                        const originalPrices = invoices
+                            .map((inv: any) => inv.totalWeddingSuiteValue)
+                            .filter((p: number) => p > 0);
+                        const originalPrice = originalPrices.length > 0 ? Math.max(...originalPrices) : 0;
+                        const discount = originalPrice > currentPrice
+                            ? Math.round(((originalPrice - currentPrice) / originalPrice) * 100)
+                            : 0;
 
                         return (
                             <>

@@ -32,7 +32,7 @@ export const FaqSection = () => {
             <div className={`container ${styles.faqContainer}`}>
                 {/* Left Column: Heading */}
                 <div className={styles.faqHeader}>
-                    <h2 className={styles.faqTitle}>FAQ Section</h2>
+                    <h2 className={styles.faqTitle}>Got Questions?</h2>
                     <p className={styles.faqDescription}>
                         Find answers to common questions about creating invitations, sharing them on WhatsApp, collecting RSVPs, and tracking your wedding guests.
                     </p>

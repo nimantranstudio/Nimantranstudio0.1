@@ -41,7 +41,6 @@ export default function Footer() {
                         <h4>QUICK LINKS</h4>
                         <ul>
                             <li><Link href="/themes">Invitation Templates</Link></li>
-                            <li><Link href="/rsvp">RSVP & Guest Tracking</Link></li>
                             <li><Link href="/pricing">Pricing</Link></li>
                             <li><Link href="/blogs">Blog & Insights</Link></li>
                             <li><Link href="/about">About Us</Link></li>
@@ -79,7 +78,7 @@ export default function Footer() {
                 </div>
 
                 <div className={styles.footerBottom}>
-                    <p className={styles.copyright}>© 2024 NIMANTRANSTUDIO.COM — ALL RIGHTS RESERVED</p>
+                    <p className={styles.copyright}>© 2026 NIMANTRANSTUDIO.COM — ALL RIGHTS RESERVED</p>
                     <p className={styles.attribution}>
                         MADE WITH <Heart size={14} className={styles.heartIcon} /> FOR INDIAN WEDDINGS
                     </p>
