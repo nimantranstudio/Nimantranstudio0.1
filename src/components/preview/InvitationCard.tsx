@@ -63,7 +63,7 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
             if (!doc) return {};
             const values: Record<string, string> = {};
             const ids = [
-                'event-name', 'welcome-message', 'groom-name', 'bride-name', 
+                'event-name', 'groom-name', 'bride-name', 
                 'groom-parents', 'groom-parent-name', 'bride-parents', 'bride-parent-name',
                 'event-date', 'event-time', 'event-venue', 'venue'
             ];
@@ -114,6 +114,50 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
         }
     }));
 
+    const getOrdinal = (n: number) => {
+        const s = ["th", "st", "nd", "rd"];
+        const v = n % 100;
+        return n + (s[(v - 20) % 10] || s[v] || s[0]);
+    };
+
+    const formatDate = (dateStr?: string) => {
+        if (!dateStr) return dateStr;
+        // If it already looks formatted (contains month name), return as is
+        if (/[a-zA-Z]/.test(dateStr)) return dateStr;
+        
+        try {
+            const date = new Date(dateStr);
+            if (isNaN(date.getTime())) return dateStr;
+            
+            const day = getOrdinal(date.getDate());
+            const month = date.toLocaleString('en-US', { month: 'long' });
+            const year = date.getFullYear();
+            
+            return `${day} ${month} ${year}`;
+        } catch (e) {
+            return dateStr;
+        }
+    };
+
+    const formatTime = (timeStr?: string) => {
+        if (!timeStr) return timeStr;
+        if (timeStr.toLowerCase().includes('am') || timeStr.toLowerCase().includes('pm')) return timeStr;
+        
+        try {
+            const [h, m] = timeStr.split(':');
+            if (h === undefined || m === undefined) return timeStr;
+            
+            let hours = parseInt(h);
+            const minutes = m.substring(0, 2); // Handle case like "10:30:00"
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12;
+            return `${hours}:${minutes} ${ampm}`;
+        } catch (e) {
+            return timeStr;
+        }
+    };
+
     // Handle scaling based on container width
     useEffect(() => {
         if (!isHTMLDesign || !containerRef.current) return;
@@ -157,30 +201,19 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                 return `${eName || 'Wedding'} Ceremony`;
             };
 
-            const getDefaultWelcome = (eName: string) => {
-                const n = (eName || '').toLowerCase();
-                if (n.includes('haldi')) return "Bless the couple with showers of yellow health and happiness";
-                if (n.includes('mehendi')) return "Join at the mehendi event, with the \"Hands full of mehendi , hearts full of love\"";
-                if (n.includes('sangeet')) return "Join us to turn up the volume \"Naach. gaana aur full-on hungama!\"";
-                if (n.includes('wedding')) return "We are pleased to invite you to the wedding of";
-                if (n.includes('reception')) return "We are pleased to invite you to the reception of";
-                return "";
-            };
 
             const displayEventName = event.heading || (event.name ? getDefaultHeading(event.name) : undefined);
-            const displayWelcome = welcomeMessage || event.tagline || (event.name ? getDefaultWelcome(event.name) : undefined);
 
             const mapping: Record<string, string | undefined> = {
                 'event-name': displayEventName,
-                'welcome-message': displayWelcome,
                 'groom-name': groomName,
                 'bride-name': brideName,
                 'groom-parents': groomParents,
                 'groom-parent-name': groomParents,
                 'bride-parents': brideParents,
                 'bride-parent-name': brideParents,
-                'event-date': event.date,
-                'event-time': event.time,
+                'event-date': formatDate(event.date),
+                'event-time': formatTime(event.time),
                 'event-venue': event.venue,
                 'venue': event.venue
             };
@@ -211,10 +244,6 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                 eventNameEl.innerHTML = displayEventName.toString().replace(/\n/g, '<br/>');
             }
 
-            const welcomeMsgEl = doc.getElementById('welcome-message');
-            if (welcomeMsgEl && displayWelcome !== undefined) {
-                welcomeMsgEl.innerHTML = displayWelcome.toString().replace(/\n/g, '<br/>');
-            }
 
             // INJECT RUNTIME FIXES (Doesn't touch original file)
             let styleEl = doc.getElementById('runtime-preview-fix');
@@ -517,7 +546,7 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
 
                             {/* Date */}
                             <text x="300" y="550" fill="#FFF" fontSize="28" fontWeight="600" fontFamily="var(--font-serif)" style={{ letterSpacing: '0.05em' }}>
-                                {event.date || '2026-02-01'}
+                                {formatDate(event.date) || '1st February 2026'}
                             </text>
                             <text x="300" y="590" fill="#D1D5DB" fontSize="20" fontFamily="var(--font-serif)">
                                 {event.venue || 'Venue details to follow'}
@@ -545,7 +574,7 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                             </text>
                             {/* Date for "On" section - approximate placement */}
                             <text x="300" y="740" fill="#FFF" fontSize="24" fontWeight="600" fontFamily="var(--font-serif)">
-                                {event.date || '2026-02-01'}
+                                {formatDate(event.date) || '1st February 2026'}
                             </text>
                         </g>
                     ) : isHaldi ? (
@@ -585,14 +614,14 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                             {event.date && (
                                 <text x="300" y="0">
                                     <tspan fill="#FFE4B5" fontSize="16" style={{ letterSpacing: '0.1em', textTransform: 'uppercase' }} dy="-25">On</tspan>
-                                    <tspan x="300" dy="25">{event.date}</tspan>
+                                    <tspan x="300" dy="25">{formatDate(event.date)}</tspan>
                                 </text>
                             )}
 
                             {event.time && (
                                 <text x="300" y="80">
                                     <tspan fill="#FFE4B5" fontSize="16" style={{ letterSpacing: '0.1em', textTransform: 'uppercase' }} dy="-25">At</tspan>
-                                    <tspan x="300" dy="25">{event.time}</tspan>
+                                    <tspan x="300" dy="25">{formatTime(event.time)}</tspan>
                                 </text>
                             )}
 

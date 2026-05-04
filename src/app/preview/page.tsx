@@ -313,7 +313,7 @@ function PreviewContent() {
                     name: matchedEvent.heading || matchedEvent.name,
                     date: matchedEvent.date || formData.primaryDate,
                     time: matchedEvent.time || formData.primaryTime,
-                    venue: (matchedEvent.isCustomVenue && matchedEvent.venue) ? matchedEvent.venue : formData.defaultVenueName,
+                    venue: matchedEvent.venue || formData.defaultVenueName,
                     tagline: matchedEvent.tagline,
                     description: matchedEvent.description,
                     heading: matchedEvent.heading
@@ -529,13 +529,9 @@ function PreviewContent() {
                                                     formDataChanged = true;
                                                 }
                                             }
-                                            if (edits['welcome-message'] !== undefined && edits['welcome-message'] !== formData.invitationMessage) {
-                                                newFormData.invitationMessage = edits['welcome-message'];
-                                                formDataChanged = true;
-                                            }
 
                                             if ((edits['event-venue'] !== undefined || edits['venue'] !== undefined)) {
-                                                const v = edits['event-venue'] !== undefined ? edits['event-venue'] : edits['venue'];
+                                                const v = edits['event-venue'] !== undefined ? (edits['event-venue'] || currentEvent?.venue) : (edits['venue'] || currentEvent?.venue);
                                                 if (v !== undefined && v !== formData.defaultVenueName) {
                                                     newFormData.defaultVenueName = v;
                                                     formDataChanged = true;
