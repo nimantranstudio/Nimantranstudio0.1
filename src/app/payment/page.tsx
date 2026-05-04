@@ -205,9 +205,15 @@ export default function PaymentPage() {
                                 if (allLoaded) {
                                     const win = iframe.contentWindow as any;
                                     const execute = () => {
+                                        const wrapper = iframeDoc.querySelector('.invitation-wrapper') || 
+                                                       iframeDoc.querySelector('.invite-wrapper') || 
+                                                       iframeDoc.body.firstElementChild;
+                                        
+                                        const targetHeight = (wrapper as HTMLElement)?.offsetHeight || 705;
+
                                         // Ensure body has dimensions
                                         iframeDoc.body.style.width = '500px';
-                                        iframeDoc.body.style.height = '889px';
+                                        iframeDoc.body.style.height = `${targetHeight}px`;
                                         iframeDoc.body.style.margin = '0';
                                         iframeDoc.body.style.padding = '0';
                                         iframeDoc.body.style.overflow = 'hidden';
@@ -216,7 +222,7 @@ export default function PaymentPage() {
                                             useCORS: true, 
                                             scale: 2,
                                             width: 500,
-                                            height: 889,
+                                            height: targetHeight,
                                             backgroundColor: '#ffffff' 
                                         }).then((canvas: HTMLCanvasElement) => {
                                             canvas.toBlob(b => {

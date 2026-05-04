@@ -54,6 +54,7 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
     const containerRef = useRef<HTMLDivElement>(null);
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const [containerScale, setContainerScale] = useState(1);
+    const [iframeHeight, setIframeHeight] = useState(889);
     const isHTMLDesign = customImage?.toLowerCase().endsWith('.html') || (customImage?.includes('item-Wedding_Invitation') && customImage.toLowerCase().includes('.html')); // Robust check
 
     useImperativeHandle(ref, () => ({
@@ -93,7 +94,18 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                 style.textContent = `.sizing-box { outline: none !important; cursor: default !important; }`;
                 doc.head.appendChild(style);
 
-                win.html2canvas(doc.body, { useCORS: true, scale: 2, backgroundColor: null }).then((canvas: HTMLCanvasElement) => {
+                const wrapper = doc.querySelector('.invitation-wrapper') || 
+                              doc.querySelector('.invite-wrapper') || 
+                              doc.body.firstElementChild;
+                const targetHeight = (wrapper as HTMLElement)?.offsetHeight || 705;
+
+                win.html2canvas(doc.body, { 
+                    useCORS: true, 
+                    scale: 2, 
+                    width: 500,
+                    height: targetHeight,
+                    backgroundColor: null 
+                }).then((canvas: HTMLCanvasElement) => {
                     const link = document.createElement('a');
                     link.download = `Wedding-Invitation-Design.png`;
                     link.href = canvas.toDataURL('image/png');
@@ -320,6 +332,20 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                 ` : ''}
             `;
 
+            // Auto-adjust height based on content
+            const wrapper = doc.querySelector('.invitation-wrapper') || 
+                          doc.querySelector('.invite-wrapper') || 
+                          doc.body.firstElementChild;
+            if (wrapper) {
+                const h = (wrapper as HTMLElement).offsetHeight;
+                if (h > 0 && h !== iframeHeight) {
+                    setIframeHeight(h);
+                }
+            } else if (iframeHeight !== 705) {
+                // Default to 705 for most templates if no wrapper detected yet
+                setIframeHeight(705);
+            }
+
             if (showSizingBoxes) {
                 Object.keys(mapping).forEach(id => {
                     const el = doc.getElementById(id);
@@ -470,7 +496,7 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                     top: 0,
                     left: 0,
                     width: '500px',
-                    height: '889px', /* Match 16:9 ratio (500 * (16/9)) */
+                    height: `${iframeHeight}px`,
                     transform: `scale(${containerScale})`,
                     transformOrigin: 'top left',
                     pointerEvents: (onClick && !showSizingBoxes) ? 'none' : 'auto'
