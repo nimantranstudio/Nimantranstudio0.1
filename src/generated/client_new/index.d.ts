@@ -9009,6 +9009,7 @@ export namespace Prisma {
 
   export type WeddingMinAggregateOutputType = {
     id: string | null
+    slug: string | null
     ownerId: string | null
     themeId: string | null
     groomName: string | null
@@ -9024,6 +9025,7 @@ export namespace Prisma {
 
   export type WeddingMaxAggregateOutputType = {
     id: string | null
+    slug: string | null
     ownerId: string | null
     themeId: string | null
     groomName: string | null
@@ -9039,6 +9041,7 @@ export namespace Prisma {
 
   export type WeddingCountAggregateOutputType = {
     id: number
+    slug: number
     ownerId: number
     themeId: number
     groomName: number
@@ -9056,6 +9059,7 @@ export namespace Prisma {
 
   export type WeddingMinAggregateInputType = {
     id?: true
+    slug?: true
     ownerId?: true
     themeId?: true
     groomName?: true
@@ -9071,6 +9075,7 @@ export namespace Prisma {
 
   export type WeddingMaxAggregateInputType = {
     id?: true
+    slug?: true
     ownerId?: true
     themeId?: true
     groomName?: true
@@ -9086,6 +9091,7 @@ export namespace Prisma {
 
   export type WeddingCountAggregateInputType = {
     id?: true
+    slug?: true
     ownerId?: true
     themeId?: true
     groomName?: true
@@ -9174,6 +9180,7 @@ export namespace Prisma {
 
   export type WeddingGroupByOutputType = {
     id: string
+    slug: string | null
     ownerId: string
     themeId: string
     groomName: string
@@ -9206,6 +9213,7 @@ export namespace Prisma {
 
   export type WeddingSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    slug?: boolean
     ownerId?: boolean
     themeId?: boolean
     groomName?: boolean
@@ -9226,6 +9234,7 @@ export namespace Prisma {
 
   export type WeddingSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    slug?: boolean
     ownerId?: boolean
     themeId?: boolean
     groomName?: boolean
@@ -9243,6 +9252,7 @@ export namespace Prisma {
 
   export type WeddingSelectScalar = {
     id?: boolean
+    slug?: boolean
     ownerId?: boolean
     themeId?: boolean
     groomName?: boolean
@@ -9278,6 +9288,7 @@ export namespace Prisma {
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
+      slug: string | null
       ownerId: string
       themeId: string
       groomName: string
@@ -9687,6 +9698,7 @@ export namespace Prisma {
    */ 
   interface WeddingFieldRefs {
     readonly id: FieldRef<"Wedding", 'String'>
+    readonly slug: FieldRef<"Wedding", 'String'>
     readonly ownerId: FieldRef<"Wedding", 'String'>
     readonly themeId: FieldRef<"Wedding", 'String'>
     readonly groomName: FieldRef<"Wedding", 'String'>
@@ -14464,6 +14476,7 @@ export namespace Prisma {
 
   export const WeddingScalarFieldEnum: {
     id: 'id',
+    slug: 'slug',
     ownerId: 'ownerId',
     themeId: 'themeId',
     groomName: 'groomName',
@@ -15161,6 +15174,7 @@ export namespace Prisma {
     OR?: WeddingWhereInput[]
     NOT?: WeddingWhereInput | WeddingWhereInput[]
     id?: StringFilter<"Wedding"> | string
+    slug?: StringNullableFilter<"Wedding"> | string | null
     ownerId?: StringFilter<"Wedding"> | string
     themeId?: StringFilter<"Wedding"> | string
     groomName?: StringFilter<"Wedding"> | string
@@ -15180,6 +15194,7 @@ export namespace Prisma {
 
   export type WeddingOrderByWithRelationInput = {
     id?: SortOrder
+    slug?: SortOrderInput | SortOrder
     ownerId?: SortOrder
     themeId?: SortOrder
     groomName?: SortOrder
@@ -15199,6 +15214,7 @@ export namespace Prisma {
 
   export type WeddingWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    slug?: string
     AND?: WeddingWhereInput | WeddingWhereInput[]
     OR?: WeddingWhereInput[]
     NOT?: WeddingWhereInput | WeddingWhereInput[]
@@ -15217,10 +15233,11 @@ export namespace Prisma {
     rsvps?: RSVPListRelationFilter
     owner?: XOR<UserRelationFilter, UserWhereInput>
     theme?: XOR<ThemeRelationFilter, ThemeWhereInput>
-  }, "id">
+  }, "id" | "slug">
 
   export type WeddingOrderByWithAggregationInput = {
     id?: SortOrder
+    slug?: SortOrderInput | SortOrder
     ownerId?: SortOrder
     themeId?: SortOrder
     groomName?: SortOrder
@@ -15242,6 +15259,7 @@ export namespace Prisma {
     OR?: WeddingScalarWhereWithAggregatesInput[]
     NOT?: WeddingScalarWhereWithAggregatesInput | WeddingScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Wedding"> | string
+    slug?: StringNullableWithAggregatesFilter<"Wedding"> | string | null
     ownerId?: StringWithAggregatesFilter<"Wedding"> | string
     themeId?: StringWithAggregatesFilter<"Wedding"> | string
     groomName?: StringWithAggregatesFilter<"Wedding"> | string
@@ -16198,6 +16216,7 @@ export namespace Prisma {
 
   export type WeddingCreateInput = {
     id?: string
+    slug?: string | null
     groomName: string
     brideName: string
     groomParents?: string | null
@@ -16215,6 +16234,7 @@ export namespace Prisma {
 
   export type WeddingUncheckedCreateInput = {
     id?: string
+    slug?: string | null
     ownerId: string
     themeId: string
     groomName: string
@@ -16232,6 +16252,7 @@ export namespace Prisma {
 
   export type WeddingUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    slug?: NullableStringFieldUpdateOperationsInput | string | null
     groomName?: StringFieldUpdateOperationsInput | string
     brideName?: StringFieldUpdateOperationsInput | string
     groomParents?: NullableStringFieldUpdateOperationsInput | string | null
@@ -16249,6 +16270,7 @@ export namespace Prisma {
 
   export type WeddingUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    slug?: NullableStringFieldUpdateOperationsInput | string | null
     ownerId?: StringFieldUpdateOperationsInput | string
     themeId?: StringFieldUpdateOperationsInput | string
     groomName?: StringFieldUpdateOperationsInput | string
@@ -16266,6 +16288,7 @@ export namespace Prisma {
 
   export type WeddingCreateManyInput = {
     id?: string
+    slug?: string | null
     ownerId: string
     themeId: string
     groomName: string
@@ -16281,6 +16304,7 @@ export namespace Prisma {
 
   export type WeddingUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    slug?: NullableStringFieldUpdateOperationsInput | string | null
     groomName?: StringFieldUpdateOperationsInput | string
     brideName?: StringFieldUpdateOperationsInput | string
     groomParents?: NullableStringFieldUpdateOperationsInput | string | null
@@ -16294,6 +16318,7 @@ export namespace Prisma {
 
   export type WeddingUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
+    slug?: NullableStringFieldUpdateOperationsInput | string | null
     ownerId?: StringFieldUpdateOperationsInput | string
     themeId?: StringFieldUpdateOperationsInput | string
     groomName?: StringFieldUpdateOperationsInput | string
@@ -17256,6 +17281,7 @@ export namespace Prisma {
 
   export type WeddingCountOrderByAggregateInput = {
     id?: SortOrder
+    slug?: SortOrder
     ownerId?: SortOrder
     themeId?: SortOrder
     groomName?: SortOrder
@@ -17271,6 +17297,7 @@ export namespace Prisma {
 
   export type WeddingMaxOrderByAggregateInput = {
     id?: SortOrder
+    slug?: SortOrder
     ownerId?: SortOrder
     themeId?: SortOrder
     groomName?: SortOrder
@@ -17286,6 +17313,7 @@ export namespace Prisma {
 
   export type WeddingMinOrderByAggregateInput = {
     id?: SortOrder
+    slug?: SortOrder
     ownerId?: SortOrder
     themeId?: SortOrder
     groomName?: SortOrder
@@ -18436,6 +18464,7 @@ export namespace Prisma {
 
   export type WeddingCreateWithoutOwnerInput = {
     id?: string
+    slug?: string | null
     groomName: string
     brideName: string
     groomParents?: string | null
@@ -18452,6 +18481,7 @@ export namespace Prisma {
 
   export type WeddingUncheckedCreateWithoutOwnerInput = {
     id?: string
+    slug?: string | null
     themeId: string
     groomName: string
     brideName: string
@@ -18526,6 +18556,7 @@ export namespace Prisma {
     OR?: WeddingScalarWhereInput[]
     NOT?: WeddingScalarWhereInput | WeddingScalarWhereInput[]
     id?: StringFilter<"Wedding"> | string
+    slug?: StringNullableFilter<"Wedding"> | string | null
     ownerId?: StringFilter<"Wedding"> | string
     themeId?: StringFilter<"Wedding"> | string
     groomName?: StringFilter<"Wedding"> | string
@@ -19147,6 +19178,7 @@ export namespace Prisma {
 
   export type WeddingCreateWithoutThemeInput = {
     id?: string
+    slug?: string | null
     groomName: string
     brideName: string
     groomParents?: string | null
@@ -19163,6 +19195,7 @@ export namespace Prisma {
 
   export type WeddingUncheckedCreateWithoutThemeInput = {
     id?: string
+    slug?: string | null
     ownerId: string
     groomName: string
     brideName: string
@@ -19531,6 +19564,7 @@ export namespace Prisma {
 
   export type WeddingCreateWithoutEventsInput = {
     id?: string
+    slug?: string | null
     groomName: string
     brideName: string
     groomParents?: string | null
@@ -19547,6 +19581,7 @@ export namespace Prisma {
 
   export type WeddingUncheckedCreateWithoutEventsInput = {
     id?: string
+    slug?: string | null
     ownerId: string
     themeId: string
     groomName: string
@@ -19579,6 +19614,7 @@ export namespace Prisma {
 
   export type WeddingUpdateWithoutEventsInput = {
     id?: StringFieldUpdateOperationsInput | string
+    slug?: NullableStringFieldUpdateOperationsInput | string | null
     groomName?: StringFieldUpdateOperationsInput | string
     brideName?: StringFieldUpdateOperationsInput | string
     groomParents?: NullableStringFieldUpdateOperationsInput | string | null
@@ -19595,6 +19631,7 @@ export namespace Prisma {
 
   export type WeddingUncheckedUpdateWithoutEventsInput = {
     id?: StringFieldUpdateOperationsInput | string
+    slug?: NullableStringFieldUpdateOperationsInput | string | null
     ownerId?: StringFieldUpdateOperationsInput | string
     themeId?: StringFieldUpdateOperationsInput | string
     groomName?: StringFieldUpdateOperationsInput | string
@@ -19611,6 +19648,7 @@ export namespace Prisma {
 
   export type WeddingCreateWithoutRsvpsInput = {
     id?: string
+    slug?: string | null
     groomName: string
     brideName: string
     groomParents?: string | null
@@ -19627,6 +19665,7 @@ export namespace Prisma {
 
   export type WeddingUncheckedCreateWithoutRsvpsInput = {
     id?: string
+    slug?: string | null
     ownerId: string
     themeId: string
     groomName: string
@@ -19659,6 +19698,7 @@ export namespace Prisma {
 
   export type WeddingUpdateWithoutRsvpsInput = {
     id?: StringFieldUpdateOperationsInput | string
+    slug?: NullableStringFieldUpdateOperationsInput | string | null
     groomName?: StringFieldUpdateOperationsInput | string
     brideName?: StringFieldUpdateOperationsInput | string
     groomParents?: NullableStringFieldUpdateOperationsInput | string | null
@@ -19675,6 +19715,7 @@ export namespace Prisma {
 
   export type WeddingUncheckedUpdateWithoutRsvpsInput = {
     id?: StringFieldUpdateOperationsInput | string
+    slug?: NullableStringFieldUpdateOperationsInput | string | null
     ownerId?: StringFieldUpdateOperationsInput | string
     themeId?: StringFieldUpdateOperationsInput | string
     groomName?: StringFieldUpdateOperationsInput | string
@@ -19904,6 +19945,7 @@ export namespace Prisma {
 
   export type WeddingCreateManyOwnerInput = {
     id?: string
+    slug?: string | null
     themeId: string
     groomName: string
     brideName: string
@@ -19945,6 +19987,7 @@ export namespace Prisma {
 
   export type WeddingUpdateWithoutOwnerInput = {
     id?: StringFieldUpdateOperationsInput | string
+    slug?: NullableStringFieldUpdateOperationsInput | string | null
     groomName?: StringFieldUpdateOperationsInput | string
     brideName?: StringFieldUpdateOperationsInput | string
     groomParents?: NullableStringFieldUpdateOperationsInput | string | null
@@ -19961,6 +20004,7 @@ export namespace Prisma {
 
   export type WeddingUncheckedUpdateWithoutOwnerInput = {
     id?: StringFieldUpdateOperationsInput | string
+    slug?: NullableStringFieldUpdateOperationsInput | string | null
     themeId?: StringFieldUpdateOperationsInput | string
     groomName?: StringFieldUpdateOperationsInput | string
     brideName?: StringFieldUpdateOperationsInput | string
@@ -19977,6 +20021,7 @@ export namespace Prisma {
 
   export type WeddingUncheckedUpdateManyWithoutOwnerInput = {
     id?: StringFieldUpdateOperationsInput | string
+    slug?: NullableStringFieldUpdateOperationsInput | string | null
     themeId?: StringFieldUpdateOperationsInput | string
     groomName?: StringFieldUpdateOperationsInput | string
     brideName?: StringFieldUpdateOperationsInput | string
@@ -20172,6 +20217,7 @@ export namespace Prisma {
 
   export type WeddingCreateManyThemeInput = {
     id?: string
+    slug?: string | null
     ownerId: string
     groomName: string
     brideName: string
@@ -20231,6 +20277,7 @@ export namespace Prisma {
 
   export type WeddingUpdateWithoutThemeInput = {
     id?: StringFieldUpdateOperationsInput | string
+    slug?: NullableStringFieldUpdateOperationsInput | string | null
     groomName?: StringFieldUpdateOperationsInput | string
     brideName?: StringFieldUpdateOperationsInput | string
     groomParents?: NullableStringFieldUpdateOperationsInput | string | null
@@ -20247,6 +20294,7 @@ export namespace Prisma {
 
   export type WeddingUncheckedUpdateWithoutThemeInput = {
     id?: StringFieldUpdateOperationsInput | string
+    slug?: NullableStringFieldUpdateOperationsInput | string | null
     ownerId?: StringFieldUpdateOperationsInput | string
     groomName?: StringFieldUpdateOperationsInput | string
     brideName?: StringFieldUpdateOperationsInput | string
@@ -20263,6 +20311,7 @@ export namespace Prisma {
 
   export type WeddingUncheckedUpdateManyWithoutThemeInput = {
     id?: StringFieldUpdateOperationsInput | string
+    slug?: NullableStringFieldUpdateOperationsInput | string | null
     ownerId?: StringFieldUpdateOperationsInput | string
     groomName?: StringFieldUpdateOperationsInput | string
     brideName?: StringFieldUpdateOperationsInput | string

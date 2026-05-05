@@ -15,13 +15,19 @@ export default async function RSVPPage({
     let wedding = null;
     try {
         wedding = await prisma.wedding.findFirst({
-            where: { id },
+            where: {
+                OR: [
+                    { id },
+                    { slug: id }
+                ]
+            },
             include: { events: true },
             orderBy: { createdAt: 'desc' }
         });
     } catch (e) {
         console.error('Database connection error in /rsvp/[id]:', e);
     }
+
 
     if (!wedding) {
         return (

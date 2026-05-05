@@ -119,6 +119,7 @@ model Theme {
 
 model Wedding {
   id                String    @id @default(cuid())
+  slug              String?   @unique
   ownerId           String
   themeId           String
   groomName         String
@@ -137,6 +138,7 @@ model Wedding {
 
   @@map("Wedding")
 }
+
 
 model WeddingEvent {
   id              String   @id @default(cuid())

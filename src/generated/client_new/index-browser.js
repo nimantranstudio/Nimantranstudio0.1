@@ -200,6 +200,7 @@ exports.Prisma.ThemeScalarFieldEnum = {
 
 exports.Prisma.WeddingScalarFieldEnum = {
   id: 'id',
+  slug: 'slug',
   ownerId: 'ownerId',
   themeId: 'themeId',
   groomName: 'groomName',
