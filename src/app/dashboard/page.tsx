@@ -38,7 +38,7 @@ import Link from 'next/link';
 
 export default function DashboardPage() {
     const router = useRouter();
-    const { formData, selectedThemeId, isAuthenticated, bundleImages, bundleItems } = useWeddingStore();
+    const { formData, selectedThemeId, isAuthenticated, bundleImages, bundleItems, lastSavedWeddingId } = useWeddingStore();
     const [isMounted, setIsMounted] = useState(false);
     const [theme, setTheme] = useState<Theme | null>(null);
     const [selectedPreviewIndex, setSelectedPreviewIndex] = useState<number | null>(null);
@@ -132,11 +132,13 @@ export default function DashboardPage() {
         return null;
     };
 
-    const rsvpSlug = `${formData.groomName?.toLowerCase()?.split(' ')[0] || 'wedding'}-${formData.brideName?.toLowerCase()?.split(' ')[0] || 'rsvp'}`;
-    const rsvpFullUrl = `https://nimantran.app/rsvp/${rsvpSlug}`;
+    const rsvpFullUrl = lastSavedWeddingId
+        ? `${typeof window !== 'undefined' ? window.location.origin : 'https://nimantranwebsite.vercel.app'}/rsvp/${lastSavedWeddingId}`
+        : '';
     const [copyStatus, setCopyStatus] = useState(false);
 
     const handleCopyRsvpLink = async () => {
+        if (!rsvpFullUrl) return;
         try {
             await navigator.clipboard.writeText(rsvpFullUrl);
             setCopyStatus(true);
@@ -264,12 +266,20 @@ export default function DashboardPage() {
                         {/* Quick Actions Grid */}
                         <div className={styles.quickActionsSection}>
                             <h2>Quick Actions</h2>
-                            <div className={styles.actionGrid}>
-                                <div className={styles.actionTile} onClick={handleCopyRsvpLink}>
-                                    <div className={styles.actionTileIcon}><Link2 size={24} /></div>
-                                    <h5>Copy RSVP Link</h5>
+                            {rsvpFullUrl && (
+                                <div className={styles.rsvpLinkBar}>
+                                    <span className={styles.rsvpLinkText}>{rsvpFullUrl}</span>
+                                    <button className={styles.rsvpLinkOpen} onClick={() => window.open(rsvpFullUrl, '_blank')}>
+                                        <ExternalLink size={14} /> Open
+                                    </button>
                                 </div>
-                                <div className={styles.actionTile} onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(rsvpFullUrl)}`, '_blank')}>
+                            )}
+                            <div className={styles.actionGrid}>
+                                <div className={styles.actionTile} onClick={handleCopyRsvpLink} style={{ opacity: rsvpFullUrl ? 1 : 0.4, cursor: rsvpFullUrl ? 'pointer' : 'not-allowed' }}>
+                                    <div className={styles.actionTileIcon}><Link2 size={24} /></div>
+                                    <h5>{copyStatus ? 'Copied!' : 'Copy RSVP Link'}</h5>
+                                </div>
+                                <div className={styles.actionTile} onClick={() => rsvpFullUrl && window.open(`https://wa.me/?text=${encodeURIComponent(rsvpFullUrl)}`, '_blank')} style={{ opacity: rsvpFullUrl ? 1 : 0.4, cursor: rsvpFullUrl ? 'pointer' : 'not-allowed' }}>
                                     <div className={styles.actionTileIcon}><MessageCircle size={24} /></div>
                                     <h5>WhatsApp Share</h5>
                                 </div>
