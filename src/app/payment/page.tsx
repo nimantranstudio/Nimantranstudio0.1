@@ -95,22 +95,68 @@ export default function PaymentPage() {
                     const parser = new DOMParser();
                     const doc = parser.parseFromString(htmlText, 'text/html');
                     
-                    const displayEventName = item.event?.heading || item.event?.name || item.name;
-                    const displayWelcome = currentStore.formData.invitationMessage || item.event?.tagline || '';
+                    const getOrdinal = (n: number) => {
+                        const s = ["th", "st", "nd", "rd"];
+                        const v = n % 100;
+                        return n + (s[(v - 20) % 10] || s[v] || s[0]);
+                    };
+
+                    const formatDate = (dateStr?: string) => {
+                        if (!dateStr) return dateStr;
+                        if (/[a-zA-Z]/.test(dateStr)) return dateStr;
+                        try {
+                            const date = new Date(dateStr);
+                            if (isNaN(date.getTime())) return dateStr;
+                            const day = getOrdinal(date.getDate());
+                            const month = date.toLocaleString('en-US', { month: 'long' });
+                            const year = date.getFullYear();
+                            return `${day} ${month} ${year}`;
+                        } catch (e) {
+                            return dateStr;
+                        }
+                    };
+
+                    const formatTime = (timeStr?: string) => {
+                        if (!timeStr) return timeStr;
+                        if (timeStr.toLowerCase().includes('am') || timeStr.toLowerCase().includes('pm')) return timeStr;
+                        try {
+                            const [h, m] = timeStr.split(':');
+                            if (h === undefined || m === undefined) return timeStr;
+                            let hours = parseInt(h);
+                            const minutes = m.substring(0, 2);
+                            const ampm = hours >= 12 ? 'PM' : 'AM';
+                            hours = hours % 12;
+                            hours = hours ? hours : 12;
+                            return `${hours}:${minutes} ${ampm}`;
+                        } catch (e) {
+                            return timeStr;
+                        }
+                    };
+
+                    const getDefaultHeading = (eName: string) => {
+                        const n = (eName || '').toLowerCase();
+                        if (n.includes('haldi')) return "Haldi Ceremony";
+                        if (n.includes('mehendi')) return "Mehendi Ceremony";
+                        if (n.includes('sangeet')) return "Sangeet Ceremoney";
+                        if (n.includes('wedding')) return "Wedding Ceremony";
+                        if (n.includes('reception')) return "Reception Ceremony";
+                        return `${eName || 'Wedding'} Ceremony`;
+                    };
+
+                    const displayEventName = item.event?.heading || (item.event?.name ? getDefaultHeading(item.event.name) : (item.name || 'Wedding Ceremony'));
                     
                     const mapping: Record<string, string | undefined> = {
                         'event-name': displayEventName,
-                        'welcome-message': displayWelcome,
                         'groom-name': currentStore.formData.groomName,
                         'bride-name': currentStore.formData.brideName,
                         'groom-parents': currentStore.formData.groomParents,
                         'groom-parent-name': currentStore.formData.groomParents,
                         'bride-parents': currentStore.formData.brideParents,
                         'bride-parent-name': currentStore.formData.brideParents,
-                        'event-date': item.event?.date || currentStore.formData.primaryDate,
-                        'event-time': item.event?.time || currentStore.formData.primaryTime,
-                        'event-venue': (item.event?.isCustomVenue && item.event?.venue) ? item.event.venue : currentStore.formData.defaultVenueName,
-                        'venue': (item.event?.isCustomVenue && item.event?.venue) ? item.event.venue : currentStore.formData.defaultVenueName,
+                        'event-date': formatDate(item.event?.date || currentStore.formData.primaryDate),
+                        'event-time': formatTime(item.event?.time || currentStore.formData.primaryTime),
+                        'event-venue': (item.event?.venue || currentStore.formData.defaultVenueName),
+                        'venue': (item.event?.venue || currentStore.formData.defaultVenueName),
                     };
 
                     Object.entries(mapping).forEach(([id, value]) => {
@@ -122,7 +168,10 @@ export default function PaymentPage() {
                     
                     const styleTags = doc.querySelectorAll('style:not(#runtime-preview-fix)');
                     styleTags.forEach(tag => {
-                        if (tag.innerHTML.includes('vw')) tag.innerHTML = tag.innerHTML.replace(/([\d.]+)vw(?=[\s;},!\)])/g, '$1vmax');
+                        if (tag.innerHTML.includes('vw') || tag.innerHTML.includes('cqi')) {
+                            // Use lookahead to ensure we only replace CSS values and not base64 strings
+                            tag.innerHTML = tag.innerHTML.replace(/([\d.]+)(vw|cqi)(?=[\s;},!\)])/g, '$1vmax');
+                        }
                     });
                     
                     const finalHtml = "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
@@ -156,9 +205,15 @@ export default function PaymentPage() {
                                 if (allLoaded) {
                                     const win = iframe.contentWindow as any;
                                     const execute = () => {
+                                        const wrapper = iframeDoc.querySelector('.invitation-wrapper') || 
+                                                       iframeDoc.querySelector('.invite-wrapper') || 
+                                                       iframeDoc.body.firstElementChild;
+                                        
+                                        const targetHeight = (wrapper as HTMLElement)?.offsetHeight || 705;
+
                                         // Ensure body has dimensions
                                         iframeDoc.body.style.width = '500px';
-                                        iframeDoc.body.style.height = '889px';
+                                        iframeDoc.body.style.height = `${targetHeight}px`;
                                         iframeDoc.body.style.margin = '0';
                                         iframeDoc.body.style.padding = '0';
                                         iframeDoc.body.style.overflow = 'hidden';
@@ -167,7 +222,7 @@ export default function PaymentPage() {
                                             useCORS: true, 
                                             scale: 2,
                                             width: 500,
-                                            height: 889,
+                                            height: targetHeight,
                                             backgroundColor: '#ffffff' 
                                         }).then((canvas: HTMLCanvasElement) => {
                                             canvas.toBlob(b => {
