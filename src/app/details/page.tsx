@@ -7,7 +7,7 @@ import { EventRepeater } from '@/components/form/EventRepeater';
 import styles from './details.module.css';
 import formStyles from '@/components/form/Form.module.css';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { clsx } from 'clsx';
 import { ChevronRight, ChevronDown, CheckCircle, Sun, Music, Leaf, Circle, Wine, MoreHorizontal, Clock, Info, ShieldCheck, MapPin, Calendar, Users, AlertCircle, Heart, Sparkles, ArrowRight, ChevronUp, Trash2, Plus, ChevronLeft } from 'lucide-react';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
@@ -19,7 +19,7 @@ import { LoginModal } from '@/components/auth/LoginModal';
 import { motion, AnimatePresence } from 'framer-motion';
 
 
-export default function DetailsPage() {
+function DetailsContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { formData, updateFormData, saveWedding, selectedThemeId, bundleImages, selectedPlan } = useWeddingStore();
@@ -917,6 +917,14 @@ export default function DetailsPage() {
                 onSuccess={handleLoginSuccess}
             />
         </div >
+    );
+}
+
+export default function DetailsPage() {
+    return (
+        <Suspense fallback={<div style={{ minHeight: '100vh' }} />}>
+            <DetailsContent />
+        </Suspense>
     );
 }
 
