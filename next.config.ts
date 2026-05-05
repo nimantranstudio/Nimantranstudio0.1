@@ -24,10 +24,6 @@ const nextConfig: NextConfig = {
       }
     ],
   },
-  // Speed up production builds by skipping heavy checks if you run them in CI
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   typescript: {
     ignoreBuildErrors: true,
   },
