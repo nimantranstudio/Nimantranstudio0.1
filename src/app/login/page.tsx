@@ -21,6 +21,7 @@ function LoginForm() {
 
     const login = useWeddingStore((state) => state.login);
     const [step, setStep] = useState<'phone' | 'otp'>('phone');
+    const [hasMounted, setHasMounted] = useState(false);
     const [identifier, setIdentifier] = useState('');
     const [otp, setOtp] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -31,6 +32,7 @@ function LoginForm() {
 
     // Initialize Recaptcha
     useEffect(() => {
+        setHasMounted(true);
         if (!window.recaptchaVerifier) {
             window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
                 'size': 'invisible',
@@ -149,126 +151,131 @@ function LoginForm() {
         }
     };
 
+    if (!hasMounted) return <div className={styles.page} />;
+
     return (
         <div className={styles.page}>
-            {/* Left branding panel — hidden on mobile */}
-            <div className={styles.brandPanel}>
-                <Link href="/" className={styles.brandLogo}>
-                    <Image src="/logo.png" alt="Nimantran Studio" width={160} height={44} priority />
-                </Link>
-                <div className={styles.brandBody}>
-                    <h2 className={styles.brandHeadline}>
-                        Beautiful Invitations.<br />Smart RSVP Tracking.
-                    </h2>
-                    <p className={styles.brandSubtext}>
-                        Create, share and manage your entire wedding communication in minutes.
-                    </p>
-                    <ul className={styles.trustList}>
-                        <li><Zap size={15} /><span>Ready to share on WhatsApp in 5 minutes</span></li>
-                        <li><Heart size={15} /><span>Trusted by Indian couples across India</span></li>
-                        <li><ShieldCheck size={15} /><span>One-time payment · No subscription ever</span></li>
-                    </ul>
-                </div>
-                <p className={styles.brandFootnote}>© 2026 Nimantran Studio</p>
-            </div>
-
-            {/* Right form panel */}
             <div className={styles.formPanel}>
                 <div className={styles.card}>
-                    {/* Mobile-only logo */}
-                    <Link href="/" className={styles.mobileLogo}>
-                        <Image src="/logo.png" alt="Nimantran Studio" width={140} height={38} priority />
-                    </Link>
-
-                    {error && (
-                        <div className={styles.errorBanner}>
-                            <AlertCircle size={16} />
-                            {error}
+                    {/* Left branding side of the card */}
+                    <div className={styles.cardBranding}>
+                        <Link href="/" className={styles.brandLogo}>
+                            <Image src="/logo.png" alt="Nimantran Studio" width={140} height={38} priority />
+                        </Link>
+                        <div className={styles.brandBody}>
+                            <h2 className={styles.brandHeadline}>
+                                Beautiful Invitations.<br />Smart RSVP Tracking.
+                            </h2>
+                            <p className={styles.brandSubtext}>
+                                Create, share and manage your entire wedding communication in minutes.
+                            </p>
+                            <ul className={styles.trustList}>
+                                <li><Zap size={14} /><span>Ready to share on WhatsApp</span></li>
+                                <li><Heart size={14} /><span>Trusted by Indian couples</span></li>
+                                <li><ShieldCheck size={14} /><span>One-time payment only</span></li>
+                            </ul>
                         </div>
-                    )}
+                        <p className={styles.brandFootnote}>© 2026 Nimantran Studio</p>
+                    </div>
 
-                    {/* Recaptcha Container (Invisible) */}
-                    <div id="recaptcha-container"></div>
+                    {/* Right form side of the card */}
+                    <div className={styles.cardForm}>
+                        {/* Mobile-only logo (hidden on desktop split view) */}
+                        <Link href="/" className={styles.mobileLogo}>
+                            <Image src="/logo.png" alt="Nimantran Studio" width={140} height={38} priority />
+                        </Link>
 
-                    {step === 'phone' ? (
-                        <>
-                            <h1 className={styles.title}>Welcome back</h1>
-                            <p className={styles.subtitle}>Enter your WhatsApp number to continue</p>
+                        {error && (
+                            <div className={styles.errorBanner}>
+                                <AlertCircle size={16} />
+                                {error}
+                            </div>
+                        )}
 
-                            <form onSubmit={handleGetOTP} className={styles.form}>
-                                <div className={styles.inputGroup}>
-                                    <span className={styles.inputPrefix}>+91</span>
+                        {/* Recaptcha Container (Invisible) */}
+                        <div id="recaptcha-container"></div>
+
+                        {step === 'phone' ? (
+                            <>
+                                <h1 className={styles.title}>Welcome</h1>
+                                <p className={styles.subtitle}>You&apos;re just one step away from your perfect invitation experience.</p>
+                                <p className={styles.subtitle}>Enter your WhatsApp number to continue</p>
+
+                                <form onSubmit={handleGetOTP} className={styles.form}>
+                                    <div className={styles.inputGroup}>
+                                        <span className={styles.inputPrefix}>+91</span>
+                                        <input
+                                            type="text"
+                                            className={styles.input}
+                                            placeholder="10-digit mobile number"
+                                            value={identifier}
+                                            onChange={(e) => setIdentifier(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                                            autoFocus
+                                        />
+                                    </div>
+
+                                    <button
+                                        type="submit"
+                                        className={`btn btn-primary ${styles.submitBtn}`}
+                                        disabled={isLoading}
+                                    >
+                                        {isLoading ? (
+                                            <>
+                                                <Loader2 className="animate-spin" size={18} style={{ marginRight: '8px' }} />
+                                                Sending Code...
+                                            </>
+                                        ) : 'Get OTP'}
+                                    </button>
+                                </form>
+
+                                <p className={styles.loginNote}>
+                                    New here?{' '}
+                                    <Link href="/themes" className={styles.loginNoteLink}>Browse themes first →</Link>
+                                </p>
+                            </>
+                        ) : (
+                            <>
+                                <h1 className={styles.title}>Enter OTP</h1>
+                                <p className={styles.subtitle}>We sent a 6-digit code to +91 {identifier}</p>
+
+                                <form onSubmit={handleVerifyOTP} className={styles.form}>
                                     <input
                                         type="text"
-                                        className={styles.input}
-                                        placeholder="10-digit mobile number"
-                                        value={identifier}
-                                        onChange={(e) => setIdentifier(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                                        className={styles.otpInput}
+                                        placeholder="• • • • • •"
+                                        value={otp}
+                                        onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                        maxLength={6}
                                         autoFocus
                                     />
-                                </div>
+
+                                    <button
+                                        type="submit"
+                                        className={`btn btn-primary ${styles.submitBtn}`}
+                                        disabled={isLoading || otp.length < 6}
+                                    >
+                                        {isLoading ? (
+                                            <>
+                                                <Loader2 className="animate-spin" size={18} style={{ marginRight: '8px' }} />
+                                                Verifying...
+                                            </>
+                                        ) : 'Verify & Continue'}
+                                    </button>
+                                </form>
 
                                 <button
-                                    type="submit"
-                                    className={`btn btn-primary ${styles.submitBtn}`}
-                                    disabled={isLoading}
+                                    type="button"
+                                    className={styles.linkButton}
+                                    onClick={() => {
+                                        setStep('phone');
+                                        setError(null);
+                                    }}
                                 >
-                                    {isLoading ? (
-                                        <>
-                                            <Loader2 className="animate-spin" size={18} style={{ marginRight: '8px' }} />
-                                            Sending Code...
-                                        </>
-                                    ) : 'Get OTP'}
+                                    ← Change number
                                 </button>
-                            </form>
-
-                            <p className={styles.loginNote}>
-                                New here?{' '}
-                                <Link href="/themes" className={styles.loginNoteLink}>Browse themes first →</Link>
-                            </p>
-                        </>
-                    ) : (
-                        <>
-                            <h1 className={styles.title}>Enter OTP</h1>
-                            <p className={styles.subtitle}>We sent a 6-digit code to +91 {identifier}</p>
-
-                            <form onSubmit={handleVerifyOTP} className={styles.form}>
-                                <input
-                                    type="text"
-                                    className={styles.otpInput}
-                                    placeholder="• • • • • •"
-                                    value={otp}
-                                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                                    maxLength={6}
-                                    autoFocus
-                                />
-
-                                <button
-                                    type="submit"
-                                    className={`btn btn-primary ${styles.submitBtn}`}
-                                    disabled={isLoading || otp.length < 6}
-                                >
-                                    {isLoading ? (
-                                        <>
-                                            <Loader2 className="animate-spin" size={18} style={{ marginRight: '8px' }} />
-                                            Verifying...
-                                        </>
-                                    ) : 'Verify & Continue'}
-                                </button>
-                            </form>
-
-                            <button
-                                type="button"
-                                className={styles.linkButton}
-                                onClick={() => {
-                                    setStep('phone');
-                                    setError(null);
-                                }}
-                            >
-                                ← Change number
-                            </button>
-                        </>
-                    )}
+                            </>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>

@@ -18,7 +18,7 @@ const ORIGINAL_POSTS: BlogPost[] = [
         date: 'APR 28, 2025',
         readTime: '6 min read',
         excerpt: 'WhatsApp has become the go-to channel for wedding invitations in India. Here is how to do it right — personally, respectfully, and without losing the grandeur of your celebration.',
-        image: '/images/experience/whatsapp.png',
+        image: '/blog/whatsapp-invite.png',
         metaDescription: 'Learn how to send beautiful WhatsApp wedding invitations in India. Step-by-step guide to digital wedding cards, sharing etiquette, and RSVP tracking for Indian couples in 2025.',
         content: `
 ## Why WhatsApp Wedding Invitations Have Taken Over India
@@ -142,7 +142,7 @@ The key is to treat your digital invitation with the same care you would give a 
         date: 'APR 22, 2025',
         readTime: '5 min read',
         excerpt: 'Not all wedding invitation makers are equal. Here is what to look for — and why a platform that combines beautiful design with a real RSVP system is worth every rupee.',
-        image: '/blog/wedding-invitation-maker.png',
+        image: '/blog/online-maker.png',
         metaDescription: 'Discover the best online wedding invitation maker in India for 2025. Compare digital wedding card creators with RSVP, guest tracking, and WhatsApp sharing for Indian couples.',
         content: `
 ## The Problem With Most Wedding Invitation Makers
@@ -245,7 +245,7 @@ Beautiful cards. Built-in RSVP. Real-time guest tracking. WhatsApp-ready sharing
         date: 'APR 15, 2025',
         readTime: '7 min read',
         excerpt: 'The traditional method of confirming wedding attendance — multiple phone calls, relatives relaying messages, and a running notebook — is broken. Here is how modern Indian couples are doing it differently.',
-        image: '/assets/rsvp-landing.jpg',
+        image: '/blog/rsvp-management.png',
         metaDescription: 'Complete guide to managing wedding RSVPs digitally in India. Learn how online RSVP systems work for Indian weddings, track guests in real time, and eliminate pre-wedding chaos.',
         content: `
 ## The RSVP Problem That Every Indian Family Knows
@@ -375,7 +375,7 @@ Instead of 4 people managing 4 different lists, there is one source of truth. In
         date: 'APR 8, 2025',
         readTime: '8 min read',
         excerpt: 'Your wedding invitation is the first impression of your celebration. These are the themes that Indian couples are choosing in 2025 — and what each says about your wedding personality.',
-        image: '/assets/main-invite.jpg',
+        image: '/blog/themes-2025.png',
         metaDescription: 'Explore the top Indian wedding invitation themes for 2025 — from Royal Rajputana and Mughal to minimalist and forest-themed designs. Find the perfect wedding card design for your Indian wedding.',
         content: `
 ## Why Your Invitation Theme Sets the Tone for Everything
@@ -524,7 +524,7 @@ Nimantran Studio offers several of these themes with complete function-specific 
         date: 'APR 1, 2025',
         readTime: '5 min read',
         excerpt: 'Two cards, very different purposes. Most Indian couples send one and skip the other — and it costs them in guest attendance. Here is the definitive guide to using both correctly.',
-        image: '/assets/pdf-invite.jpg',
+        image: '/blog/save-the-date-vs-invite.png',
         metaDescription: 'Understand the difference between Save the Date and Wedding Invitation for Indian weddings. When to send each, what to include, and how to use digital versions for maximum guest attendance.',
         content: `
 ## The Difference, In One Sentence
@@ -662,7 +662,7 @@ Nimantran Studio includes a designed Save the Date card in every theme bundle �
         date: 'MAR 24, 2025',
         readTime: '5 min read',
         excerpt: 'The case for going fully digital for your wedding invitations is stronger than ever. Here is the honest breakdown of what you save — and what, if anything, you lose.',
-        image: '/assets/teaser-video.jpg',
+        image: '/blog/digital-benefits.png',
         metaDescription: 'Discover 7 key benefits of digital wedding invitations for Indian couples. Save money, time, and stress with online wedding invitations that include RSVP and guest management.',
         content: `
 ## The Old Math No Longer Works
@@ -802,7 +802,7 @@ const NEW_POSTS: BlogPost[] = [
     date: 'MAY 5, 2025',
     readTime: '4 min read',
     excerpt: 'RSVP — yeh French word hai, lekin Indian shaadi mein iska matlab bohot simple aur bohot zaroori hai. Ek baar samajh lo, aur apni shaadi ka chaos khatam karo.',
-    image: '/blog/rsvp-meaning.jpg',
+    image: '/blog/rsvp-meaning.png',
     metaDescription: 'RSVP ka matlab kya hota hai? Learn what RSVP means in Hindi, why it matters for Indian weddings, and how digital RSVP systems make guest management effortless.',
     content: `
 ## RSVP Ka Matlab — Ek Simple Explanation
@@ -886,7 +886,7 @@ Har Nimantran Studio bundle ke saath aata hai ek **built-in RSVP system**:
     date: 'MAY 3, 2025',
     readTime: '5 min read',
     excerpt: '"Dekha" tick aaya, reply nahi aaya. Indian weddings ka sabse common problem. Yahan hain 15 ready-to-send follow-up messages jo awkward nahi lagte.',
-    image: '/blog/rsvp-reminder.jpg',
+    image: '/blog/rsvp-reminder.png',
     metaDescription: '15 ready-to-send RSVP reminder messages for Indian weddings in Hindi, English and Hinglish. Polite follow-up templates that actually get responses.',
     content: `
 ## The "Seen But No Reply" Problem
@@ -989,7 +989,7 @@ No spreadsheets. No manual tracking. Just a clean list of who still needs a nudg
     date: 'APR 30, 2025',
     readTime: '6 min read',
     excerpt: 'Priya and Arjun had 340 guests and needed confirmed numbers fast. Here is exactly what they did — from the invitation message to the follow-up — and what any Indian couple can replicate.',
-    image: '/blog/rsvp-case-study.jpg',
+    image: '/blog/rsvp-case-study.png',
     metaDescription: 'Real case study: how an Indian couple achieved 91% RSVP response rate in 48 hours using Nimantran Studio. Copy their exact strategy for your wedding.',
     content: `
 ## The Situation
@@ -1100,7 +1100,7 @@ The caterer got final numbers 6 days before the wedding — not a rough estimate
     date: 'APR 26, 2025',
     readTime: '4 min read',
     excerpt: 'RSVP deadline set karna easy hai. Usse actually enforce karna — Indian families mein — that is the real skill. Yahan hai ek practical guide.',
-    image: '/blog/rsvp-deadline.jpg',
+    image: '/blog/rsvp-deadline.png',
     metaDescription: 'When to close RSVP for Indian weddings and how to handle last-minute guests. Practical advice on RSVP deadlines, caterer coordination, and late confirmations.',
     content: `
 ## RSVP Deadline Ka Sach
@@ -1172,7 +1172,7 @@ Nimantran Studio ka dashboard aapko allow karta hai RSVP link open rakhne ya man
     date: 'MAY 2, 2025',
     readTime: '7 min read',
     excerpt: 'Guest list banana Indian shaadi ka sabse politically sensitive kaam hai. Har ek decision pe argument hone ke chances hain. Yahan hai ek system jo actually kaam karta hai.',
-    image: '/blog/guest-list.jpg',
+    image: '/blog/guest-list.png',
     metaDescription: 'How to make a wedding guest list for Indian weddings without family drama. Step-by-step guide to creating and managing your wedding guest list in India.',
     content: `
 ## Sabse Pehle: The Hard Truth
@@ -1251,7 +1251,7 @@ Yeh approach aapko allow karta hai ki Tier 3 guests ko sirf Wedding aur Receptio
 
 Excel sheet mat banao. Ek proper system use karo.
 
-Nimantran Studio ka RSVP dashboard ek **live guest list** ki tarah kaam karta hai. Jaise guests confirm karte hain, aap dekhte ho:
+Nimantran Studio का RSVP dashboard ek **live guest list** ki tarah kaam karta hai. Jaise guests confirm karte hain, aap dekhte ho:
 - Confirmed count per function
 - Dietary restrictions
 - Family size
@@ -1270,7 +1270,7 @@ Aur yeh data family ke saare members ke saath share hota hai — ek phone nahi, 
     date: 'APR 24, 2025',
     readTime: '6 min read',
     excerpt: 'Small weddings are not budget weddings — they are intentional ones. Here is the complete planning checklist for Indian couples choosing intimacy over scale in 2025.',
-    image: '/blog/micro-wedding.jpg',
+    image: '/blog/micro-wedding.png',
     metaDescription: 'Complete micro wedding planning checklist for India 2025. Plan an intimate Indian wedding with under 50 guests without compromising on beauty, rituals, or experience.',
     content: `
 ## Why Micro Weddings Are Having a Moment in India
@@ -1361,7 +1361,7 @@ Nimantran Studio's premium themes (Spiritual Souls, Forest Vows, Minimalist Gold
     date: 'APR 20, 2025',
     readTime: '5 min read',
     excerpt: 'Invitation late bheja toh attendance suffer karti hai. Zyada pehle bheja toh log bhool jaate hain. Yahan hai ek tested timeline jo Indian weddings ke liye actually kaam karta hai.',
-    image: '/blog/invitation-timeline.jpg',
+    image: '/blog/invitation-timeline.png',
     metaDescription: 'Complete wedding invitation timeline for Indian weddings 2025. Know exactly when to send Save the Date, wedding invitations, and RSVP reminders.',
     content: `
 ## The Timing Problem
@@ -1474,7 +1474,7 @@ Personal calls only to close family who still haven't confirmed. At this stage, 
     date: 'APR 17, 2025',
     readTime: '6 min read',
     excerpt: 'Destination weddings need a different communication strategy. Your guests need to book flights, take leave, and coordinate travel. Here is how to make that easy for them — and manageable for you.',
-    image: '/blog/destination-wedding.jpg',
+    image: '/blog/destination-wedding.png',
     metaDescription: 'Complete guide to destination wedding invitations in India. How to communicate with guests for Udaipur, Goa, and Jaipur weddings — timelines, information, and RSVP management.',
     content: `
 ## Why Destination Weddings Need More Than Just a Pretty Card
@@ -1575,7 +1575,7 @@ Nimantran Studio's RSVP dashboard captures all of this — and exports cleanly f
     date: 'APR 29, 2025',
     readTime: '5 min read',
     excerpt: 'Haldi ka card sirf yellow hona zaroori nahi. Yahan hain the most beautiful Haldi invitation design ideas — aur woh exact wording jo aapke guests ko excited kar de.',
-    image: '/blog/haldi-invitation.jpg',
+    image: '/blog/haldi-invitation.png',
     metaDescription: 'Haldi invitation design ideas, colors, and wording for Indian weddings. Beautiful Haldi card designs with copy-paste ready messages in English, Hindi and Hinglish.',
     content: `
 ## Haldi Ki Vibe Ko Capture Karna — Design Mein
@@ -1660,7 +1660,7 @@ Nimantran Studio's Haldi card designs are included in every wedding bundle — m
     date: 'APR 23, 2025',
     readTime: '5 min read',
     excerpt: 'Sangeet ka invitation sirf ek date-time card nahi hai — yeh ek party ka teaser hai. Yahan hain best Sangeet invitation design ideas jo guests ko dance floor pe laane ki guarantee dete hain.',
-    image: '/blog/sangeet-invitation.jpg',
+    image: '/blog/sangeet-invitation.png',
     metaDescription: 'Sangeet invitation design ideas for Indian weddings. Beautiful Sangeet card designs, colors, wording templates in English, Hindi and Hinglish for WhatsApp sharing.',
     content: `
 ## Sangeet Invitation Ki Psychology
@@ -1751,7 +1751,7 @@ Nimantran Studio gives you a **separate RSVP link for each function** — so you
     date: 'APR 18, 2025',
     readTime: '5 min read',
     excerpt: 'Mehendi ceremony mein har koi relaxed, happy aur colourful hoti hai. Aapka invitation bhi aisa hi hona chahiye. Yahan hain best Mehendi card designs aur ready-to-use wording.',
-    image: '/blog/mehendi-invitation.jpg',
+    image: '/blog/mehendi-invitation.png',
     metaDescription: 'Mehendi invitation design ideas and wording templates for Indian weddings. Beautiful Mehendi card designs in English, Hindi and Hinglish for WhatsApp sharing.',
     content: `
 ## Mehendi Ki Vibe — Kya Different Hai?
@@ -1832,7 +1832,7 @@ Nimantran Studio includes a Mehendi-specific card design in every theme bundle �
     date: 'MAY 1, 2025',
     readTime: '6 min read',
     excerpt: 'Haldi sirf ek beauty ritual nahi hai — iske peeche hai generations ki wisdom, blessings ki ek poori language. Agar aap yeh jaanein ki yeh kyun hota hai, toh aap apne guests ko bhi explain kar paayenge.',
-    image: '/blog/haldi-ceremony.jpg',
+    image: '/Image/bundle/item-Haldi_Invitation-1771520707312-326886494.png',
     metaDescription: 'What is Haldi ceremony? Complete guide to Haldi meaning, rituals, traditions across India, and how to invite guests. Hindi, English and Hinglish invitation wording included.',
     content: `
 ## Haldi Ka Matlab — Sirf Skin Care Nahi
@@ -1923,7 +1923,7 @@ Apne Haldi invitation mein clearly mention karein:
     date: 'APR 27, 2025',
     readTime: '8 min read',
     excerpt: 'Punjabi weddings are legendary — and for good reason. Here is a complete guide to every ritual, every function, and everything your guests need to know before they arrive.',
-    image: '/blog/punjabi-wedding.jpg',
+    image: '/Image/theme/2 Wedding Ceremony-1775488556518-182041729.png',
     metaDescription: 'Complete Punjabi wedding guide: Anand Karaj ceremony, pre-wedding rituals, Jaggo, Chunni ceremony, Milni, and more. Everything guests and couples need to know.',
     content: `
 ## Punjabi Weddings: The Standard for Indian Wedding Celebrations
@@ -2019,7 +2019,7 @@ Nimantran Studio's Royal Rajputana and Heritage themes work beautifully for Punj
     date: 'APR 22, 2025',
     readTime: '7 min read',
     excerpt: 'Attending a South Indian wedding for the first time? Or planning one and want your guests to feel prepared? This guide covers everything — from Vara Pooja to the significance of the Thaali.',
-    image: '/blog/south-indian-wedding.jpg',
+    image: '/Image/theme/134166668312847982-1772528498596-611804750.jpg',
     metaDescription: 'Complete guide to South Indian wedding traditions — Tamil, Telugu, and Kannada wedding rituals explained. For guests attending and couples planning their ceremony.',
     content: `
 ## South Indian Weddings: Rich, Meaningful, and Deeply Rooted
@@ -2110,7 +2110,7 @@ Nimantran Studio's *Suvarna Sohala* theme was designed specifically for South In
     date: 'APR 14, 2025',
     readTime: '7 min read',
     excerpt: 'Sangeet ek performance nahi hai — yeh ek celebration hai jo carefully planned hoti hai. Yahan hai ek complete guide — music se leke guest invite karne tak.',
-    image: '/blog/sangeet-night.jpg',
+    image: '/Image/bundle/item-Sangeet_Invitation-1771520707319-353497349.png',
     metaDescription: 'Complete Sangeet night planning guide for Indian weddings. Songs, performances, choreography, timeline, and invitation wording in English, Hindi, and Hinglish.',
     content: `
 ## Sangeet: Jab Dono Families Pehli Baar Ek Stage Par Aati Hain
@@ -2222,7 +2222,7 @@ DJ starts. Food served. Let the evening find its own energy.
     date: 'MAY 4, 2025',
     readTime: '6 min read',
     excerpt: 'Perfect Hindi wording for your wedding invitation — formal, semi-formal, aur modern styles mein. Sirf copy karo, paste karo, aur bhejo.',
-    image: '/blog/hindi-wording.jpg',
+    image: '/Image/bundle/item-Wedding_Invitation-1771520707302-649091946.png',
     metaDescription: '30 ready-to-use wedding invitation wording templates in Hindi for Indian weddings. Formal, semi-formal, and modern styles. Copy-paste ready for WhatsApp and digital invitations.',
     content: `
 ## Hindi Invitation Wording Kyun Important Hai
@@ -2345,7 +2345,7 @@ Yahan hain 30 templates — formal se lekar modern tak.
     date: 'APR 30, 2025',
     readTime: '5 min read',
     excerpt: 'Sangeet invitation ka wording fun hona chahiye, not formal. Yahan hain 25 ready-to-use templates jo aapki Sangeet invite ko memorable bana denge.',
-    image: '/blog/sangeet-wording.jpg',
+    image: '/Image/bundle/item-Sangeet_Invitation-1772530182367-693463634.png',
     metaDescription: '25 Sangeet invitation wording templates in English, Hindi, and Hinglish. Copy-paste ready messages for WhatsApp, digital cards, and printed invitations.',
     content: `
 ## Sangeet Wording: Fun Ka Permission Hai
@@ -2459,7 +2459,7 @@ Yahan hain 25 templates — har style ke liye.
     date: 'APR 25, 2025',
     readTime: '5 min read',
     excerpt: 'Not every couple wants "joyfully united under the blessings of." Here are invitation wording options for couples who want their cards to sound like them — not like every other wedding.',
-    image: '/blog/modern-wording.jpg',
+    image: '/Image/bundle/item-Wedding_Invitation-1772530182361-824697598.png',
     metaDescription: 'Modern Indian wedding invitation wording templates for contemporary couples. Unique, personal, and non-traditional styles in English, Hinglish, and bilingual formats.',
     content: `
 ## The Problem With Generic Invitation Wording
@@ -2550,7 +2550,7 @@ Two tones. One invitation. Everyone happy.
     date: 'MAY 6, 2025',
     readTime: '5 min read',
     excerpt: 'Invitation WhatsApp par bhejne ke liye sirf "forward" press karna kaafi nahi hai. Yahan hai woh exact method jo 2x better response rate deta hai.',
-    image: '/blog/whatsapp-sharing.jpg',
+    image: '/images/experience/whatsapp.png',
     metaDescription: 'How to share wedding invitations on WhatsApp the right way. Step-by-step guide for Indian couples including message format, timing, and tips for higher RSVP response rates.',
     content: `
 ## Forward Karna ≠ Inviting
@@ -2656,7 +2656,7 @@ Or more casual:
     date: 'APR 21, 2025',
     readTime: '6 min read',
     excerpt: 'Inviting relatives from the US, UK, Canada, or Australia requires a completely different communication strategy. Here is exactly what your NRI guests need — and when they need it.',
-    image: '/blog/nri-wedding.jpg',
+    image: '/images/experience/tracking.png',
     metaDescription: 'How to invite NRI guests to Indian weddings. Complete guide to international wedding invitations, timelines, visa coordination, and digital communication for diaspora families.',
     content: `
 ## The NRI Guest Problem
@@ -2780,7 +2780,7 @@ Digital invitations reach NRI guests in seconds, with:
     date: 'APR 16, 2025',
     readTime: '5 min read',
     excerpt: 'WhatsApp par Hindi mein wedding invitation message likhna mushkil lagta hai. Yahan hain 40 ready-to-copy templates — formal se casual tak, elders ke liye aur friends ke liye bhi.',
-    image: '/blog/hindi-whatsapp-message.jpg',
+    image: '/images/experience/whatsapp.png',
     metaDescription: '40 ready wedding invitation messages in Hindi for WhatsApp. Formal, informal, Hinglish — copy-paste ready templates for sending Indian wedding invitations on WhatsApp.',
     content: `
 ## WhatsApp Message aur Card — Dono Important Hain
