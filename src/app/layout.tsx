@@ -9,6 +9,7 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair" });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://nimantranstudio.com"),
   title: "Nimantran Studio | WhatsApp Wedding Invites & Digital Invites India",
   description: "Create stunning WhatsApp wedding invites and track RSVPs in under 5 minutes. The easiest digital wedding invitation platform for Indian weddings. No subscription required.",
   keywords: ["WhatsApp wedding invitation", "Marathi wedding invitation", "digital wedding invitation India", "wedding RSVP website", "wedding invite maker"],

@@ -49,3 +49,4 @@ db-test-remote.ts
 
 # Garbage
 .next_garbage/
+.env*.local
