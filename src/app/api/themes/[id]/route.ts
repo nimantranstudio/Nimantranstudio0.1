@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import fs from 'fs';
-import path from 'path';
 
 export const revalidate = 3600;
 
@@ -52,39 +50,6 @@ export async function GET(
                     let p = item.templatePath || '';
                     if (p.startsWith('public/')) p = '/' + p.substring(7);
                     if (p && !p.startsWith('/')) p = '/' + p;
-
-                    // SELF-HEALING: If file doesn't exist, try to find a fallback
-                    // Optimization: We use a cache to avoid re-scanning the disk on every single item.
-                    if (p && p.toLowerCase().endsWith('.html')) {
-                        const fullPath = path.join(process.cwd(), 'public', p);
-                        
-                        // Simple sync check is okay if not done for 100s of files.
-                        if (!fs.existsSync(fullPath)) {
-                            console.log(`[Self-Healing] Missing: ${p}. Attempting to recover...`);
-                            try {
-                                const bundleDir = path.join(process.cwd(), 'public/Image/bundle');
-                                if (fs.existsSync(bundleDir)) {
-                                    const files = fs.readdirSync(bundleDir);
-                                    const htmlTemplates = files.filter(f => f.toLowerCase().endsWith('.html'));
-                                    
-                                    if (htmlTemplates.length > 0) {
-                                        // SMART FALLBACK: Prioritize "Wedding Invitation" or "WEDDING"
-                                        const bestMatch = htmlTemplates.find(f => 
-                                            f.toLowerCase().includes('wedding') && f.toLowerCase().includes('invitation')
-                                        ) || htmlTemplates.find(f => 
-                                            f.toLowerCase().includes('wedding')
-                                        ) || htmlTemplates[0];
-                                        
-                                        p = `/Image/bundle/${bestMatch}`;
-                                        console.log(`[Self-Healing] Found Best Fallback: ${p}`);
-                                    }
-                                }
-                            } catch (e) {
-                                console.error("Self-healing failed", e);
-                            }
-                        }
-                    }
-
                     return { ...item, templatePath: p };
                 })
             })) || [],

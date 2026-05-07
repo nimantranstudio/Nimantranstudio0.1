@@ -50,3 +50,7 @@ db-test-remote.ts
 # Garbage
 .next_garbage/
 .env*.local
+
+# Auto-generated HTML invitation templates (large base64-embedded files, not for git)
+public/Image/bundle/template-*.html
+public/Image/bundle/item-*.html

@@ -1,8 +1,6 @@
 import type { Metadata } from 'next';
 import { prisma } from '@/lib/prisma';
 import ThemeDetailClient from './ThemeDetailClient';
-import fs from 'fs';
-import path from 'path';
 
 export const revalidate = 3600;
 
@@ -88,24 +86,6 @@ export default async function ThemeDetailPage({ params }: { params: Promise<{ th
                 let p = item.templatePath || '';
                 if (p.startsWith('public/')) p = '/' + p.substring(7);
                 if (p && !p.startsWith('/')) p = '/' + p;
-
-                // Self-healing for missing templates
-                if (p && p.toLowerCase().endsWith('.html')) {
-                    const fullPath = path.join(process.cwd(), 'public', p);
-                    if (!fs.existsSync(fullPath)) {
-                        try {
-                            const bundleDir = path.join(process.cwd(), 'public/Image/bundle');
-                            if (fs.existsSync(bundleDir)) {
-                                const files = fs.readdirSync(bundleDir);
-                                const htmlTemplates = files.filter(f => f.toLowerCase().endsWith('.html'));
-                                if (htmlTemplates.length > 0) {
-                                    const bestMatch = htmlTemplates.find(f => f.toLowerCase().includes('wedding') && f.toLowerCase().includes('invitation')) || htmlTemplates[0];
-                                    p = `/Image/bundle/${bestMatch}`;
-                                }
-                            }
-                        } catch (e) {}
-                    }
-                }
                 return { ...item, templatePath: p };
             })
         }))
