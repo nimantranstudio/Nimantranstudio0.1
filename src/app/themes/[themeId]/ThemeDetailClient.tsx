@@ -282,20 +282,35 @@ export default function ThemeDetailClient({
                 image: item.templatePath
             }));
             
-        // Sort imageList so that .html files (templates) come first, prioritized by "Invitation"
+        // Custom order priority
+        const PRIORITY: Record<string, number> = {
+            'save the date': 1,
+            'wedding invitation': 2,
+            'haldi invitation': 3,
+            'mehendhi invitation': 4,
+            'mehendi invitation': 4,
+            'sangeet invitation': 5
+        };
+
+        // Sort imageList based on custom priority, fallback to alphabetical or HTML priority
         imageList = filtered.sort((a, b) => {
+            const nameA = a.name.toLowerCase();
+            const nameB = b.name.toLowerCase();
+            
+            const priorityA = PRIORITY[nameA] || 99;
+            const priorityB = PRIORITY[nameB] || 99;
+
+            if (priorityA !== priorityB) {
+                return priorityA - priorityB;
+            }
+
+            // Fallback for items not in priority list: HTML files first
             const aIsHtml = a.image?.toLowerCase().endsWith('.html');
             const bIsHtml = b.image?.toLowerCase().endsWith('.html');
-            const aIsInvitation = a.name.toLowerCase().includes('invitation');
-            const bIsInvitation = b.name.toLowerCase().includes('invitation');
-
-            // Wedding Invitation HTML gets top priority
-            if (aIsHtml && aIsInvitation && !(bIsHtml && bIsInvitation)) return -1;
-            if (!(aIsHtml && aIsInvitation) && bIsHtml && bIsInvitation) return 1;
-
             if (aIsHtml && !bIsHtml) return -1;
             if (!aIsHtml && bIsHtml) return 1;
-            return 0;
+
+            return a.name.localeCompare(b.name);
         });
     }
 
