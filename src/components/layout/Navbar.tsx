@@ -12,7 +12,7 @@ import { clsx } from 'clsx';
 const NAV_LINKS = [
     { name: 'Home', href: '/' },
     { name: 'Themes', href: '/themes' },
-    // { name: 'Blogs', href: '/blogs' },
+    { name: 'Blog', href: '/blogs' },
 ];
 
 export const Navbar = () => {

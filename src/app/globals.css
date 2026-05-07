@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
   /* Core Palette - Premium Stable Aesthetic */
   --background: #F8F7F5;
