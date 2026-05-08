@@ -178,8 +178,8 @@ export default function DashboardPage() {
                                     const itemIndex = previewItems?.findIndex(pi => {
                                         const piName = (pi.name || '').toUpperCase().trim();
                                         const eventName = (event.name || '').toUpperCase().trim();
-                                        const piType = (pi.event?.eventType || '').toUpperCase().trim();
-                                        const eventType = (event.eventType || '').toUpperCase().trim();
+                                        const piType = ((pi as any).event?.eventType || '').toUpperCase().trim();
+                                        const eventType = ((event as any).eventType || '').toUpperCase().trim();
 
                                         return (piName.length > 0 && eventName.length > 0 && (piName.includes(eventName) || eventName.includes(piName))) ||
                                                (piType.length > 0 && eventType.length > 0 && piType === eventType);

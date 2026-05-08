@@ -7,22 +7,27 @@ export async function POST(req: Request) {
     console.log("API: POST /api/wedding called");
     try {
         const body = await req.json();
-        console.log("API: Request body received", JSON.stringify(body, null, 2));
 
         const validatedData = WeddingFormSchema.parse(body.formData);
-        console.log("API: Validation passed");
 
         const { selectedThemeId, userId } = body;
 
-        // For now, if no userId is provided, we use a placeholder or create a guest user
-        // In a real app, this would come from the auth session
+        // Ensure theme exists
+        if (selectedThemeId) {
+            const themeExists = await prisma.theme.findUnique({ where: { id: selectedThemeId } });
+            if (!themeExists) {
+                return NextResponse.json({
+                    success: false,
+                    error: { code: 'THEME_NOT_FOUND', message: 'The selected theme could not be found in the database.' }
+                }, { status: 404 });
+            }
+        }
+
         const finalUserId = userId || await getOrCreateGuestUser();
-        console.log("API: User ID resolved", finalUserId);
 
         const wedding = await prisma.wedding.create({
             data: {
                 ownerId: finalUserId,
-                // Default to 'rajputana' if themeId is missing (e.g. created via dashboard directly)
                 themeId: selectedThemeId,
                 groomName: validatedData.groomName || '',
                 brideName: validatedData.brideName || '',
@@ -40,11 +45,9 @@ export async function POST(req: Request) {
                         mapLink: event.mapLink,
                         description: event.description,
                         eventType: event.eventType,
-                        // Ensure empty string becomes null for DateTime field
                         rsvpDeadline: event.rsvpDeadline ? event.rsvpDeadline : null,
                         allowCompanions: event.allowCompanions ?? true,
                         collectDietary: event.collectDietary ?? false,
-                        // maxGuests: event.maxGuests 
                     }))
                 }
             },
@@ -54,24 +57,37 @@ export async function POST(req: Request) {
         });
 
         console.log("API: Wedding created successfully", wedding.id);
-        console.log("API: Created Events:", wedding.events.length);
 
-        return NextResponse.json({ success: true, wedding });
+        return NextResponse.json({ success: true, data: wedding });
     } catch (error: any) {
         console.error("API Error in POST /api/wedding:", error);
+
         if (error.name === 'ZodError') {
             const issues = error.issues.map((i: any) => `${i.path.join('.')}: ${i.message}`).join(', ');
-            console.error("API: Validation Failed:", issues);
-            return NextResponse.json({ success: false, error: `Validation failed: ${issues}` }, { status: 400 });
+            return NextResponse.json({
+                success: false,
+                error: { code: 'VALIDATION_ERROR', message: `Validation failed: ${issues}`, details: error.issues }
+            }, { status: 400 });
         }
 
-        // Handle common Prisma or connection errors
-        let userMessage = error.message;
-        if (error.message.includes('Prisma') || error.message.includes('Can\'t reach database')) {
-            userMessage = "Database connection issue. Please ensure your database is running.";
+        if (error.code === 'P2002') {
+             return NextResponse.json({
+                success: false,
+                error: { code: 'CONFLICT', message: 'A wedding with this unique identifier already exists.' }
+            }, { status: 409 });
         }
 
-        return NextResponse.json({ success: false, error: userMessage }, { status: 500 });
+        if (error.message?.includes('Prisma') || error.message?.includes('Can\'t reach database')) {
+             return NextResponse.json({
+                success: false,
+                error: { code: 'DATABASE_ERROR', message: 'Database connection issue. Please try again later.' }
+            }, { status: 503 });
+        }
+
+        return NextResponse.json({
+            success: false,
+            error: { code: 'INTERNAL_SERVER_ERROR', message: 'An unexpected error occurred while saving the wedding.', details: process.env.NODE_ENV === 'development' ? error.message : undefined }
+        }, { status: 500 });
     }
 }
 

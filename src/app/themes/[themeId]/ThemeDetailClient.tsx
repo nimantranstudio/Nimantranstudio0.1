@@ -213,7 +213,10 @@ export default function ThemeDetailClient({
         // Prepare store before navigation
         resetForm();
         setThemeId(theme.id);
-        const items = activeBundle?.bundleItems || [];
+        const items = (activeBundle?.bundleItems || []).map((item: any) => ({
+             ...item,
+             eventId: item.event?.id || item.eventId || 'unknown-event'
+        }));
         setBundleData(selectedPlan, imageList.map(a => a.image), items);
         
         // Navigate immediately with trigger
