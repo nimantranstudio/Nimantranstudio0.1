@@ -55,20 +55,23 @@ export async function POST(request: NextRequest) {
             await mkdir(uploadDir, { recursive: true });
         } catch (e) { }
 
-        // Process item-wise uploads
+        // Process item-wise uploads in parallel
         const itemImages: { [key: string]: string } = {};
-        for (const [key, value] of Array.from(formData.entries())) {
-            if (key.startsWith('itemFile_') && value instanceof File) {
+        const uploadPromises = Array.from(formData.entries())
+            .filter(([key, value]) => key.startsWith('itemFile_') && value instanceof File)
+            .map(async ([key, value]) => {
+                const file = value as File;
                 const itemName = key.replace('itemFile_', '');
-                const bytes = await value.arrayBuffer();
+                const bytes = await file.arrayBuffer();
                 const buffer = Buffer.from(bytes);
                 const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-                const filename = `item-${itemName.replace(/\s+/g, '_')}-${uniqueSuffix}${path.extname(value.name)}`;
+                const filename = `item-${itemName.replace(/\s+/g, '_')}-${uniqueSuffix}${path.extname(file.name)}`;
                 const filepath = path.join(uploadDir, filename);
                 await writeFile(filepath, buffer);
                 itemImages[itemName] = `/Image/bundle/${filename}`;
-            }
-        }
+            });
+
+        await Promise.all(uploadPromises);
 
         const itemImagePaths = Object.values(itemImages);
         const bundle = await prisma.bundle.create({
