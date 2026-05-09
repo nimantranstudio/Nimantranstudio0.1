@@ -1603,11 +1603,10 @@
 .eventCard {
     background: transparent;
     border: none;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-    padding: 2rem 0;
+    padding: 0.75rem 0; /* More compact */
     display: flex;
     align-items: flex-start;
-    gap: 1.5rem;
+    gap: 1.25rem;
     margin-bottom: 0;
     position: relative;
 }
@@ -1622,23 +1621,35 @@
     border-color: rgba(0, 0, 0, 0.06);
 }
 
-.eventPosterThumb {
-    width: 100px;
-    height: 100px;
-    background: #F8F7F5;
-    border-radius: 20px;
-    overflow: hidden;
+.timelinePoint {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
-    border: 1px solid rgba(0, 0, 0, 0.04);
-    flex-shrink: 0;
+    width: 20px;
+    position: relative;
+    padding-top: 0.4rem;
 }
 
-.eventPosterThumb img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+.timelineDot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #C8A951;
+    border: 2px solid #FFFFFF;
+    box-shadow: 0 0 0 1px #E0DED7;
+    z-index: 2;
+}
+
+.timelineLine {
+    width: 1px;
+    background-color: #E0DED7;
+    flex: 1;
+    position: absolute;
+    top: 0.8rem;
+    bottom: -1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1;
 }
 
 .eventCardContent {
@@ -1656,7 +1667,7 @@
 }
 
 .eventCardHeaderRow h4 {
-    font-size: 1.5rem;
+    font-size: 1.15rem; /* Smaller font */
     font-weight: 700;
     color: #1F1F1F;
     margin: 0;
@@ -1705,10 +1716,10 @@
 }
 
 .eventMessageBlock p {
-    font-size: 1rem;
+    font-size: 0.9rem; /* Smaller font */
     color: #475569;
     margin: 0;
-    line-height: 1.5;
+    line-height: 1.4;
     font-style: italic;
 }
 

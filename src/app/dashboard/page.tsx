@@ -193,28 +193,9 @@ export default function DashboardPage() {
 
                                     return (
                                         <div key={idx} className={styles.eventCard}>
-                                            <div
-                                                className={styles.eventPosterThumb}
-                                                onClick={() => setLightbox({ image: poster || null, title: event.name })}
-                                                style={{ cursor: 'pointer' }}
-                                                title="Click to view card"
-                                            >
-                                                {poster ? (
-                                                    <img
-                                                        src={poster}
-                                                        alt={event.name}
-                                                        onError={(e) => {
-                                                            (e.currentTarget as HTMLImageElement).style.display = 'none';
-                                                            const placeholder = e.currentTarget.nextElementSibling as HTMLElement;
-                                                            if (placeholder) placeholder.style.display = 'block';
-                                                        }}
-                                                    />
-                                                ) : null}
-                                                {poster ? (
-                                                    <span className={styles.posterPlaceholderSmall} style={{ display: 'none' }}>VIEW<br/>INVITE</span>
-                                                ) : (
-                                                    <span className={styles.posterPlaceholderSmall}>VIEW<br/>INVITE</span>
-                                                )}
+                                            <div className={styles.timelinePoint}>
+                                                <div className={styles.timelineDot} />
+                                                {idx < (formData.events?.length || 0) - 1 && <div className={styles.timelineLine} />}
                                             </div>
 
                                             <div className={styles.eventCardContent}>
