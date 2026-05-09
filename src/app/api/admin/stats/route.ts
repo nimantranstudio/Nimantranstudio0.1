@@ -1,24 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { unstable_cache } from 'next/cache';
 
-export async function GET() {
-    try {
+const getCachedStats = unstable_cache(
+    async () => {
         const { getPrisma } = await import('@/lib/prisma');
         const prisma = getPrisma();
 
-        const [themesCount, bundlesCount, weddingsCount, rsvpsCount] = await Promise.all([
+        const [themesCount, bundlesCount, weddingsCount, rsvpsCount, revenueResult] = await Promise.all([
             prisma.theme.count(),
             prisma.bundle.count(),
             prisma.wedding.count(),
-            prisma.rSVP.count()
+            prisma.rSVP.count(),
+            prisma.order.aggregate({
+                _sum: {
+                    totalAmount: true
+                },
+                where: {
+                    status: 'completed'
+                }
+            })
         ]);
 
-        return NextResponse.json({
+        return {
             themesCount,
             bundlesCount,
             weddingsCount,
             rsvpsCount,
-            revenue: 1240 // Hardcoded for now until payment integration exists
-        });
+            revenue: revenueResult._sum.totalAmount || 0
+        };
+    },
+    ['admin-stats'],
+    { revalidate: 60, tags: ['admin-stats'] }
+);
+
+export async function GET() {
+    try {
+        const stats = await getCachedStats();
+        return NextResponse.json(stats);
     } catch (error: any) {
         console.error('Failed to fetch dashboard stats:', error);
         return NextResponse.json({ error: error.message }, { status: 500 });
