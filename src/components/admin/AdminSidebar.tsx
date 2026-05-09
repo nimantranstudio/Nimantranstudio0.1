@@ -25,6 +25,8 @@ export function AdminSidebar() {
                     className={styles.toggleBtn}
                     onClick={() => setIsCollapsed(!isCollapsed)}
                     title={isCollapsed ? "Expand" : "Collapse"}
+                    aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+                    aria-expanded={!isCollapsed}
                 >
                     {isCollapsed ? <Menu size={18} /> : <ChevronLeft size={18} />}
                 </button>

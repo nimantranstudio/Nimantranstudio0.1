@@ -402,7 +402,9 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
             <div className={styles.modal} onClick={e => e.stopPropagation()}>
                 <div className={styles.header}>
                     <h2 className={styles.title}>{initialData ? 'Edit Bundle' : 'Create New Bundle'}</h2>
-                    <button className={styles.closeBtn} onClick={onClose}><X size={20} /></button>
+                    <button className={styles.closeBtn} onClick={onClose} aria-label="Close modal">
+                        <X size={20} />
+                    </button>
                 </div>
 
                 <form onSubmit={handleSubmit} className={styles.form}>
@@ -658,7 +660,12 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
                                                     )}
                                                 </td>
                                                 <td style={{ padding: '0.75rem', textAlign: 'center' }}>
-                                                    <button type="button" onClick={() => removeBundleItem(item.id)} style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', display: 'flex' }}>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeBundleItem(item.id)}
+                                                        style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', display: 'flex' }}
+                                                        aria-label={`Remove bundle item ${item.templateName}`}
+                                                    >
                                                         <X size={16} />
                                                     </button>
                                                 </td>

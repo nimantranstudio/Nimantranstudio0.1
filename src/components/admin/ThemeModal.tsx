@@ -120,7 +120,9 @@ export function ThemeModal({ isOpen, onClose, onSuccess, initialData }: ThemeMod
             <div className={styles.modal} onClick={e => e.stopPropagation()}>
                 <div className={styles.header}>
                     <h2 className={styles.title}>{initialData ? 'Edit Theme' : 'Create New Theme'}</h2>
-                    <button className={styles.closeBtn} onClick={onClose}><X size={20} /></button>
+                    <button className={styles.closeBtn} onClick={onClose} aria-label="Close modal">
+                        <X size={20} />
+                    </button>
                 </div>
 
                 <form onSubmit={handleSubmit} className={styles.form}>
