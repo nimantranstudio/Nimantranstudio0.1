@@ -40,15 +40,17 @@ export default function ThemeDetailPage({ params }: { params: Promise<{ themeId:
     useEffect(() => {
         async function fetchData() {
             try {
-                // Fetch packages first to have mappings
-                const pkgRes = await fetch('/api/admin/packages');
+                // Fetch packages and themes concurrently for better performance
+                const [pkgRes, res] = await Promise.all([
+                    fetch('/api/admin/packages'),
+                    fetch('/api/themes')
+                ]);
+
                 if (pkgRes.ok) {
                     const pkgData = await pkgRes.json();
                     setPackages(pkgData.packages || []);
                 }
 
-                // Fetch themes
-                const res = await fetch('/api/themes');
                 if (res.ok) {
                     const data = await res.json();
                     const allThemes: Theme[] = data.themes || [];

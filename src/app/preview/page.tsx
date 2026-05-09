@@ -131,16 +131,18 @@ function PreviewContent() {
     useEffect(() => {
         async function fetchData() {
             try {
-                // Fetch packages first
-                const pkgRes = await fetch('/api/admin/packages');
+                // Fetch packages and theme concurrently for better performance
+                const [pkgRes, res] = await Promise.all([
+                    fetch('/api/admin/packages'),
+                    selectedThemeId ? fetch(`/api/themes/${selectedThemeId}`) : Promise.resolve(null)
+                ]);
+
                 if (pkgRes.ok) {
                     const pkgData = await pkgRes.json();
                     setPackages(pkgData.packages || []);
                 }
 
-                if (!selectedThemeId) return;
-                const res = await fetch(`/api/themes/${selectedThemeId}`);
-                if (res.ok) {
+                if (res && res.ok) {
                     const data = await res.json();
                     setTheme(data.theme);
                 }
