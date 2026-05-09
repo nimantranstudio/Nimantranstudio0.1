@@ -46,9 +46,8 @@ export async function PUT(
             const uploadDir = path.join(process.cwd(), 'public/Image/theme');
             await mkdir(uploadDir, { recursive: true });
 
-            const newPaths: string[] = [];
-            for (const file of files) {
-                if (file.size === 0) continue;
+            const uploadPromises = files.map(async (file) => {
+                if (file.size === 0) return null;
                 const bytes = await file.arrayBuffer();
                 const buffer = Buffer.from(bytes);
 
@@ -57,8 +56,10 @@ export async function PUT(
                 const filepath = path.join(uploadDir, filename);
 
                 await writeFile(filepath, buffer);
-                newPaths.push(`/Image/theme/${filename}`);
-            }
+                return `/Image/theme/${filename}`;
+            });
+
+            const newPaths = (await Promise.all(uploadPromises)).filter((p): p is string => p !== null);
 
             if (newPaths.length > 0) {
                 savedImagePaths = [...savedImagePaths, ...newPaths];
@@ -71,6 +72,8 @@ export async function PUT(
                 name,
                 description,
                 isActive,
+                isBestSeller,
+                isPopular,
                 thumbnailUrl: savedImagePaths.length > 0 ? savedImagePaths[0] : existingTheme.thumbnailUrl,
                 previewImages: JSON.stringify(savedImagePaths),
             }
@@ -115,14 +118,14 @@ export async function DELETE(
         if (theme.previewImages) {
             try {
                 const images = JSON.parse(theme.previewImages) as string[];
-                for (const imagePath of images) {
+                await Promise.allSettled(images.map(async (imagePath) => {
                     const fullPath = path.join(process.cwd(), 'public', imagePath);
                     try {
                         await unlink(fullPath);
                     } catch (e) {
                         console.error(`Failed to delete file: ${fullPath}`, e);
                     }
-                }
+                }));
             } catch (e) {
                 console.error("Failed to parse/delete images", e);
             }

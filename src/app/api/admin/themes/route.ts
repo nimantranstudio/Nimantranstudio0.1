@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
             // Ignore if exists
         }
 
-        for (const file of files) {
+        const uploadPromises = files.map(async (file) => {
             const bytes = await file.arrayBuffer();
             const buffer = Buffer.from(bytes);
 
@@ -56,8 +56,11 @@ export async function POST(request: NextRequest) {
             const filepath = path.join(uploadDir, filename);
 
             await writeFile(filepath, buffer);
-            savedImagePaths.push(`/Image/theme/${filename}`);
-        }
+            return `/Image/theme/${filename}`;
+        });
+
+        const newPaths = await Promise.all(uploadPromises);
+        savedImagePaths.push(...newPaths);
 
         console.log('Images saved, connecting to DB...');
 
@@ -74,6 +77,8 @@ export async function POST(request: NextRequest) {
                     name,
                     description,
                     isActive,
+                    isBestSeller,
+                    isPopular,
                     thumbnailUrl: thumbUrl,
                     previewImages: previewImagesJson,
                 },
