@@ -32,18 +32,21 @@ export async function PUT(
         const existingItemImages = JSON.parse(formData.get('existingItemImages') as string || '{}');
         const itemImages: { [key: string]: string } = { ...existingItemImages };
 
-        for (const [key, value] of Array.from(formData.entries())) {
-            if (key.startsWith('itemFile_') && value instanceof File) {
+        const itemImageUploads = Array.from(formData.entries())
+            .filter(([key, value]) => key.startsWith('itemFile_') && value instanceof File)
+            .map(async ([key, value]) => {
+                const file = value as File;
                 const itemName = key.replace('itemFile_', '');
-                const bytes = await value.arrayBuffer();
+                const bytes = await file.arrayBuffer();
                 const buffer = Buffer.from(bytes);
                 const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-                const filename = `item-${itemName.replace(/\s+/g, '_')}-${uniqueSuffix}${path.extname(value.name)}`;
+                const filename = `item-${itemName.replace(/\s+/g, '_')}-${uniqueSuffix}${path.extname(file.name)}`;
                 const filepath = path.join(uploadDir, filename);
                 await writeFile(filepath, buffer);
                 itemImages[itemName] = `/Image/bundle/${filename}`;
-            }
-        }
+            });
+
+        await Promise.all(itemImageUploads);
 
         // Process structured bundle items
         const bundleItemsMetaRaw = formData.get('bundleItemsMeta');
@@ -80,8 +83,7 @@ export async function PUT(
             }
         }
 
-        const bundleItemsDataToCreate = [];
-        for (const meta of bundleItemsMeta) {
+        const bundleItemsDataToCreate = await Promise.all(bundleItemsMeta.map(async (meta: any) => {
             let templateFileStr = meta.existingUrl;
 
             const file = formData.get(`newBundleItem_${meta.id}`);
@@ -95,12 +97,12 @@ export async function PUT(
                 templateFileStr = `/Image/bundle/${filename}`;
             }
 
-            bundleItemsDataToCreate.push({
+            return {
                 eventId: meta.eventId,
                 templateName: meta.templateName,
                 templatePath: templateFileStr || ''
-            });
-        }
+            };
+        }));
 
         // Delete existing bundle items and re-create
         await prisma.bundleItem.deleteMany({ where: { bundleId: id } });

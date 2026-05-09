@@ -45,18 +45,21 @@ export async function POST(request: NextRequest) {
 
         // Process item-wise uploads (legacy compatibility just in case)
         const itemImages: { [key: string]: string } = {};
-        for (const [key, value] of Array.from(formData.entries())) {
-            if (key.startsWith('itemFile_') && value instanceof File) {
+        const itemImageUploads = Array.from(formData.entries())
+            .filter(([key, value]) => key.startsWith('itemFile_') && value instanceof File)
+            .map(async ([key, value]) => {
+                const file = value as File;
                 const itemName = key.replace('itemFile_', '');
-                const bytes = await value.arrayBuffer();
+                const bytes = await file.arrayBuffer();
                 const buffer = Buffer.from(bytes);
                 const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-                const filename = `item-${itemName.replace(/\s+/g, '_')}-${uniqueSuffix}${path.extname(value.name)}`;
+                const filename = `item-${itemName.replace(/\s+/g, '_')}-${uniqueSuffix}${path.extname(file.name)}`;
                 const filepath = path.join(uploadDir, filename);
                 await writeFile(filepath, buffer);
                 itemImages[itemName] = `/Image/bundle/${filename}`;
-            }
-        }
+            });
+
+        await Promise.all(itemImageUploads);
 
         // Process new structured bundle items
         const bundleItemsMetaRaw = formData.get('bundleItemsMeta');
@@ -93,8 +96,7 @@ export async function POST(request: NextRequest) {
             }
         }
 
-        const bundleItemsDataToCreate = [];
-        for (const meta of bundleItemsMeta) {
+        const bundleItemsDataToCreate = await Promise.all(bundleItemsMeta.map(async (meta: any) => {
             let templateFileStr = meta.existingUrl;
 
             const file = formData.get(`newBundleItem_${meta.id}`);
@@ -109,12 +111,12 @@ export async function POST(request: NextRequest) {
                 templateFileStr = `/Image/bundle/${filename}`;
             }
 
-            bundleItemsDataToCreate.push({
+            return {
                 eventId: meta.eventId,
                 templateName: meta.templateName,
                 templatePath: templateFileStr || ''
-            });
-        }
+            };
+        }));
 
         const itemImagePaths = Object.values(itemImages);
         const bundle = await prisma.bundle.create({
