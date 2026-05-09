@@ -223,13 +223,16 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
             }
             
             // Fix viewport units: The templates were designed on desktop screens where 'vw' was huge.
-            // Inside our 500px iframe, 'vw' causes fonts to shrink massively. Replacing 'vw' with 'vmax' 
-            // forces the fonts back up, letting their 'clamp()' max values take over naturally.
+            // For the mobile frame, we need to map vw to the iframe's physical width.
+            // 100vw = iframeWidth px => 1vw = (iframeWidth / 100) px
             if (!doc.body.dataset.vwFixed) {
+                const iframeWidth = iframeRef.current?.offsetWidth || 500;
                 const styleTags = doc.querySelectorAll('style:not(#runtime-preview-fix)');
                 styleTags.forEach(tag => {
-                    if (tag.innerHTML.includes('vw')) {
-                        tag.innerHTML = tag.innerHTML.replace(/([\d.]+)vw/g, '$1vmax');
+                    if (tag.textContent?.includes('vw')) {
+                        tag.textContent = tag.textContent.replace(/([\d.]+)vw/g, (_, val) => {
+                            return `${(parseFloat(val) * (iframeWidth / 100)).toFixed(2)}px`;
+                        });
                     }
                 });
                 doc.body.dataset.vwFixed = "true";

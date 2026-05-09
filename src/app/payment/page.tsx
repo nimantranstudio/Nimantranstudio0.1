@@ -122,7 +122,12 @@ export default function PaymentPage() {
                     
                     const styleTags = doc.querySelectorAll('style:not(#runtime-preview-fix)');
                     styleTags.forEach(tag => {
-                        if (tag.innerHTML.includes('vw')) tag.innerHTML = tag.innerHTML.replace(/([\d.]+)vw/g, '$1vmax');
+                        if (tag.textContent?.includes('vw')) {
+                            tag.textContent = tag.textContent.replace(/([\d.]+)vw/g, (_, val) => {
+                                // The rendering iframe uses 500px width
+                                return `${(parseFloat(val) * (500 / 100)).toFixed(2)}px`;
+                            });
+                        }
                     });
                     
                     const finalHtml = "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
