@@ -35,7 +35,7 @@ export async function POST(request: Request) {
         // OR store the full number. Existing DB check: "where: { mobileNumber }"
 
         // Strategy: Flexible 10-digit extraction for matching
-        const mobileNumber = fullMobileNumber.replace('+91', '');
+        const mobileNumber = fullMobileNumber.replace(/\D/g, '').slice(-10);
         console.log("Auth Sync: Normalized mobileNumber:", mobileNumber);
 
         const isUserAdmin = mobileNumber === ADMIN_MOBILE;
