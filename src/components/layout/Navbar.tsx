@@ -95,6 +95,8 @@ export const Navbar = () => {
                                 <button
                                     className={clsx(styles.profileBtn, isProfileOpen && styles.active)}
                                     onClick={() => setIsProfileOpen(!isProfileOpen)}
+                                    aria-haspopup="menu"
+                                    aria-expanded={isProfileOpen}
                                 >
                                     <span>Login</span>
                                     <ChevronDown size={14} className={clsx(styles.chevron, isProfileOpen && styles.rotated)} />
@@ -131,7 +133,12 @@ export const Navbar = () => {
                 </div>
 
                 {/* Mobile Toggle */}
-                <button className={styles.mobileToggle} onClick={() => setIsOpen(!isOpen)}>
+                <button
+                    className={styles.mobileToggle}
+                    onClick={() => setIsOpen(!isOpen)}
+                    aria-label={isOpen ? "Close menu" : "Open menu"}
+                    aria-expanded={isOpen}
+                >
                     {isOpen ? <X size={24} /> : <Menu size={24} />}
                 </button>
             </div>

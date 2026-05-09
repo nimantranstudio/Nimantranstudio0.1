@@ -1,0 +1,3 @@
+## 2023-11-20 - [ARIA Enhancements and Accessible Modals]
+**Learning:** Found an accessibility pattern specifically lacking in icon-only buttons across multiple components such as modals (`BundleModal`, `ThemeModal`), dynamic lists (`EventRepeater`), and navigation bars (`Navbar`, `AdminSidebar`). Screen readers had no context for delete/close buttons or layout toggles.
+**Action:** Added semantic `aria-label`, `aria-haspopup`, and `aria-expanded` attributes where relevant. Specifically, ensuring toggle elements not only explain what they do via label but also represent their current state using `aria-expanded`.

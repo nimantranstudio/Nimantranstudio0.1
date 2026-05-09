@@ -19,6 +19,7 @@ export const EventRepeater = () => {
                                 onClick={() => removeEvent(event.id)}
                                 className={styles.removeBtn}
                                 title="Remove Event"
+                                aria-label={`Remove Event #${index + 1}`}
                             >
                                 <Trash2 size={18} />
                             </button>
