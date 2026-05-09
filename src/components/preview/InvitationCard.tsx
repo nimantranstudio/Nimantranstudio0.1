@@ -475,6 +475,7 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
     }, [isHTMLDesign, event, welcomeMessage, groomName, brideName, groomParents, brideParents, customImage, showSizingBoxes, isRawPreview]);
 
     const isHaldi = event.name?.toLowerCase().includes('haldi');
+    const isMehendi = event.name?.toLowerCase().includes('mehendi');
     const isContract = variant === 'contract';
     const isSaveTheDate = variant === 'save-the-date';
 
@@ -615,6 +616,20 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                             <text x="300" y="440" fill="#FFE4B5" fontSize="20" fontStyle="italic" style={{ letterSpacing: '0.05em' }}>
                                 <tspan x="300" dy="0">bless the couple with showers of yellow</tspan>
                                 <tspan x="300" dy="25">health and happiness</tspan>
+                            </text>
+                        </>
+                    ) : isMehendi ? (
+                        <>
+                            <text x="300" y="240" fill="#FFF" fontSize="36" fontFamily="var(--font-serif)" style={{ letterSpacing: '0.1em', textTransform: 'uppercase' }} filter="url(#shadow)">
+                                {event.name}
+                            </text>
+                            <text x="300" y="380" fill="#FFF" fontFamily="'Great Vibes', cursive" fontSize="72" filter="url(#shadow)">
+                                {brideName || 'Bride'}
+                                <tspan dx="10" fontSize="36" fontFamily="var(--font-serif)" fontStyle="italic" dy="-10">ki mehendi</tspan>
+                            </text>
+                            <text x="300" y="440" fill="#FFE4B5" fontSize="20" fontStyle="italic" style={{ letterSpacing: '0.05em' }}>
+                                <tspan x="300" dy="0">art on hands, love in heart</tspan>
+                                <tspan x="300" dy="25">join the celebration</tspan>
                             </text>
                         </>
                     ) : (
