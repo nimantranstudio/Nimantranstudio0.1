@@ -32,7 +32,7 @@ export async function PUT(
         const existingItemImages = JSON.parse(formData.get('existingItemImages') as string || '{}');
         const itemImages: { [key: string]: string } = { ...existingItemImages };
 
-        for (const [key, value] of Array.from(formData.entries())) {
+        await Promise.all(Array.from(formData.entries()).map(async ([key, value]) => {
             if (key.startsWith('itemFile_') && value instanceof File) {
                 const itemName = key.replace('itemFile_', '');
                 const bytes = await value.arrayBuffer();
@@ -43,7 +43,7 @@ export async function PUT(
                 await writeFile(filepath, buffer);
                 itemImages[itemName] = `/Image/bundle/${filename}`;
             }
-        }
+        }));
 
         // Process structured bundle items
         const bundleItemsMetaRaw = formData.get('bundleItemsMeta');
@@ -80,8 +80,7 @@ export async function PUT(
             }
         }
 
-        const bundleItemsDataToCreate = [];
-        for (const meta of bundleItemsMeta) {
+        const bundleItemsDataToCreate = await Promise.all(bundleItemsMeta.map(async (meta: any) => {
             let templateFileStr = meta.existingUrl;
 
             const file = formData.get(`newBundleItem_${meta.id}`);
@@ -95,12 +94,12 @@ export async function PUT(
                 templateFileStr = `/Image/bundle/${filename}`;
             }
 
-            bundleItemsDataToCreate.push({
+            return {
                 eventId: meta.eventId,
                 templateName: meta.templateName,
                 templatePath: templateFileStr || ''
-            });
-        }
+            };
+        }));
 
         // Delete existing bundle items and re-create
         await prisma.bundleItem.deleteMany({ where: { bundleId: id } });

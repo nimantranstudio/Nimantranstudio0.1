@@ -36,8 +36,6 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Name is required' }, { status: 400 });
         }
 
-        const savedImagePaths: string[] = [];
-
         // Save images
         const uploadDir = path.join(process.cwd(), 'public/Image/theme');
         try {
@@ -46,7 +44,7 @@ export async function POST(request: NextRequest) {
             // Ignore if exists
         }
 
-        for (const file of files) {
+        const savedImagePaths = await Promise.all(files.map(async (file) => {
             const bytes = await file.arrayBuffer();
             const buffer = Buffer.from(bytes);
 
@@ -56,8 +54,8 @@ export async function POST(request: NextRequest) {
             const filepath = path.join(uploadDir, filename);
 
             await writeFile(filepath, buffer);
-            savedImagePaths.push(`/Image/theme/${filename}`);
-        }
+            return `/Image/theme/${filename}`;
+        }));
 
         console.log('Images saved, connecting to DB...');
 
