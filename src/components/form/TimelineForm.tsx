@@ -49,14 +49,7 @@ export function CelebrationTimeline({ errors, setErrors, expandedEventId, setExp
                         {expandedEventId === event.id && (
                             <div className={styles.eventCardBody}>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                                    <div className={formStyles.grid}>
-                                        <Input
-                                            label="Event Name"
-                                            value={event.name || ''}
-                                            onChange={(e) => updateEvent(event.id, { name: e.target.value })}
-                                        />
-                                    </div>
-                                    <div className={formStyles.grid}>
+                                    <div className={styles.eventFieldRow}>
                                         <Input
                                             label="Date"
                                             type="date"
@@ -70,7 +63,6 @@ export function CelebrationTimeline({ errors, setErrors, expandedEventId, setExp
                                                 }
                                             }}
                                             error={errors[`${event.id}-date`]}
-                                            helperText={!event.date ? "Will inherit primary date if left blank" : ""}
                                         />
                                         <Input
                                             label="Time"
@@ -86,37 +78,26 @@ export function CelebrationTimeline({ errors, setErrors, expandedEventId, setExp
                                             }}
                                             error={errors[`${event.id}-time`]}
                                         />
-                                        <div style={{ gridColumn: 'span 2' }}>
-                                            <Input
-                                                label="Venue (Optional)"
-                                                placeholder="Leave blank to use primary venue"
-                                                value={event.venue || ''}
-                                                onChange={(e) => updateEvent(event.id, { venue: e.target.value, isCustomVenue: !!e.target.value })}
-                                                maxLength={500}
-                                            />
-                                        </div>
                                     </div>
-                                    <div className={formStyles.field}>
-                                        <label className={formStyles.label}>Description (Optional)</label>
-                                        <textarea
-                                            className={formStyles.textarea}
-                                            placeholder="Join us for..."
-                                            value={event.description || ''}
-                                            onChange={(e) => updateEvent(event.id, { description: e.target.value })}
-                                            rows={2}
-                                            maxLength={500}
-                                        />
-                                    </div>
-                                    <div className={styles.eventCardActions}>
-                                        <button
-                                            type="button"
-                                            onClick={() => removeEvent(event.id)}
-                                            className={styles.removeEventBtn}
-                                        >
-                                            <Trash2 size={16} style={{ marginRight: '6px' }} />
-                                            Remove Event
-                                        </button>
-                                    </div>
+
+                                    <Input
+                                        label="Venue"
+                                        value={event.venue || ''}
+                                        onChange={(e) => updateEvent(event.id, { venue: e.target.value, isCustomVenue: !!e.target.value })}
+                                        placeholder="Inherits from Global if empty"
+                                        type="textarea"
+                                    />
+
+                                    <button
+                                        className={styles.removeEventBtn}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            removeEvent(event.id);
+                                        }}
+                                    >
+                                        <Trash2 size={16} />
+                                        Remove Event
+                                    </button>
                                 </div>
                             </div>
                         )}
