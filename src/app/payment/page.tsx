@@ -78,15 +78,12 @@ export default function PaymentPage() {
             });
         }
 
-        const blobs: { name: string, blob: Blob, ext: string }[] = [];
-
-        for (let i = 0; i < items.length; i++) {
-            const item = items[i];
-            if (!item.file) continue;
+        const results = await Promise.all(items.map(async (item) => {
+            if (!item.file) return null;
             
             try {
                 const res = await fetch(item.file);
-                if (!res.ok) continue;
+                if (!res.ok) return null;
                 
                 const isHTML = item.file.toLowerCase().endsWith('.html');
                 
@@ -170,14 +167,19 @@ export default function PaymentPage() {
                         }
                     });
 
-                    blobs.push({ name: item.name, blob, ext: 'png' });
+                    return { name: item.name, blob, ext: 'png' };
                 } else {
                     const blob = await res.blob();
                     const ext = item.file.split('.').pop() || 'png';
-                    blobs.push({ name: item.name, blob, ext });
+                    return { name: item.name, blob, ext };
                 }
-            } catch(e) { console.error("Could not fetch or format", item.file, e); }
-        }
+            } catch(e) {
+                console.error("Could not fetch or format", item.file, e);
+                return null;
+            }
+        }));
+
+        const blobs = results.filter((b): b is { name: string, blob: Blob, ext: string } => b !== null);
         return blobs;
     };
 
