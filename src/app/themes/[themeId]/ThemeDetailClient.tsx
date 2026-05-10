@@ -882,7 +882,13 @@ export default function ThemeDetailClient({
                                 {openAccordion === 'highlights' && (
                                     <div className={styles.accordionContent}>
                                         {currentPackage && currentPackage.productHighlights ? (
-                                            <div dangerouslySetInnerHTML={{ __html: currentPackage.productHighlights.replace(/\n/g, '<br/>') }} />
+                                            <div>
+                                                {currentPackage.productHighlights.split('\n').map((paragraph, idx) => (
+                                                    <p key={idx} style={{ marginBottom: '0.5rem' }}>
+                                                        {paragraph}
+                                                    </p>
+                                                ))}
+                                            </div>
                                         ) : (
                                             <>
                                                 <p style={{ marginBottom: '1rem' }}>
