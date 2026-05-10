@@ -66,8 +66,8 @@
 .previewImageWrapper {
     position: relative;
     width: min(90vw, 450px);
-    aspect-ratio: 1/1.6;
-    background-color: #111;
+    height: fit-content;
+    background-color: transparent;
     border-radius: 16px;
     overflow: hidden;
     box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.9);
@@ -589,8 +589,9 @@
 
 .thumbnailItem {
     width: 68px;
-    height: 100px;
-    background-color: #FDFBF7;
+    height: auto;
+    aspect-ratio: 9/16; /* keep aspect ratio for thumbnail container */
+    background-color: transparent;
     border-radius: 12px;
     padding: 6px;
     cursor: pointer;
@@ -664,14 +665,14 @@
 .mainImageWrapper {
     width: 100%;
     max-width: 380px;
-    aspect-ratio: 9/16;
-    background-color: #FFFFFF;
+    height: fit-content;
+    min-height: 500px; /* Provide a minimum height for empty states or loading */
+    background-color: transparent;
     border-radius: 12px;
     position: relative;
     overflow: hidden;
     cursor: zoom-in;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    border: 1px solid #F3F4F6;
 }
 
 .galleryNextBtn {

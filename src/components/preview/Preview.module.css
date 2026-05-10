@@ -138,8 +138,6 @@
 
 .suiteThumbCard {
     width: 100% !important;
-    height: auto !important;
-    aspect-ratio: 9/16 !important;
     transform: none !important;
     box-shadow: none !important;
     border: none !important;

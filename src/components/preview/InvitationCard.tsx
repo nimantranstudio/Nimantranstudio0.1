@@ -141,11 +141,11 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
             const date = new Date(dateStr);
             if (isNaN(date.getTime())) return dateStr;
             
-            const day = getOrdinal(date.getDate());
+            const day = date.getDate();
             const month = date.toLocaleString('en-US', { month: 'long' });
             const year = date.getFullYear();
             
-            return `${day} ${month} ${year}`;
+            return `${getOrdinal(day)} ${month} ${year}`;
         } catch (e) {
             return dateStr;
         }
@@ -197,82 +197,181 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
 
     // Map user fields to HTML template IDs
     useEffect(() => {
-        if (!isHTMLDesign || !iframeRef.current || isRawPreview) return;
+        if (!isHTMLDesign || !iframeRef.current) return;
 
         const updateContent = () => {
             const doc = iframeRef.current?.contentDocument || iframeRef.current?.contentWindow?.document;
             if (!doc || !doc.body || !doc.head) return;
 
-            const getDefaultHeading = (eName: string) => {
-                const n = (eName || '').toLowerCase();
-                if (n.includes('haldi')) return "Haldi Ceremony";
-                if (n.includes('mehendi')) return "Mehendi Ceremony";
-                if (n.includes('sangeet')) return "Sangeet Ceremoney";
-                if (n.includes('wedding')) return "Wedding Ceremony";
-                if (n.includes('reception')) return "Reception Ceremony";
-                return `${eName || 'Wedding'} Ceremony`;
-            };
+            // Content mapping — skip for raw preview (keep template's placeholder text)
+            if (!isRawPreview) {
+                const getDefaultHeading = (eName: string) => {
+                    const n = (eName || '').toLowerCase();
+                    if (n.includes('haldi')) return "Haldi Ceremony";
+                    if (n.includes('mehendi')) return "Mehendi Ceremony";
+                    if (n.includes('sangeet')) return "Sangeet Ceremoney";
+                    if (n.includes('wedding')) return "Wedding Ceremony";
+                    if (n.includes('reception')) return "Reception Ceremony";
+                    return `${eName || 'Wedding'} Ceremony`;
+                };
 
+                const displayEventName = event.heading || (event.name ? getDefaultHeading(event.name) : undefined);
 
-            const displayEventName = event.heading || (event.name ? getDefaultHeading(event.name) : undefined);
+                const mapping: Record<string, string | undefined> = {
+                    'event-name': displayEventName,
+                    'groom-name': groomName,
+                    'bride-name': brideName,
+                    'groom-parents': groomParents,
+                    'groom-parent-name': groomParents,
+                    'bride-parents': brideParents,
+                    'bride-parent-name': brideParents,
+                    'event-date': formatDate(event.date),
+                    'event-time': formatTime(event.time),
+                    'event-venue': event.venue,
+                    'venue': event.venue
+                };
 
-            const mapping: Record<string, string | undefined> = {
-                'event-name': displayEventName,
-                'groom-name': groomName,
-                'bride-name': brideName,
-                'groom-parents': groomParents,
-                'groom-parent-name': groomParents,
-                'bride-parents': brideParents,
-                'bride-parent-name': brideParents,
-                'event-date': formatDate(event.date),
-                'event-time': formatTime(event.time),
-                'event-venue': event.venue,
-                'venue': event.venue
-            };
+                Object.entries(mapping).forEach(([id, value]) => {
+                    const el = doc.getElementById(id);
+                    if (el && value !== undefined && value !== null) {
+                        const formattedValue = value.toString().replace(/\n/g, '<br/>');
+                        if (el.innerHTML !== formattedValue) {
+                            el.innerHTML = formattedValue;
+                        }
+                    }
+                });
 
-            Object.entries(mapping).forEach(([id, value]) => {
-                const el = doc.getElementById(id);
-                // Only replace if value is explicitly defined and not empty string (unless we specifically want empty defaults)
-                // For raw previews, passing undefined won't overwrite the designer's template text.
-                if (el && value !== undefined && value !== null) {
-                    // Use innerHTML but handle line breaks
-                    const formattedValue = value.toString().replace(/\n/g, '<br/>');
-                    if (el.innerHTML !== formattedValue) {
-                        el.innerHTML = formattedValue;
+                // Hide floating "On" label if date is empty
+                const eventDateEl = doc.getElementById('event-date');
+                if (eventDateEl) {
+                    const prev = eventDateEl.previousElementSibling as HTMLElement;
+                    if (prev && prev.innerHTML.trim() === 'On') {
+                        prev.style.display = event.date ? 'block' : 'none';
                     }
                 }
-            });
 
-            // Ensure specific IDs for wedding names are handled if they differ
-            const groomParentsEl = doc.getElementById('groom-parents') || doc.getElementById('groom-parent-name');
-            if (groomParentsEl && groomParents !== undefined) groomParentsEl.innerHTML = groomParents;
+                const groomParentsEl = doc.getElementById('groom-parents') || doc.getElementById('groom-parent-name');
+                if (groomParentsEl && groomParents !== undefined) groomParentsEl.innerHTML = groomParents;
 
-            const brideParentsEl = doc.getElementById('bride-parents') || doc.getElementById('bride-parent-name');
-            if (brideParentsEl && brideParents !== undefined) brideParentsEl.innerHTML = brideParents;
+                const brideParentsEl = doc.getElementById('bride-parents') || doc.getElementById('bride-parent-name');
+                if (brideParentsEl && brideParents !== undefined) brideParentsEl.innerHTML = brideParents;
 
-            // OVERRIDE: Force user input to take priority for main text elements
-            const eventNameEl = doc.getElementById('event-name');
-            if (eventNameEl && displayEventName !== undefined) {
-                eventNameEl.innerHTML = displayEventName.toString().replace(/\n/g, '<br/>');
+                const eventNameEl = doc.getElementById('event-name');
+                if (eventNameEl && displayEventName !== undefined) {
+                    eventNameEl.innerHTML = displayEventName.toString().replace(/\n/g, '<br/>');
+                }
+
+                if (showSizingBoxes) {
+                    Object.keys(mapping).forEach(id => {
+                        const el = doc.getElementById(id);
+                        if (el && !el.classList.contains('sizing-box')) {
+                            el.classList.add('sizing-box');
+                            el.setAttribute('contenteditable', 'true');
+                            if ((doc.defaultView as any)?.textScaler) (doc.defaultView as any).textScaler.observe(el);
+                        }
+                    });
+                    ['groom-parents', 'groom-parent-name', 'bride-parents', 'bride-parent-name'].forEach(id => {
+                        const el = doc.getElementById(id);
+                        if (el && !el.classList.contains('sizing-box')) {
+                            el.classList.add('sizing-box');
+                            el.setAttribute('contenteditable', 'true');
+                            if ((doc.defaultView as any)?.textScaler) (doc.defaultView as any).textScaler.observe(el);
+                        }
+                    });
+
+                    let scriptEl = doc.getElementById('drag-script');
+                    if (!scriptEl) {
+                        scriptEl = doc.createElement('script');
+                        scriptEl.id = 'drag-script';
+                        scriptEl.textContent = `
+                            let draggingEl = null;
+                            let startX, startY, initialTx, initialTy;
+
+                            document.addEventListener('mousedown', (e) => {
+                                const sizingBox = e.target.closest('.sizing-box');
+                                if (sizingBox) {
+                                    const rect = sizingBox.getBoundingClientRect();
+                                    const offsetX = e.clientX - rect.left;
+                                    const offsetY = e.clientY - rect.top;
+                                    const isResizeHandle = (rect.width - offsetX < 20) && (rect.height - offsetY < 20);
+                                    if(isResizeHandle) return;
+                                    if (document.activeElement === sizingBox) return;
+                                    draggingEl = sizingBox;
+                                    startX = e.clientX;
+                                    startY = e.clientY;
+                                    initialTx = parseFloat(draggingEl.dataset.tx) || 0;
+                                    initialTy = parseFloat(draggingEl.dataset.ty) || 0;
+                                }
+                            });
+
+                            document.addEventListener('mousemove', (e) => {
+                                if (draggingEl) {
+                                    const dx = e.clientX - startX;
+                                    const dy = e.clientY - startY;
+                                    const newTx = initialTx + dx;
+                                    const newTy = initialTy + dy;
+                                    draggingEl.dataset.tx = newTx;
+                                    draggingEl.dataset.ty = newTy;
+                                    draggingEl.style.transform = \`translate(\${newTx}px, \${newTy}px)\`;
+                                }
+                            });
+
+                            document.addEventListener('mouseup', () => { draggingEl = null; });
+
+                            window.textScaler = new ResizeObserver(entries => {
+                                for (const entry of entries) {
+                                    const el = entry.target;
+                                    if (!el.dataset.initW) {
+                                        const st = window.getComputedStyle(el);
+                                        el.dataset.initW = el.offsetWidth;
+                                        el.dataset.initFs = parseFloat(st.fontSize) || 16;
+                                    } else {
+                                        const currentW = el.offsetWidth;
+                                        const initW = parseFloat(el.dataset.initW);
+                                        if (initW > 0) {
+                                            const ratio = currentW / initW;
+                                            el.style.fontSize = (parseFloat(el.dataset.initFs) * ratio) + 'px';
+                                            el.style.lineHeight = '1.2';
+                                        }
+                                    }
+                                }
+                            });
+
+                            document.querySelectorAll('.sizing-box').forEach(el => window.textScaler.observe(el));
+                        `;
+                        doc.body.appendChild(scriptEl);
+                    }
+                } else {
+                    Object.keys(mapping).forEach(id => {
+                        const el = doc.getElementById(id);
+                        if (el && el.classList.contains('sizing-box')) {
+                            el.classList.remove('sizing-box');
+                            el.removeAttribute('contenteditable');
+                        }
+                    });
+                    ['groom-parents', 'groom-parent-name', 'bride-parents', 'bride-parent-name'].forEach(id => {
+                        const el = doc.getElementById(id);
+                        if (el && el.classList.contains('sizing-box')) {
+                            el.classList.remove('sizing-box');
+                            el.removeAttribute('contenteditable');
+                        }
+                    });
+                }
             }
 
-
-            // INJECT RUNTIME FIXES (Doesn't touch original file)
+            // INJECT RUNTIME FIXES — always run, even for raw preview
             let styleEl = doc.getElementById('runtime-preview-fix');
             if (!styleEl) {
                 styleEl = doc.createElement('style');
                 styleEl.id = 'runtime-preview-fix';
                 doc.head.appendChild(styleEl);
             }
-            
-            // Fix viewport units: The templates were designed on desktop screens where 'vw' was huge.
-            // Inside our 500px iframe, 'vw' causes fonts to shrink massively. Replacing 'vw' with 'vmax' 
-            // forces the fonts back up, letting their 'clamp()' max values take over naturally.
+
+            // Fix viewport units: templates designed on desktop have huge 'vw' values inside a 500px iframe.
             if (!doc.body.dataset.vwFixed) {
                 const styleTags = doc.querySelectorAll('style:not(#runtime-preview-fix)');
                 styleTags.forEach(tag => {
                     if (tag.innerHTML.includes('vw')) {
-                        // Use lookahead to ensure we only replace CSS values and not base64 strings
                         tag.innerHTML = tag.innerHTML.replace(/([\d.]+)vw(?=[\s;},!\)])/g, '$1vmax');
                     }
                 });
@@ -280,9 +379,9 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
             }
 
             styleEl.textContent = `
+                html, body { margin: 0 !important; padding: 0 !important; }
                 * { hyphens: none !important; -webkit-hyphens: none !important; }
-                .text-overlay { padding-top: 15vh !important; }
-                ${showSizingBoxes ? `
+                ${showSizingBoxes && !isRawPreview ? `
                 .sizing-box {
                     position: relative;
                     outline: 1px dashed rgba(0,0,0,0.4);
@@ -332,9 +431,9 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                 ` : ''}
             `;
 
-            // Auto-adjust height based on content
-            const wrapper = doc.querySelector('.invitation-wrapper') || 
-                          doc.querySelector('.invite-wrapper') || 
+            // Auto-adjust height based on wrapper content — always run
+            const wrapper = doc.querySelector('.invitation-wrapper') ||
+                          doc.querySelector('.invite-wrapper') ||
                           doc.body.firstElementChild;
             if (wrapper) {
                 const h = (wrapper as HTMLElement).offsetHeight;
@@ -342,118 +441,7 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                     setIframeHeight(h);
                 }
             } else if (iframeHeight !== 705) {
-                // Default to 705 for most templates if no wrapper detected yet
                 setIframeHeight(705);
-            }
-
-            if (showSizingBoxes) {
-                Object.keys(mapping).forEach(id => {
-                    const el = doc.getElementById(id);
-                    if (el && !el.classList.contains('sizing-box')) {
-                        el.classList.add('sizing-box');
-                        el.setAttribute('contenteditable', 'true');
-                        if ((doc.defaultView as any)?.textScaler) (doc.defaultView as any).textScaler.observe(el);
-                    }
-                });
-                ['groom-parents', 'groom-parent-name', 'bride-parents', 'bride-parent-name'].forEach(id => {
-                    const el = doc.getElementById(id);
-                    if (el && !el.classList.contains('sizing-box')) {
-                        el.classList.add('sizing-box');
-                        el.setAttribute('contenteditable', 'true');
-                        if ((doc.defaultView as any)?.textScaler) (doc.defaultView as any).textScaler.observe(el);
-                    }
-                });
-
-                // INJECT DRAG AND DROP SCRIPT
-                let scriptEl = doc.getElementById('drag-script');
-                if (!scriptEl) {
-                    scriptEl = doc.createElement('script');
-                    scriptEl.id = 'drag-script';
-                    scriptEl.textContent = `
-                        let draggingEl = null;
-                        let startX, startY, initialTx, initialTy;
-                        
-                        document.addEventListener('mousedown', (e) => {
-                            const sizingBox = e.target.closest('.sizing-box');
-                            if (sizingBox) {
-                                const rect = sizingBox.getBoundingClientRect();
-                                const offsetX = e.clientX - rect.left;
-                                const offsetY = e.clientY - rect.top;
-                                
-                                // Ignore drag if clicking on the bottom-right resize handle (approx 20x20 px)
-                                const isResizeHandle = (rect.width - offsetX < 20) && (rect.height - offsetY < 20);
-                                if(isResizeHandle) return; // Allow native resize to work
-
-                                // Ignore drag if the element is currently being text-edited (focused)
-                                if (document.activeElement === sizingBox) return;
-
-                                draggingEl = sizingBox;
-                                startX = e.clientX;
-                                startY = e.clientY;
-                                
-                                initialTx = parseFloat(draggingEl.dataset.tx) || 0;
-                                initialTy = parseFloat(draggingEl.dataset.ty) || 0;
-                            }
-                        });
-                        
-                        document.addEventListener('mousemove', (e) => {
-                            if (draggingEl) {
-                                const dx = e.clientX - startX;
-                                const dy = e.clientY - startY;
-                                
-                                const newTx = initialTx + dx;
-                                const newTy = initialTy + dy;
-                                
-                                draggingEl.dataset.tx = newTx;
-                                draggingEl.dataset.ty = newTy;
-                                
-                                draggingEl.style.transform = \`translate(\${newTx}px, \${newTy}px)\`;
-                            }
-                        });
-                        
-                        document.addEventListener('mouseup', () => {
-                            draggingEl = null;
-                        });
-
-                        // RESIZE OBSERVER FOR FONT SCALING
-                        window.textScaler = new ResizeObserver(entries => {
-                            for (const entry of entries) {
-                                const el = entry.target;
-                                if (!el.dataset.initW) {
-                                    const st = window.getComputedStyle(el);
-                                    el.dataset.initW = el.offsetWidth;
-                                    el.dataset.initFs = parseFloat(st.fontSize) || 16;
-                                } else {
-                                    const currentW = el.offsetWidth;
-                                    const initW = parseFloat(el.dataset.initW);
-                                    if (initW > 0) {
-                                        const ratio = currentW / initW;
-                                        el.style.fontSize = (parseFloat(el.dataset.initFs) * ratio) + 'px';
-                                        el.style.lineHeight = '1.2';
-                                    }
-                                }
-                            }
-                        });
-                        
-                        document.querySelectorAll('.sizing-box').forEach(el => window.textScaler.observe(el));
-                    `;
-                    doc.body.appendChild(scriptEl);
-                }
-            } else {
-                Object.keys(mapping).forEach(id => {
-                    const el = doc.getElementById(id);
-                    if (el && el.classList.contains('sizing-box')) {
-                        el.classList.remove('sizing-box');
-                        el.removeAttribute('contenteditable');
-                    }
-                });
-                ['groom-parents', 'groom-parent-name', 'bride-parents', 'bride-parent-name'].forEach(id => {
-                    const el = doc.getElementById(id);
-                    if (el && el.classList.contains('sizing-box')) {
-                        el.classList.remove('sizing-box');
-                        el.removeAttribute('contenteditable');
-                    }
-                });
             }
         };
 
@@ -489,7 +477,9 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                     cursor: onClick ? 'pointer' : 'default',
                     overflow: 'hidden',
                     position: 'relative',
-                    background: 'white' // Ensure background is filled
+                    background: 'transparent', // Changed from white to transparent
+                    height: `${iframeHeight * containerScale}px`,
+                    aspectRatio: 'unset' // Force override any CSS aspect ratio
                 }}
             >
                 <div style={{

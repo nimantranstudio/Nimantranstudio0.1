@@ -8,10 +8,15 @@ export async function generateMetadata(
     { params }: { params: Promise<{ themeId: string }> }
 ): Promise<Metadata> {
     const { themeId } = await params;
-    const theme = await prisma.theme.findUnique({
-        where: { id: themeId },
-        select: { name: true, description: true, thumbnailUrl: true }
-    });
+    let theme = null;
+    try {
+        theme = await prisma.theme.findUnique({
+            where: { id: themeId },
+            select: { name: true, description: true, thumbnailUrl: true }
+        });
+    } catch (error) {
+        console.error('Database connection failed in generateMetadata:', error);
+    }
 
     if (!theme) return { title: 'Theme Not Found | Nimantran Studio' };
 
@@ -42,24 +47,36 @@ export async function generateMetadata(
 export default async function ThemeDetailPage({ params }: { params: Promise<{ themeId: string }> }) {
     const { themeId } = await params;
 
-    // Fetch core data in parallel
-    const [themeData, packages, allThemes] = await Promise.all([
-        prisma.theme.findUnique({
-            where: { id: themeId },
-            include: { 
-                bundles: {
-                    include: { 
-                        bundleInvoices: true,
-                        bundleItems: {
-                            include: { event: true }
+    let themeData = null;
+    let packages: any[] = [];
+    let allThemes: any[] = [];
+
+    try {
+        const [fetchedThemeData, fetchedPackages, fetchedAllThemes] = await Promise.all([
+            prisma.theme.findUnique({
+                where: { id: themeId },
+                include: { 
+                    bundles: {
+                        include: { 
+                            bundleInvoices: true,
+                            bundleItems: {
+                                include: { event: true }
+                            }
                         }
                     }
                 }
-            }
-        }),
-        prisma.package.findMany({ where: { isActive: true } }),
-        prisma.theme.findMany({ where: { isActive: true }, take: 20 })
-    ]);
+            }),
+            prisma.package.findMany({ where: { isActive: true } }),
+            prisma.theme.findMany({ where: { isActive: true }, take: 20 })
+        ]);
+        
+        themeData = fetchedThemeData;
+        packages = fetchedPackages;
+        allThemes = fetchedAllThemes;
+    } catch (error) {
+        console.error('Database connection failed in ThemeDetailPage:', error);
+        // We will fall through to the !themeData check which handles the error gracefully
+    }
 
     if (!themeData) {
         return (

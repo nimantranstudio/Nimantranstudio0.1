@@ -475,12 +475,12 @@ export default function ThemeDetailClient({
                                             <Image
                                                 src={asset.image}
                                                 alt={asset.name}
-                                                fill
-                                                style={{ objectFit: 'cover' }}
+                                                width={68}
+                                                height={100}
+                                                style={{ objectFit: 'cover', width: '100%', height: '100%' }}
                                             />
                                         )}
-                                        {/* Show Video Badge for the second item (as in ref image) or if name contains video */}
-                                        {(index === 1 || asset.name.toLowerCase().includes('video')) && (
+                                        {asset.name.toLowerCase().includes('video') && (
                                             <div className={styles.videoBadge}>
                                                 <div className={styles.playIconBg}>
                                                     <Play size={14} fill="currentColor" />
@@ -519,10 +519,14 @@ export default function ThemeDetailClient({
                                         <Image
                                             src={assets[selectedAssetIndex].image}
                                             alt={assets[selectedAssetIndex].name}
-                                            fill
+                                            width={380}
+                                            height={675}
                                             style={{
                                                 objectFit: 'contain',
-                                                zIndex: 2
+                                                zIndex: 2,
+                                                width: '100%',
+                                                height: 'auto',
+                                                display: 'block'
                                             }}
                                             priority
                                             onError={(e) => {
