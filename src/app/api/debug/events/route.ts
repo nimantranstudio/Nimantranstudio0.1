@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
     try {
         const events = await prisma.event.findMany({
-            orderBy: { createdAt: 'desc' }
+            orderBy: { createdDate: 'desc' }
         });
         return NextResponse.json({ success: true, count: events.length, events });
     } catch (error: any) {

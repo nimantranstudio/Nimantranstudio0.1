@@ -9,12 +9,14 @@ import { clsx } from 'clsx';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useWeddingStore } from '@/store/wedding-store';
+import { useSaveWedding } from '@/hooks/useSaveWedding';
 import dashboardStyles from '../../dashboard.module.css';
 import { DashboardSidebar } from '@/components/layout/DashboardSidebar';
 
 export default function RSVPCreatePage() {
     const router = useRouter();
-    const { addEvent, logout, saveWedding } = useWeddingStore();
+    const { addEvent, logout } = useWeddingStore();
+    const { saveWedding } = useSaveWedding();
 
     const [allowCompanions, setAllowCompanions] = useState(true);
     const [collectDietary, setCollectDietary] = useState(false);

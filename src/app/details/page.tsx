@@ -41,7 +41,7 @@ function DetailsContent() {
         if (searchParams.get('welcome') === 'true') {
             setShowWelcomeOverlay(true);
             setShowConfetti(true);
-            
+
             // Auto dismiss after 5.5s
             const timer = setTimeout(() => {
                 setShowWelcomeOverlay(false);
@@ -323,7 +323,7 @@ function DetailsContent() {
                 <div className={styles.wizardContainer}>
                     <AnimatePresence mode="wait">
                         {step === 1 && (
-                            <motion.div 
+                            <motion.div
                                 key="step1"
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
@@ -393,7 +393,7 @@ function DetailsContent() {
                                 </div>
                                 <div className={styles.formFooter}>
                                     <div className={styles.footerProgressBarContainer}>
-                                        <motion.div 
+                                        <motion.div
                                             className={styles.footerProgressBar}
                                             initial={{ width: 0 }}
                                             animate={{ width: `${progressPercentage}%` }}
@@ -401,7 +401,7 @@ function DetailsContent() {
                                     </div>
                                     <AnimatePresence>
                                         {!!formData.groomName?.trim() && !!formData.brideName?.trim() && (
-                                            <motion.div 
+                                            <motion.div
                                                 key="note1"
                                                 initial={{ opacity: 0 }}
                                                 animate={{ opacity: 1 }}
@@ -437,9 +437,9 @@ function DetailsContent() {
                             </div>
                         </motion.div>
                     )}
-                        
+
                         {step === 2 && (
-                            <motion.div 
+                            <motion.div
                                 key="step2"
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
@@ -528,9 +528,9 @@ function DetailsContent() {
                                             <div style={{ gridColumn: 'span 2' }}>
                                                 <div className={styles.mapFieldHeader}>
                                                     <label className={formStyles.label}>Venue Location (Google Maps)</label>
-                                                    <a 
-                                                        href="https://www.google.com/maps" 
-                                                        target="_blank" 
+                                                    <a
+                                                        href="https://www.google.com/maps"
+                                                        target="_blank"
                                                         className={styles.mapHelperLink}
                                                     >
                                                         Find Coordinates on Maps
@@ -553,7 +553,7 @@ function DetailsContent() {
                                 </div>
                                 <div className={styles.formFooter}>
                                     <div className={styles.footerProgressBarContainer}>
-                                        <motion.div 
+                                        <motion.div
                                             className={styles.footerProgressBar}
                                             initial={{ width: 0 }}
                                             animate={{ width: `${progressPercentage}%` }}
@@ -561,7 +561,7 @@ function DetailsContent() {
                                     </div>
                                     <AnimatePresence>
                                         {!!formData.primaryDate && !!formData.primaryTime && !!formData.defaultVenueName?.trim() && (
-                                            <motion.div 
+                                            <motion.div
                                                 key="note2"
                                                 initial={{ opacity: 0 }}
                                                 animate={{ opacity: 1 }}
@@ -597,9 +597,9 @@ function DetailsContent() {
                             </div>
                         </motion.div>
                     )}
-                        
+
                         {step === 3 && (
-                            <motion.div 
+                            <motion.div
                                 key="step3"
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
@@ -680,7 +680,7 @@ function DetailsContent() {
                                 </div>
                                 <div className={styles.formFooter}>
                                     <div className={styles.footerProgressBarContainer}>
-                                        <motion.div 
+                                        <motion.div
                                             className={styles.footerProgressBar}
                                             initial={{ width: 0 }}
                                             animate={{ width: `${progressPercentage}%` }}
@@ -688,7 +688,7 @@ function DetailsContent() {
                                     </div>
                                     <AnimatePresence>
                                         {(formData.events || []).every(e => !!e.date && !!e.time) && (
-                                            <motion.div 
+                                            <motion.div
                                                 key="note3"
                                                 initial={{ opacity: 0 }}
                                                 animate={{ opacity: 1 }}
@@ -724,9 +724,9 @@ function DetailsContent() {
                             </div>
                         </motion.div>
                     )}
-                        
+
                         {step === 4 && (
-                            <motion.div 
+                            <motion.div
                                 key="step4"
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
@@ -740,11 +740,11 @@ function DetailsContent() {
                                         You are joyfully invited <br /> to the wedding of
                                     </div>
                                     <div className={styles.miniCardNames}>
-                                        {formData.groomName || 'Rahul'} 
-                                        <span className={styles.miniCardAmpersand}>&</span> 
+                                        {formData.groomName || 'Rahul'}
+                                        <span className={styles.miniCardAmpersand}>&</span>
                                         {formData.brideName || 'Anjalee'}
                                     </div>
-                                    
+
                                     <div className={styles.miniCardMessageBox}>
                                         <p className={styles.miniCardMessageText}>
                                             {formData.invitationMessage || "We're so excited to celebrate our special day with our dearest friends and family! Please join us for an evening of love and laughter."}
@@ -752,16 +752,16 @@ function DetailsContent() {
                                     </div>
 
                                     <div className={styles.miniCardRSVPLabel}>RSVP</div>
-                                    
+
                                     <div className={styles.miniCardEventTitle}>
                                         THE {formData.eventType?.toUpperCase() || 'WEDDING'} CEREMONY
                                     </div>
                                     <div className={styles.miniCardDate}>
-                                        {formData.primaryDate ? new Date(formData.primaryDate).toLocaleDateString('en-GB', { 
-                                            weekday: 'long', 
-                                            day: 'numeric', 
-                                            month: 'long', 
-                                            year: 'numeric' 
+                                        {formData.primaryDate ? new Date(formData.primaryDate).toLocaleDateString('en-GB', {
+                                            weekday: 'long',
+                                            day: 'numeric',
+                                            month: 'long',
+                                            year: 'numeric'
                                         }) : 'Sunday, 15th of March 2026'}
                                         {' • '}
                                         {formData.primaryTime || '19:00'} onwards
@@ -865,7 +865,7 @@ function DetailsContent() {
                                 </div>
                                 <div className={styles.formFooter}>
                                     <div className={styles.footerProgressBarContainer}>
-                                        <motion.div 
+                                        <motion.div
                                             className={styles.footerProgressBar}
                                             initial={{ width: 0 }}
                                             animate={{ width: `${progressPercentage}%` }}
@@ -873,7 +873,7 @@ function DetailsContent() {
                                     </div>
                                     <AnimatePresence>
                                         {!!formData.invitationMessage?.trim() && (
-                                            <motion.div 
+                                            <motion.div
                                                 key="note4"
                                                 initial={{ opacity: 0 }}
                                                 animate={{ opacity: 1 }}
@@ -1092,7 +1092,7 @@ function ArchitectureSummary() {
 
 // --- Confetti Particles Component ---
 function WeddingCelebration() {
-    const [particles] = useState(() => 
+    const [particles] = useState(() =>
         Array.from({ length: 45 }).map((_, i) => ({
             id: i,
             x: Math.random() * 100,
