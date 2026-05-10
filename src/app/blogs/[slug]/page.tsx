@@ -114,7 +114,7 @@ function renderContent(markdown: string) {
 function inlineFormat(text: string): string {
     return text
         .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+        .replace(/\[(.+?)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
 }
 
 export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
