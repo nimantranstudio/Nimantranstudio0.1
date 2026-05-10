@@ -531,6 +531,7 @@ function DetailsContent() {
                                                     <a
                                                         href="https://www.google.com/maps"
                                                         target="_blank"
+                                                        rel="noopener noreferrer"
                                                         className={styles.mapHelperLink}
                                                     >
                                                         Find Coordinates on Maps

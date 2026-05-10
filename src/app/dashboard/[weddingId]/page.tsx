@@ -90,6 +90,7 @@ export default function DashboardPage() {
                         <a
                             href={`https://wa.me/?text=We'd love to have you at our wedding! Please RSVP here: ${shareUrl}`}
                             target="_blank"
+                            rel="noopener noreferrer"
                             className={styles.waBtn}
                         >
                             <Share2 size={16} /> WhatsApp
