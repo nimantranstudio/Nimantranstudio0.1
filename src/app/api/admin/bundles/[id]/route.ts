@@ -85,6 +85,7 @@ export async function PUT(
         const bundleItemsDataToCreate = [];
         for (const meta of bundleItemsMeta) {
             let templateFileStr = meta.existingUrl;
+            let templateContent: string | undefined;
 
             const file = formData.get(`newBundleItem_${meta.id}`);
             if (file instanceof File) {
@@ -95,12 +96,16 @@ export async function PUT(
                 const filepath = path.join(uploadDir, filename);
                 await writeFile(filepath, buffer);
                 templateFileStr = `/Image/bundle/${filename}`;
+                if (file.name.toLowerCase().endsWith('.html')) {
+                    templateContent = Buffer.from(bytes).toString('utf-8');
+                }
             }
 
             bundleItemsDataToCreate.push({
                 eventId: meta.eventId,
                 templateName: meta.templateName,
-                templatePath: templateFileStr || ''
+                templatePath: templateFileStr || '',
+                templateContent
             });
         }
 
@@ -129,7 +134,8 @@ export async function PUT(
                     create: bundleItemsDataToCreate.map((item: any) => ({
                         eventId: item.eventId,
                         templateName: item.templateName,
-                        templatePath: item.templatePath
+                        templatePath: item.templatePath,
+                        ...(item.templateContent !== undefined && { templateContent: item.templateContent })
                     }))
                 }
             },

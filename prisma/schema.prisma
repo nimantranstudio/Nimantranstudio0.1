@@ -60,16 +60,17 @@ model Bundle {
 }
 
 model BundleItem {
-  id             String   @id @default(cuid())
-  bundleId       String
-  eventId        String
-  templateName   String
-  templatePath   String
-  createdDate    DateTime @default(now())
-  modifiedDate   DateTime @updatedAt
+  id              String   @id @default(cuid())
+  bundleId        String
+  eventId         String
+  templateName    String
+  templatePath    String
+  templateContent String?  @db.Text
+  createdDate     DateTime @default(now())
+  modifiedDate    DateTime @updatedAt
 
-  bundle         Bundle   @relation(fields: [bundleId], references: [id], onDelete: Cascade)
-  event          Event    @relation(fields: [eventId], references: [id])
+  bundle          Bundle   @relation(fields: [bundleId], references: [id], onDelete: Cascade)
+  event           Event    @relation(fields: [eventId], references: [id])
 
   @@map("BundleItems")
 }

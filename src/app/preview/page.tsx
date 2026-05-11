@@ -90,7 +90,8 @@ function PreviewContent() {
 
     // Generate RSVP Link based on couple names
     const rsvpSlug = `${formData.groomName?.toLowerCase().split(' ')[0] || 'wedding'}-${formData.brideName?.toLowerCase().split(' ')[0] || 'rsvp'}`;
-    const rsvpFullUrl = `https://nimantran.app/rsvp/${rsvpSlug}`;
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : (process.env.NEXT_PUBLIC_SITE_URL || '');
+    const rsvpFullUrl = `${baseUrl}/rsvp/${rsvpSlug}`;
 
     const handleCopyRsvpLink = async () => {
         try {

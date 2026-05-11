@@ -494,7 +494,7 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                 }}>
                     <iframe
                         ref={iframeRef}
-                        src={customImage}
+                        src={`/api/template?path=${encodeURIComponent(customImage!)}`}
                         style={{
                             width: '100%',
                             height: '100%',
