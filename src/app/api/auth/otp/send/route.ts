@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+
+export const runtime = 'nodejs';
 import { sendOTP } from '@/lib/sms';
 
 export async function POST(request: Request) {

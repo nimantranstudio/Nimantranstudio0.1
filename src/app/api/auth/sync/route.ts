@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
+export const runtime = 'nodejs';
+
 import { adminAuth } from '@/lib/firebase-admin';
 
 const ADMIN_MOBILE = '8010581916';

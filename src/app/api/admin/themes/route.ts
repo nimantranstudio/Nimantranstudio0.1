@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { writeFile, mkdir } from 'fs/promises';
 import path from 'path';
 
+export const runtime = 'nodejs';
+
 // In production/real app, you'd want to handle GET by querying the DB
 export async function GET() {
     try {

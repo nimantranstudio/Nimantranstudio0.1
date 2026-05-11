@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
+export const runtime = 'nodejs';
+
 // Cache enabled for 60 seconds, updates from admin propagate quickly
 export const revalidate = 60;
 

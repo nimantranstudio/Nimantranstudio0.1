@@ -1,7 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Console logging for debugging fetches in development
   logging: {
     fetches: {
       fullUrl: true,
@@ -27,7 +26,13 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  // Optimizing package imports for faster compilation
+  // Treat Prisma as an external package — never bundle it, load from node_modules at runtime.
+  // This prevents Next.js from inlining the Prisma client and triggering NFT over-tracing.
+  serverExternalPackages: ['@prisma/client', 'prisma'],
+  // Exclude any leftover generated-client artifacts from Vercel's file tracing.
+  outputFileTracingExcludes: {
+    '*': ['./src/generated/**'],
+  },
   experimental: {
     optimizePackageImports: [
       'lucide-react',
@@ -35,7 +40,6 @@ const nextConfig: NextConfig = {
       '@/components/ui'
     ],
   },
-  // Common compression and power-user optimizations
   compress: true,
   poweredByHeader: false,
 };

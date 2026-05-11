@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+export const runtime = 'nodejs';
+
 export async function GET() {
     console.log('[API] GET /api/admin/packages started');
     try {
