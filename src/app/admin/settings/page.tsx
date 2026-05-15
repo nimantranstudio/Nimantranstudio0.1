@@ -1,8 +1,30 @@
 'use client';
 
-import { Settings, Bell, Shield, Globe } from 'lucide-react';
+import { useState } from 'react';
+import { Settings, Bell, Shield, Globe, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 
 export default function SettingsPage() {
+    const [corsStatus, setCorsStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+    const [corsMessage, setCorsMessage] = useState('');
+
+    const handleSetupCors = async () => {
+        setCorsStatus('loading');
+        try {
+            const res = await fetch('/api/admin/setup-storage-cors', { method: 'POST' });
+            const data = await res.json();
+            if (res.ok) {
+                setCorsStatus('success');
+                setCorsMessage(data.message || 'Done');
+            } else {
+                setCorsStatus('error');
+                setCorsMessage(data.error || 'Failed');
+            }
+        } catch (err: any) {
+            setCorsStatus('error');
+            setCorsMessage(err.message);
+        }
+    };
+
     return (
         <div>
             <div style={{ marginBottom: '2rem' }}>
@@ -43,6 +65,39 @@ export default function SettingsPage() {
                                 <option>INR (₹)</option>
                                 <option>USD ($)</option>
                             </select>
+                        </div>
+
+                        <div style={{ paddingTop: '1rem', borderTop: '1px solid #e5e7eb' }}>
+                            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+                                Firebase Storage CORS
+                            </label>
+                            <p style={{ fontSize: '0.8rem', color: '#6b7280', marginBottom: '0.75rem' }}>
+                                Run this once to allow the admin panel to upload HTML templates directly to Firebase Storage.
+                                Required to fix the "CORS" error when uploading templates.
+                            </p>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                <button
+                                    onClick={handleSetupCors}
+                                    disabled={corsStatus === 'loading' || corsStatus === 'success'}
+                                    style={{
+                                        display: 'flex', alignItems: 'center', gap: '8px',
+                                        padding: '0.5rem 1rem', borderRadius: '8px', border: 'none',
+                                        background: corsStatus === 'success' ? '#10b981' : '#6366f1',
+                                        color: 'white', fontWeight: '600', cursor: corsStatus === 'loading' ? 'wait' : 'pointer',
+                                        opacity: corsStatus === 'loading' ? 0.7 : 1,
+                                    }}
+                                >
+                                    {corsStatus === 'loading' && <Loader2 size={16} className="animate-spin" />}
+                                    {corsStatus === 'success' && <CheckCircle size={16} />}
+                                    {corsStatus === 'idle' || corsStatus === 'error' ? 'Configure Storage CORS' : corsStatus === 'loading' ? 'Configuring…' : 'CORS Configured'}
+                                </button>
+                                {corsMessage && (
+                                    <span style={{ fontSize: '0.8rem', color: corsStatus === 'error' ? '#ef4444' : '#10b981', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                        {corsStatus === 'error' && <AlertCircle size={14} />}
+                                        {corsMessage}
+                                    </span>
+                                )}
+                            </div>
                         </div>
 
                         <div style={{ paddingTop: '1rem', borderTop: '1px solid #e5e7eb', display: 'flex', justifyContent: 'flex-end' }}>
