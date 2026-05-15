@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { X, Package, CheckCircle, Info, Upload, Image as ImageIcon, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { X, Package, CheckCircle, Info, Upload, Image as ImageIcon, AlertCircle, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
 import styles from './BundleModal.module.css';
 import { clsx } from 'clsx';
+import { uploadTemplateFile } from '@/lib/firebase-storage';
 
 interface Theme {
     id: string;
@@ -45,6 +46,7 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
     const [packages, setPackages] = useState<PackageModel[]>([]);
     const [allEvents, setAllEvents] = useState<EventModel[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     type InvoiceData = {
         invitationDesignSuite: string;
@@ -310,17 +312,35 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
     };
 
 
-    const handleAddBundleItem = () => {
-        const previewUrl = activeTemplateFile ? URL.createObjectURL(activeTemplateFile) : null;
+    const handleAddBundleItem = async () => {
         const selectedEvent = allEvents.find(e => e.id === activeEventType);
         const eventName = selectedEvent ? selectedEvent.eventName : 'Unknown';
+
+        let fileToStore: File | null = activeTemplateFile;
+        let previewUrl: string | null = activeTemplateFile ? URL.createObjectURL(activeTemplateFile) : null;
+
+        // HTML files are too large for Vercel's 4.5 MB API limit — upload directly to Firebase Storage
+        if (activeTemplateFile && activeTemplateFile.name.toLowerCase().endsWith('.html')) {
+            setIsUploading(true);
+            try {
+                const downloadUrl = await uploadTemplateFile(activeTemplateFile);
+                fileToStore = null;       // don't send the file through the API
+                previewUrl = downloadUrl; // use Firebase URL as the canonical path
+            } catch (err: any) {
+                alert(`Firebase upload failed: ${err.message}\nMake sure Firebase Storage rules allow writes to /templates/`);
+                setIsUploading(false);
+                return;
+            } finally {
+                setIsUploading(false);
+            }
+        }
 
         setBundleItemsList(prev => [...prev, {
             id: Math.random().toString(),
             eventType: eventName,
             eventId: activeEventType,
             templateName: eventName,
-            file: activeTemplateFile,
+            file: fileToStore,
             previewUrl
         }]);
 
@@ -384,8 +404,19 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
             });
 
             if (!response.ok) {
-                const data = await response.json();
-                throw new Error(data.error || 'Failed to save bundle');
+                let errorMessage = `Server error (${response.status})`;
+                try {
+                    const data = await response.json();
+                    errorMessage = data.error || errorMessage;
+                } catch {
+                    const text = await response.text().catch(() => '');
+                    if (response.status === 413 || text.toLowerCase().includes('entity too large')) {
+                        errorMessage = 'Upload failed: file is too large for the server (max ~4 MB). HTML templates are uploaded via Firebase automatically — try re-adding the template item.';
+                    } else {
+                        errorMessage = text.slice(0, 200) || errorMessage;
+                    }
+                }
+                throw new Error(errorMessage);
             }
 
             onSuccess();
@@ -630,9 +661,10 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
                                         type="button"
                                         className={styles.btnSubmit}
                                         onClick={handleAddBundleItem}
-                                        style={{ height: '42px', padding: '0 1.5rem' }}
+                                        disabled={isUploading}
+                                        style={{ height: '42px', padding: '0 1.5rem', display: 'flex', alignItems: 'center', gap: '6px' }}
                                     >
-                                        Add
+                                        {isUploading ? <><Loader2 size={14} className="animate-spin" /> Uploading…</> : 'Add'}
                                     </button>
                                 </div>
                             </div>

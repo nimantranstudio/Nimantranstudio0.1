@@ -55,7 +55,11 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const [containerScale, setContainerScale] = useState(1);
     const [iframeHeight, setIframeHeight] = useState(889);
-    const isHTMLDesign = customImage?.toLowerCase().endsWith('.html') || (customImage?.includes('item-Wedding_Invitation') && customImage.toLowerCase().includes('.html')); // Robust check
+    const isHTMLDesign = !!(
+        customImage?.toLowerCase().endsWith('.html') ||
+        (customImage?.includes('firebasestorage') && customImage?.includes('.html')) ||
+        (customImage?.includes('item-Wedding_Invitation') && customImage?.toLowerCase().includes('.html'))
+    );
 
     useImperativeHandle(ref, () => ({
         saveEdits: () => {
@@ -494,7 +498,11 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                 }}>
                     <iframe
                         ref={iframeRef}
-                        src={`/api/template?path=${encodeURIComponent(customImage!)}`}
+                        src={
+                            customImage?.startsWith('http')
+                                ? customImage  // Firebase Storage URL — use directly
+                                : `/api/template?path=${encodeURIComponent(customImage!)}`  // Local path — serve via API
+                        }
                         style={{
                             width: '100%',
                             height: '100%',

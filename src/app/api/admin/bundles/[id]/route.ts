@@ -82,10 +82,19 @@ export async function PUT(
             }
         }
 
+        // Snapshot existing templateContent before deleting, keyed by templatePath
+        const existingItems = await prisma.bundleItem.findMany({
+            where: { bundleId: id },
+            select: { templatePath: true, templateContent: true }
+        });
+        const existingContentMap = new Map(
+            existingItems.map(item => [item.templatePath, item.templateContent])
+        );
+
         const bundleItemsDataToCreate = [];
         for (const meta of bundleItemsMeta) {
             let templateFileStr = meta.existingUrl;
-            let templateContent: string | undefined;
+            let templateContent: string | null | undefined;
 
             const file = formData.get(`newBundleItem_${meta.id}`);
             if (file instanceof File) {
@@ -99,13 +108,16 @@ export async function PUT(
                 if (file.name.toLowerCase().endsWith('.html')) {
                     templateContent = Buffer.from(bytes).toString('utf-8');
                 }
+            } else if (meta.existingUrl) {
+                // Preserve templateContent from the DB for unchanged items
+                templateContent = existingContentMap.get(meta.existingUrl) ?? undefined;
             }
 
             bundleItemsDataToCreate.push({
                 eventId: meta.eventId,
                 templateName: meta.templateName,
                 templatePath: templateFileStr || '',
-                templateContent
+                ...(templateContent != null && { templateContent })
             });
         }
 
