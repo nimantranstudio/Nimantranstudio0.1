@@ -5,7 +5,9 @@ export async function uploadTemplateFile(file: File): Promise<string> {
     if (!app) {
         throw new Error('Firebase is not initialised. Check your NEXT_PUBLIC_FIREBASE_* env vars.');
     }
-    const storage = getStorage(app);
+    const bucketUrl = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
+    // getStorage() uses the storageBucket from firebaseConfig automatically
+    const storage = bucketUrl ? getStorage(app, `gs://${bucketUrl}`) : getStorage(app);
     const timestamp = Date.now();
     const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
     const storageRef = ref(storage, `templates/${timestamp}-${safeName}`);

@@ -6,7 +6,11 @@ export async function POST() {
     try {
         const { getAdminStorage } = await import('@/lib/firebase-admin');
         const storage = getAdminStorage();
-        const bucket = storage.bucket();
+        const bucketName = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
+        if (!bucketName) {
+            return NextResponse.json({ error: 'NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET env var is not set' }, { status: 500 });
+        }
+        const bucket = storage.bucket(bucketName);
 
         await bucket.setMetadata({
             cors: [
