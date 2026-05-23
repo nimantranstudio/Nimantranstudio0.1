@@ -17,12 +17,14 @@ const HeroImage = () => {
             <div className={styles.scene}>
 
 
-                {/* Central Image */}
                 <motion.div
                     className={styles.imageWrapper}
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8 }}
+                    initial={{ y: 30, opacity: 0 }}
+                    animate={{ y: [0, -15, 0], opacity: 1 }}
+                    transition={{
+                        y: { duration: 6, repeat: Infinity, ease: "easeInOut" },
+                        opacity: { duration: 0.8 }
+                    }}
                 >
                     <Image
                         src={PLACEHOLDER_IMAGE}
@@ -31,6 +33,7 @@ const HeroImage = () => {
                         height={600}
                         style={{ width: '100%', height: 'auto' }}
                         priority
+                        fetchPriority="high"
                         sizes="(max-width: 768px) 100vw, 450px"
                     />
                 </motion.div>

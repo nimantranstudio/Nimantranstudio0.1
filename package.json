@@ -1,12 +1,12 @@
 {
-  "name": "temp-app",
+  "name": "nimantran-studio",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint src/"
   },
   "dependencies": {
     "@prisma/client": "^5.10.0",
@@ -17,7 +17,6 @@
     "framer-motion": "^12.26.2",
     "lucide-react": "^0.562.0",
     "motion": "^12.35.0",
-    "mysql2": "^3.20.0",
     "next": "^16.2.0",
     "prisma": "^5.10.0",
     "react": "19.2.3",

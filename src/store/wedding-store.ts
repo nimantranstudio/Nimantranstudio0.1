@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { WeddingFormData, DEFAULT_EVENTS } from '@/lib/schemas/wedding-form';
+import { auth } from '@/lib/firebase';
 
 interface BundleItemInfo {
     id: string;
@@ -117,9 +118,13 @@ export const useWeddingStore = create<WeddingState>()(
                 const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout
 
                 try {
+                    const token = auth.currentUser ? await auth.currentUser.getIdToken() : '';
                     const response = await fetch('/api/wedding', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
                         body: JSON.stringify({ formData, selectedThemeId }),
                         signal: controller.signal,
                     });

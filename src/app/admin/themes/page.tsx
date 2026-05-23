@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Plus, Palette, Loader2, Edit, Trash2 } from 'lucide-react';
 import { ThemeModal } from '@/components/admin/ThemeModal';
 import Image from 'next/image';
+import { auth } from '@/lib/firebase';
 
 interface Theme {
     id: string;
@@ -25,7 +26,11 @@ export default function ThemesPage() {
     const fetchThemes = async () => {
         setIsLoading(true);
         try {
-            const res = await fetch('/api/admin/themes');
+            await auth.authStateReady();
+            const token = auth.currentUser ? await auth.currentUser.getIdToken() : '';
+            const res = await fetch('/api/admin/themes', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
             if (res.ok) {
                 const data = await res.json();
                 setThemes(data.themes || []);
@@ -56,8 +61,10 @@ export default function ThemesPage() {
         }
 
         try {
+            const token = auth.currentUser ? await auth.currentUser.getIdToken() : '';
             const res = await fetch(`/api/admin/themes/${id}`, {
                 method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
             });
 
             if (res.ok) {

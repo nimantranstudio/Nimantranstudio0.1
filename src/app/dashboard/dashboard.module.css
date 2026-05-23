@@ -1594,6 +1594,90 @@
     border-color: #C8A951;
 }
 
+.horizontalNavContainer {
+    display: flex;
+    overflow-x: auto;
+    gap: 2.5rem;
+    padding-bottom: 0;
+    margin-bottom: 0;
+    border-bottom: 1px solid #E0DED7;
+    scrollbar-width: none; /* Firefox */
+}
+
+.horizontalNavContainer::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
+}
+
+.navTab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    min-width: fit-content;
+    padding: 0;
+    padding-bottom: 0.75rem;
+    position: relative;
+    color: var(--muted-foreground);
+    opacity: 1;
+    transition: all 0.2s ease;
+}
+
+.navTab:hover {
+    color: #4A3B1F;
+}
+
+.navTabActive {
+    opacity: 1;
+}
+
+.navTabActive::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background-color: var(--foreground);
+    border-radius: 3px 3px 0 0;
+}
+
+.navIconContainer {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.navTabActive .navIconContainer {
+    border-color: #F8E3E3;
+    background-color: #FEF9F9;
+}
+
+.navIcon {
+    color: #4A3B1F;
+}
+
+.navTabActive .navIcon {
+    color: #E26E70;
+}
+
+.navLabel {
+    font-size: 1.15rem;
+    font-weight: 600;
+    font-family: var(--font-serif);
+}
+
+.navTabActive .navLabel {
+    color: var(--foreground);
+}
+
 .eventList {
     display: flex;
     flex-direction: column;
@@ -1692,14 +1776,14 @@
 .eventCardMetaRow {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 1rem;
     flex-wrap: wrap;
 }
 
 .metaItem {
     display: flex;
     align-items: center;
-    gap: 0.4rem;
+    gap: 0.5rem;
     font-size: 0.95rem;
     color: #64748B;
 }
@@ -1708,11 +1792,120 @@
     color: #CBD5E1;
 }
 
+.eventPreviewHeaderRow {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.eventPreviewAndMessageRow {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.eventPreviewImageWrapper {
+    width: 100px;
+    height: 100px;
+    border-radius: 16px;
+    overflow: hidden;
+    position: relative;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    background: #F9FAFB;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+.dashboardThumbCard {
+    width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 9/16 !important;
+    transform: none !important;
+    box-shadow: none !important;
+    border: none !important;
+    pointer-events: none;
+}
+
+.eventPreviewImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.previewOverlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.previewOverlay span {
+    color: white;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.eventPreviewDetails {
+    flex: 1;
+}
+
+.eventPreviewTitle {
+    font-family: var(--font-serif);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1F1F1F;
+    margin: 0 0 0.25rem 0;
+}
+
+.eventPreviewSubtitle {
+    font-size: 0.95rem;
+    color: #64748B;
+    margin: 0 0 0.15rem 0;
+}
+
+.eventPreviewNote {
+    font-size: 0.85rem;
+    color: #94A3B8;
+    margin: 0;
+}
+
+.eventPreviewActions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.actionBtnOutline {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    border: 1px solid #E2E8F0;
+    background: #F8FAFC;
+    color: #64748B;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.actionBtnOutline:hover {
+    background: #F1F5F9;
+    color: #0F172A;
+}
+
 .eventMessageBlock {
     border-radius: 16px;
     padding: 0.5rem 0;
     position: relative;
-    margin-top: 0.25rem;
+    margin-top: 1.25rem;
 }
 
 .eventMessageBlock p {
@@ -1937,4 +2130,444 @@
     cursor: pointer;
     white-space: nowrap;
     flex-shrink: 0;
+}
+
+/* Countdown Hero Banner styling */
+.countdownBanner {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    background-color: #FFFEFA;
+    border: 1px solid rgba(200, 169, 81, 0.25);
+    border-radius: 24px;
+    box-shadow: 0 10px 30px rgba(166, 124, 0, 0.03);
+    overflow: hidden;
+    margin-bottom: 2.5rem;
+    width: 100%;
+    align-items: center;
+}
+
+.bannerBadge {
+    position: absolute;
+    top: 1.25rem;
+    left: 1.25rem;
+    width: 28px;
+    height: 28px;
+    background-color: #4A1E3C;
+    color: #FFFFFF;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+    font-weight: 700;
+    z-index: 10;
+}
+
+.bannerImageContainer {
+    position: relative;
+    width: 38%;
+    align-self: stretch;
+    min-height: 280px;
+    overflow: hidden;
+}
+
+.bannerImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.bannerImageOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, rgba(255, 254, 250, 0) 65%, #FFFEFA 100%);
+    pointer-events: none;
+}
+
+/* Invitation Message Card */
+.invitationMessageCard {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+}
+
+.messageCardLeft {
+    display: flex;
+    align-items: center;
+    flex: 1;
+}
+
+.messageStepBadge {
+    background-color: #f2fcf5;
+    color: #15803d;
+    font-weight: 600;
+    font-size: 0.95rem;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.messageContentBlock {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex: 1;
+}
+
+.messageTextRow {
+    display: flex;
+    align-items: flex-start;
+    width: 100%;
+}
+
+.messageTextarea {
+    font-size: 1.05rem;
+    color: #374151;
+    font-weight: 500;
+    margin: 0;
+    border: 1px solid #e5e7eb;
+    background-color: #f9fafb;
+    border-radius: 8px;
+    resize: none;
+    outline: none;
+    width: 100%;
+    font-family: inherit;
+    padding: 0.75rem;
+    transition: all 0.2s ease-in-out;
+}
+
+.messageTextarea:focus {
+    background-color: #ffffff;
+    border-color: #C8A951;
+    box-shadow: 0 0 0 3px rgba(200, 169, 81, 0.15);
+}
+
+.messageEditIcon {
+    color: #22c55e;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    margin-top: 0.85rem;
+}
+.messageEditIcon:hover {
+    opacity: 0.7;
+}
+
+.messageCharCount {
+    font-size: 0.8rem;
+    color: #9ca3af;
+    font-weight: 500;
+}
+
+.messageCardRight {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-left: 2rem;
+}
+
+.messageHeartIcon {
+    color: #6b7280;
+    cursor: pointer;
+    transition: color 0.2s, transform 0.2s;
+}
+
+.messageHeartIcon:hover {
+    color: #ef4444;
+    transform: scale(1.05);
+}
+
+.messageDivider {
+    width: 1px;
+    height: 38px;
+    background-color: #f3f4f6;
+}
+
+.messageCopyBtn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #6b7280;
+    font-size: 0.75rem;
+    font-weight: 500;
+    transition: color 0.2s;
+    padding: 0;
+}
+
+.messageCopyBtn:hover {
+    color: #111827;
+}
+
+.eventFooter {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-top: 1px solid #E0DED7;
+}
+
+.eventFooterCopyBtn {
+    background: transparent;
+    border: 1px solid #E0DED7;
+    padding: 0.5rem 1.5rem;
+    border-radius: 100px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #4A3B1F;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.eventFooterCopyBtn:hover {
+    background: #f9fafb;
+    border-color: #C8A951;
+}
+
+.eventFooterNextBtn {
+    background: #1F1F1F;
+    border: none;
+    padding: 0.5rem 2rem;
+    border-radius: 100px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #FFFFFF;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.eventFooterNextBtn:hover:not(:disabled) {
+    background: #4A3B1F;
+}
+
+.eventFooterNextBtn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.bannerContent {
+    flex: 1;
+    padding: 2.5rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 8rem;
+    text-align: center;
+}
+
+.bannerContentLeft,
+.bannerContentRight {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.heartDecorator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    width: 100%;
+}
+
+.decoratorLine {
+    width: 30px;
+    height: 1px;
+    background-color: #C8A951;
+    opacity: 0.4;
+}
+
+.heartSvg {
+    flex-shrink: 0;
+}
+
+.coupleNames {
+    font-family: var(--font-serif);
+    font-size: 2rem;
+    color: #4A1E3C;
+    font-weight: 500;
+    margin: 0 0 0.5rem 0;
+    letter-spacing: -0.01em;
+}
+
+.weddingMeta {
+    font-size: 0.85rem;
+    color: #7A6F5A;
+    font-weight: 500;
+    margin: 0 0 1rem 0;
+    letter-spacing: 0.02em;
+}
+
+.countdownSubtitle {
+    font-size: 0.75rem;
+    color: #7A6F5A;
+    letter-spacing: 0.06em;
+    margin: 0 0 0.5rem 0;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.countdownTimerRow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.timeBlock {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 55px;
+}
+
+.timeValue {
+    font-family: var(--font-serif);
+    font-size: 2rem;
+    font-weight: 400;
+    color: #1F1F1F;
+    line-height: 1;
+}
+
+.timeUnit {
+    font-size: 0.55rem;
+    color: #7A6F5A;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    margin-top: 0.35rem;
+    text-transform: uppercase;
+}
+
+.timerDivider {
+    color: #C8A951;
+    font-size: 1rem;
+    line-height: 1;
+    margin-bottom: 0.9rem;
+    opacity: 0.6;
+}
+
+.bannerActions {
+    display: flex;
+    gap: 0.75rem;
+    width: 100%;
+    justify-content: center;
+}
+
+.bannerBtnPrimary {
+    background-color: #4A1E3C;
+    color: #FFFFFF;
+    border: none;
+    padding: 0.6rem 1.25rem;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bannerBtnPrimary:hover {
+    background-color: #35142a;
+    transform: translateY(-1px);
+}
+
+.bannerBtnSecondary {
+    background-color: transparent;
+    color: #5E5340;
+    border: 1.5px solid #C8A951;
+    padding: 0.6rem 1.25rem;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bannerBtnSecondary:hover {
+    background-color: rgba(200, 169, 81, 0.05);
+    border-color: #bfa045;
+    color: #4A3B1F;
+    transform: translateY(-1px);
+}
+
+@media (max-width: 1024px) {
+    .coupleNames {
+        font-size: 2rem;
+    }
+    .timeValue {
+        font-size: 2.25rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .countdownBanner {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .bannerImageContainer {
+        width: 100%;
+        height: 220px;
+        min-height: auto;
+    }
+    
+    .bannerImageOverlay {
+        background: linear-gradient(180deg, rgba(255, 254, 250, 0) 50%, #FFFEFA 100%);
+    }
+    
+    .bannerContent {
+        padding: 2rem 1.5rem;
+        flex-direction: column;
+        gap: 2rem;
+    }
+    
+    .coupleNames {
+        font-size: 1.8rem;
+    }
+    
+    .countdownTimerRow {
+        gap: 0.75rem;
+    }
+    
+    .timeValue {
+        font-size: 2rem;
+    }
+    
+    .timeBlock {
+        min-width: 50px;
+    }
+    
+    .bannerActions {
+        flex-direction: column;
+        gap: 0.75rem;
+        width: 100%;
+    }
+    
+    .bannerBtnPrimary, .bannerBtnSecondary {
+        width: 100%;
+        text-align: center;
+    }
 }

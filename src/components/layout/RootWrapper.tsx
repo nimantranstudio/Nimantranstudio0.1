@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import Footer from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
 import { FloatingWhatsApp } from "@/components/ui/FloatingWhatsApp";
+import ExitIntentModal from "@/components/ui/ExitIntentModal";
 import { useState, useEffect } from "react";
 
 export default function RootWrapper({ children }: { children: React.ReactNode }) {
@@ -26,6 +27,7 @@ export default function RootWrapper({ children }: { children: React.ReactNode })
             </main>
             {!isHidden && <Footer />}
             {!isHidden && <FloatingWhatsApp />}
+            {!isHidden && <ExitIntentModal />}
         </div>
     );
 }

@@ -214,7 +214,7 @@ export default function ThemeDetailClient({
         resetForm();
         setThemeId(theme.id);
         const items = activeBundle?.bundleItems || [];
-        setBundleData(selectedPlan, imageList.map(a => a.image), items);
+        setBundleData(selectedPlan, imageList.map(a => a.image), items as any);
         
         // Navigate immediately with trigger
         router.push('/details?welcome=true');

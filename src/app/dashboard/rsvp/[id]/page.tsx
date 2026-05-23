@@ -6,6 +6,7 @@ import { ArrowLeft, Calendar, MapPin, Download, Share2, Search } from 'lucide-re
 import styles from './guest-list.module.css';
 import { DashboardSidebar } from '@/components/layout/DashboardSidebar';
 import { useMemo, useState, useEffect } from 'react';
+import { auth } from '@/lib/firebase';
 
 interface RSVPEntry {
     id: string;
@@ -32,11 +33,22 @@ export default function GuestListPage() {
     useEffect(() => {
         if (!lastSavedWeddingId) return;
         setLoading(true);
-        fetch(`/api/rsvp/${lastSavedWeddingId}`)
-            .then(res => res.json())
-            .then(data => { if (data.success) setRsvps(data.rsvps); })
-            .catch(console.error)
-            .finally(() => setLoading(false));
+        const fetchRsvps = async () => {
+            try {
+                await auth.authStateReady();
+                const token = auth.currentUser ? await auth.currentUser.getIdToken() : '';
+                const res = await fetch(`/api/rsvp/${lastSavedWeddingId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (data.success) setRsvps(data.rsvps);
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchRsvps();
     }, [lastSavedWeddingId]);
 
     const stats = useMemo(() => ({

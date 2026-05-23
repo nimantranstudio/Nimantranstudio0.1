@@ -1,10 +1,11 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { verifyAuth } from '@/lib/auth-server';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(
-    req: Request,
+    req: NextRequest,
     { params }: { params: Promise<{ weddingId: string }> }
 ) {
     try {
@@ -33,11 +34,21 @@ export async function POST(
 }
 
 export async function GET(
-    req: Request,
+    req: NextRequest,
     { params }: { params: Promise<{ weddingId: string }> }
 ) {
     try {
+        const { user, error } = await verifyAuth(req);
+        if (error || !user) {
+            return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+        }
+
         const { weddingId } = await params;
+
+        const wedding = await prisma.wedding.findUnique({ where: { id: weddingId } });
+        if (!wedding || wedding.ownerId !== user.id) {
+            return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
+        }
 
         const rsvps = await prisma.rSVP.findMany({
             where: { weddingId: weddingId },

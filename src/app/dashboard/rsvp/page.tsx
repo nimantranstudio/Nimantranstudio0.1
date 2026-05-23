@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import styles from './rsvp-list.module.css';
 import { DashboardSidebar } from '@/components/layout/DashboardSidebar';
+import { auth } from '@/lib/firebase';
 
 interface RSVPEntry {
     id: string;
@@ -37,11 +38,22 @@ export default function RSVPListPage() {
     useEffect(() => {
         if (!lastSavedWeddingId) return;
         setRsvpLoading(true);
-        fetch(`/api/rsvp/${lastSavedWeddingId}`)
-            .then(res => res.json())
-            .then(data => { if (data.success) setRsvps(data.rsvps); })
-            .catch(console.error)
-            .finally(() => setRsvpLoading(false));
+        const fetchRsvps = async () => {
+            try {
+                await auth.authStateReady();
+                const token = auth.currentUser ? await auth.currentUser.getIdToken() : '';
+                const res = await fetch(`/api/rsvp/${lastSavedWeddingId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (data.success) setRsvps(data.rsvps);
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setRsvpLoading(false);
+            }
+        };
+        fetchRsvps();
     }, [lastSavedWeddingId]);
 
     const stats = {

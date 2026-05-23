@@ -76,7 +76,7 @@ export default async function Home() {
                 className={styles.trustedBadge}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8 }}
+                transition={{ type: "spring", bounce: 0.4, duration: 1.2 }}
               >
                 <span><strong>Trusted by</strong> Indian families for stress-free wedding invites</span>
               </motion.div>
@@ -85,7 +85,7 @@ export default async function Home() {
                 className={styles.heroTitle}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.2 }}
+                transition={{ type: "spring", bounce: 0.4, duration: 1.2, delay: 0.1 }}
               >
                 <span style={{ display: 'block' }}>Digital Wedding Invitations</span>
                 <span style={{ display: 'block', marginTop: '0.5rem' }}>and Smart RSVP Tracking</span>
@@ -100,7 +100,7 @@ export default async function Home() {
                 className={styles.heroNote}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ duration: 0.8, delay: 0.6 }}
+                transition={{ duration: 1.2, delay: 0.4 }}
               >
                 Preview free · Pay once, yours forever · Trusted by Indian couples
               </motion.p>
@@ -120,7 +120,7 @@ export default async function Home() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.8 }}
+              transition={{ type: "spring", bounce: 0.4, duration: 1.2 }}
             >
               A simple process for busy weddings
             </motion.h2>
@@ -129,7 +129,7 @@ export default async function Home() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: 0.2 }}
+              transition={{ type: "spring", bounce: 0.4, duration: 1.2, delay: 0.1 }}
             >
               Four simple steps to your perfect digital invitation and wedding communication
             </motion.p>
@@ -159,7 +159,7 @@ export default async function Home() {
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: i * 0.1 }}
+                transition={{ type: "spring", bounce: 0.4, duration: 1.2, delay: i * 0.15 }}
               >
                 <div className={styles.stepNumber}>
                   {String(i + 1).padStart(2, '0')}

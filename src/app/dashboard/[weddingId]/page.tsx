@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import { auth } from '@/lib/firebase';
 import {
     Users,
     UserPlus,
@@ -36,7 +37,11 @@ export default function DashboardPage() {
     useEffect(() => {
         const fetchRSVPs = async () => {
             try {
-                const response = await fetch(`/api/rsvp/${weddingId}`);
+                await auth.authStateReady();
+                const token = auth.currentUser ? await auth.currentUser.getIdToken() : '';
+                const response = await fetch(`/api/rsvp/${weddingId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
                 const data = await response.json();
                 if (data.success) {
                     setRsvps(data.rsvps);

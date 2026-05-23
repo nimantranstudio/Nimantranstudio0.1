@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { X, Upload, Image as ImageIcon } from 'lucide-react';
 import styles from './ThemeModal.module.css';
+import { auth } from '@/lib/firebase';
 
 interface ThemeModalProps {
     isOpen: boolean;
@@ -95,8 +96,12 @@ export function ThemeModal({ isOpen, onClose, onSuccess, initialData }: ThemeMod
 
             const method = initialData ? 'PUT' : 'POST';
 
+            await auth.authStateReady();
+            const token = auth.currentUser ? await auth.currentUser.getIdToken() : '';
+
             const response = await fetch(url, {
                 method: method,
+                headers: { 'Authorization': `Bearer ${token}` },
                 body: formData,
             });
 

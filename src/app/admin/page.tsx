@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Package, TrendingUp, Palette, Users, Loader2 } from "lucide-react";
+import { auth } from '@/lib/firebase';
 
 export default function AdminDashboard() {
     const [stats, setStats] = useState({
@@ -16,7 +17,11 @@ export default function AdminDashboard() {
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                const res = await fetch('/api/admin/stats');
+                await auth.authStateReady();
+                const token = auth.currentUser ? await auth.currentUser.getIdToken() : '';
+                const res = await fetch('/api/admin/stats', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
                 if (res.ok) {
                     const data = await res.json();
                     setStats(data);

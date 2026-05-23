@@ -2,9 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { writeFile, mkdir } from 'fs/promises';
 import path from 'path';
 
+import { verifyAuth } from '@/lib/auth-server';
+
 // In production/real app, you'd want to handle GET by querying the DB
-export async function GET() {
+export async function GET(request: NextRequest) {
     try {
+        const { user, error } = await verifyAuth(request);
+        if (error || user?.role !== 'admin') return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
         const { getPrisma } = await import('@/lib/prisma');
         const prisma = getPrisma();
         const themes = await prisma.theme.findMany({
@@ -22,6 +27,9 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
     try {
+        const { user, error } = await verifyAuth(request);
+        if (error || user?.role !== 'admin') return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
         const formData = await request.formData();
         const name = formData.get('name') as string;
         const description = formData.get('description') as string || '';
