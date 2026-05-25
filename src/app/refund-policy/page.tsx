@@ -1,47 +1,56 @@
 import { LegalPage } from '@/components/layout/LegalPage';
 
 export const metadata = {
-    title: 'Refund Policy — Nimantran Studio',
+    title: 'Refund & Cancellation Policy — Nimantran Studio',
     description: 'Nimantran Studio refund and cancellation policy.',
+    openGraph: {
+        title: 'Refund & Cancellation Policy — Nimantran Studio',
+        description: 'Nimantran Studio refund and cancellation policy.',
+        images: [{ url: '/og-image.png', width: 1200, height: 630 }],
+        type: 'website',
+    },
+    twitter: {
+        card: 'summary_large_image',
+        title: 'Refund & Cancellation Policy — Nimantran Studio',
+        description: 'Nimantran Studio refund and cancellation policy.',
+        images: ['/og-image.png'],
+    },
 };
 
 const sections = [
     {
-        title: 'Eligibility for a Refund',
+        title: 'Strict No-Refund Policy',
+        content: [
+            'Nimantran Studio provides access to digital design assets and software-as-a-service (SaaS) features. Due to the immediate, digital nature of these services, all purchases are final and non-refundable.',
+            'Once a payment is successfully processed and access to the premium suite or digital invitations is granted, the user waives any right to a refund for reasons such as change of mind, event cancellation, or dissatisfaction with aesthetic elements.',
+        ],
+    },
+    {
+        title: 'Exceptions: Technical & System Errors',
         type: 'checklist' as const,
         content: [
-            'Your refund request is submitted within 7 days of purchase.',
-            'You have not yet shared your RSVP invitation link with any guest.',
-            'No guest has submitted an RSVP response through your link.',
+            'Refunds are exclusively entertained in the event of verifiable technical anomalies originating from our payment gateway or systems.',
+            'Duplicate charges for a single transaction.',
+            'Successful deduction of funds from the user\'s account without the corresponding activation of services within 24 hours.',
         ],
     },
     {
-        title: 'When Refunds Are Not Available',
+        title: 'When Refunds Are Explicitly Denied',
         type: 'crosslist' as const,
         content: [
-            'More than 7 days have passed since your purchase.',
-            'Your RSVP link has been shared and accessed by guests.',
-            'One or more guests have already submitted an RSVP response.',
-            'The request is for a change of theme or event details (you can update these yourself from your dashboard).',
+            'Post-purchase buyer\'s remorse or change of mind.',
+            'Cancellation, postponement, or modification of the wedding event.',
+            'Inability to use the platform due to lack of technical proficiency.',
+            'Requests for theme changes (users may modify event details within the dashboard independently).',
         ],
     },
     {
-        title: 'How to Request a Refund',
+        title: 'Initiating a Technical Refund Claim',
         type: 'list' as const,
         content: [
-            'Your registered mobile number',
-            'Your Razorpay order ID or payment reference',
-            'Reason for the refund request',
-        ],
-    },
-    {
-        title: 'Refund Timeline',
-        type: 'list' as const,
-        content: [
-            'We will respond to your refund request within 2 business days.',
-            'If approved, the refund is processed within 5–7 business days.',
-            'Refunds are credited to the original payment method (UPI, card, or bank account).',
-            'Processing times may vary depending on your bank or payment provider.',
+            'In the event of a system error, users must initiate a claim within 48 hours of the erroneous transaction.',
+            'Claims must be directed to our official support channel with the registered mobile number, Razorpay transaction ID, and proof of deduction.',
+            'Upon verification of a system anomaly, refunds will be processed and credited to the original source account within 7–10 business days, subject to banking procedures.',
         ],
     },
 ];
@@ -49,10 +58,10 @@ const sections = [
 export default function RefundPolicyPage() {
     return (
         <LegalPage
-            title="Refund Policy"
+            title="Refund & Cancellation Policy"
             subtitle="LEGAL & POLICIES"
             lastUpdated="May 2026"
-            introduction="We want you to be fully satisfied with Nimantran Studio. This policy explains when and how you can request a refund for your ₹999 purchase."
+            introduction="This Refund and Cancellation Policy governs the terms of financial transactions on Nimantran Studio. By completing a purchase, you acknowledge and consent to these legally binding terms."
             sections={sections}
         />
     );

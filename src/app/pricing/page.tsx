@@ -4,6 +4,18 @@ import { Check, X } from 'lucide-react';
 export const metadata = {
     title: 'Pricing — Nimantran Studio',
     description: 'One simple price for your entire wedding invitation suite. ₹999 one-time, no subscription.',
+    openGraph: {
+        title: 'Pricing — Nimantran Studio',
+        description: 'One simple price for your entire wedding invitation suite. ₹999 one-time, no subscription.',
+        images: [{ url: '/og-image.png', width: 1200, height: 630 }],
+        type: 'website',
+    },
+    twitter: {
+        card: 'summary_large_image',
+        title: 'Pricing — Nimantran Studio',
+        description: 'One simple price for your entire wedding invitation suite. ₹999 one-time, no subscription.',
+        images: ['/og-image.png'],
+    },
 };
 
 const features = [

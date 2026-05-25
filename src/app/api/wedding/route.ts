@@ -3,6 +3,12 @@ import { prisma } from '@/lib/prisma';
 export const dynamic = 'force-dynamic';
 import { WeddingFormSchema } from '@/lib/schemas/wedding-form';
 import { verifyAuth } from '@/lib/auth-server';
+import sanitizeHtml from 'sanitize-html';
+
+function sanitize(str: any): string {
+    if (!str) return '';
+    return sanitizeHtml(String(str), { allowedTags: [], allowedAttributes: {} });
+}
 
 export async function POST(req: NextRequest) {
     console.log("API: POST /api/wedding called");
@@ -27,23 +33,23 @@ export async function POST(req: NextRequest) {
             data: {
                 ownerId: finalUserId,
                 // Default to 'rajputana' if themeId is missing (e.g. created via dashboard directly)
-                themeId: selectedThemeId,
-                groomName: validatedData.groomName || '',
-                brideName: validatedData.brideName || '',
-                groomParents: validatedData.groomParents || '',
-                brideParents: validatedData.brideParents || '',
-                rsvpContact: validatedData.rsvpContact,
+                themeId: sanitize(selectedThemeId),
+                groomName: sanitize(validatedData.groomName),
+                brideName: sanitize(validatedData.brideName),
+                groomParents: sanitize(validatedData.groomParents),
+                brideParents: sanitize(validatedData.brideParents),
+                rsvpContact: sanitize(validatedData.rsvpContact),
                 rsvpDeadline: validatedData.rsvpDeadline ? new Date(validatedData.rsvpDeadline) : null,
-                invitationMessage: validatedData.invitationMessage || '',
+                invitationMessage: sanitize(validatedData.invitationMessage),
                 events: {
                     create: (validatedData.events || []).map(event => ({
-                        name: event.name || 'Untitled Event',
-                        date: event.date || '',
-                        time: event.time || '',
-                        venue: event.venue || '',
-                        mapLink: event.mapLink,
-                        description: event.description,
-                        eventType: event.eventType,
+                        name: sanitize(event.name || 'Untitled Event'),
+                        date: sanitize(event.date),
+                        time: sanitize(event.time),
+                        venue: sanitize(event.venue),
+                        mapLink: sanitize(event.mapLink),
+                        description: sanitize(event.description),
+                        eventType: sanitize(event.eventType),
                         // Ensure empty string becomes null for DateTime field
                         rsvpDeadline: event.rsvpDeadline ? event.rsvpDeadline : null,
                         allowCompanions: event.allowCompanions ?? true,

@@ -5,23 +5,37 @@ import { X } from "lucide-react";
 import styles from "@/app/page.module.css";
 import { useState, useEffect } from "react";
 
-const messages = [
-  {
-    icon: '✦',
-    text: <>Your wedding communication ready in <strong>5 mins</strong>. Try now for free.</>,
-    badge: 'New 🎉',
-  },
-  {
-    icon: '✦',
-    text: <><strong>Launch Offer</strong> - Create Your Complete Wedding Invitation Suite in Minutes</>,
-    badge: 'Hot 🔥',
-  },
-];
-
 export function AnnouncementStrip() {
+  const [messages, setMessages] = useState([
+    {
+      icon: '✦',
+      text: 'Your wedding communication ready in <strong>5 mins</strong>. Try now for free.',
+      badge: 'New 🎉',
+    },
+    {
+      icon: '✦',
+      text: '<strong>Launch Offer</strong> - Create Your Complete Wedding Invitation Suite in Minutes',
+      badge: 'Hot 🔥',
+    }
+  ]);
   const [showStrip, setShowStrip] = useState(true);
   const [msgIndex, setMsgIndex] = useState(0);
   const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    async function fetchSettings() {
+      try {
+        const res = await fetch('/api/settings');
+        const data = await res.json();
+        if (data.success && data.settings?.banner_messages) {
+          setMessages(data.settings.banner_messages);
+        }
+      } catch (error) {
+        console.error("Failed to fetch settings", error);
+      }
+    }
+    fetchSettings();
+  }, []);
 
   useEffect(() => {
     setMounted(true);
@@ -29,11 +43,12 @@ export function AnnouncementStrip() {
       setMsgIndex(i => (i + 1) % messages.length);
     }, 6000);
     return () => clearInterval(interval);
-  }, []);
+  }, [messages.length]);
 
   if (!mounted) return null;
 
   const current = messages[msgIndex];
+  if (!current) return null;
 
   return (
     <AnimatePresence>
@@ -50,7 +65,7 @@ export function AnnouncementStrip() {
             >
               <div className={styles.stripContent}>
                 <span className={styles.stripIcon}>{current.icon}</span>
-                <span className={styles.stripMessage}>{current.text}</span>
+                <span className={styles.stripMessage} dangerouslySetInnerHTML={{ __html: current.text }}></span>
                 <span className={styles.stripBadge}>{current.badge}</span>
               </div>
             </motion.div>

@@ -4,7 +4,7 @@ import HeroGradient from "@/components/ui/HeroGradient";
 import { FloatingHearts } from "@/components/ui/FloatingHearts";
 import dynamic from "next/dynamic";
 import HeroImage from "@/components/home/HeroImage";
-import { AnnouncementStrip } from "@/components/home/AnnouncementStrip";
+
 import { ThemeShowcase } from "@/components/home/ThemeShowcase";
 import { HeroActions } from "@/components/home/HeroActions";
 import { prisma } from "@/lib/prisma";
@@ -62,7 +62,7 @@ export default async function Home() {
 
   return (
     <main className={styles.main}>
-      <AnnouncementStrip />
+
 
       {/* Hero Section */}
       <section className={styles.hero}>

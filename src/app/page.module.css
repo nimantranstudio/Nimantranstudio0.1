@@ -2,12 +2,12 @@
   min-height: 100vh;
 }
 
-/* Announcement Container - Black */
+/* Announcement Container - Dark Charcoal */
 .announcementContainer {
   width: 100%;
-  background-color: #111111;
+  background: #3B3C3F;
   color: #fff;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -40,7 +40,7 @@
   font-size: 0.85rem;
   font-weight: 400;
   letter-spacing: 0.02em;
-  color: #fff;
+  color: #f9fafb;
 }
 
 .stripBadge {
@@ -84,7 +84,7 @@
   transform: translateY(-50%);
   background: none;
   border: none;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.6);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -93,7 +93,7 @@
 }
 
 .stripClose:hover {
-  color: #fff;
+  color: #111;
 }
 
 .hero {

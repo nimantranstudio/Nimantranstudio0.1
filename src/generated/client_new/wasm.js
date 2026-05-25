@@ -276,6 +276,11 @@ exports.Prisma.BundleInvoiceScalarFieldEnum = {
   modifiedDate: 'modifiedDate'
 };
 
+exports.Prisma.SiteSettingScalarFieldEnum = {
+  key: 'key',
+  value: 'value'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -304,7 +309,8 @@ exports.Prisma.ModelName = {
   WeddingEvent: 'WeddingEvent',
   RSVP: 'RSVP',
   Package: 'Package',
-  BundleInvoice: 'BundleInvoice'
+  BundleInvoice: 'BundleInvoice',
+  SiteSetting: 'SiteSetting'
 };
 
 /**

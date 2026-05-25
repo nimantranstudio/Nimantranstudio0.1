@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyAuth } from '@/lib/auth-server';
+import sanitizeHtml from 'sanitize-html';
 
 export const dynamic = 'force-dynamic';
+
+function sanitize(str: any): string {
+    if (!str) return '';
+    return sanitizeHtml(String(str), { allowedTags: [], allowedAttributes: {} });
+}
 
 export async function POST(
     req: NextRequest,
@@ -15,14 +21,14 @@ export async function POST(
         const rsvp = await prisma.rSVP.create({
             data: {
                 weddingId: weddingId,
-                guestName: body.guestName,
+                guestName: sanitize(body.guestName),
                 adultCount: parseInt(body.adultCount) || 1,
                 childCount: parseInt(body.childCount) || 0,
                 attending: body.status === 'attending',
-                status: body.status || 'pending',
-                phone: body.phone,
-                dietary: body.dietary,
-                message: body.message,
+                status: sanitize(body.status) || 'pending',
+                phone: sanitize(body.phone),
+                dietary: sanitize(body.dietary),
+                message: sanitize(body.message),
             },
         });
 

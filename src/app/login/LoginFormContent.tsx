@@ -7,6 +7,7 @@ import { useWeddingStore } from '@/store/wedding-store';
 import { Loader2, AlertCircle, ShieldCheck, Zap, Heart } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { FloatingHearts } from '@/components/ui/FloatingHearts';
 
 // Firebase Imports
 import { auth } from '@/lib/firebase';
@@ -129,6 +130,14 @@ export default function LoginFormContent() {
 
     return (
         <div className={styles.page}>
+            <FloatingHearts />
+            {/* Animated Premium Background */}
+            <div className={styles.backgroundAnimation}>
+                <div className={`${styles.blob} ${styles.blob1}`}></div>
+                <div className={`${styles.blob} ${styles.blob2}`}></div>
+                <div className={`${styles.blob} ${styles.blob3}`}></div>
+            </div>
+            
             <div className={styles.formPanel}>
                 <div className={styles.card}>
                     <div className={styles.cardBranding}>

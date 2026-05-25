@@ -216,3 +216,10 @@ model BundleInvoice {
   @@unique([bundleId, packageId])
   @@map("BundleInvoice")
 }
+
+model SiteSetting {
+  key   String @id
+  value String // Can store JSON
+
+  @@map("SiteSetting")
+}
