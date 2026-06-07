@@ -11,13 +11,12 @@ import formStyles from '@/components/form/Form.module.css';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, useEffect, Suspense } from 'react';
 import { clsx } from 'clsx';
-import { ChevronRight, ChevronDown, CheckCircle, Sun, Music, Leaf, Circle, Wine, MoreHorizontal, Clock, Info, ShieldCheck, MapPin, Calendar, Users, AlertCircle, Heart, Sparkles, ArrowRight, ChevronUp, Trash2, Plus, ChevronLeft } from 'lucide-react';
+import { ChevronRight, ChevronDown, CheckCircle, Sun, Music, Leaf, Circle, Wine, MoreHorizontal, Clock, Info, ShieldCheck, MapPin, Calendar, Users, AlertCircle, Heart, Sparkles, ArrowRight, ChevronUp, Trash2, Plus, ChevronLeft, X } from 'lucide-react';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import type { Theme } from '@/lib/constants/themes';
 import { DEFAULT_EVENTS, type WeddingEvent } from '@/lib/schemas/wedding-form';
 
 import Link from 'next/link';
-import { LoginModal } from '@/components/auth/LoginModal';
 import { motion, AnimatePresence } from 'framer-motion';
 
 
@@ -30,7 +29,6 @@ function DetailsContent() {
     const [expandedEventId, setExpandedEventId] = useState<string | null>(formData.events?.[0]?.id || null);
     const [isSaving, setIsSaving] = useState(false);
     const [saveError, setSaveError] = useState<string | null>(null);
-    const [showLoginModal, setShowLoginModal] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
     
     // Welcome Overlay State
@@ -141,10 +139,7 @@ function DetailsContent() {
         />
     );
 
-    const handleLoginSuccess = async (phone: string) => {
-        setShowLoginModal(false);
-        useWeddingStore.getState().login(phone);
-
+    const finishDetailsAndPreview = async () => {
         setIsSaving(true);
         setSaveError(null);
         try {
@@ -217,8 +212,8 @@ function DetailsContent() {
             setErrors({});
             setStep(4);
         } else if (step === 4) {
-            // Final step: RSVP -> Login and Save
-            setShowLoginModal(true);
+            // Final step: Save and go to Preview
+            finishDetailsAndPreview();
         }
     };
 
@@ -635,8 +630,8 @@ function DetailsContent() {
                                                     )}>
                                                         <div className={styles.miniEventName}>{event.name}</div>
                                                         <div className={styles.miniEventDetail}>
-                                                            <span>{event.time || ''}</span>
                                                             <span>{event.date ? formatDateDisplay(event.date) : ''}</span>
+                                                            <span>{event.time || ''}</span>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -673,8 +668,6 @@ function DetailsContent() {
                                         <CelebrationTimeline
                                             errors={errors}
                                             setErrors={setErrors}
-                                            expandedEventId={expandedEventId}
-                                            setExpandedEventId={setExpandedEventId}
                                         />
                                     </div>
                                 </div>
@@ -912,12 +905,6 @@ function DetailsContent() {
                     </AnimatePresence>
                 </div>
             </main>
-
-            <LoginModal
-                isOpen={showLoginModal}
-                onClose={() => setShowLoginModal(false)}
-                onSuccess={handleLoginSuccess}
-            />
         </div >
     );
 }
@@ -963,11 +950,24 @@ function getDefaultHeading(eventName: string): string {
 
 // --- Sub Components ---
 
-function CelebrationTimeline({ errors, setErrors, expandedEventId, setExpandedEventId }: { errors: Record<string, string>, setErrors: any, expandedEventId: string | null, setExpandedEventId: any }) {
+function CelebrationTimeline({ errors, setErrors }: { errors: Record<string, string>, setErrors: any }) {
     const { formData, updateFormData, addEvent, removeEvent, updateEvent } = useWeddingStore();
+    const [showVenueFor, setShowVenueFor] = useState<Set<string>>(new Set(
+        (formData.events || []).filter(e => e.venue).map(e => e.id)
+    ));
 
-    const toggleEvent = (id: string) => {
-        setExpandedEventId(expandedEventId === id ? null : id);
+    const toggleVenue = (e: React.MouseEvent, id: string) => {
+        e.stopPropagation();
+        setShowVenueFor(prev => {
+            const next = new Set(prev);
+            if (next.has(id)) {
+                next.delete(id);
+                updateEvent(id, { venue: '', isCustomVenue: false });
+            } else {
+                next.add(id);
+            }
+            return next;
+        });
     };
 
     return (
@@ -978,21 +978,26 @@ function CelebrationTimeline({ errors, setErrors, expandedEventId, setExpandedEv
                         key={event.id}
                         className={clsx(
                             styles.eventCard,
-                            expandedEventId === event.id && styles.eventCardActive
+                            styles.eventCardActive
                         )}
                     >
                         <div
                             className={styles.eventCardHeader}
-                            onClick={() => toggleEvent(event.id)}
                         >
                             <div className={styles.eventCardTitle}>{event.name}</div>
-                            <div className={styles.eventCardToggle}>
-                                <ChevronDown size={20} />
+                            <div className={styles.eventCardHeaderControls}>
+                                {!showVenueFor.has(event.id) && (
+                                    <button
+                                        className={styles.addVenueBtn}
+                                        onClick={(e) => toggleVenue(e, event.id)}
+                                    >
+                                        <Plus size={14} /> Add Venue
+                                    </button>
+                                )}
                             </div>
                         </div>
 
-                        {expandedEventId === event.id && (
-                            <div className={styles.eventCardBody}>
+                        <div className={styles.eventCardBody}>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                                     <div className={styles.eventFieldRow}>
                                         <Input
@@ -1017,13 +1022,25 @@ function CelebrationTimeline({ errors, setErrors, expandedEventId, setExpandedEv
                                         />
                                     </div>
 
-                                    <Input
-                                        label="Venue"
-                                        value={event.venue || ''}
-                                        onChange={(e) => updateEvent(event.id, { venue: e.target.value, isCustomVenue: !!e.target.value })}
-                                        placeholder="Inherits from Global if empty"
-                                        type="textarea"
-                                    />
+                                    {showVenueFor.has(event.id) && (
+                                        <div className={styles.venueFieldWrapper}>
+                                            <div className={styles.venueFieldHeader}>
+                                                <button 
+                                                    className={styles.removeVenueBtn}
+                                                    onClick={(e) => toggleVenue(e, event.id)}
+                                                >
+                                                    <X size={14} /> Remove Venue
+                                                </button>
+                                            </div>
+                                            <Input
+                                                label="Venue"
+                                                value={event.venue || ''}
+                                                onChange={(e) => updateEvent(event.id, { venue: e.target.value, isCustomVenue: !!e.target.value })}
+                                                placeholder="Inherits from Global if empty"
+                                                type="textarea"
+                                            />
+                                        </div>
+                                    )}
 
                                     <button
                                         className={styles.removeEventBtn}
@@ -1032,12 +1049,10 @@ function CelebrationTimeline({ errors, setErrors, expandedEventId, setExpandedEv
                                             removeEvent(event.id);
                                         }}
                                     >
-                                        <Trash2 size={16} />
                                         Remove Event
                                     </button>
                                 </div>
                             </div>
-                        )}
                     </div>
                 ))}
 

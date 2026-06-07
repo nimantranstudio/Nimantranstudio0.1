@@ -13,14 +13,7 @@ interface RSVPFormProps {
     wedding: any;
 }
 
-type Step = 'INVITE' | 'FORM' | 'SUCCESS' | 'ALREADY_REGISTERED';
-
-const STEP_INDEX: Record<Step, number> = {
-    INVITE: 1,
-    FORM: 2,
-    SUCCESS: 3,
-    ALREADY_REGISTERED: 0,
-};
+type Step = 'INVITE' | 'SUCCESS' | 'ALREADY_REGISTERED';
 
 const WhatsAppIcon = () => (
     <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -113,20 +106,7 @@ export const RSVPForm = ({ wedding }: RSVPFormProps) => {
         </>
     );
 
-    const renderProgressDots = (current: number) => (
-        <div className={styles.progressDots}>
-            {[1, 2, 3].map((i) => (
-                <div
-                    key={i}
-                    className={clsx(
-                        styles.progressDot,
-                        i === current && styles.progressDotActive,
-                        i < current && styles.progressDotDone
-                    )}
-                />
-            ))}
-        </div>
-    );
+
 
     const primaryEvent = wedding.events?.[0];
     const primaryEventDate = primaryEvent?.date
@@ -172,7 +152,7 @@ export const RSVPForm = ({ wedding }: RSVPFormProps) => {
                 {renderFlowers()}
                 {showSuccessPetals && <FlowerPetalDrift />}
                 <div className={styles.card}>
-                    {renderProgressDots(STEP_INDEX.SUCCESS)}
+                    
 
                     <div className={styles.successContent}>
                         <div className={styles.successIcon}>
@@ -220,116 +200,7 @@ export const RSVPForm = ({ wedding }: RSVPFormProps) => {
         );
     }
 
-    // ─── FORM ─────────────────────────────────────────────────────────────
-    if (step === 'FORM') {
-        return (
-            <div className={styles.wrapper}>
-                {renderFlowers()}
-                {showSuccessPetals && <FlowerPetalDrift />}
-                <div className={styles.card}>
-                    {renderProgressDots(STEP_INDEX.FORM)}
 
-                    <header className={styles.formHeader}>
-                        <h2 className={styles.formTitle}>Confirm Attendance</h2>
-                        <p className={styles.formSubtitle}>
-                            We&apos;d love to have you with us at {wedding.groomName}&apos;s Wedding
-                        </p>
-                    </header>
-
-                    <form id="rsvp-form" className={styles.form} onSubmit={handleSubmit}>
-                        <div className={styles.field}>
-                            <label>Your Name</label>
-                            <input
-                                required
-                                placeholder="e.g. Rahul Patil"
-                                className={styles.input}
-                                value={guestName}
-                                onChange={(e) => setGuestName(e.target.value)}
-                            />
-                        </div>
-
-                        <div className={styles.row}>
-                            <div className={styles.field}>
-                                <label>No. of Guests</label>
-                                <input
-                                    type="number"
-                                    min="1"
-                                    className={styles.input}
-                                    value={adultCount}
-                                    onChange={(e) => setAdultCount(parseInt(e.target.value) || 1)}
-                                />
-                            </div>
-                            <div className={styles.field}>
-                                <label>Phone Number</label>
-                                <input
-                                    type="tel"
-                                    placeholder="Optional"
-                                    className={styles.input}
-                                    value={phone}
-                                    onChange={(e) => setPhone(e.target.value)}
-                                />
-                            </div>
-                        </div>
-
-                        <div className={styles.field}>
-                            <label>Send your warm wishes</label>
-                            <textarea
-                                placeholder="Write a heartfelt message for the couple…"
-                                className={clsx(styles.input, styles.textarea)}
-                                value={message}
-                                onChange={(e) => setMessage(e.target.value)}
-                                rows={2}
-                            />
-                        </div>
-
-                        <div className={styles.field}>
-                            <label>Will you be attending?</label>
-                            <div className={styles.statusGrid}>
-                                {(['attending', 'maybe', 'declined'] as const).map((opt) => (
-                                    <button
-                                        key={opt}
-                                        type="button"
-                                        className={clsx(styles.statusBtn, status === opt && styles.statusBtnActive)}
-                                        onClick={() => setStatus(opt)}
-                                    >
-                                        {opt === 'attending'
-                                            ? "I'll be there 🎉"
-                                            : opt === 'maybe'
-                                            ? 'Will try 🤞'
-                                            : 'Sending wishes 💛'}
-                                    </button>
-                                ))}
-                            </div>
-                            <div className={styles.feedbackMessage}>
-                                {status === 'attending' && "Can't wait to celebrate with you 🎉"}
-                                {status === 'maybe' && 'Hope to see you there 🤍'}
-                                {status === 'declined' && 'Your wishes mean a lot 💛'}
-                            </div>
-                        </div>
-                    </form>
-
-                    <div className={styles.buttonWrapper}>
-                        {submitError && (
-                            <p style={{ color: '#B91C1C', fontSize: '0.875rem', textAlign: 'center' }}>
-                                {submitError}
-                            </p>
-                        )}
-                        <button type="submit" form="rsvp-form" className={styles.submit} disabled={isSubmitting}>
-                            {isSubmitting ? 'Submitting…' : 'Confirm My Attendance'}
-                        </button>
-                        <button type="button" onClick={() => setStep('INVITE')} className={styles.backButton}>
-                            Back to Invitation
-                        </button>
-                    </div>
-
-                    <Link href="/" className={styles.poweredByCard}>
-                        crafted by
-                        <img src="/logo.png" alt="Nimantran Studio" className={styles.brandLogo} />
-                    </Link>
-                </div>
-            </div>
-        );
-    }
 
     // ─── INVITE (default) ─────────────────────────────────────────────────
     const weddingEvents = (wedding.events || []).filter(
@@ -342,7 +213,7 @@ export const RSVPForm = ({ wedding }: RSVPFormProps) => {
             {renderFlowers()}
             {showSuccessPetals && <FlowerPetalDrift />}
             <div className={styles.card}>
-                {renderProgressDots(STEP_INDEX.INVITE)}
+                
 
                 <header className={styles.header}>
                     <p className={styles.joyfullyText}>
@@ -355,11 +226,7 @@ export const RSVPForm = ({ wedding }: RSVPFormProps) => {
                     </div>
                 </header>
 
-                <div className={styles.ornamentDivider}>
-                    <div className={styles.ornamentLine} />
-                    <span>✦</span>
-                    <div className={styles.ornamentLine} />
-                </div>
+
 
                 <main className={styles.main}>
                     <div className={styles.welcomeBox}>
@@ -369,7 +236,6 @@ export const RSVPForm = ({ wedding }: RSVPFormProps) => {
                     </div>
 
                     <div className={styles.eventsList}>
-                        <div className={styles.rsvpTitle}>When &amp; Where</div>
                         {displayEvents.map((event: any) => {
                             const venue = event.venue || event.venueName;
                             return (
@@ -406,9 +272,99 @@ export const RSVPForm = ({ wedding }: RSVPFormProps) => {
                     )}
                 </main>
 
+                <div className={styles.ornamentDivider} style={{ marginTop: '2.5rem', marginBottom: '2.5rem' }}>
+                    <div className={styles.ornamentLine} />
+                    <span>✦</span>
+                    <div className={styles.ornamentLine} />
+                </div>
+
+                <header className={styles.formHeader}>
+                    <h2 className={styles.formTitle}>Confirm Attendance</h2>
+                    <p className={styles.formSubtitle}>
+                        We&apos;d love to have you with us at {wedding.groomName}&apos;s Wedding
+                    </p>
+                </header>
+
+                <form id="rsvp-form" className={styles.form} onSubmit={handleSubmit}>
+                    <div className={styles.field}>
+                        <label>Your Name</label>
+                        <input
+                            required
+                            placeholder="e.g. Rahul Patil"
+                            className={styles.input}
+                            value={guestName}
+                            onChange={(e) => setGuestName(e.target.value)}
+                        />
+                    </div>
+
+                    <div className={styles.row}>
+                        <div className={styles.field}>
+                            <label>No. of Guests</label>
+                            <input
+                                type="number"
+                                min="1"
+                                className={styles.input}
+                                value={adultCount}
+                                onChange={(e) => setAdultCount(parseInt(e.target.value) || 1)}
+                            />
+                        </div>
+                        <div className={styles.field}>
+                            <label>Phone Number</label>
+                            <input
+                                type="tel"
+                                placeholder="Optional"
+                                className={styles.input}
+                                value={phone}
+                                onChange={(e) => setPhone(e.target.value)}
+                            />
+                        </div>
+                    </div>
+
+                    <div className={styles.field}>
+                        <label>Send your warm wishes</label>
+                        <textarea
+                            placeholder="Write a heartfelt message for the couple…"
+                            className={clsx(styles.input, styles.textarea)}
+                            value={message}
+                            onChange={(e) => setMessage(e.target.value)}
+                            rows={2}
+                        />
+                    </div>
+
+                    <div className={styles.field}>
+                        <label>Will you be attending?</label>
+                        <div className={styles.statusGrid}>
+                            {(['attending', 'maybe', 'declined'] as const).map((opt) => (
+                                <button
+                                    key={opt}
+                                    type="button"
+                                    className={clsx(styles.statusBtn, status === opt && styles.statusBtnActive)}
+                                    onClick={() => setStatus(opt)}
+                                >
+                                    {opt === 'attending'
+                                        ? "I'll be there 🎉"
+                                        : opt === 'maybe'
+                                        ? 'Will try 🤞'
+                                        : 'Sending wishes 💛'}
+                                </button>
+                            ))}
+                        </div>
+                        <div className={styles.feedbackMessage}>
+                            {status === 'attending' && "Can't wait to celebrate with you 🎉"}
+                            {status === 'maybe' && 'Hope to see you there 🤍'}
+                            {status === 'declined' && 'Your wishes mean a lot 💛'}
+                        </div>
+                    </div>
+                </form>
+
                 <div className={styles.buttonWrapper}>
-                    <button onClick={() => setStep('FORM')} className={styles.respondBtn}>
-                        Respond to Invitation
+                    {submitError && (
+                        <p style={{ color: '#B91C1C', fontSize: '0.875rem', textAlign: 'center' }}>
+                            {submitError}
+                        </p>
+                    )}
+                    <button type="submit" form="rsvp-form" className={styles.submit} disabled={isSubmitting}>
+                        {isSubmitting ? 'Submitting…' : 'Confirm My Attendance'}
                     </button>
                 </div>
 

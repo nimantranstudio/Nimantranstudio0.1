@@ -3,8 +3,8 @@
 .bentoLayout {
     display: flex;
     flex-direction: column;
-    gap: 2rem;
-    padding-bottom: 3rem;
+    gap: 3rem;
+    padding-bottom: 4rem;
 }
 
 /* Glassmorphism Hero Banner */
@@ -12,23 +12,13 @@
     position: relative;
     border-radius: 28px;
     padding: 2.5rem 3rem;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.4));
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    background: #FFFFFF;
     border: 1px solid rgba(255, 255, 255, 0.8);
     box-shadow: 0 10px 40px rgba(200, 169, 81, 0.08), inset 0 0 0 1px rgba(255, 255, 255, 0.5);
     overflow: hidden;
     display: flex;
     justify-content: space-between;
     align-items: center;
-}
-
-.glassHero::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(circle at 100% 0%, rgba(200, 169, 81, 0.1) 0%, transparent 50%);
-    pointer-events: none;
 }
 
 .heroLeft {
@@ -75,10 +65,8 @@
     display: flex;
     align-items: center;
     gap: 1.5rem;
-    background: white;
     padding: 1rem 1.5rem;
     border-radius: 20px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
 }
 
 .timeBlock {

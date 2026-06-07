@@ -515,9 +515,9 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                 </div>
                 {isSecured && (
                     <div className={styles.watermark}>
-                        <span>NIMANTRAN STUDIO</span>
-                        <span>NIMANTRAN STUDIO</span>
-                        <span>NIMANTRAN STUDIO</span>
+                        <span>nimantranstudio.in &nbsp; nimantranstudio.in &nbsp; nimantranstudio.in &nbsp; nimantranstudio.in &nbsp; nimantranstudio.in &nbsp; nimantranstudio.in</span>
+                        <span>nimantranstudio.in &nbsp; nimantranstudio.in &nbsp; nimantranstudio.in &nbsp; nimantranstudio.in &nbsp; nimantranstudio.in &nbsp; nimantranstudio.in</span>
+                        <span>nimantranstudio.in &nbsp; nimantranstudio.in &nbsp; nimantranstudio.in &nbsp; nimantranstudio.in &nbsp; nimantranstudio.in &nbsp; nimantranstudio.in</span>
                     </div>
                 )}
             </div>
@@ -673,9 +673,9 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
             </svg>
             {isSecured && (
                 <div className={styles.watermark}>
-                    <span>NIMANTRAN STUDIO</span>
-                    <span>NIMANTRAN STUDIO</span>
-                    <span>NIMANTRAN STUDIO</span>
+                    <span>nimantranstudio.in &nbsp; nimantranstudio.in &nbsp; nimantranstudio.in &nbsp; nimantranstudio.in &nbsp; nimantranstudio.in &nbsp; nimantranstudio.in</span>
+                    <span>nimantranstudio.in &nbsp; nimantranstudio.in &nbsp; nimantranstudio.in &nbsp; nimantranstudio.in &nbsp; nimantranstudio.in &nbsp; nimantranstudio.in</span>
+                    <span>nimantranstudio.in &nbsp; nimantranstudio.in &nbsp; nimantranstudio.in &nbsp; nimantranstudio.in &nbsp; nimantranstudio.in &nbsp; nimantranstudio.in</span>
                 </div>
             )}
         </div>

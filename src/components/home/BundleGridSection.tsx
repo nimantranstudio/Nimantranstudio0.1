@@ -31,7 +31,7 @@ export const BundleGridSection = () => {
                             transition={{ type: "spring", damping: 25, stiffness: 300 }}
                         >
                             <img
-                                src="/bundle-mockup.jpeg"
+                                src="/nimantran-bundle.jpg"
                                 alt="Complete digital wedding invitation suite"
                                 className={styles.lightboxImage}
                             />
@@ -74,7 +74,7 @@ export const BundleGridSection = () => {
                             onClick={() => setIsLightboxOpen(true)}
                         >
                             <Image
-                                src="/bundle-mockup.jpeg"
+                                src="/nimantran-bundle.jpg"
                                 alt="Complete digital wedding invitation suite for multiple events - Nimantran Studio"
                                 width={800}
                                 height={600}

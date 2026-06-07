@@ -19,11 +19,12 @@ export default function RootWrapper({ children }: { children: React.ReactNode })
     const isAdmin = pathname?.startsWith('/admin');
     const isRsvpPage = pathname?.startsWith('/rsvp/');
     const isHidden = isAdmin || isRsvpPage;
+    const isLandingPage = pathname === '/';
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
             {!isHidden && <Navbar />}
-            {!isHidden && <AnnouncementStrip />}
+            {isLandingPage && <AnnouncementStrip />}
             <main style={{ flex: 1 }}>
                 {children}
             </main>

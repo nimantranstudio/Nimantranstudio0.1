@@ -104,14 +104,15 @@ export const PricingSection = () => {
                         </div>
 
                         {/* Features — single column */}
-                        <div style={{ padding: '2rem 2.5rem', borderTop: '1px solid #F0EDE8', borderBottom: '1px solid #F0EDE8' }}>
+                        <div style={{ padding: '2rem 2.5rem' }}>
                             <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
                                 {features.map((f, i) => (
                                     <motion.li
                                         key={i}
+                                        suppressHydrationWarning
                                         style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.875rem', color: '#333', lineHeight: 1.4 }}
-                                        initial={{ opacity: 0, x: -10 }}
-                                        whileInView={{ opacity: 1, x: 0 }}
+                                        initial={{ opacity: 0, y: 10 }}
+                                        whileInView={{ opacity: 1, y: 0 }}
                                         viewport={{ once: true }}
                                         transition={{ duration: 0.4, delay: 0.05 + i * 0.05 }}
                                     >

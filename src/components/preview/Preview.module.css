@@ -1,5 +1,6 @@
 .previewPage {
     min-height: 100vh;
+    padding-top: 3rem;
     padding-bottom: 5rem;
     background-color: #FDFBF7; /* Brand Ivory Background */
 }
@@ -90,7 +91,6 @@
     overflow: hidden;
     cursor: pointer;
     flex-shrink: 0;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     background: #F9FAFB;
     display: flex;
     align-items: flex-start;
@@ -107,8 +107,13 @@
     justify-content: center;
     font-size: 0.75rem;
     font-weight: 600;
-    opacity: 1;
+    opacity: 0;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    transition: opacity 0.2s ease;
+}
+
+.suiteItem:hover .suitePreviewOverlay {
+    opacity: 1;
 }
 
 .rsvpPlaceholder {
@@ -768,23 +773,28 @@
 
 .watermark {
     position: absolute;
-    inset: 0;
+    inset: -30%;
     display: flex;
     flex-direction: column;
-    justify-content: space-around;
+    justify-content: space-evenly;
     align-items: center;
     pointer-events: none;
     z-index: 5;
-    opacity: 0.2;
-    transform: rotate(-30deg);
-    white-space: nowrap;
+    transform: rotate(-35deg);
 }
 
 .watermark span {
-    font-size: 2.2rem;
-    font-weight: 900;
-    letter-spacing: 0.2rem;
-    text-transform: uppercase;
+    display: block;
+    width: 200%;
+    background: rgba(0, 0, 0, 0.35);
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.85rem;
+    font-weight: 500;
+    letter-spacing: 0.15rem;
+    text-transform: lowercase;
+    padding: 8px 0;
+    text-align: center;
+    white-space: nowrap;
 }
 
 /* New Layered Overlay Structure */

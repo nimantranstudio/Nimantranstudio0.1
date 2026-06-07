@@ -44,8 +44,8 @@
 }
 
 .imageWrapper {
-    width: 240px;
-    height: 240px;
+    width: 280px;
+    height: 180px;
     margin: 0 auto 1.5rem;
     position: relative;
     display: flex;
@@ -153,18 +153,18 @@
     width: 100%;
     padding: 1rem;
     border-radius: 100px;
-    background-color: #000000;
+    background: linear-gradient(135deg, #d4af37 0%, #c5a14d 50%, #b38f3d 100%);
     color: white;
     font-size: 1rem;
     font-weight: 600;
     border: none;
     cursor: pointer;
-    transition: transform 0.2s, background-color 0.2s;
+    transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .submitBtn:hover {
-    background-color: #111111;
     transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.4);
 }
 
 .footerLink {
@@ -181,9 +181,17 @@
 
 .otpInput {
     text-align: center;
-    letter-spacing: 0.5em;
-    font-family: monospace;
+    letter-spacing: 0.2em;
+    font-family: var(--font-inter, sans-serif);
+    font-weight: 600;
     font-size: 1.25rem;
+}
+
+.otpInput::placeholder {
+    letter-spacing: normal;
+    font-weight: 400;
+    font-size: 1rem;
+    color: #999;
 }
 
 .resendBtn {

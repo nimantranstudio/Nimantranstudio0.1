@@ -47,13 +47,16 @@ export default function DashboardPage() {
     const [selectedPreviewIndex, setSelectedPreviewIndex] = useState<number | null>(null);
     const cardRef = useRef<InvitationCardRef>(null);
     const [lightbox, setLightbox] = useState<{ image: string | null; title: string } | null>(null);
+    const [suitePreview, setSuitePreview] = useState(false);
+    const [suitePreviewIndex, setSuitePreviewIndex] = useState(0);
     const [bundleAssets, setBundleAssets] = useState<Record<string, string>>({});
     const [activeEventId, setActiveEventId] = useState<string | undefined>(formData.events?.[0]?.id);
     const [timeLeft, setTimeLeft] = useState({
         days: '00',
         hours: '00',
         minutes: '00',
-        seconds: '00'
+        seconds: '00',
+        isPast: false
     });
 
     useEffect(() => {
@@ -79,7 +82,7 @@ export default function DashboardPage() {
             const difference = targetDate.getTime() - now;
 
             if (difference <= 0) {
-                setTimeLeft({ days: '00', hours: '00', minutes: '00', seconds: '00' });
+                setTimeLeft({ days: '00', hours: '00', minutes: '00', seconds: '00', isPast: true });
             } else {
                 const d = Math.floor(difference / (1000 * 60 * 60 * 24));
                 const h = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -90,7 +93,8 @@ export default function DashboardPage() {
                     days: String(d).padStart(2, '0'),
                     hours: String(h).padStart(2, '0'),
                     minutes: String(m).padStart(2, '0'),
-                    seconds: String(s).padStart(2, '0')
+                    seconds: String(s).padStart(2, '0'),
+                    isPast: false
                 });
             }
         };
@@ -371,61 +375,41 @@ export default function DashboardPage() {
                     </div>
 
                     <div className={redesignStyles.heroRight}>
-                        <span className={redesignStyles.countdownLabel}>Your Big Day is in</span>
-                        <div className={redesignStyles.countdownBox}>
-                            <div className={redesignStyles.timeBlock}>
-                                <span className={redesignStyles.timeValue}>{timeLeft.days}</span>
-                                <span className={redesignStyles.timeUnit}>Days</span>
+                        {timeLeft.isPast ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                                <span style={{ fontFamily: 'var(--font-serif)', fontSize: '2rem', color: '#C8A951', fontWeight: 500, margin: 0, lineHeight: 1 }}>Congratulations!</span>
+                                <span style={{ color: '#666', fontSize: '0.9rem', marginTop: '0.5rem', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Your big day has arrived</span>
                             </div>
-                            <span className={redesignStyles.timerDivider}>:</span>
-                            <div className={redesignStyles.timeBlock}>
-                                <span className={redesignStyles.timeValue}>{timeLeft.hours}</span>
-                                <span className={redesignStyles.timeUnit}>Hrs</span>
-                            </div>
-                            <span className={redesignStyles.timerDivider}>:</span>
-                            <div className={redesignStyles.timeBlock}>
-                                <span className={redesignStyles.timeValue}>{timeLeft.minutes}</span>
-                                <span className={redesignStyles.timeUnit}>Mins</span>
-                            </div>
-                            <span className={redesignStyles.timerDivider}>:</span>
-                            <div className={redesignStyles.timeBlock}>
-                                <span className={redesignStyles.timeValue}>{timeLeft.seconds}</span>
-                                <span className={redesignStyles.timeUnit}>Secs</span>
-                            </div>
-                        </div>
+                        ) : (
+                            <>
+                                <span className={redesignStyles.countdownLabel}>Your Big Day is in</span>
+                                <div className={redesignStyles.countdownBox}>
+                                    <div className={redesignStyles.timeBlock}>
+                                        <span className={redesignStyles.timeValue}>{timeLeft.days}</span>
+                                        <span className={redesignStyles.timeUnit}>Days</span>
+                                    </div>
+                                    <span className={redesignStyles.timerDivider}>:</span>
+                                    <div className={redesignStyles.timeBlock}>
+                                        <span className={redesignStyles.timeValue}>{timeLeft.hours}</span>
+                                        <span className={redesignStyles.timeUnit}>Hrs</span>
+                                    </div>
+                                    <span className={redesignStyles.timerDivider}>:</span>
+                                    <div className={redesignStyles.timeBlock}>
+                                        <span className={redesignStyles.timeValue}>{timeLeft.minutes}</span>
+                                        <span className={redesignStyles.timeUnit}>Mins</span>
+                                    </div>
+                                    <span className={redesignStyles.timerDivider}>:</span>
+                                    <div className={redesignStyles.timeBlock}>
+                                        <span className={redesignStyles.timeValue}>{timeLeft.seconds}</span>
+                                        <span className={redesignStyles.timeUnit}>Secs</span>
+                                    </div>
+                                </div>
+                            </>
+                        )}
                     </div>
                 </motion.div>
 
-                {/* 2. Elevated Premium Overview (Analytics) */}
-                <motion.div 
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
-                    className={redesignStyles.overviewPremium} 
-                    style={{ marginTop: '2.5rem' }}
-                >
-                    <div className={redesignStyles.statPremiumCard}>
-                        <div className={redesignStyles.statInfo}>
-                            <span className={redesignStyles.statLabel}>Total Guests Invited</span>
-                            <span className={redesignStyles.statNumber}>280</span>
-                        </div>
-                        <Users size={32} color="#C8A951" opacity={0.2} />
-                    </div>
-                    <div className={redesignStyles.statPremiumCard}>
-                        <div className={redesignStyles.statInfo}>
-                            <span className={redesignStyles.statLabel}>Responses Received</span>
-                            <span className={redesignStyles.statNumber}>174</span>
-                        </div>
-                        <CheckCircle2 size={32} color="#22c55e" opacity={0.2} />
-                    </div>
-                    <div className={redesignStyles.statPremiumCard}>
-                        <div className={redesignStyles.statInfo}>
-                            <span className={redesignStyles.statLabel}>Meals Collected</span>
-                            <span className={redesignStyles.statNumber}>174</span>
-                        </div>
-                        <FileText size={32} color="#C8A951" opacity={0.2} />
-                    </div>
-                </motion.div>
+
 
                 {/* 3. Grid Layout: Events (Main) + Actions (Side) */}
                 <motion.div 
@@ -438,32 +422,42 @@ export default function DashboardPage() {
                     {/* Main Column */}
                     <div className={redesignStyles.mainColumn}>
                         
-                        <div className={redesignStyles.eventHeader}>
-                            <div>
-                                <h2 className={redesignStyles.eventTitle}>Wedding Events</h2>
-                                <p className={styles.subtitle} style={{ marginBottom: 0 }}>Manage your invitations and details.</p>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                            <div className={redesignStyles.eventHeader} style={{ marginBottom: 0 }}>
+                                <div>
+                                    <h2 className={redesignStyles.eventTitle}>Wedding Events</h2>
+                                    <p className={styles.subtitle} style={{ marginBottom: 0 }}>Manage your invitations and details.</p>
+                                </div>
+                            </div>
+
+                            {/* Horizontal Nav */}
+                            <div className={styles.horizontalNavContainer}>
+                                {[
+                                    { id: 'save_the_date', name: 'Save The Date', date: formData.primaryDate, time: formData.primaryTime, description: 'Save the date for our special day!' },
+                                    ...(formData.events || []),
+                                    { id: 'thank_you', name: 'Thank You', date: formData.primaryDate, time: formData.primaryTime, description: 'Thank you for being a part of our celebration!' }
+                                ].map((event, idx) => {
+                                    const isActive = (activeEventId ? event.id === activeEventId : idx === 0 && !activeEventId);
+                                    return (
+                                        <button 
+                                            key={`nav-${idx}`} 
+                                            className={`${styles.navTab} ${isActive ? styles.navTabActive : ''}`}
+                                            onClick={() => setActiveEventId(event.id)}
+                                        >
+                                            <span className={styles.navLabel}>{event.name || 'Event'}</span>
+                                        </button>
+                                    );
+                                })}
                             </div>
                         </div>
 
-                        {/* Horizontal Nav */}
-                        <div className={styles.horizontalNavContainer}>
-                            {formData.events?.map((event, idx) => {
-                                const isActive = (activeEventId ? event.id === activeEventId : idx === 0);
-                                return (
-                                    <button 
-                                        key={`nav-${idx}`} 
-                                        className={`${styles.navTab} ${isActive ? styles.navTabActive : ''}`}
-                                        onClick={() => setActiveEventId(event.id)}
-                                    >
-                                        <span className={styles.navLabel}>{event.name || 'Event'}</span>
-                                    </button>
-                                );
-                            })}
-                        </div>
-
                         <div className={styles.eventList}>
-                            {formData.events?.filter((event, idx) => activeEventId ? event.id === activeEventId : idx === 0).map((event, idx) => {
-                                const matchedItemIndex = previewItems?.findIndex(pi => pi.event?.id === event.id);
+                            {[
+                                { id: 'save_the_date', name: 'Save The Date', date: formData.primaryDate, time: formData.primaryTime, description: 'Save the date for our special day!' },
+                                ...(formData.events || []),
+                                { id: 'thank_you', name: 'Thank You', date: formData.primaryDate, time: formData.primaryTime, description: 'Thank you for being a part of our celebration!' }
+                            ].filter((event, idx) => activeEventId ? event.id === activeEventId : idx === 0 && !activeEventId).map((event, idx) => {
+                                const matchedItemIndex = previewItems?.findIndex(pi => pi.event?.id === event.id || pi.id === event.id || (event.id === 'save_the_date' && pi.name.toLowerCase().includes('save')) || (event.id === 'thank_you' && pi.name.toLowerCase().includes('thank')));
                                 const matchedItem = matchedItemIndex !== -1 ? previewItems[matchedItemIndex] : null;
                                 const poster = (matchedItem ? matchedItem.image : null) ||
                                                 getEventImage(event) ||
@@ -479,7 +473,14 @@ export default function DashboardPage() {
                                                 <div className={redesignStyles.eventPreviewCol}>
                                                     <div 
                                                         className={redesignStyles.eventPreviewImageWrapper} 
-                                                        onClick={() => matchedItemIndex !== -1 && setSelectedPreviewIndex(matchedItemIndex)}
+                                                        onClick={() => {
+                                                            if (matchedItemIndex !== -1) {
+                                                                setSuitePreviewIndex(matchedItemIndex);
+                                                                setSuitePreview(true);
+                                                            } else if (poster) {
+                                                                setLightbox({ image: poster, title: event.name || 'Event Preview' });
+                                                            }
+                                                        }}
                                                     >
                                                         <InvitationCard
                                                             event={matchedItem?.event || event}
@@ -506,16 +507,19 @@ export default function DashboardPage() {
                                             <div className={redesignStyles.eventDetailsCol}>
                                                 <div className={styles.eventCardMetaRow} style={{ marginTop: 0, marginBottom: '1.5rem' }}>
                                                     <div className={styles.metaItem}>
-                                                        <Clock size={16} />
-                                                        <span>{event.time || 'TBD'}</span>
-                                                    </div>
-                                                    <span className={styles.metaDivider}>•</span>
-                                                    <div className={styles.metaItem}>
                                                         <Calendar size={16} />
                                                         <span>{event.date || 'TBD'}</span>
                                                     </div>
+                                                    <span className={styles.metaDivider}>•</span>
+                                                    <div className={styles.metaItem}>
+                                                        <Clock size={16} />
+                                                        <span>{event.time || 'TBD'}</span>
+                                                    </div>
                                                 </div>
 
+                                                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#4B5563', marginBottom: '0.5rem' }}>
+                                                    WhatsApp message for your card
+                                                </label>
                                                 <textarea
                                                     className={redesignStyles.messageEditor}
                                                     value={event.description || ''}
@@ -555,6 +559,42 @@ export default function DashboardPage() {
                     {/* Side Column */}
                     <div className={redesignStyles.sideColumn}>
                         
+                        {/* RSVP Pie Chart Card */}
+                        <div className={styles.card}>
+                            <div className={styles.cardContent} style={{ padding: '1.5rem' }}>
+                                <h2 className={styles.cardTitle} style={{ marginBottom: '1.5rem' }}>RSVP Responses</h2>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
+                                    <div style={{ position: 'relative', width: '110px', height: '110px', flexShrink: 0 }}>
+                                        <svg viewBox="0 0 36 36" style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }}>
+                                            <circle stroke="#F3F4F6" strokeWidth="4" fill="transparent" r="16" cx="18" cy="18" />
+                                            <circle stroke="#22c55e" strokeWidth="4" fill="transparent" r="16" cx="18" cy="18" 
+                                                pathLength="100" strokeDasharray="83 100" strokeDashoffset="0" strokeLinecap="round" />
+                                        </svg>
+                                        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                                            <span style={{ fontSize: '1.2rem', fontWeight: 700, color: '#333' }}>174</span>
+                                            <span style={{ fontSize: '0.65rem', color: '#666', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total</span>
+                                        </div>
+                                    </div>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', flex: 1 }}>
+                                        <div>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
+                                                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#22c55e' }}></div>
+                                                <span style={{ fontSize: '0.8rem', color: '#4B5563', fontWeight: 600 }}>Attending</span>
+                                            </div>
+                                            <span style={{ fontSize: '1.1rem', fontWeight: 700, color: '#111827', marginLeft: '1rem' }}>145</span>
+                                        </div>
+                                        <div>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
+                                                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#D1D5DB' }}></div>
+                                                <span style={{ fontSize: '0.8rem', color: '#4B5563', fontWeight: 600 }}>Not Attending</span>
+                                            </div>
+                                            <span style={{ fontSize: '1.1rem', fontWeight: 700, color: '#111827', marginLeft: '1rem' }}>29</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         {/* Status Card */}
                         <div className={styles.card} style={{ margin: 0 }}>
                             <div className={styles.cardMain}>
@@ -565,46 +605,34 @@ export default function DashboardPage() {
                                         <span style={{ fontSize: '0.8rem' }}>Assets Ready</span>
                                     </div>
                                 </div>
-                                <ul className={styles.featuresList} style={{ marginTop: '1rem', padding: 0 }}>
-                                    <li style={{ fontSize: '0.8rem' }}><Check size={12} /> {formData.events?.length || 7} events covered</li>
-                                    <li style={{ fontSize: '0.8rem' }}><Check size={12} /> Guest management enabled</li>
-                                </ul>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                    <div>
+                                        <p style={{ fontSize: '0.75rem', fontWeight: 600, color: '#333', marginBottom: '0.2rem' }}>Wedding Invitations</p>
+                                        <p style={{ fontSize: '0.75rem', color: '#666' }}>Save the Date · Wedding Invitation</p>
+                                    </div>
+                                    <div>
+                                        <p style={{ fontSize: '0.75rem', fontWeight: 600, color: '#333', marginBottom: '0.2rem' }}>Wedding Events</p>
+                                        <p style={{ fontSize: '0.75rem', color: '#666' }}>Haldi · Mehendi · Sangeet · Reception</p>
+                                    </div>
+                                    <div>
+                                        <p style={{ fontSize: '0.75rem', fontWeight: 600, color: '#333', marginBottom: '0.2rem' }}>Closing & Gratitude</p>
+                                        <p style={{ fontSize: '0.75rem', color: '#666' }}>Thank You Card</p>
+                                    </div>
+                                </div>
                             </div>
-                            <div className={styles.cardFooter} style={{ padding: '1rem', flexDirection: 'column', gap: '1rem' }}>
-                                <Link href="/preview" className={styles.btnActionOutline} style={{ width: '100%', justifyContent: 'center' }}>
+                            <div className={styles.cardFooter} style={{ padding: '1rem', flexDirection: 'column', gap: '0.8rem' }}>
+                                <a onClick={(e) => { e.preventDefault(); setSuitePreviewIndex(0); setSuitePreview(true); }} className={styles.btnActionOutline} style={{ width: '100%', justifyContent: 'center', cursor: 'pointer' }}>
                                     <Eye size={18} />
                                     <span>View Suite</span>
-                                </Link>
+                                </a>
+                                <button className={styles.btnActionOutline} style={{ width: '100%', justifyContent: 'center' }}>
+                                    <Download size={18} />
+                                    <span>Complete Assets</span>
+                                </button>
                             </div>
                         </div>
 
-                        {/* Quick Actions 2x2 Grid */}
-                        <div className={redesignStyles.actionGridModern}>
-                            <div 
-                                className={redesignStyles.actionTileModern} 
-                                onClick={handleCopyRsvpLink} 
-                                style={{ opacity: rsvpFullUrl ? 1 : 0.4, cursor: rsvpFullUrl ? 'pointer' : 'not-allowed' }}
-                            >
-                                <div className={redesignStyles.actionIconWrapper}><Link2 size={24} /></div>
-                                <h5>{copyStatus ? 'Copied!' : 'Copy RSVP'}</h5>
-                            </div>
-                            <div 
-                                className={redesignStyles.actionTileModern} 
-                                onClick={() => rsvpFullUrl && window.open(`https://wa.me/?text=${encodeURIComponent(rsvpFullUrl)}`, '_blank')} 
-                                style={{ opacity: rsvpFullUrl ? 1 : 0.4, cursor: rsvpFullUrl ? 'pointer' : 'not-allowed' }}
-                            >
-                                <div className={redesignStyles.actionIconWrapper}><MessageCircle size={24} /></div>
-                                <h5>WhatsApp</h5>
-                            </div>
-                            <div className={redesignStyles.actionTileModern}>
-                                <div className={redesignStyles.actionIconWrapper}><QrCode size={24} /></div>
-                                <h5>QR Code</h5>
-                            </div>
-                            <div className={redesignStyles.actionTileModern}>
-                                <div className={redesignStyles.actionIconWrapper}><Edit3 size={24} /></div>
-                                <h5>Edit Details</h5>
-                            </div>
-                        </div>
+
 
                         {/* Support Card */}
                         <div className={redesignStyles.supportCard}>
@@ -677,6 +705,99 @@ export default function DashboardPage() {
                     >
                         Open Full Preview →
                     </Link>
+                </div>
+            )}
+
+            {/* Suite Preview Overlay */}
+            {suitePreview && (
+                <div
+                    onClick={() => setSuitePreview(false)}
+                    style={{
+                        position: 'fixed', inset: 0, zIndex: 9999,
+                        background: 'rgba(0,0,0,0.88)',
+                        display: 'flex', flexDirection: 'column',
+                        alignItems: 'center',
+                        padding: '2rem',
+                        overflowY: 'auto',
+                        scrollbarWidth: 'none',
+                    }}
+                >
+                    <style dangerouslySetInnerHTML={{__html: `
+                        ::-webkit-scrollbar { display: none; }
+                    `}} />
+                    
+                    <div style={{ position: 'sticky', top: '1rem', width: '100%', maxWidth: '800px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', zIndex: 10 }}>
+                         <h3 style={{ color: 'rgba(255,255,255,0.7)', margin: 0, fontSize: '1rem', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Complete Suite Preview</h3>
+                         <button onClick={() => setSuitePreview(false)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', padding: '0.5rem 1rem', borderRadius: '20px', fontSize: '0.9rem', cursor: 'pointer', backdropFilter: 'blur(10px)' }}>✕ Close</button>
+                    </div>
+                    
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', width: '100%', alignItems: 'center', justifyContent: 'center', flexGrow: 1 }}>
+                        {(() => {
+                            const validItems = previewItems.filter(item => item.image);
+                                
+                            if (validItems.length === 0) return null;
+                            const currentIndex = Math.min(suitePreviewIndex, validItems.length - 1);
+                            const currentItem = validItems[currentIndex];
+                            
+                            return (
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem', width: '100%' }}>
+                                    <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem', letterSpacing: '0.1em', textTransform: 'uppercase', margin: 0, fontWeight: 500 }}>
+                                        {currentItem.name}
+                                    </p>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '2rem', width: '100%', justifyContent: 'center' }}>
+                                        <button 
+                                            onClick={(e) => { e.stopPropagation(); setSuitePreviewIndex(Math.max(0, currentIndex - 1)); }}
+                                            disabled={currentIndex === 0}
+                                            style={{ 
+                                                background: 'rgba(255,255,255,0.15)', color: '#fff', border: 'none', borderRadius: '50%', 
+                                                width: '44px', height: '44px', cursor: currentIndex === 0 ? 'not-allowed' : 'pointer', 
+                                                opacity: currentIndex === 0 ? 0.3 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                fontSize: '1.2rem', backdropFilter: 'blur(10px)', transition: 'all 0.2s', flexShrink: 0
+                                            }}
+                                        >
+                                            ←
+                                        </button>
+                                        <img
+                                            src={currentItem.image}
+                                            alt={currentItem.name}
+                                            onClick={e => e.stopPropagation()}
+                                            style={{
+                                                height: '75vh',
+                                                maxWidth: '85vw',
+                                                borderRadius: '16px',
+                                                boxShadow: '0 24px 80px rgba(0,0,0,0.6)',
+                                                objectFit: 'contain',
+                                            }}
+                                        />
+                                        <button 
+                                            onClick={(e) => { e.stopPropagation(); setSuitePreviewIndex(Math.min(validItems.length - 1, currentIndex + 1)); }}
+                                            disabled={currentIndex === validItems.length - 1}
+                                            style={{ 
+                                                background: 'rgba(255,255,255,0.15)', color: '#fff', border: 'none', borderRadius: '50%', 
+                                                width: '44px', height: '44px', cursor: currentIndex === validItems.length - 1 ? 'not-allowed' : 'pointer', 
+                                                opacity: currentIndex === validItems.length - 1 ? 0.3 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                fontSize: '1.2rem', backdropFilter: 'blur(10px)', transition: 'all 0.2s', flexShrink: 0
+                                            }}
+                                        >
+                                            →
+                                        </button>
+                                    </div>
+                                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+                                        {validItems.map((_, idx) => (
+                                            <div 
+                                                key={idx} 
+                                                style={{ 
+                                                    width: '8px', height: '8px', borderRadius: '50%', 
+                                                    background: idx === currentIndex ? '#fff' : 'rgba(255,255,255,0.3)',
+                                                    transition: 'all 0.3s'
+                                                }} 
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                            );
+                        })()}
+                    </div>
                 </div>
             )}
         </>

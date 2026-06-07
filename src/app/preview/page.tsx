@@ -615,8 +615,13 @@ function PreviewContent() {
                             <div className={styles.suiteList}>
                                 {(previewItems.length > 0) ? (
                                     previewItems.map((item, index) => (
-                                        <div key={item.id} className={styles.suiteItem}>
-                                            <div className={styles.suiteThumbContainer} onClick={() => setSelectedPreviewIndex(index)}>
+                                        <div 
+                                            key={item.id} 
+                                            className={styles.suiteItem}
+                                            onClick={() => setSelectedPreviewIndex(index)}
+                                            style={{ cursor: 'pointer' }}
+                                        >
+                                            <div className={styles.suiteThumbContainer}>
                                                 <InvitationCard
                                                     ref={el => { suiteRefs.current[item.id] = el; }}
                                                     event={item.event}
@@ -643,14 +648,15 @@ function PreviewContent() {
                                                 <div className={styles.suiteQuickActions}>
                                                     <button 
                                                         className={styles.suiteQuickActionBtn}
-                                                        onClick={() => { setSelectedPreviewIndex(index); setIsEditMode(true); }}
+                                                        onClick={(e) => { e.stopPropagation(); setSelectedPreviewIndex(index); setIsEditMode(true); }}
                                                         title="Edit"
                                                     >
                                                         <Edit size={16} />
                                                     </button>
                                                     <button 
                                                         className={styles.suiteQuickActionBtn}
-                                                        onClick={() => { 
+                                                        onClick={(e) => { 
+                                                            e.stopPropagation();
                                                             const ref = suiteRefs.current[item.id];
                                                             if (ref) ref.downloadImage();
                                                         }}
@@ -660,7 +666,8 @@ function PreviewContent() {
                                                     </button>
                                                     <button 
                                                         className={styles.suiteQuickActionBtn}
-                                                        onClick={() => {
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
                                                             const text = encodeURIComponent(`Check out our ${item.name}!\n\n${window.location.href}`);
                                                             window.open(`https://wa.me/?text=${text}`, '_blank');
                                                         }}
@@ -679,10 +686,27 @@ function PreviewContent() {
                                 )}
 
                                 {/* RSVP Link Card */}
-                                <div className={styles.suiteItem} style={{ alignItems: 'flex-start' }}>
-                                    <div className={styles.rsvpPreviewPlaceholder}>
-                                        <div style={{ textAlign: 'center', marginBottom: '0.25rem' }}>
-                                            <div style={{ fontSize: '0.65rem', fontFamily: 'var(--font-playfair)', fontWeight: 'bold' }}>{formData.groomName?.split(' ')[0]} & {formData.brideName?.split(' ')[0]}</div>
+                                <div 
+                                    className={styles.suiteItem} 
+                                    style={{ alignItems: 'flex-start', cursor: 'pointer' }}
+                                    onClick={() => window.open(`/rsvp/${rsvpSlug}?preview=true`, '_blank')}
+                                >
+                                    <div 
+                                        className={styles.suiteThumbContainer}
+                                        style={{ 
+                                            position: 'relative', 
+                                            flexDirection: 'column', 
+                                            alignItems: 'center', 
+                                            justifyContent: 'center',
+                                            border: '1px solid #E5E7EB',
+                                            background: '#FFFFFF',
+                                            padding: '8px'
+                                        }}
+                                    >
+                                        <div style={{ textAlign: 'center', marginBottom: '0.5rem', width: '100%' }}>
+                                            <div style={{ fontSize: '0.7rem', fontFamily: 'var(--font-playfair)', fontWeight: 'bold', color: '#1F2937' }}>
+                                                {formData.groomName?.split(' ')[0]} & {formData.brideName?.split(' ')[0]}
+                                            </div>
                                         </div>
                                         <div className={styles.rsvpPreviewForm}>
                                             <div className={styles.rsvpPreviewLine}></div>
@@ -693,37 +717,41 @@ function PreviewContent() {
                                             </div>
                                             <div className={styles.rsvpPreviewBtn}></div>
                                         </div>
+                                        <div className={styles.suitePreviewOverlay}>Preview</div>
                                     </div>
 
                                     <div className={styles.suiteInfo}>
                                         <h3 className={styles.suiteItemTitle}>RSVP Link</h3>
                                         <p className={styles.suiteItemDesc}>Smart guest response collection page</p>
                                         
-                                        <div className={styles.rsvpUrlSection}>
-                                            <div className={styles.rsvpUrlBox}>
-                                                <span className={styles.rsvpUrlText}>{rsvpFullUrl.replace('https://', '')}</span>
-                                                <button 
-                                                    className={styles.copyPill} 
-                                                    onClick={handleCopyRsvpLink}
-                                                    title={copyStatus ? "Copied!" : "Copy Link"}
-                                                    style={{ background: copyStatus ? '#10B981' : '#F1F5F9', color: copyStatus ? 'white' : '#1E293B' }}
-                                                >
-                                                    {copyStatus ? <Check size={16} /> : <Copy size={16} />}
-                                                </button>
-                                            </div>
-                                        </div>
+
 
                                     </div>
 
                                     <div className={styles.suiteActions}>
                                         <div className={styles.suiteQuickActions} style={{ marginTop: '0.5rem' }}>
-                                            <button className={styles.suiteQuickActionBtn} title="Edit RSVP Template">
+                                            <button 
+                                                className={styles.suiteQuickActionBtn} 
+                                                title="Edit RSVP Template"
+                                                onClick={(e) => e.stopPropagation()}
+                                            >
                                                 <Edit size={16} />
                                             </button>
                                             <button 
                                                 className={styles.suiteQuickActionBtn} 
-                                                title="Share on WhatsApp"
-                                                onClick={() => {
+                                                title={copyStatus ? "Copied!" : "Copy RSVP Link"}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleCopyRsvpLink();
+                                                }}
+                                            >
+                                                {copyStatus ? <Check size={16} color="#10B981" /> : <Copy size={16} />}
+                                            </button>
+                                            <button 
+                                                className={styles.suiteQuickActionBtn} 
+                                                title="Share RSVP Link"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
                                                     const text = encodeURIComponent(`We would love to have you at our wedding! \n\nPlease RSVP here: ${rsvpFullUrl}`);
                                                     window.open(`https://wa.me/?text=${text}`, '_blank');
                                                 }}
@@ -796,8 +824,6 @@ function PreviewContent() {
                                         ✨ Chosen by 24 families this month
                                     </div>
                                 </div>
-
-                                <div className={styles.partitionLine}></div>
 
                                 <button
                                     className={styles.unlockButton}

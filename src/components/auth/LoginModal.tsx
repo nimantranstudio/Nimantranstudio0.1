@@ -70,17 +70,13 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
                     <>
                         <div className={styles.imageWrapper}>
                             <Image
-                                src="https://images.unsplash.com/photo-1549465220-1a8b9238cd48?q=80&w=1000&auto=format&fit=crop"
+                                src="/nimantran-bundle.jpg"
                                 alt="Wedding Bundle"
-                                width={240}
-                                height={240}
+                                width={280}
+                                height={180}
                                 className={styles.image}
                                 priority
                             />
-                            <div className={styles.imageOverlay}>
-                                <span className={styles.overlayTitle}>Wedding</span>
-                                <span className={styles.overlaySubtitle}>Essentials Bundle</span>
-                            </div>
                         </div>
 
                         <h2 className={styles.title}>
@@ -119,9 +115,7 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
                                 disabled={isLoading}
                             >
                                 {isLoading ? 'Sending...' : (
-                                    <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
-                                        <Phone size={18} /> Get OTP
-                                    </span>
+                                    'Continue'
                                 )}
                             </button>
 
@@ -148,8 +142,8 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
                             <div className={styles.inputGroup}>
                                 <input
                                     type="text"
-                                    placeholder="Enter OTP (e.g. 422101)"
-                                    className={styles.otpInput}
+                                    placeholder="Enter OTP"
+                                    className={`${styles.input} ${styles.otpInput}`}
                                     value={otp}
                                     onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
                                     maxLength={6}

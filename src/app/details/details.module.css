@@ -812,6 +812,33 @@
     padding-top: 1.5rem;
 }
 
+.eventCardHeaderControls {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-left: auto;
+}
+
+.addVenueBtn {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: #4B5563;
+    background: #F3F4F6;
+    border: 1px solid #E5E7EB;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 0.35rem 0.75rem;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.addVenueBtn:hover {
+    background: #E5E7EB;
+    color: #111827;
+}
+
 .removeEventBtn {
     display: flex;
     align-items: center;
@@ -823,7 +850,7 @@
     font-weight: 500;
     cursor: pointer;
     margin-left: auto;
-    margin-top: 1.5rem;
+    margin-top: 0;
     padding: 0.5rem;
     border-radius: 6px;
     transition: all 0.2s;
@@ -832,6 +859,35 @@
 .removeEventBtn:hover {
     color: #EF4444;
     background: #FEF2F2;
+}
+
+.venueFieldWrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.venueFieldHeader {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.removeVenueBtn {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: #EF4444;
+    background: none;
+    border: none;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    opacity: 0.8;
+}
+
+.removeVenueBtn:hover {
+    opacity: 1;
 }
 
 .addEventBtn {

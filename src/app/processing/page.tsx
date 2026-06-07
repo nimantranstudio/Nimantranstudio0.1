@@ -62,7 +62,6 @@ export default function ProcessingPage() {
             };
 
             triggerBurst(0, 0.5);      // Center
-            triggerBurst(2500, 0.2);   // Left
             triggerBurst(5000, 0.8);   // Right
 
             // Auto-navigate to preview after 10 seconds total

@@ -64,7 +64,6 @@ export function ProcessingOverlay({ onComplete }: ProcessingOverlayProps) {
             };
 
             triggerBurst(0, 0.5);      
-            triggerBurst(2500, 0.2);   
             triggerBurst(5000, 0.8);   
 
             // Auto-exit after 10 seconds

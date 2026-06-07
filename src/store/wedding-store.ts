@@ -181,14 +181,38 @@ export const useWeddingStore = create<WeddingState>()(
         }),
         {
             name: 'nimantran-wedding-storage',
-            version: 2,
+            version: 3,
             migrate: (persistedState: any, version: number) => {
-                if (version === 0) {
-                    // if we had no version or version 0, reset or migrate
-                    // For now, just return the persisted state as is, or reset if needed
-                    return persistedState as WeddingState;
+                const state = persistedState as WeddingState;
+
+                // v3: refresh event messages that still hold an old/empty default
+                // with the new celebratory copy, without clobbering user edits.
+                if (version < 3 && state?.formData?.events) {
+                    const STALE_DESCRIPTIONS = new Set([
+                        '',
+                        'Yellow vibes only!',
+                        'Art on hands.',
+                        'Night of music and dance.',
+                        'The big day.',
+                        'Dinner and celebration.',
+                    ]);
+                    const defaultsById = new Map(
+                        DEFAULT_EVENTS.map((e) => [e.id, e.description])
+                    );
+
+                    state.formData = {
+                        ...state.formData,
+                        events: state.formData.events.map((e) => {
+                            const fresh = defaultsById.get(e.id);
+                            const current = (e.description ?? '').trim();
+                            return fresh && STALE_DESCRIPTIONS.has(current)
+                                ? { ...e, description: fresh }
+                                : e;
+                        }),
+                    };
                 }
-                return persistedState as WeddingState;
+
+                return state;
             },
             partialize: (state) => ({
                 selectedThemeId: state.selectedThemeId,
@@ -201,8 +225,8 @@ export const useWeddingStore = create<WeddingState>()(
                 isAdmin: state.isAdmin,
                 userPhone: state.userPhone,
             }),
-            onRehydrateStorage: () => (state) => {
-                console.log('Hydration finished for version 2');
+            onRehydrateStorage: () => () => {
+                console.log('Hydration finished for version 3');
             },
         }
     )

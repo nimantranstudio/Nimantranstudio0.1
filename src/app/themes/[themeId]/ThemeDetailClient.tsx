@@ -571,27 +571,7 @@ export default function ThemeDetailClient({
                             </div>
                         </div>
 
-                            {/* Testimonial Bar */}
-                            <div className={styles.testimonialBar}>
-                                <div className={styles.testimonialAvatars}>
-                                    {(['#C5A065','#8B5E3C','#D4AF7A','#A0714F']).map((color, i) => (
-                                        <div key={i} className={styles.avatar} style={{ background: color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
-                                                <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
-                                            </svg>
-                                        </div>
-                                    ))}
-                                </div>
-                                <div className={styles.testimonialText}>
-                                    Loved by 1000+ couples across India
-                                </div>
-                                <div className={styles.starsContainer}>
-                                    {[1, 2, 3, 4, 5].map((i) => (
-                                        <Star key={i} size={14} fill={i <= 5 ? "#F59E0B" : "none"} color="#F59E0B" />
-                                    ))}
-                                    <span className={styles.ratingText}>4.9/5</span>
-                                </div>
-                            </div>
+
                         </div>
 
                     {/* Right Column: Content */}

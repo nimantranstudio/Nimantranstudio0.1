@@ -24,7 +24,7 @@
     background: #FFFFFF;
     border-radius: 32px;
     width: 100%;
-    min-height: clamp(600px, 85vh, 720px);
+    height: clamp(600px, 85vh, 720px);
     display: flex;
     flex-direction: column;
     box-shadow:
@@ -76,12 +76,12 @@
 }
 
 .joyfullyText {
-    font-size: 0.72rem;
-    letter-spacing: 0.28em;
-    line-height: 1.9;
-    color: #94a3b8;
-    font-weight: 600;
-    margin-bottom: 1.75rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    line-height: 1.5;
+    color: #86868b;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
     text-transform: uppercase;
 }
 
@@ -89,26 +89,28 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 1rem;
+    gap: 0.75rem;
     flex-wrap: wrap;
     margin-bottom: 0;
 }
 
 .groomName,
 .brideName {
-    font-size: 3.25rem;
-    color: #1e293b;
+    font-size: 3rem;
+    color: #1d1d1f;
     font-family: var(--font-playfair), serif;
     font-weight: 600;
     line-height: 1.1;
+    letter-spacing: -0.02em;
 }
 
 .ampersand {
-    font-size: 2.25rem;
-    color: #D4AF37;
-    font-family: var(--font-serif);
+    font-size: 2rem;
+    color: #c5a059;
+    font-family: var(--font-playfair), serif;
     font-style: italic;
     margin: 0 0.25rem;
+    font-weight: 400;
 }
 
 /* ─── ORNAMENTAL DIVIDER ─────────────────────────────────────────────────── */
@@ -116,11 +118,11 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.75rem;
-    margin: 1.5rem 0;
+    gap: 1rem;
+    margin: 2rem 0;
     color: #D4AF37;
-    font-size: 0.75rem;
-    opacity: 0.7;
+    font-size: 0.6rem;
+    opacity: 0.6;
 }
 
 .ornamentLine {
@@ -140,18 +142,15 @@
 
 /* ─── WELCOME / INVITATION MESSAGE ──────────────────────────────────────── */
 .welcomeBox {
-    margin-bottom: 1.75rem;
-    padding: 0.875rem 1.125rem;
-    background: #FEFCF5;
-    border-left: 3px solid rgba(212, 175, 55, 0.55);
-    border-radius: 0 8px 8px 0;
-    text-align: left;
+    margin-top: 1rem;
+    margin-bottom: 2.5rem;
+    text-align: center;
 }
 
 .welcomeText {
-    font-size: 1rem;
-    line-height: 1.8;
-    color: #475569;
+    font-size: 1.125rem;
+    line-height: 1.6;
+    color: #4b5563;
     font-family: var(--font-playfair), serif;
     font-style: italic;
     margin: 0;
@@ -172,19 +171,19 @@
 }
 
 .eventRoleTitle {
-    font-size: 0.95rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    color: #334155;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    color: #1d1d1f;
     margin-bottom: 0.5rem;
     text-transform: uppercase;
 }
 
 .eventRowSimple {
-    font-size: 1rem;
-    color: #64748b;
+    font-size: 0.95rem;
+    color: #86868b;
     font-weight: 400;
-    line-height: 1.6;
+    line-height: 1.5;
 }
 
 /* ─── VENUE ROW ──────────────────────────────────────────────────────────── */
@@ -272,22 +271,25 @@
 
 /* ─── FORM VIEW ──────────────────────────────────────────────────────────── */
 .formHeader {
-    margin-bottom: 1.75rem;
+    margin-bottom: 2rem;
+    text-align: center;
 }
 
 .formTitle {
     font-size: 2.25rem;
     font-family: var(--font-playfair), serif;
-    color: #1e293b;
+    color: #1d1d1f;
     font-weight: 600;
-    margin-bottom: 0.625rem;
+    margin-bottom: 0.5rem;
     line-height: 1.2;
+    letter-spacing: -0.02em;
 }
 
 .formSubtitle {
-    color: #94a3b8;
-    font-size: 0.875rem;
+    color: #86868b;
+    font-size: 0.95rem;
     line-height: 1.5;
+    font-weight: 400;
 }
 
 .form {
