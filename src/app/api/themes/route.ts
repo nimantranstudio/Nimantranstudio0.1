@@ -31,7 +31,10 @@ const STATIC_THEMES = [
 export async function GET() {
     try {
         const themes = await prisma.theme.findMany({
-            orderBy: { createdAt: 'desc' },
+            orderBy: [
+                { sequence: 'asc' },
+                { createdAt: 'desc' }
+            ],
             include: { 
                 bundles: {
                     include: { 

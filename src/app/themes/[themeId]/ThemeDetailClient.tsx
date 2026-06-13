@@ -447,7 +447,7 @@ export default function ThemeDetailClient({
                         <div className={styles.galleryContainer}>
                         {/* Thumbnails on the left */}
                         <div className={styles.thumbnailList}>
-                            {assets.slice(0, 3).map((asset, index) => (
+                            {assets.slice(0, 4).map((asset, index) => (
                                 <div
                                     key={index}
                                     className={clsx(
@@ -476,8 +476,8 @@ export default function ThemeDetailClient({
                                                 style={{ objectFit: 'cover' }}
                                             />
                                         )}
-                                        {/* Show Video Badge for the second item (as in ref image) or if name contains video */}
-                                        {(index === 1 || asset.name.toLowerCase().includes('video')) && (
+                                        {/* Show Video Badge if name contains video */}
+                                        {(asset.name.toLowerCase().includes('video')) && (
                                             <div className={styles.videoBadge}>
                                                 <div className={styles.playIconBg}>
                                                     <Play size={14} fill="currentColor" />
@@ -487,9 +487,9 @@ export default function ThemeDetailClient({
                                     </div>
                                 </div>
                             ))}
-                            {assets.length > 3 && (
+                            {assets.length > 4 && (
                                 <div className={styles.moreDesignsBtn} onClick={() => setPreviewIndex(0)}>
-                                    <span className={styles.moreDesignsCount}>+{assets.length - 2}</span>
+                                    <span className={styles.moreDesignsCount}>+{assets.length - 4}</span>
                                     <span>More<br />Designs</span>
                                 </div>
                             )}
@@ -518,7 +518,7 @@ export default function ThemeDetailClient({
                                             alt={assets[selectedAssetIndex].name}
                                             fill
                                             style={{
-                                                objectFit: 'contain',
+                                                objectFit: 'cover',
                                                 zIndex: 2
                                             }}
                                             priority
@@ -824,7 +824,7 @@ export default function ThemeDetailClient({
                         <div className={styles.accordions}>
                             <div className={styles.accordion}>
                                 <button className={styles.accordionHeader} onClick={() => toggleAccordion('what-you-get')}>
-                                    What You Get <ChevronDown size={18} />
+                                    What You Get <ChevronDown size={18} style={{ transform: openAccordion === 'what-you-get' ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
                                 </button>
                                 {openAccordion === 'what-you-get' && (
                                     <div className={styles.accordionContent}>
@@ -850,7 +850,7 @@ export default function ThemeDetailClient({
                             </div>
                             <div className={styles.accordion}>
                                 <button className={styles.accordionHeader} onClick={() => toggleAccordion('highlights')}>
-                                    Product Highlights <ChevronDown size={18} />
+                                    Product Highlights <ChevronDown size={18} style={{ transform: openAccordion === 'highlights' ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
                                 </button>
                                 {openAccordion === 'highlights' && (
                                     <div className={styles.accordionContent}>
@@ -871,7 +871,7 @@ export default function ThemeDetailClient({
                             </div>
                             <div className={styles.accordion}>
                                 <button className={styles.accordionHeader} onClick={() => toggleAccordion('faq')}>
-                                    FAQ <ChevronDown size={18} />
+                                    FAQ <ChevronDown size={18} style={{ transform: openAccordion === 'faq' ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
                                 </button>
                                 {openAccordion === 'faq' && (
                                     <div className={styles.accordionContent}>
@@ -916,25 +916,27 @@ export default function ThemeDetailClient({
                 </div>
 
                 {/* Recommendations Section */}
-                <section className={styles.recommendations}>
-                    <h2 className={styles.sectionTitle}>Themes recommendation for you</h2>
-                    <div className={styles.recommendationGrid}>
-                        {recommendations.map((recTheme) => (
-                            <ThemeCard
-                                key={recTheme.id}
-                                theme={recTheme}
-                                onSelect={(id) => router.push(`/themes/${id}`)}
-                            />
-                        ))}
-                    </div>
-                </section>
+                {recommendations.length > 0 && (
+                    <section className={styles.recommendations}>
+                        <h2 className={styles.sectionTitle}>Themes recommendation for you</h2>
+                        <div className={styles.recommendationGrid}>
+                            {recommendations.map((recTheme) => (
+                                <ThemeCard
+                                    key={recTheme.id}
+                                    theme={recTheme}
+                                    onSelect={(id) => router.push(`/themes/${id}`)}
+                                />
+                            ))}
+                        </div>
+                    </section>
+                )}
             </div>
 
             {/* Preview Overlay */}
             {previewIndex !== null && (
                 <div className={styles.overlayBackdrop} onClick={() => setPreviewIndex(null)}>
                     <div className={styles.overlayContent} onClick={(e) => e.stopPropagation()}>
-                        <button className={styles.closeBtn} onClick={() => setPreviewIndex(null)} style={{ top: '-3rem', zIndex: 10 }}>
+                        <button className={styles.closeBtn} onClick={() => setPreviewIndex(null)} style={{ position: 'fixed', top: '2rem', right: '2rem', zIndex: 100 }}>
                             <X size={28} />
                         </button>
 
@@ -954,7 +956,7 @@ export default function ThemeDetailClient({
                                     src={assets[previewIndex].image}
                                     alt={assets[previewIndex].name}
                                     fill
-                                    style={{ objectFit: 'contain', zIndex: 2 }}
+                                    style={{ objectFit: 'cover', zIndex: 2 }}
                                     priority
                                     onError={(e) => {
                                         const target = e.target as HTMLImageElement;
@@ -965,10 +967,30 @@ export default function ThemeDetailClient({
                         </div>
 
                         <div className={styles.previewInfo}>
-                            <h3 className={styles.previewTitle}>{assets[previewIndex].name}</h3>
                             <p className={styles.previewCount}>
                                 {previewIndex + 1} / {assets.length}
                             </p>
+                        </div>
+
+                        <div className={styles.lightboxThumbnails}>
+                            {assets.map((asset, index) => (
+                                <div 
+                                    key={index}
+                                    className={clsx(styles.lightboxThumbItem, previewIndex === index && styles.lightboxThumbActive)}
+                                    onClick={() => setPreviewIndex(index)}
+                                >
+                                    {asset.image.toLowerCase().endsWith('.html') ? (
+                                        <div style={{ width: '100%', height: '100%', backgroundColor: '#FDFBF7' }} />
+                                    ) : (
+                                        <Image
+                                            src={asset.image}
+                                            alt={asset.name}
+                                            fill
+                                            style={{ objectFit: 'cover' }}
+                                        />
+                                    )}
+                                </div>
+                            ))}
                         </div>
 
                         <div className={styles.navContainer}>

@@ -29,6 +29,7 @@ export function ThemeModal({ isOpen, onClose, onSuccess, initialData }: ThemeMod
     const [isPopular, setIsPopular] = useState(false);
     const [files, setFiles] = useState<File[]>([]);
     const [previews, setPreviews] = useState<string[]>([]);
+    const [thumbnailIndex, setThumbnailIndex] = useState(0);
     const [isLoading, setIsLoading] = useState(false);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -43,6 +44,8 @@ export function ThemeModal({ isOpen, onClose, onSuccess, initialData }: ThemeMod
             setFiles([]);
             const existingImages = initialData.previewImages ? JSON.parse(initialData.previewImages) : [initialData.thumbnailUrl];
             setPreviews(existingImages);
+            const thumbIdx = existingImages.indexOf(initialData.thumbnailUrl);
+            setThumbnailIndex(thumbIdx >= 0 ? thumbIdx : 0);
         } else {
             setName('');
             setDescription('');
@@ -51,6 +54,7 @@ export function ThemeModal({ isOpen, onClose, onSuccess, initialData }: ThemeMod
             setIsPopular(false);
             setFiles([]);
             setPreviews([]);
+            setThumbnailIndex(0);
         }
     }, [initialData, isOpen]);
 
@@ -67,11 +71,12 @@ export function ThemeModal({ isOpen, onClose, onSuccess, initialData }: ThemeMod
     };
 
     const removeFile = (index: number) => {
-        // If it's a file from the server (string preview), we'd need logic to mark it for deletion in a real app
-        // For now, if we remove a new file, filter it out.
-        // If it's an old file, just remove from view (though the API current appends or keeps)
         setPreviews(prev => prev.filter((_, i) => i !== index));
-        // Need to know if this was a new file or existing
+        if (thumbnailIndex === index) {
+            setThumbnailIndex(0);
+        } else if (thumbnailIndex > index) {
+            setThumbnailIndex(thumbnailIndex - 1);
+        }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -85,6 +90,7 @@ export function ThemeModal({ isOpen, onClose, onSuccess, initialData }: ThemeMod
             formData.append('isActive', String(isActive));
             formData.append('isBestSeller', String(isBestSeller));
             formData.append('isPopular', String(isPopular));
+            formData.append('thumbnailIndex', String(thumbnailIndex));
 
             files.forEach(file => {
                 formData.append('images', file);
@@ -214,7 +220,7 @@ export function ThemeModal({ isOpen, onClose, onSuccess, initialData }: ThemeMod
                                     <Upload size={32} />
                                 </div>
                                 <div className={styles.uploadText}>
-                                    <span style={{ fontWeight: 600, color: '#6366f1' }}>Click to upload</span> or drag and drop
+                                    <span style={{ fontWeight: 600, color: '#E1A639' }}>Click to upload</span> or drag and drop
                                 </div>
                                 <div className={styles.uploadHint}>SVG, PNG, JPG or GIF (max. 800x400px)</div>
                             </div>
@@ -222,12 +228,22 @@ export function ThemeModal({ isOpen, onClose, onSuccess, initialData }: ThemeMod
                             {previews.length > 0 && (
                                 <div className={styles.previewGrid}>
                                     {previews.map((src, index) => (
-                                        <div key={index} className={styles.previewItem}>
+                                        <div 
+                                            key={index} 
+                                            className={clsx(styles.previewItem, thumbnailIndex === index && styles.previewItemThumbnail)}
+                                            onClick={() => setThumbnailIndex(index)}
+                                            style={{ cursor: 'pointer', border: thumbnailIndex === index ? '2px solid #E1A639' : '1px solid #e5e7eb' }}
+                                        >
                                             <img src={src} alt="Preview" className={styles.previewImg} />
+                                            {thumbnailIndex === index && (
+                                                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, background: 'rgba(225, 166, 57, 0.9)', color: '#1A1A1A', fontSize: '10px', fontWeight: 'bold', padding: '2px 0', textAlign: 'center' }}>
+                                                    THUMBNAIL
+                                                </div>
+                                            )}
                                             <button
                                                 type="button"
                                                 className={styles.removeBtn}
-                                                onClick={() => removeFile(index)}
+                                                onClick={(e) => { e.stopPropagation(); removeFile(index); }}
                                             >
                                                 <X size={12} />
                                             </button>

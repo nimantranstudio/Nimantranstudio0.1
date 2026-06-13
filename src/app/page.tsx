@@ -21,7 +21,10 @@ async function getThemes() {
   try {
     const themes = await prisma.theme.findMany({
       where: { isActive: true },
-      orderBy: { createdAt: 'desc' },
+      orderBy: [
+        { sequence: 'asc' },
+        { createdAt: 'desc' }
+      ],
       take: 4,
       include: { 
         bundles: {

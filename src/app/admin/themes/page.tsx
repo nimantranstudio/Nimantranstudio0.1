@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, Palette, Loader2, Edit, Trash2 } from 'lucide-react';
+import { Plus, Palette, Loader2, Edit, Trash2, GripHorizontal } from 'lucide-react';
 import { ThemeModal } from '@/components/admin/ThemeModal';
+import { Reorder } from 'framer-motion';
 import Image from 'next/image';
 import { auth } from '@/lib/firebase';
 
@@ -84,17 +85,40 @@ export default function ThemesPage() {
         setIsModalOpen(true);
     };
 
+    const handleReorder = async (newOrder: Theme[]) => {
+        setThemes(newOrder); // Update local state immediately for smooth UI
+        const orderedIds = newOrder.map(t => t.id);
+
+        try {
+            await auth.authStateReady();
+            const token = auth.currentUser ? await auth.currentUser.getIdToken() : '';
+            await fetch('/api/admin/themes/reorder', {
+                method: 'PUT',
+                headers: { 
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json' 
+                },
+                body: JSON.stringify({ orderedIds })
+            });
+            // Optionally, we could show a "Saved" toast here
+        } catch (error) {
+            console.error("Failed to save new theme order", error);
+            // Revert on error if necessary
+        }
+    };
+
     return (
         <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
                 <div>
-                    <h1 style={{ fontSize: '1.5rem', fontWeight: '700', color: '#111827' }}>Themes</h1>
+                    <h1 style={{ fontSize: '1.8rem', fontFamily: 'var(--font-serif)', color: '#1A1A1A' }}>Themes</h1>
                     <p style={{ color: '#6b7280' }}>Manage your wedding invitation visual templates.</p>
                 </div>
                 <button
-                    className="btn btn-primary"
-                    style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: '#6366f1', borderColor: '#6366f1' }}
+                    style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: '#E1A639', color: '#111827', padding: '0.6rem 1.2rem', borderRadius: '8px', fontWeight: '600', border: 'none', cursor: 'pointer', transition: 'background 0.2s' }}
                     onClick={handleAddNew}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#d49b36'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#E1A639'}
                 >
                     <Plus size={18} /> Add New Theme
                 </button>
@@ -102,7 +126,7 @@ export default function ThemesPage() {
 
             {isLoading ? (
                 <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem' }}>
-                    <Loader2 className="animate-spin" size={32} color="#6366f1" />
+                    <Loader2 className="animate-spin" size={32} color="#E1A639" />
                 </div>
             ) : themes.length === 0 ? (
                 <div style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '4rem 1rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '400px' }}>
@@ -112,63 +136,91 @@ export default function ThemesPage() {
                     <h3 style={{ fontSize: '1.25rem', fontWeight: '600', color: '#1f2937', marginBottom: '0.5rem' }}>No themes found</h3>
                     <p style={{ color: '#6b7280', marginBottom: '1.5rem', maxWidth: '300px' }}>Start by creating your first design theme for Nimantran Studio.</p>
                     <button
-                        style={{ background: 'none', color: '#6366f1', border: 'none', padding: 0, fontWeight: '600', fontSize: '1rem', cursor: 'pointer' }}
+                        style={{ background: 'none', color: '#E1A639', border: 'none', padding: 0, fontWeight: '600', fontSize: '1rem', cursor: 'pointer' }}
                         onClick={handleAddNew}
                     >
                         Create First Theme
                     </button>
                 </div>
             ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
+                <Reorder.Group 
+                    axis="y" 
+                    values={themes} 
+                    onReorder={handleReorder}
+                    style={{ listStyleType: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '1.5rem' }}
+                >
                     {themes.map((theme) => (
-                        <div key={theme.id} style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', position: 'relative' }}>
-                            <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', background: '#f3f4f6' }}>
-                                <img
-                                    src={theme.thumbnailUrl}
-                                    alt={theme.name}
-                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                />
-                                <div style={{ position: 'absolute', top: '10px', right: '10px', display: 'flex', gap: '8px' }}>
-                                    <button
-                                        onClick={() => handleEdit(theme)}
-                                        style={{ background: 'white', border: '1px solid #e5e7eb', padding: '6px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', color: '#4f46e5' }}
-                                        title="Edit Theme"
-                                    >
-                                        <Edit size={16} />
-                                    </button>
-                                    <button
-                                        onClick={() => handleDelete(theme.id)}
-                                        style={{ background: 'white', border: '1px solid #fee2e2', padding: '6px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', color: '#dc2626' }}
-                                        title="Delete Theme"
-                                    >
-                                        <Trash2 size={16} />
-                                    </button>
+                        <Reorder.Item 
+                            key={theme.id} 
+                            value={theme}
+                            style={{ 
+                                background: 'white', 
+                                border: '1px solid #E5E0D8', 
+                                borderRadius: '12px', 
+                                overflow: 'hidden', 
+                                boxShadow: '0 2px 4px rgba(0,0,0,0.02)', 
+                                position: 'relative', 
+                                cursor: 'grab',
+                                display: 'flex',
+                                alignItems: 'center'
+                            }}
+                            whileDrag={{ scale: 1.02, boxShadow: '0 8px 16px rgba(0,0,0,0.1)' }}
+                        >
+                            <div style={{ padding: '1rem', color: '#9ca3af', display: 'flex', alignItems: 'center', cursor: 'grab' }}>
+                                <GripHorizontal size={24} />
+                            </div>
+                            <div 
+                                style={{ flex: 1, display: 'flex', padding: '1rem', cursor: 'pointer' }}
+                                onClick={() => handleEdit(theme)}
+                            >
+                                <div style={{ width: '80px', height: '100px', background: '#FDFBF7', borderRadius: '8px', overflow: 'hidden', marginRight: '1.5rem' }}>
+                                    <img
+                                        src={theme.thumbnailUrl}
+                                        alt={theme.name}
+                                        style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' }}
+                                    />
+                                </div>
+                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                                    <h3 style={{ fontSize: '1.2rem', fontFamily: 'var(--font-serif)', color: '#1C1917', marginBottom: '0.25rem' }}>{theme.name}</h3>
+                                    {theme.description && (
+                                        <p style={{ fontSize: '0.85rem', color: '#6b7280', margin: '0 0 0.75rem 0', display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                                            {theme.description}
+                                        </p>
+                                    )}
+                                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                                        <span style={{ fontSize: '0.85rem', color: '#6b7280' }}>ID: {theme.id.substring(0, 8)}</span>
+                                        <span style={{
+                                            fontSize: '0.75rem',
+                                            padding: '2px 8px',
+                                            borderRadius: '10px',
+                                            background: theme.isActive ? '#ecfdf5' : '#fef2f2',
+                                            color: theme.isActive ? '#047857' : '#991b1b',
+                                            fontWeight: '500'
+                                        }}>
+                                            {theme.isActive ? 'Active' : 'Inactive'}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
-                            <div style={{ padding: '1rem' }}>
-                                <h3 style={{ fontSize: '1.1rem', fontWeight: '600', color: '#1f2937', marginBottom: '0.25rem' }}>{theme.name}</h3>
-                                {theme.description && (
-                                    <p style={{ fontSize: '0.75rem', color: '#6b7280', margin: '0 0 0.75rem 0', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', minHeight: '32px' }}>
-                                        {theme.description}
-                                    </p>
-                                )}
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <span style={{ fontSize: '0.85rem', color: '#6b7280' }}>ID: {theme.id.substring(0, 8)}</span>
-                                    <span style={{
-                                        fontSize: '0.75rem',
-                                        padding: '2px 8px',
-                                        borderRadius: '10px',
-                                        background: theme.isActive ? '#ecfdf5' : '#fef2f2',
-                                        color: theme.isActive ? '#047857' : '#991b1b',
-                                        fontWeight: '500'
-                                    }}>
-                                        {theme.isActive ? 'Active' : 'Inactive'}
-                                    </span>
-                                </div>
+                            <div style={{ padding: '1rem', display: 'flex', gap: '8px' }}>
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); handleEdit(theme); }}
+                                    style={{ background: '#f3f4f6', border: 'none', padding: '8px', borderRadius: '8px', cursor: 'pointer', color: '#4b5563' }}
+                                    title="Edit Theme"
+                                >
+                                    <Edit size={18} />
+                                </button>
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); handleDelete(theme.id); }}
+                                    style={{ background: '#fef2f2', border: 'none', padding: '8px', borderRadius: '8px', cursor: 'pointer', color: '#dc2626' }}
+                                    title="Delete Theme"
+                                >
+                                    <Trash2 size={18} />
+                                </button>
                             </div>
-                        </div>
+                        </Reorder.Item>
                     ))}
-                </div>
+                </Reorder.Group>
             )}
 
             <ThemeModal

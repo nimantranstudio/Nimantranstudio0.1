@@ -102,8 +102,8 @@
 }
 
 .input:focus {
-    border-color: #6366f1;
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    border-color: #E1A639;
+    box-shadow: 0 0 0 3px rgba(225, 166, 57, 0.1);
 }
 
 .textarea {
@@ -133,7 +133,7 @@
 }
 
 .toggleInput:checked+.toggleSwitch {
-    background: #6366f1;
+    background: #10B981;
 }
 
 .toggleSwitch::after {
@@ -174,8 +174,8 @@
 }
 
 .fileUploadArea:hover {
-    border-color: #6366f1;
-    background: #f5f3ff;
+    border-color: #E1A639;
+    background: #FDFBF7;
 }
 
 .uploadIcon {
@@ -267,16 +267,17 @@
 }
 
 .btnSubmit {
-    background: #6366f1;
-    color: white;
+    background: #E1A639;
+    color: #111827;
 }
 
 .btnSubmit:hover {
-    background: #4f46e5;
+    background: #d49b36;
 }
 
 .btnSubmit:disabled {
-    background: #a5b4fc;
+    background: #fde6b3;
+    color: #9ca3af;
     cursor: not-allowed;
 }
 

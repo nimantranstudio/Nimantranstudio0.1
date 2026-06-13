@@ -8,6 +8,9 @@
     border: 1px solid #f0f0f0;
     position: relative;
     /* Ensure relative context */
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
 /* Golden Glare Effect */
@@ -77,6 +80,9 @@
 .info {
     padding: 1.25rem 1rem;
     text-align: left;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
 }
 
 .name {
@@ -118,6 +124,10 @@
     color: #888;
     font-weight: 500;
     margin-bottom: 1.25rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 .cta {
@@ -135,6 +145,7 @@
     align-items: center;
     justify-content: center;
     box-shadow: 0 4px 12px rgba(212, 175, 55, 0.2);
+    margin-top: auto;
 }
 
 .cta:hover {

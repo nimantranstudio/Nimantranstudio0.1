@@ -58,7 +58,14 @@ export default async function ThemeDetailPage({ params }: { params: Promise<{ th
             }
         }),
         prisma.package.findMany({ where: { isActive: true } }),
-        prisma.theme.findMany({ where: { isActive: true }, take: 20 })
+        prisma.theme.findMany({ 
+            where: { isActive: true }, 
+            take: 20,
+            orderBy: [
+                { sequence: 'asc' },
+                { createdAt: 'desc' }
+            ]
+        })
     ]);
 
     if (!themeData) {
@@ -91,7 +98,13 @@ export default async function ThemeDetailPage({ params }: { params: Promise<{ th
         }))
     };
 
-    const recommendations = (allThemes || []).filter((t: any) => t.id !== themeId).slice(0, 4);
+    const recommendations = (allThemes || [])
+        .filter((t: any) => t.id !== themeId)
+        .slice(0, 4)
+        .map((t: any) => ({
+            ...t,
+            thumbnail: t.thumbnailUrl || '/placeholder-theme.jpg'
+        }));
 
     return (
         <ThemeDetailClient 

@@ -13,7 +13,10 @@ export async function GET(request: NextRequest) {
         const { getPrisma } = await import('@/lib/prisma');
         const prisma = getPrisma();
         const themes = await prisma.theme.findMany({
-            orderBy: { createdAt: 'desc' }
+            orderBy: [
+                { sequence: 'asc' },
+                { createdAt: 'desc' }
+            ]
         });
         return NextResponse.json({ themes });
     } catch (error: any) {
@@ -36,6 +39,7 @@ export async function POST(request: NextRequest) {
         const isActive = formData.get('isActive') === 'true';
         const isBestSeller = formData.get('isBestSeller') === 'true';
         const isPopular = formData.get('isPopular') === 'true';
+        const thumbnailIndex = parseInt(formData.get('thumbnailIndex') as string) || 0;
         const files = formData.getAll('images') as File[];
 
         console.log('Creating theme:', name);
@@ -74,7 +78,7 @@ export async function POST(request: NextRequest) {
         try {
             const { getPrisma } = await import('@/lib/prisma');
             const prisma = getPrisma();
-            const thumbUrl = savedImagePaths.length > 0 ? savedImagePaths[0] : null;
+            const thumbUrl = savedImagePaths.length > thumbnailIndex ? savedImagePaths[thumbnailIndex] : (savedImagePaths.length > 0 ? savedImagePaths[0] : null);
             const previewImagesJson = JSON.stringify(savedImagePaths);
 
             theme = await prisma.theme.create({

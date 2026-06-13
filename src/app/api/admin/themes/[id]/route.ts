@@ -14,6 +14,7 @@ export async function PUT(
         const isActive = formData.get('isActive') === 'true';
         const isBestSeller = formData.get('isBestSeller') === 'true';
         const isPopular = formData.get('isPopular') === 'true';
+        const thumbnailIndex = parseInt(formData.get('thumbnailIndex') as string) || 0;
         const files = formData.getAll('images') as File[];
 
         if (!id) {
@@ -73,7 +74,7 @@ export async function PUT(
                 isActive,
                 isBestSeller,
                 isPopular,
-                thumbnailUrl: savedImagePaths.length > 0 ? savedImagePaths[0] : existingTheme.thumbnailUrl,
+                thumbnailUrl: savedImagePaths.length > thumbnailIndex ? savedImagePaths[thumbnailIndex] : (savedImagePaths.length > 0 ? savedImagePaths[0] : existingTheme.thumbnailUrl),
                 previewImages: JSON.stringify(savedImagePaths),
             }
         });

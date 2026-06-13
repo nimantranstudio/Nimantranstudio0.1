@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { X, Package, CheckCircle, Info, Upload, Image as ImageIcon, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import styles from './BundleModal.module.css';
 import { clsx } from 'clsx';
+import { auth } from '@/lib/firebase';
 
 interface Theme {
     id: string;
@@ -111,10 +112,14 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
             setIsLoading(true);
             setError(null);
             try {
+                await auth.authStateReady();
+                const token = auth.currentUser ? await auth.currentUser.getIdToken() : '';
+                const headers = { 'Authorization': `Bearer ${token}` };
+
                 const [themesRes, packagesRes, eventsRes] = await Promise.all([
-                    fetch('/api/admin/themes'),
-                    fetch('/api/admin/packages'),
-                    fetch('/api/admin/events')
+                    fetch('/api/admin/themes', { headers }),
+                    fetch('/api/admin/packages', { headers }),
+                    fetch('/api/admin/events', { headers })
                 ]);
 
                 if (themesRes.ok) {
