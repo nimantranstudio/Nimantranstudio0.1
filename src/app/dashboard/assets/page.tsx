@@ -171,7 +171,7 @@ export default function DashboardPage() {
                     </button>
 
                     <div
-                        style={{ width: '100%', maxWidth: '500px', maxHeight: '90vh', position: 'relative' }}
+                        style={{ height: 'min(80vh, 711px)', aspectRatio: '9/16', maxWidth: '90vw', position: 'relative', margin: '0 auto' }}
                         onClick={(e) => e.stopPropagation()}
                     >
                         <InvitationCard

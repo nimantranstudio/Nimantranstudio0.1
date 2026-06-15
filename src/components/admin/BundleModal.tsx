@@ -184,6 +184,7 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
             if (initialData.bundleInvoices && Array.isArray(initialData.bundleInvoices)) {
                 const invoiceMap: { [key: string]: InvoiceData } = {};
                 const displayMap: { [key: string]: boolean } = {};
+                const tPrices: { [key: string]: string } = {};
                 initialData.bundleInvoices.forEach((inv: any) => {
                     invoiceMap[inv.packageId] = {
                         invitationDesignSuite: String(inv.invitationDesignSuite || 0),
@@ -196,9 +197,15 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
                         isDisplay: inv.isDisplay ?? true
                     } as any;
                     displayMap[inv.packageId] = inv.isDisplay ?? true;
+                    if (inv.finalSellingPrice) {
+                        tPrices[inv.packageId] = String(inv.finalSellingPrice);
+                    } else if (inv.discountedPrice) {
+                        tPrices[inv.packageId] = String(inv.discountedPrice);
+                    }
                 });
                 setBundleInvoices(invoiceMap);
                 setPackageDisplayConfig(displayMap);
+                setTierPrices(prev => ({ ...prev, ...tPrices }));
             } else {
                 setBundleInvoices({});
                 setPackageDisplayConfig({});
@@ -344,6 +351,21 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
         setIsLoading(true);
 
         try {
+            // Auto-add pending file if user forgot to click 'Add'
+            let finalBundleItemsList = [...bundleItemsList];
+            if (activeTemplateFile) {
+                const selectedEvent = allEvents.find(ev => ev.id === activeEventType);
+                const eventName = selectedEvent ? selectedEvent.eventName : 'Unknown';
+                finalBundleItemsList.push({
+                    id: Math.random().toString(),
+                    eventType: eventName,
+                    eventId: activeEventType,
+                    templateName: eventName,
+                    file: activeTemplateFile,
+                    previewUrl: URL.createObjectURL(activeTemplateFile)
+                });
+            }
+
             const formData = new FormData();
             formData.append('BundleName', name); // Renamed
             formData.append('price', price || "0");
@@ -359,29 +381,31 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
             const currentUserName = typeof window !== 'undefined' ? (localStorage.getItem('adminUserName') || 'Admin User') : 'Admin User';
             formData.append('userName', currentUserName);
 
-            Object.entries(itemFiles).forEach(([name, file]) => {
-                formData.append(`itemFile_${name}`, file);
+            Object.entries(itemFiles).forEach(([itemName, file]) => {
+                formData.append(`itemFile_${itemName}`, file);
             });
 
             formData.append('existingItemImages', JSON.stringify(itemPreviews));
 
             // Append specific structured bundle items
-            const structuredItems = bundleItemsList.map((item: any) => ({
+            const structuredItems = finalBundleItemsList.map((item: any) => ({
                 id: item.id,
                 eventId: item.eventId, // New
+                eventType: item.eventType, // Added so filename saves correctly
                 templateName: item.templateName,
                 existingUrl: !item.file ? item.previewUrl : null
             }));
             formData.append('bundleItemsMeta', JSON.stringify(structuredItems));
 
-            bundleItemsList.forEach(item => {
+            finalBundleItemsList.forEach(item => {
                 if (item.file) {
                     formData.append(`newBundleItem_${item.id}`, item.file);
                 }
             });
 
-            const url = initialData ? `/api/admin/bundles/${initialData.id}` : '/api/admin/bundles';
-            const method = initialData ? 'PUT' : 'POST';
+            const isNew = !initialData || (initialData.id && String(initialData.id).startsWith('new-'));
+            const url = isNew ? '/api/admin/bundles' : `/api/admin/bundles/${initialData.id}`;
+            const method = isNew ? 'POST' : 'PUT';
 
             const response = await fetch(url, {
                 method,
@@ -412,7 +436,7 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
 
                 <form onSubmit={handleSubmit} className={styles.form}>
                     <div className={styles.body}>
-                        <div className={styles.row}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                             <div className={styles.formGroup}>
                                 <label className={styles.label}>Bundle Name</label>
                                 <input
@@ -424,7 +448,7 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
                                     required
                                 />
                             </div>
-                            <div className={styles.formGroup}>
+                            <div className={styles.formGroup} style={{ display: 'none' }}>
                                 <label className={styles.label}>Base Theme</label>
                                 <select
                                     className={styles.select}
@@ -477,7 +501,7 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
                                                         </div>
                                                         <button 
                                                             type="button" 
-                                                            style={{ background: 'transparent', border: 'none', cursor: isActive ? 'pointer' : 'not-allowed', color: isActive ? '#6366f1' : '#cbd5e1', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.5rem' }}
+                                                            style={{ background: 'transparent', border: 'none', cursor: isActive ? 'pointer' : 'not-allowed', color: isActive ? '#E1A639' : '#cbd5e1', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.5rem' }}
                                                             onClick={() => isActive && toggleInvoiceExpand(p.id)}
                                                             disabled={!isActive}
                                                             title="Toggle Invoice Details"
@@ -588,7 +612,7 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
                         <div className={styles.formGroup} style={{ borderTop: '1px solid #eee', paddingTop: '1.5rem', marginTop: '1rem' }}>
                             <label className={styles.label}>Bundle Items Configuration</label>
 
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr auto auto', gap: '0.75rem', alignItems: 'end', marginBottom: '1.5rem', background: '#f9fafb', padding: '1rem', borderRadius: '8px' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', alignItems: 'end', marginBottom: '1.5rem', background: '#f9fafb', padding: '1rem', borderRadius: '8px' }}>
                                 <div>
                                     <label style={{ fontSize: '0.75rem', fontWeight: 600, display: 'block', marginBottom: '0.25rem' }}>Event Type</label>
                                     <select
@@ -607,37 +631,45 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
                                         ref={templateFileRef}
                                         type="file"
                                         style={{ display: 'none' }}
-                                        onChange={(e) => setActiveTemplateFile(e.target.files?.[0] || null)}
+                                        onChange={(e) => {
+                                            const file = e.target.files?.[0];
+                                            if (file) {
+                                                const previewUrl = URL.createObjectURL(file);
+                                                const selectedEvent = allEvents.find(ev => ev.id === activeEventType);
+                                                const eventName = selectedEvent ? selectedEvent.eventName : 'Unknown';
+
+                                                setBundleItemsList(prev => [...prev, {
+                                                    id: Math.random().toString(),
+                                                    eventType: eventName,
+                                                    eventId: activeEventType,
+                                                    templateName: eventName,
+                                                    file: file,
+                                                    previewUrl
+                                                }]);
+                                                if (templateFileRef.current) templateFileRef.current.value = '';
+                                                setActiveTemplateFile(null); // Reset active file
+                                            }
+                                        }}
                                     />
                                     <button
                                         type="button"
+                                        className={styles.btnBlack}
                                         onClick={() => templateFileRef.current?.click()}
-                                        title={activeTemplateFile ? activeTemplateFile.name : 'Upload template file'}
+                                        title={'Upload template file'}
                                         style={{
                                             height: '42px',
-                                            width: '42px',
+                                            width: '100%',
                                             display: 'flex',
                                             alignItems: 'center',
                                             justifyContent: 'center',
-                                            border: activeTemplateFile ? '2px solid #6366f1' : '1px solid #d1d5db',
-                                            borderRadius: '8px',
-                                            background: activeTemplateFile ? '#eef2ff' : '#fff',
-                                            cursor: 'pointer',
-                                            color: activeTemplateFile ? '#6366f1' : '#6b7280',
-                                            transition: 'all 0.2s ease'
+                                            gap: '8px',
+                                            fontSize: '0.875rem',
+                                            fontWeight: 500,
+                                            padding: '0 1.5rem'
                                         }}
                                     >
                                         <Upload size={18} />
-                                    </button>
-                                </div>
-                                <div>
-                                    <button
-                                        type="button"
-                                        className={styles.btnSubmit}
-                                        onClick={handleAddBundleItem}
-                                        style={{ height: '42px', padding: '0 1.5rem' }}
-                                    >
-                                        Add
+                                        Upload Template
                                     </button>
                                 </div>
                             </div>
@@ -647,7 +679,7 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
                                     <thead style={{ background: '#f9fafb', textAlign: 'left' }}>
                                         <tr>
                                             <th style={{ padding: '0.75rem', borderBottom: '1px solid #eee' }}>Event Type</th>
-                                            <th style={{ padding: '0.75rem', borderBottom: '1px solid #eee' }}>Preview</th>
+                                            <th style={{ padding: '0.75rem', borderBottom: '1px solid #eee' }}>Template File</th>
                                             <th style={{ padding: '0.75rem', borderBottom: '1px solid #eee', width: '50px' }}></th>
                                         </tr>
                                     </thead>
@@ -655,12 +687,8 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
                                         {bundleItemsList.map(item => (
                                             <tr key={item.id} style={{ borderBottom: '1px solid #eee' }}>
                                                 <td style={{ padding: '0.75rem' }}>{item.eventType}</td>
-                                                <td style={{ padding: '0.75rem' }}>
-                                                    {item.previewUrl ? (
-                                                        <img src={item.previewUrl} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #e5e7eb' }} />
-                                                    ) : (
-                                                        <span style={{ color: '#999', fontSize: '0.75rem' }}>No file</span>
-                                                    )}
+                                                <td style={{ padding: '0.75rem', color: '#4b5563', fontStyle: 'italic', fontSize: '0.8rem' }}>
+                                                    {item.file ? item.file.name : (item.previewUrl ? item.previewUrl.split('/').pop() : 'Uploaded')}
                                                 </td>
                                                 <td style={{ padding: '0.75rem', textAlign: 'center' }}>
                                                     <button type="button" onClick={() => removeBundleItem(item.id)} style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', display: 'flex' }}>

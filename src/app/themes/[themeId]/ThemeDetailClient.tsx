@@ -74,14 +74,26 @@ export default function ThemeDetailClient({
     // Preview Overlay state
     const [previewIndex, setPreviewIndex] = useState<number | null>(null);
 
+    const activeBundle = theme?.bundles?.[0];
+
+    const getInvoiceForPlan = (planLabel: string) => {
+        const targetPackage = packages.find((p: any) => p.name === planLabel);
+        if (!targetPackage) return null;
+        return activeBundle?.bundleInvoices?.find((inv: any) => inv.packageId === targetPackage.id);
+    };
+
+    const essentialsInvoice = getInvoiceForPlan('WhatsApp Essentials');
+    const postersInvoice = getInvoiceForPlan('WhatsApp + Posters');
+    const completeInvoice = getInvoiceForPlan('Complete Wedding Suite');
+
     // Pricing Plans
     const PLANS = {
         essentials: {
             id: 'essentials',
             label: 'WhatsApp Essentials',
             desc: 'Perfect for digital-only invites',
-            price: '999',
-            originalPrice: '2500',
+            price: essentialsInvoice?.finalSellingPrice?.toString() || '0',
+            originalPrice: essentialsInvoice?.totalWeddingSuiteValue?.toString() || '0',
             features: [
                 "12 Unique Rajputana Wedding Designs",
                 "High-Resolution JPEG/PNG Formats",
@@ -96,8 +108,8 @@ export default function ThemeDetailClient({
             id: 'posters',
             label: 'WhatsApp + Posters',
             desc: 'Digital invites plus print-ready posters',
-            price: '1,999',
-            originalPrice: '4500',
+            price: postersInvoice?.finalSellingPrice?.toString() || '0',
+            originalPrice: postersInvoice?.totalWeddingSuiteValue?.toString() || '0',
             features: [
                 "Everything in WhatsApp Essentials",
                 "A3 & A4 Print-Ready PDF Files",
@@ -111,8 +123,8 @@ export default function ThemeDetailClient({
             id: 'complete',
             label: 'Complete Wedding Suite',
             desc: 'The ultimate bundle for all your needs',
-            price: '3,499',
-            originalPrice: '7500',
+            price: completeInvoice?.finalSellingPrice?.toString() || '0',
+            originalPrice: completeInvoice?.totalWeddingSuiteValue?.toString() || '0',
             features: [
                 "Everything in WhatsApp + Posters",
                 "All 12+ Wedding Event Designs (Sangeet, Haldi, etc.)",
@@ -236,7 +248,7 @@ export default function ThemeDetailClient({
     };
 
     // Find active bundle (default to first one)
-    const activeBundle = theme && theme.bundles && theme.bundles.length > 0 ? theme.bundles[0] : null;
+    // Find active bundle (default to first one) - already defined above as activeBundle
 
     // Helper to find specific invoice price
     const getPackagePrice = (pkgLabel: string, fallback: string) => {
@@ -269,57 +281,13 @@ export default function ThemeDetailClient({
     const selectedPackageName = DYNAMIC_PLANS[selectedPlan] ? DYNAMIC_PLANS[selectedPlan].label : '';
     const currentPackage = packages.find(p => p.name === selectedPackageName);
 
-    // Use theme.bundleItems from the relational table or fallback to previewImages
-    let imageList: { name: string, image: string }[] = [];
-    
-    if (activeBundle && activeBundle.bundleItems && activeBundle.bundleItems.length > 0) {
-        const allowedItems = currentPackage ? JSON.parse(currentPackage.allowedItems || '[]') : [];
-        
-        const filtered = activeBundle.bundleItems
-            .filter((item: any) => !currentPackage || allowedItems.includes(item.eventId))
-            .map((item: any) => ({
-                name: item.event?.eventName || 'Design',
-                image: item.templatePath
-            }));
-            
-        // Custom order priority
-        const PRIORITY: Record<string, number> = {
-            'save the date': 1,
-            'wedding invitation': 2,
-            'haldi invitation': 3,
-            'mehendhi invitation': 4,
-            'mehendi invitation': 4,
-            'sangeet invitation': 5
-        };
-
-        // Sort imageList based on custom priority, fallback to alphabetical or HTML priority
-        imageList = filtered.sort((a, b) => {
-            const nameA = a.name.toLowerCase();
-            const nameB = b.name.toLowerCase();
-            
-            const priorityA = PRIORITY[nameA] || 99;
-            const priorityB = PRIORITY[nameB] || 99;
-
-            if (priorityA !== priorityB) {
-                return priorityA - priorityB;
-            }
-
-            // Fallback for items not in priority list: HTML files first
-            const aIsHtml = a.image?.toLowerCase().endsWith('.html');
-            const bIsHtml = b.image?.toLowerCase().endsWith('.html');
-            if (aIsHtml && !bIsHtml) return -1;
-            if (!aIsHtml && bIsHtml) return 1;
-
-            return a.name.localeCompare(b.name);
-        });
-    }
+    // Use theme.previewImages as requested by the user
+    let imageList: { name: string, image: string }[] = theme?.previewImages && theme.previewImages.length > 0 
+        ? theme.previewImages.map((img: string, i: number) => ({ name: `Preview ${i+1}`, image: img }))
+        : [{ name: "Preview", image: theme?.thumbnail || '/placeholder-theme.jpg' }];
 
     // Create a normalized assets structure for rendering
-    const assets = imageList.length > 0 ? imageList : (
-        theme?.previewImages && theme.previewImages.length > 0 
-            ? theme.previewImages.map((img: string, i: number) => ({ name: `Preview ${i+1}`, image: img }))
-            : [{ name: "Preview", image: theme?.thumbnail || '/placeholder-theme.jpg' }]
-    );
+    const assets = imageList;
 
 
     const toggleAccordion = (id: string) => {
@@ -529,6 +497,13 @@ export default function ThemeDetailClient({
                                         />
                                     )}
                                 </div>
+
+                            {/* Floating Prev Button */}
+                            <div className={styles.galleryPrevBtn} onClick={() => {
+                                setSelectedAssetIndex((prev) => (prev - 1 + Math.min(assets.length, 5)) % Math.min(assets.length, 5));
+                            }}>
+                                <ChevronLeft size={24} />
+                            </div>
 
                             {/* Floating Next Button */}
                             <div className={styles.galleryNextBtn} onClick={() => {

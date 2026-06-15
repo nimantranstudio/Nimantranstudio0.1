@@ -6,8 +6,9 @@ import { useWeddingStore } from '@/store/wedding-store';
 import type { Theme } from '@/lib/constants/themes';
 import { InvitationCard, InvitationCardRef } from '@/components/preview/InvitationCard';
 import styles from '@/components/preview/Preview.module.css';
-import { ChevronLeft, Headphones, Play, Edit, Download, Share2, Check, Lock, Link as LinkIcon, Copy, Sparkles, MessageCircle, Activity, ShieldCheck } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, Headphones, Play, Edit, Download, Share2, Check, Lock, Link as LinkIcon, Copy, Sparkles, MessageCircle, Activity, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
+import modalStyles from '@/app/themes/[themeId]/theme-detail.module.css';
 import { clsx } from 'clsx';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { useState, useEffect, useRef } from 'react';
@@ -58,22 +59,20 @@ function PreviewContent() {
     const activeBundle = theme?.bundles?.[0];
     const activeInvoice = activeBundle?.bundleInvoices?.find((inv: any) => inv.packageId === targetPackage?.id);
 
-    // Pricing values from DB with fallbacks
+    // Pricing values from DB with dynamic fallbacks
     const pricing = {
         packageName: targetPackage?.name || 'WhatsApp Essentials',
-        designSuite: activeInvoice?.invitationDesignSuite ?? 1540,
-        rsvpTracking: activeInvoice?.rsvpManagementTracking ?? 735,
-        guestDashboard: activeInvoice?.guestDashboard ?? 400,
-        totalValue: activeInvoice?.totalWeddingSuiteValue ?? 2675,
-        discount: activeInvoice?.discount ?? 1676,
-        discountedPrice: activeInvoice?.discountedPrice ?? 2675,
-        finalPrice: activeInvoice?.finalSellingPrice ?? 999
+        designSuite: activeInvoice?.invitationDesignSuite || 0,
+        rsvpTracking: activeInvoice?.rsvpManagementTracking || 0,
+        guestDashboard: activeInvoice?.guestDashboard || 0,
+        totalValue: activeInvoice?.totalWeddingSuiteValue || 0,
+        discount: activeInvoice?.discount || 0,
+        discountedPrice: activeInvoice?.discountedPrice || 0,
+        finalPrice: activeInvoice?.finalSellingPrice || 0
     };
     
-    const discountPercent = pricing.totalValue > 0 
-        ? Math.round(((pricing.totalValue - pricing.finalPrice) / pricing.totalValue) * 100) 
-        : 0;
-    const amountSaved = pricing.totalValue - pricing.finalPrice;
+    const discountPercent = pricing.discount;
+    const amountSaved = pricing.discountedPrice;
     const [showLoginModal, setShowLoginModal] = useState(false);
     const [selectedPreviewIndex, setSelectedPreviewIndex] = useState<number | null>(null);
     const [isEditMode, setIsEditMode] = useState(false);
@@ -86,6 +85,15 @@ function PreviewContent() {
     
     // Fluid transition state
     const [showProcessing, setShowProcessing] = useState(searchParams.get('processing') === 'true');
+
+    useEffect(() => {
+        if (searchParams.get('processing') === 'true') {
+            // Clean the URL immediately so refreshing doesn't replay the animation
+            const newUrl = new URL(window.location.href);
+            newUrl.searchParams.delete('processing');
+            window.history.replaceState({}, '', newUrl.pathname + newUrl.search);
+        }
+    }, [searchParams]);
     const [copyStatus, setCopyStatus] = useState(false);
 
     // Generate RSVP Link based on couple names
@@ -223,23 +231,9 @@ function PreviewContent() {
         );
     }
 
-    // Build preview items from bundleItems matched to wedding events
     const buildPreviewItems = () => {
         if (!bundleItems || bundleItems.length === 0) {
-            // Fallback: use old displayImages approach
-            const displayImages = (bundleImages && bundleImages.length > 0) ? bundleImages : (theme.previewImages || []);
-            return displayImages.map((imgUrl, index) => ({
-                id: `design-${index}`,
-                name: ALL_ASSETS[index]?.name || `Design ${index + 1}`,
-                image: imgUrl,
-                event: {
-                    id: `design-${index}`,
-                    name: ALL_ASSETS[index]?.name || `Design ${index + 1}`,
-                    date: formData.primaryDate,
-                    time: formData.primaryTime,
-                    venue: formData.defaultVenueName
-                }
-            }));
+            return [];
         }
 
         const ID_MAPPING: Record<string, string> = {
@@ -353,254 +347,258 @@ function PreviewContent() {
         <div className={styles.previewPage}>
             {/* Fullscreen Preview Modal */}
             {selectedPreviewIndex !== null && theme && (
-                <div
-                    style={{
-                        position: 'fixed', inset: 0, zIndex: 1000,
-                        backgroundColor: 'rgba(0,0,0,0.9)',
-                        display: 'flex', flexDirection: 'column',
-                        alignItems: 'center', justifyContent: 'center',
-                        padding: '2rem'
-                    }}
-                    onClick={() => setSelectedPreviewIndex(null)}
-                >
-                    <button
-                        onClick={() => setSelectedPreviewIndex(null)}
-                        style={{
-                            position: 'absolute', top: '2rem', right: '2rem',
-                            background: 'white', border: 'none', borderRadius: '50%',
-                            width: '40px', height: '40px', cursor: 'pointer',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            color: '#333',
-                            boxShadow: '0 2px 10px rgba(0,0,0,0.2)'
-                        }}
-                    >
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <line x1="18" y1="6" x2="6" y2="18"></line>
-                            <line x1="6" y1="6" x2="18" y2="18"></line>
-                        </svg>
-                    </button>
+                <div className={modalStyles.overlayBackdrop} onClick={() => setSelectedPreviewIndex(null)}>
+                    <div className={modalStyles.overlayContent} onClick={(e) => e.stopPropagation()}>
+                        <button className={modalStyles.closeBtn} onClick={() => setSelectedPreviewIndex(null)} style={{ position: 'fixed', top: '2rem', right: '2rem', zIndex: 100 }}>
+                            <X size={28} />
+                        </button>
+
+                        <div className={modalStyles.previewImageWrapper} style={{ borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', height: 'min(85vh, 850px)', aspectRatio: '9/16' }}>
+                            <InvitationCard
+                                ref={cardRef}
+                                key={`preview-${selectedPreviewIndex}-${resetKey}`}
+                                event={previewItems[selectedPreviewIndex]?.event || {
+                                    id: `design-${selectedPreviewIndex}`,
+                                    name: `Design ${selectedPreviewIndex + 1}`,
+                                    date: formData.primaryDate,
+                                    time: formData.primaryTime,
+                                    venue: formData.defaultVenueName
+                                }}
+                                theme={theme}
+                                groomName={formData.groomName || undefined}
+                                brideName={formData.brideName || undefined}
+                                groomParents={formData.groomParents || undefined}
+                                brideParents={formData.brideParents || undefined}
+                                welcomeMessage={formData.invitationMessage || undefined}
+                                isPlaceholder={true}
+                                isRawPreview={false}
+                                type='image'
+                                customImage={previewItems[selectedPreviewIndex]?.image}
+                                isSecured={true}
+                                showSizingBoxes={isEditMode}
+                            />
 
 
 
-                    <div
-                        style={{ width: '100%', maxWidth: '500px', maxHeight: '90vh', position: 'relative' }}
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <InvitationCard
-                            ref={cardRef}
-                            key={`preview-${selectedPreviewIndex}-${resetKey}`}
-                            event={previewItems[selectedPreviewIndex]?.event || {
-                                id: `design-${selectedPreviewIndex}`,
-                                name: `Design ${selectedPreviewIndex + 1}`,
-                                date: formData.primaryDate,
-                                time: formData.primaryTime,
-                                venue: formData.defaultVenueName
-                            }}
-                            theme={theme}
-                            groomName={formData.groomName || undefined}
-                            brideName={formData.brideName || undefined}
-                            groomParents={formData.groomParents || undefined}
-                            brideParents={formData.brideParents || undefined}
-                            welcomeMessage={formData.invitationMessage || undefined}
-                            isPlaceholder={true}
-                            isRawPreview={false}
-                            type='image'
-                            customImage={previewItems[selectedPreviewIndex]?.image}
-                            isSecured={true}
-                            showSizingBoxes={isEditMode}
-                        />
-
-                        {/* On-Invite Action Buttons */}
-                        {!isEditMode ? (
-                            <div style={{
-                                position: 'absolute', top: '1.5rem', right: '1.5rem',
-                                display: 'flex', gap: '1rem', zIndex: 10
-                            }}>
-                                <button
-                                    onClick={() => {
-                                        if (cardRef.current) {
-                                            cardRef.current.downloadImage();
-                                        }
-                                    }}
-                                    style={{
-                                        background: '#3B82F6', color: 'white', border: 'none', borderRadius: '50%',
-                                        width: '48px', height: '48px', cursor: 'pointer',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        boxShadow: '0 4px 14px rgba(0,0,0,0.3)',
-                                        transition: 'transform 0.2s',
-                                    }}
-                                    onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
-                                    onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                                    title="Download High Res"
-                                >
-                                    <Download size={24} />
-                                </button>
-                                <button
-                                    onClick={() => setIsEditMode(true)}
-                                    style={{
-                                        background: '#10B981', color: 'white', border: 'none', borderRadius: '50%',
-                                        width: '48px', height: '48px', cursor: 'pointer',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        boxShadow: '0 4px 14px rgba(0,0,0,0.3)',
-                                        transition: 'transform 0.2s',
-                                    }}
-                                    onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
-                                    onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                                    title="Live Edit"
-                                >
-                                    <Edit size={24} />
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        const text = encodeURIComponent(`Check out our wedding invitation!\n\n${window.location.href}`);
-                                        window.open(`https://wa.me/?text=${text}`, '_blank');
-                                    }}
-                                    style={{
-                                        background: '#F59E0B', color: 'white', border: 'none', borderRadius: '50%',
-                                        width: '48px', height: '48px', cursor: 'pointer',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        boxShadow: '0 4px 14px rgba(0,0,0,0.3)',
-                                        transition: 'transform 0.2s',
-                                    }}
-                                    onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
-                                    onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                                    title="Share Link"
-                                >
-                                    <Share2 size={24} />
-                                </button>
-                            </div>
-                        ) : (
-                            /* Done Editing Button */
-                            <div style={{
-                                position: 'absolute', top: '1.5rem', right: '1.5rem',
-                                display: 'flex', gap: '1rem', zIndex: 10
-                            }}>
-                                <button
-                                    onClick={() => {
-                                        setResetKey(prev => prev + 1); // Discard layout changes by force remounting
-                                        setIsEditMode(false);
-                                    }}
-                                    style={{
-                                        background: 'white', color: '#dc2626', border: '1px solid #dc2626', borderRadius: '50%',
-                                        width: '48px', height: '48px', cursor: 'pointer',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        boxShadow: '0 4px 14px rgba(0,0,0,0.2)',
-                                        transition: 'background 0.2s, transform 0.2s',
-                                    }}
-                                    onMouseOver={(e) => { e.currentTarget.style.background = '#fef2f2'; e.currentTarget.style.transform = 'scale(1.1)'; }}
-                                    onMouseOut={(e) => { e.currentTarget.style.background = 'white'; e.currentTarget.style.transform = 'scale(1)'; }}
-                                    title="Cancel"
-                                >
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                                    </svg>
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        if (cardRef.current && selectedPreviewIndex !== null) {
-                                            const edits = cardRef.current.saveEdits();
-                                            console.log("Saving invitation edits:", edits);
-                                            
-                                            // Apply global edits
-                                            const newFormData = { ...formData };
-                                            let formDataChanged = false;
-                                            
-                                            const currentItem = previewItems[selectedPreviewIndex];
-                                            const currentEvent = currentItem?.event;
-
-                                            if (edits['groom-name'] !== undefined && edits['groom-name'] !== formData.groomName) {
-                                                newFormData.groomName = edits['groom-name'];
-                                                formDataChanged = true;
+                            {/* On-Invite Action Buttons */}
+                            {!isEditMode ? (
+                                <div style={{
+                                    position: 'absolute', top: '1.5rem', right: '1.5rem',
+                                    display: 'flex', flexWrap: 'wrap', gap: '0.75rem', zIndex: 10, justifyContent: 'flex-end', maxWidth: '80%'
+                                }}>
+                                    <button
+                                        onClick={() => {
+                                            if (cardRef.current) {
+                                                cardRef.current.downloadImage();
                                             }
-                                            if (edits['bride-name'] !== undefined && edits['bride-name'] !== formData.brideName) {
-                                                newFormData.brideName = edits['bride-name'];
-                                                formDataChanged = true;
-                                            }
-                                            if ((edits['groom-parents'] !== undefined || edits['groom-parent-name'] !== undefined)) {
-                                                const gp = edits['groom-parents'] !== undefined ? edits['groom-parents'] : edits['groom-parent-name'];
-                                                if (gp !== undefined && gp !== formData.groomParents) {
-                                                    newFormData.groomParents = gp;
+                                        }}
+                                        style={{
+                                            background: 'white', color: '#6B7280', border: '1px solid #E5E7EB', borderRadius: '50%',
+                                            width: '40px', height: '40px', cursor: 'pointer',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            boxShadow: '0 4px 14px rgba(0,0,0,0.15)',
+                                            transition: 'all 0.2s',
+                                        }}
+                                        onMouseOver={(e) => { e.currentTarget.style.background = '#F3F4F6'; e.currentTarget.style.color = '#1a1a1a'; e.currentTarget.style.transform = 'scale(1.1)'; }}
+                                        onMouseOut={(e) => { e.currentTarget.style.background = 'white'; e.currentTarget.style.color = '#6B7280'; e.currentTarget.style.transform = 'scale(1)'; }}
+                                        title="Download High Res"
+                                    >
+                                        <Download size={20} />
+                                    </button>
+                                    <button
+                                        onClick={() => setIsEditMode(true)}
+                                        style={{
+                                            background: 'white', color: '#6B7280', border: '1px solid #E5E7EB', borderRadius: '50%',
+                                            width: '40px', height: '40px', cursor: 'pointer',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            boxShadow: '0 4px 14px rgba(0,0,0,0.15)',
+                                            transition: 'all 0.2s',
+                                        }}
+                                        onMouseOver={(e) => { e.currentTarget.style.background = '#F3F4F6'; e.currentTarget.style.color = '#1a1a1a'; e.currentTarget.style.transform = 'scale(1.1)'; }}
+                                        onMouseOut={(e) => { e.currentTarget.style.background = 'white'; e.currentTarget.style.color = '#6B7280'; e.currentTarget.style.transform = 'scale(1)'; }}
+                                        title="Live Edit"
+                                    >
+                                        <Edit size={20} />
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            const text = encodeURIComponent(`Check out our wedding invitation!\n\n${window.location.href}`);
+                                            window.open(`https://wa.me/?text=${text}`, '_blank');
+                                        }}
+                                        style={{
+                                            background: 'white', color: '#6B7280', border: '1px solid #E5E7EB', borderRadius: '50%',
+                                            width: '40px', height: '40px', cursor: 'pointer',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            boxShadow: '0 4px 14px rgba(0,0,0,0.15)',
+                                            transition: 'all 0.2s',
+                                        }}
+                                        onMouseOver={(e) => { e.currentTarget.style.background = '#F3F4F6'; e.currentTarget.style.color = '#1a1a1a'; e.currentTarget.style.transform = 'scale(1.1)'; }}
+                                        onMouseOut={(e) => { e.currentTarget.style.background = 'white'; e.currentTarget.style.color = '#6B7280'; e.currentTarget.style.transform = 'scale(1)'; }}
+                                        title="Share Link"
+                                    >
+                                        <Share2 size={20} />
+                                    </button>
+                                </div>
+                            ) : (
+                                /* Done Editing Button */
+                                <div style={{
+                                    position: 'absolute', top: '1.5rem', right: '1.5rem',
+                                    display: 'flex', gap: '1rem', zIndex: 10
+                                }}>
+                                    <button
+                                        onClick={() => {
+                                            setResetKey(prev => prev + 1); // Discard layout changes by force remounting
+                                            setIsEditMode(false);
+                                        }}
+                                        style={{
+                                            background: 'white', color: '#dc2626', border: '1px solid #dc2626', borderRadius: '50%',
+                                            width: '48px', height: '48px', cursor: 'pointer',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            boxShadow: '0 4px 14px rgba(0,0,0,0.2)',
+                                            transition: 'background 0.2s, transform 0.2s',
+                                        }}
+                                        onMouseOver={(e) => { e.currentTarget.style.background = '#fef2f2'; e.currentTarget.style.transform = 'scale(1.1)'; }}
+                                        onMouseOut={(e) => { e.currentTarget.style.background = 'white'; e.currentTarget.style.transform = 'scale(1)'; }}
+                                        title="Cancel"
+                                    >
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                                        </svg>
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            if (cardRef.current && selectedPreviewIndex !== null) {
+                                                const edits = cardRef.current.saveEdits();
+                                                console.log("Saving invitation edits:", edits);
+                                                
+                                                // Apply global edits
+                                                const newFormData = { ...formData };
+                                                let formDataChanged = false;
+                                                
+                                                const currentItem = previewItems[selectedPreviewIndex];
+                                                const currentEvent = currentItem?.event;
+
+                                                if (edits['groom-name'] !== undefined && edits['groom-name'] !== formData.groomName) {
+                                                    newFormData.groomName = edits['groom-name'];
                                                     formDataChanged = true;
                                                 }
-                                            }
-                                            if ((edits['bride-parents'] !== undefined || edits['bride-parent-name'] !== undefined)) {
-                                                const bp = edits['bride-parents'] !== undefined ? edits['bride-parents'] : edits['bride-parent-name'];
-                                                if (bp !== undefined && bp !== formData.brideParents) {
-                                                    newFormData.brideParents = bp;
+                                                if (edits['bride-name'] !== undefined && edits['bride-name'] !== formData.brideName) {
+                                                    newFormData.brideName = edits['bride-name'];
                                                     formDataChanged = true;
                                                 }
-                                            }
-
-                                            if ((edits['event-venue'] !== undefined || edits['venue'] !== undefined)) {
-                                                const v = edits['event-venue'] !== undefined ? (edits['event-venue'] || currentEvent?.venue) : (edits['venue'] || currentEvent?.venue);
-                                                if (v !== undefined && v !== formData.defaultVenueName) {
-                                                    newFormData.defaultVenueName = v;
-                                                    formDataChanged = true;
-                                                }
-                                            }
-                                            if (edits['event-date'] !== undefined && edits['event-date'] !== formData.primaryDate) {
-                                                newFormData.primaryDate = edits['event-date'];
-                                                formDataChanged = true;
-                                            }
-                                            if (edits['event-time'] !== undefined && edits['event-time'] !== formData.primaryTime) {
-                                                newFormData.primaryTime = edits['event-time'];
-                                                formDataChanged = true;
-                                            }
-
-                                            if (formDataChanged) {
-                                                updateFormData(newFormData);
-                                            }
-
-                                            if (currentEvent) {
-                                                let eventChanged = false;
-                                                const updatedEvent = { ...currentEvent };
-
-                                                if (edits['event-name'] !== undefined && edits['event-name'] !== (currentEvent.heading || currentEvent.name)) {
-                                                    updatedEvent.heading = edits['event-name'];
-                                                    eventChanged = true;
-                                                }
-                                                if (edits['event-date'] !== undefined && edits['event-date'] !== currentEvent.date) {
-                                                    updatedEvent.date = edits['event-date'];
-                                                    eventChanged = true;
-                                                }
-                                                if (edits['event-time'] !== undefined && edits['event-time'] !== currentEvent.time) {
-                                                    updatedEvent.time = edits['event-time'];
-                                                    eventChanged = true;
-                                                }
-                                                if ((edits['event-venue'] !== undefined || edits['venue'] !== undefined)) {
-                                                    const v = edits['event-venue'] !== undefined ? edits['event-venue'] : edits['venue'];
-                                                    if (v !== undefined && v !== currentEvent.venue) {
-                                                        updatedEvent.venue = v;
-                                                        updatedEvent.isCustomVenue = true;
-                                                        eventChanged = true;
+                                                if ((edits['groom-parents'] !== undefined || edits['groom-parent-name'] !== undefined)) {
+                                                    const gp = edits['groom-parents'] !== undefined ? edits['groom-parents'] : edits['groom-parent-name'];
+                                                    if (gp !== undefined && gp !== formData.groomParents) {
+                                                        newFormData.groomParents = gp;
+                                                        formDataChanged = true;
                                                     }
                                                 }
-                                                
-                                                if (eventChanged) {
-                                                    updateEvent(currentEvent.id, updatedEvent);
+                                                if ((edits['bride-parents'] !== undefined || edits['bride-parent-name'] !== undefined)) {
+                                                    const bp = edits['bride-parents'] !== undefined ? edits['bride-parents'] : edits['bride-parent-name'];
+                                                    if (bp !== undefined && bp !== formData.brideParents) {
+                                                        newFormData.brideParents = bp;
+                                                        formDataChanged = true;
+                                                    }
+                                                }
+
+                                                if ((edits['event-venue'] !== undefined || edits['venue'] !== undefined)) {
+                                                    const v = edits['event-venue'] !== undefined ? (edits['event-venue'] || currentEvent?.venue) : (edits['venue'] || currentEvent?.venue);
+                                                    if (v !== undefined && v !== formData.defaultVenueName) {
+                                                        newFormData.defaultVenueName = v;
+                                                        formDataChanged = true;
+                                                    }
+                                                }
+                                                if (edits['event-date'] !== undefined && edits['event-date'] !== formData.primaryDate) {
+                                                    newFormData.primaryDate = edits['event-date'];
+                                                    formDataChanged = true;
+                                                }
+                                                if (edits['event-time'] !== undefined && edits['event-time'] !== formData.primaryTime) {
+                                                    newFormData.primaryTime = edits['event-time'];
+                                                    formDataChanged = true;
+                                                }
+
+                                                if (formDataChanged) {
+                                                    updateFormData(newFormData);
+                                                }
+
+                                                if (currentEvent) {
+                                                    let eventChanged = false;
+                                                    const updatedEvent = { ...currentEvent };
+
+                                                    if (edits['event-name'] !== undefined && edits['event-name'] !== (currentEvent.heading || currentEvent.name)) {
+                                                        updatedEvent.heading = edits['event-name'];
+                                                        eventChanged = true;
+                                                    }
+                                                    if (edits['event-date'] !== undefined && edits['event-date'] !== currentEvent.date) {
+                                                        updatedEvent.date = edits['event-date'];
+                                                        eventChanged = true;
+                                                    }
+                                                    if (edits['event-time'] !== undefined && edits['event-time'] !== currentEvent.time) {
+                                                        updatedEvent.time = edits['event-time'];
+                                                        eventChanged = true;
+                                                    }
+                                                    if ((edits['event-venue'] !== undefined || edits['venue'] !== undefined)) {
+                                                        const v = edits['event-venue'] !== undefined ? edits['event-venue'] : edits['venue'];
+                                                        if (v !== undefined && v !== currentEvent.venue) {
+                                                            updatedEvent.venue = v;
+                                                            updatedEvent.isCustomVenue = true;
+                                                            eventChanged = true;
+                                                        }
+                                                    }
+                                                    
+                                                    if (eventChanged) {
+                                                        updateEvent(currentEvent.id, updatedEvent);
+                                                    }
                                                 }
                                             }
-                                        }
-                                        setIsEditMode(false);
-                                    }}
-                                    style={{
-                                        background: '#1a4d2e', color: 'white', border: 'none', borderRadius: '50%',
-                                        width: '48px', height: '48px', cursor: 'pointer',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        boxShadow: '0 4px 14px rgba(0,0,0,0.3)',
-                                        transition: 'transform 0.2s',
-                                    }}
-                                    onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
-                                    onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                                    title="Done"
-                                >
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <polyline points="20 6 9 17 4 12"></polyline>
-                                    </svg>
-                                </button>
-                            </div>
-                        )}
+                                            setIsEditMode(false);
+                                        }}
+                                        style={{
+                                            background: '#1a4d2e', color: 'white', border: 'none', borderRadius: '50%',
+                                            width: '48px', height: '48px', cursor: 'pointer',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            boxShadow: '0 4px 14px rgba(0,0,0,0.3)',
+                                            transition: 'transform 0.2s',
+                                        }}
+                                        onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
+                                        onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                                        title="Done"
+                                    >
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <polyline points="20 6 9 17 4 12"></polyline>
+                                        </svg>
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className={modalStyles.previewInfo}>
+                            <p className={modalStyles.previewCount}>
+                                {selectedPreviewIndex + 1} / {previewItems.length}
+                            </p>
+                        </div>
+
+                        <div className={modalStyles.navContainer}>
+                            <button 
+                                className={clsx(modalStyles.navBtn, modalStyles.prevBtn)} 
+                                onClick={(e) => { 
+                                    e.stopPropagation(); 
+                                    setSelectedPreviewIndex((prev) => prev !== null && prev > 0 ? prev - 1 : previewItems.length - 1); 
+                                }}
+                            >
+                                <ChevronLeft size={32} />
+                            </button>
+                            <button 
+                                className={clsx(modalStyles.navBtn, modalStyles.nextBtn)} 
+                                onClick={(e) => { 
+                                    e.stopPropagation(); 
+                                    setSelectedPreviewIndex((prev) => prev !== null && prev < previewItems.length - 1 ? prev + 1 : 0); 
+                                }}
+                            >
+                                <ChevronRight size={32} />
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

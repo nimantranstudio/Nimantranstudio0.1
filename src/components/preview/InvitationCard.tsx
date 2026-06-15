@@ -230,13 +230,45 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                 'venue': event.venue
             };
 
+            const knownPlaceholders: Record<string, string[]> = {
+                'event-date': ['14th February 2026', '16th February', '15th February 2026', '14th February'],
+                'event-time': ['6:30 pm', '4:30 pm', '10:30 am', '11:30 am', '7:30 pm'],
+                'event-venue': ['The Rajputana palace, Adarsh Nagar, Rajasthan', 'The Rajputana palace, Adarsh Nagar', 'The Rajputana palace'],
+                'bride-name': ['Anjali ke haldi', 'Anjali'],
+                'groom-name': ['Rahul']
+            };
+
             Object.entries(mapping).forEach(([id, value]) => {
-                const el = doc.getElementById(id);
+                let el = doc.getElementById(id);
+                
+                // Fallback for uploaded templates that are missing IDs
+                if (!el) {
+                    const textsToLookFor = knownPlaceholders[id] || [];
+                    if (textsToLookFor.length > 0 && value !== undefined && value !== null) {
+                        const elements = Array.from(doc.querySelectorAll('div, span, p, h1, h2, h3, h4, h5, h6'));
+                        for (const element of elements) {
+                            const text = element.textContent?.trim();
+                            if (text && textsToLookFor.includes(text)) {
+                                el = element as HTMLElement;
+                                // Assign the ID so it works next time and can be saved
+                                el.id = id;
+                                break;
+                            }
+                        }
+                    }
+                }
+
                 // Only replace if value is explicitly defined and not empty string (unless we specifically want empty defaults)
                 // For raw previews, passing undefined won't overwrite the designer's template text.
                 if (el && value !== undefined && value !== null) {
+                    let formattedValue = value.toString().replace(/\n/g, '<br/>');
+                    
+                    // Special case: if the fallback found "Anjali ke haldi", append "ke haldi"
+                    if (id === 'bride-name' && el.textContent?.trim() === 'Anjali ke haldi') {
+                        formattedValue = formattedValue + ' ke haldi';
+                    }
+
                     // Use innerHTML but handle line breaks
-                    const formattedValue = value.toString().replace(/\n/g, '<br/>');
                     if (el.innerHTML !== formattedValue) {
                         el.innerHTML = formattedValue;
                     }
@@ -244,10 +276,10 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
             });
 
             // Ensure specific IDs for wedding names are handled if they differ
-            const groomParentsEl = doc.getElementById('groom-parents') || doc.getElementById('groom-parent-name');
+            let groomParentsEl = doc.getElementById('groom-parents') || doc.getElementById('groom-parent-name');
             if (groomParentsEl && groomParents !== undefined) groomParentsEl.innerHTML = groomParents;
 
-            const brideParentsEl = doc.getElementById('bride-parents') || doc.getElementById('bride-parent-name');
+            let brideParentsEl = doc.getElementById('bride-parents') || doc.getElementById('bride-parent-name');
             if (brideParentsEl && brideParents !== undefined) brideParentsEl.innerHTML = brideParents;
 
             // OVERRIDE: Force user input to take priority for main text elements

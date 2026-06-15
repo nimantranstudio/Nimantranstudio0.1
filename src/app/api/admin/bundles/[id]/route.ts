@@ -135,9 +135,16 @@ export async function PUT(
                 bundleItems: {
                     include: { event: true }
                 },
-                bundleInvoices: true
+                bundleInvoices: {
+                    include: { package: true }
+                }
             }
         });
+
+        const { revalidatePath } = await import('next/cache');
+        revalidatePath('/themes');
+        revalidatePath('/');
+        revalidatePath(`/themes/${themeId}`);
 
         return NextResponse.json({ success: true, bundle });
     } catch (error: any) {

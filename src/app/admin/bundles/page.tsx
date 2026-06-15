@@ -15,6 +15,7 @@ interface Bundle {
     isPopular: boolean;
     thumbnailUrl?: string;
     itemImages?: string;
+    bundleInvoices?: any[];
     themeRef?: {
         name: string;
     };
@@ -142,136 +143,143 @@ export default function BundlesPage() {
         <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
                 <div>
-                    <h1 style={{ fontSize: '1.5rem', fontWeight: '700', color: '#111827' }}>Bundles</h1>
+                    <h1 style={{ fontSize: '1.8rem', fontFamily: 'var(--font-serif)', color: '#1A1A1A' }}>Bundles</h1>
                     <p style={{ color: '#6b7280' }}>Package themes into purchasable offerings.</p>
                 </div>
-                <button
-                    className="btn btn-primary"
-                    style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: '#6366f1', borderColor: '#6366f1' }}
-                    onClick={handleAddNew}
-                >
-                    <Plus size={18} /> Add New Bundle
-                </button>
             </div>
 
             {isLoading ? (
                 <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem' }}>
-                    <Loader2 className="animate-spin" size={32} color="#6366f1" />
+                    <Loader2 className="animate-spin" size={32} color="#E1A639" />
                 </div>
             ) : bundles.length === 0 ? (
                 <div style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '4rem 1rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '400px' }}>
                     <div style={{ width: '80px', height: '80px', background: '#f3f4f6', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.5rem', color: '#9ca3af' }}>
                         <Package size={40} />
                     </div>
-                    <h3 style={{ fontSize: '1.25rem', fontWeight: '600', color: '#1f2937', marginBottom: '0.5rem' }}>No bundles created</h3>
-                    <p style={{ color: '#6b7280', marginBottom: '1.5rem', maxWidth: '300px' }}>Combine a theme with features and pricing to sell on your storefront.</p>
-                    <button
-                        style={{ color: '#6366f1', background: 'none', border: 'none', fontWeight: '600', cursor: 'pointer', fontSize: '1rem' }}
-                        onClick={handleAddNew}
-                    >
-                        Create First Bundle
-                    </button>
+                    <h3 style={{ fontSize: '1.25rem', fontWeight: '600', color: '#1f2937', marginBottom: '0.5rem' }}>No themes created yet</h3>
+                    <p style={{ color: '#6b7280', marginBottom: '1.5rem', maxWidth: '300px' }}>To create a bundle, please create a Theme first in the Themes section.</p>
                 </div>
             ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem' }}>
+                <div style={{ listStyleType: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                     {bundles.map((bundle) => {
+                        let images: string[] = [];
+                        try {
+                            const itemImgs = JSON.parse(bundle.itemImages || '{}');
+                            images = Object.values(itemImgs) as string[];
+                        } catch (e) { }
+
+                        if (bundle.thumbnailUrl && !images.includes(bundle.thumbnailUrl)) {
+                            images = [bundle.thumbnailUrl, ...images];
+                        }
+
                         return (
                             <div
                                 key={bundle.id}
                                 style={{
                                     background: 'white',
-                                    border: '1px solid #e5e7eb',
-                                    borderRadius: '16px',
+                                    border: '1px solid #E5E0D8',
+                                    borderRadius: '12px',
                                     overflow: 'hidden',
                                     display: 'flex',
-                                    flexDirection: 'column',
+                                    alignItems: 'center',
                                     position: 'relative',
-                                    boxShadow: bundle.isPopular ? '0 10px 15px -3px rgba(99, 102, 241, 0.1)' : '0 1px 3px rgba(0,0,0,0.05)',
-                                    borderColor: bundle.isPopular ? '#6366f1' : '#e5e7eb'
+                                    boxShadow: bundle.isPopular ? '0 8px 16px rgba(225, 166, 57, 0.15)' : '0 2px 4px rgba(0,0,0,0.02)',
+                                    borderColor: bundle.isPopular ? '#E1A639' : '#E5E0D8',
+                                    transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.transform = 'translateY(-2px)';
+                                    e.currentTarget.style.boxShadow = bundle.isPopular ? '0 12px 20px rgba(225, 166, 57, 0.2)' : '0 8px 16px rgba(0,0,0,0.06)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.transform = 'translateY(0)';
+                                    e.currentTarget.style.boxShadow = bundle.isPopular ? '0 8px 16px rgba(225, 166, 57, 0.15)' : '0 2px 4px rgba(0,0,0,0.02)';
                                 }}
                             >
-                                <div style={{ height: '240px', width: '100%', background: '#f3f4f6', position: 'relative', overflow: 'hidden' }}>
-                                    {(() => {
-                                        let images: string[] = [];
-                                        try {
-                                            const itemImgs = JSON.parse(bundle.itemImages || '{}');
-                                            images = Object.values(itemImgs) as string[];
-                                        } catch (e) { }
-
-                                        if (bundle.thumbnailUrl && !images.includes(bundle.thumbnailUrl)) {
-                                            images = [bundle.thumbnailUrl, ...images];
-                                        }
-
-                                        return <ImageSlider images={images} name={bundle.name} />;
-                                    })()}
-
-                                    <div style={{ position: 'absolute', top: '1rem', right: '1rem', display: 'flex', gap: '8px', zIndex: 10 }}>
-                                        <button
-                                            onClick={() => handleEdit(bundle)}
-                                            style={{ background: 'rgba(255,255,255,0.9)', border: 'none', padding: '6px', borderRadius: '8px', cursor: 'pointer', color: '#4f46e5', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}
-                                        >
-                                            <Edit size={16} />
-                                        </button>
-                                        <button
-                                            onClick={() => handleDelete(bundle.id)}
-                                            style={{ background: 'rgba(255,255,255,0.9)', border: 'none', padding: '6px', borderRadius: '8px', cursor: 'pointer', color: '#dc2626', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}
-                                        >
-                                            <Trash2 size={16} />
-                                        </button>
+                                <div 
+                                    style={{ flex: 1, display: 'flex', padding: '1rem', cursor: 'pointer' }}
+                                    onClick={() => handleEdit(bundle)}
+                                >
+                                    <div style={{ width: '80px', height: '100px', background: '#FDFBF7', borderRadius: '8px', overflow: 'hidden', marginRight: '1.5rem', flexShrink: 0, position: 'relative' }}>
+                                        {images.length > 0 ? (
+                                            <img
+                                                src={images[0]}
+                                                alt={bundle.BundleName || bundle.name}
+                                                style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' }}
+                                            />
+                                        ) : (
+                                            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#d1d5db' }}>
+                                                <Package size={24} />
+                                            </div>
+                                        )}
+                                        {bundle.isPopular && (
+                                            <div style={{ position: 'absolute', bottom: '0', left: '0', right: '0', background: '#E1A639', color: '#111827', fontSize: '0.6rem', fontWeight: '800', textAlign: 'center', padding: '2px 0' }}>
+                                                POPULAR
+                                            </div>
+                                        )}
                                     </div>
-
-                                    {bundle.isPopular && (
-                                        <div style={{ position: 'absolute', top: '1rem', left: '1rem', background: '#6366f1', color: 'white', fontSize: '0.7rem', fontWeight: '700', padding: '2px 10px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '4px', zIndex: 10 }}>
-                                            <Star size={10} fill="white" /> POPULAR
-                                        </div>
-                                    )}
-                                </div>
-
-                                <div style={{ padding: '1.25rem' }}>
-                                    <div style={{ marginBottom: '0.75rem' }}>
+                                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '0.25rem' }}>
-                                            <h3 style={{ fontSize: '1.1rem', fontWeight: '700', color: '#111827' }}>{bundle.name}</h3>
+                                            <h3 style={{ fontSize: '1.2rem', fontFamily: 'var(--font-serif)', color: '#1C1917', margin: 0 }}>{bundle.BundleName || bundle.name}</h3>
                                             <span style={{
-                                                fontSize: '0.6rem',
-                                                padding: '1px 6px',
-                                                borderRadius: '20px',
-                                                background: bundle.isActive ? '#ecfdf5' : '#fff1f2',
-                                                color: bundle.isActive ? '#059669' : '#e11d48',
+                                                fontSize: '0.65rem',
+                                                padding: '2px 8px',
+                                                borderRadius: '10px',
+                                                background: bundle.isActive ? '#ecfdf5' : '#fef2f2',
+                                                color: bundle.isActive ? '#047857' : '#991b1b',
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 gap: '4px',
-                                                border: `1px solid ${bundle.isActive ? '#10b981' : '#fda4af'}33`,
                                                 fontWeight: '600',
                                                 textTransform: 'uppercase'
                                             }}>
-                                                {bundle.isActive ? <Globe size={10} /> : <Lock size={10} />}
                                                 {bundle.isActive ? 'Active' : 'Inactive'}
                                             </span>
                                         </div>
-                                        <div style={{ fontSize: '0.75rem', color: '#6366f1', fontWeight: '600', marginBottom: '0.25rem' }}>
-                                            Theme: {bundle.themeRef?.name || 'Multiple'}
-                                        </div>
-                                        <p style={{ fontSize: '0.8rem', color: '#6b7280', minHeight: 'auto', lineHeight: '1.3' }}>{bundle.description}</p>
-                                    </div>
 
-                                    <div style={{ borderTop: '1px solid #f3f4f6', paddingTop: '0.75rem' }}>
-                                        <div style={{ fontSize: '0.7rem', fontWeight: '700', color: '#9ca3af', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Tiered Pricing</div>
-                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(80px, 1fr))', gap: '8px' }}>
-                                            <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                                <span style={{ fontSize: '0.6rem', color: '#6b7280', fontWeight: '600' }}>WhatsApp</span>
-                                                <span style={{ fontSize: '0.85rem', fontWeight: '800', color: '#111827' }}>₹{bundle.whatsappPrice}</span>
-                                            </div>
-                                            <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                                <span style={{ fontSize: '0.6rem', color: '#6b7280', fontWeight: '600' }}>Printable</span>
-                                                <span style={{ fontSize: '0.85rem', fontWeight: '800', color: '#111827' }}>₹{bundle.printablePrice}</span>
-                                            </div>
-                                            <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                                <span style={{ fontSize: '0.6rem', color: '#6b7280', fontWeight: '600' }}>Complete</span>
-                                                <span style={{ fontSize: '0.85rem', fontWeight: '800', color: '#111827' }}>₹{bundle.completePrice}</span>
-                                            </div>
+                                        {bundle.description && (
+                                            <p style={{ fontSize: '0.85rem', color: '#6b7280', margin: '0 0 0.75rem 0', display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                                                {bundle.description}
+                                            </p>
+                                        )}
+                                        <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', marginTop: 'auto', flexWrap: 'wrap' }}>
+                                            {bundle.bundleInvoices && bundle.bundleInvoices.length > 0 ? (
+                                                bundle.bundleInvoices
+                                                    .filter((inv: any) => inv.isDisplay)
+                                                    .map((inv: any) => (
+                                                        <div key={inv.id} style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                                                            <span style={{ fontSize: '0.7rem', color: '#9ca3af', fontWeight: '600', textTransform: 'uppercase' }}>
+                                                                {inv.package?.name || 'Package'}:
+                                                            </span>
+                                                            <span style={{ fontSize: '0.9rem', fontWeight: '700', color: '#111827' }}>
+                                                                ₹{inv.finalSellingPrice}
+                                                            </span>
+                                                        </div>
+                                                    ))
+                                            ) : (
+                                                <div style={{ fontSize: '0.8rem', color: '#9ca3af', fontStyle: 'italic' }}>
+                                                    No packages configured yet.
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
-
+                                </div>
+                                <div style={{ padding: '1rem', display: 'flex', gap: '8px' }}>
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); handleEdit(bundle); }}
+                                        style={{ background: '#f3f4f6', border: 'none', padding: '8px', borderRadius: '8px', cursor: 'pointer', color: '#4b5563' }}
+                                        title="Edit Bundle"
+                                    >
+                                        <Edit size={18} />
+                                    </button>
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); handleDelete(bundle.id); }}
+                                        style={{ background: '#fef2f2', border: 'none', padding: '8px', borderRadius: '8px', cursor: 'pointer', color: '#dc2626' }}
+                                        title="Delete Bundle"
+                                    >
+                                        <Trash2 size={18} />
+                                    </button>
                                 </div>
                             </div>
                         );

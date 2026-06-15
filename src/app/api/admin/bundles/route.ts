@@ -2,17 +2,56 @@ import { NextRequest, NextResponse } from 'next/server';
 import { writeFile, mkdir } from 'fs/promises';
 import path from 'path';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
     try {
         const { getPrisma } = await import('@/lib/prisma');
         const prisma = getPrisma();
 
-        const bundles = await prisma.bundle.findMany({
-            orderBy: { createdDate: 'desc' },
-            include: { themeRef: true, bundleItems: { include: { event: true } }, bundleInvoices: true }
+        const themes = await prisma.theme.findMany({
+            orderBy: [
+                { sequence: 'asc' },
+                { createdAt: 'desc' }
+            ],
+            include: {
+                bundles: {
+                    include: { bundleItems: { include: { event: true } }, bundleInvoices: { include: { package: true } } }
+                }
+            }
         });
 
-        return NextResponse.json({ bundles });
+        const mappedBundles = themes.map(theme => {
+            if (theme.bundles && theme.bundles.length > 0) {
+                const b = theme.bundles[0];
+                return {
+                    ...b,
+                    BundleName: theme.name, // Force bundle to use theme name
+                    thumbnailUrl: theme.thumbnailUrl || b.thumbnailUrl,
+                    bundleDescription: theme.description || b.bundleDescription,
+                    bundleInvoices: b.bundleInvoices,
+                    themeRef: theme
+                };
+            } else {
+                return {
+                    id: 'new-' + theme.id,
+                    themeId: theme.id,
+                    BundleName: theme.name,
+                    thumbnailUrl: theme.thumbnailUrl,
+                    bundleDescription: theme.description,
+                    isActive: theme.isActive,
+                    isPopular: theme.isPopular,
+                    themeRef: theme,
+                    bundleInvoices: [],
+                    bundleItems: [],
+                    whatsappPrice: 0,
+                    printablePrice: 0,
+                    completePrice: 0
+                };
+            }
+        });
+
+        return NextResponse.json({ bundles: mappedBundles });
     } catch (error: any) {
         console.error('Failed to fetch admin bundles:', error);
         return NextResponse.json({ error: error.message }, { status: 500 });

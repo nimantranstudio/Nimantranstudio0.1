@@ -44,30 +44,30 @@ export const ThemeCard = ({ theme, onSelect }: ThemeCardProps) => {
 
                         if (!bundle || !invoices || invoices.length === 0) {
                             return (
-                                <>
-                                    <span className={styles.currentPrice}>₹999</span>
-                                    <span className={styles.originalPrice}>₹2,500</span>
-                                    <span className={styles.discount}>60% OFF</span>
-                                </>
+                                <span className={styles.currentPrice}>Price TBD</span>
                             );
                         }
 
-                        const prices = invoices
+                        const displayedInvoices = invoices.filter((inv: any) => inv.isDisplay === true);
+
+                        if (displayedInvoices.length === 0) {
+                            return (
+                                <span className={styles.currentPrice}>Price TBD</span>
+                            );
+                        }
+
+                        const prices = displayedInvoices
                             .map((inv: any) => inv.finalSellingPrice)
                             .filter((p: number) => p > 0);
 
                         if (prices.length === 0) {
                             return (
-                                <>
-                                    <span className={styles.currentPrice}>₹999</span>
-                                    <span className={styles.originalPrice}>₹2,500</span>
-                                    <span className={styles.discount}>60% OFF</span>
-                                </>
+                                <span className={styles.currentPrice}>Price TBD</span>
                             );
                         }
 
                         const currentPrice = Math.min(...prices);
-                        const originalPrices = invoices
+                        const originalPrices = displayedInvoices
                             .map((inv: any) => inv.totalWeddingSuiteValue)
                             .filter((p: number) => p > 0);
                         const originalPrice = originalPrices.length > 0 ? Math.max(...originalPrices) : 0;
