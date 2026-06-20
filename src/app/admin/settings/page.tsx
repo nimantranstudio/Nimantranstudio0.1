@@ -6,10 +6,8 @@ import { auth } from '@/lib/firebase';
 
 export default function SettingsPage() {
     const [activeTab, setActiveTab] = useState('general');
-    const [bannerText, setBannerText] = useState('');
+    const [bannerMessages, setBannerMessages] = useState<Array<{icon: string, text: string, badge: string}>>([]);
     const [bannerActive, setBannerActive] = useState(true);
-    const [bannerBadge, setBannerBadge] = useState('Update 🎉');
-    const [bannerIcon, setBannerIcon] = useState('✦');
     const [isSaving, setIsSaving] = useState(false);
 
     useEffect(() => {
@@ -19,12 +17,7 @@ export default function SettingsPage() {
                 const data = await res.json();
                 if (data.success) {
                     if (data.settings?.banner_messages) {
-                        const msgs = data.settings.banner_messages;
-                        if (msgs.length > 0) {
-                            setBannerText(msgs[0].text || '');
-                            setBannerBadge(msgs[0].badge || 'Update 🎉');
-                            setBannerIcon(msgs[0].icon || '✦');
-                        }
+                        setBannerMessages(data.settings.banner_messages);
                     }
                     if (data.settings?.banner_active !== undefined) {
                         setBannerActive(data.settings.banner_active);
@@ -37,19 +30,23 @@ export default function SettingsPage() {
         fetchSettings();
     }, []);
 
+    const handleAddMessage = () => {
+        setBannerMessages(prev => [...prev, { icon: '✦', text: '', badge: '' }]);
+    };
+
+    const handleRemoveMessage = (index: number) => {
+        setBannerMessages(prev => prev.filter((_, idx) => idx !== index));
+    };
+
+    const handleUpdateMessage = (index: number, field: 'icon' | 'text' | 'badge', val: string) => {
+        setBannerMessages(prev => prev.map((item, idx) => idx === index ? { ...item, [field]: val } : item));
+    };
+
     const handleSaveBanner = async () => {
         setIsSaving(true);
         try {
             await auth.authStateReady();
             const token = auth.currentUser ? await auth.currentUser.getIdToken() : '';
-
-            const newBannerMessages = [
-                {
-                    icon: bannerIcon,
-                    text: bannerText,
-                    badge: bannerBadge,
-                }
-            ];
 
             const res1 = await fetch('/api/settings', {
                 method: 'POST',
@@ -57,7 +54,7 @@ export default function SettingsPage() {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({ key: 'banner_messages', value: newBannerMessages })
+                body: JSON.stringify({ key: 'banner_messages', value: bannerMessages })
             });
 
             const res2 = await fetch('/api/settings', {
@@ -159,39 +156,74 @@ export default function SettingsPage() {
                                     </label>
                                 </div>
 
-                                <div>
-                                    <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: '#374151', marginBottom: '0.5rem' }}>Top Banner Announcement Text</label>
-                                    <textarea 
-                                        value={bannerText}
-                                        onChange={(e) => setBannerText(e.target.value)}
-                                        placeholder="e.g. Your wedding communication ready in <strong>5 mins</strong>."
-                                        rows={3} 
-                                        style={{ width: '100%', padding: '0.625rem', borderRadius: '8px', border: '1px solid #d1d5db', fontFamily: 'inherit' }} 
-                                    />
-                                    <p style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.25rem' }}>You can use basic HTML tags like &lt;strong&gt; for bold text.</p>
-                                </div>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <label style={{ fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>Announcement Messages (Rotating)</label>
+                                        <button 
+                                            type="button" 
+                                            onClick={handleAddMessage}
+                                            style={{ background: '#f5f3ff', color: '#6366f1', border: '1px solid #c7d2fe', padding: '0.375rem 0.75rem', borderRadius: '6px', fontSize: '0.875rem', fontWeight: '600', cursor: 'pointer' }}>
+                                            + Add Message
+                                        </button>
+                                    </div>
 
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-                                    <div>
-                                        <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: '#374151', marginBottom: '0.5rem' }}>Badge Text</label>
-                                        <input 
-                                            type="text" 
-                                            value={bannerBadge} 
-                                            onChange={(e) => setBannerBadge(e.target.value)} 
-                                            placeholder="e.g. New 🎉"
-                                            style={{ width: '100%', padding: '0.625rem', borderRadius: '8px', border: '1px solid #d1d5db' }}
-                                        />
-                                    </div>
-                                    <div>
-                                        <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: '#374151', marginBottom: '0.5rem' }}>Icon</label>
-                                        <input 
-                                            type="text" 
-                                            value={bannerIcon} 
-                                            onChange={(e) => setBannerIcon(e.target.value)} 
-                                            placeholder="e.g. ✦"
-                                            style={{ width: '100%', padding: '0.625rem', borderRadius: '8px', border: '1px solid #d1d5db' }}
-                                        />
-                                    </div>
+                                    {bannerMessages.length === 0 ? (
+                                        <div style={{ padding: '2rem', textAlign: 'center', border: '1px dashed #d1d5db', borderRadius: '8px', color: '#6b7280', fontSize: '0.875rem' }}>
+                                            No announcement messages configured. Click "+ Add Message" to create one.
+                                        </div>
+                                    ) : (
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                                            {bannerMessages.map((msg, index) => (
+                                                <div key={index} style={{ padding: '1.25rem', border: '1px solid #e5e7eb', borderRadius: '8px', background: '#fcfcfc', position: 'relative' }}>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                                                        <span style={{ fontSize: '0.8rem', fontWeight: '700', color: '#6366f1', textTransform: 'uppercase' }}>Message #{index + 1}</span>
+                                                        <button 
+                                                            type="button"
+                                                            onClick={() => handleRemoveMessage(index)}
+                                                            style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: '0.875rem', cursor: 'pointer', fontWeight: '600' }}>
+                                                            Remove
+                                                        </button>
+                                                    </div>
+
+                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                                        <div>
+                                                            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '600', color: '#4b5563', marginBottom: '0.25rem' }}>Message Text</label>
+                                                            <textarea 
+                                                                value={msg.text}
+                                                                onChange={(e) => handleUpdateMessage(index, 'text', e.target.value)}
+                                                                placeholder="e.g. Your wedding communication ready in <strong>5 mins</strong>."
+                                                                rows={2} 
+                                                                style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #d1d5db', fontSize: '0.875rem', fontFamily: 'inherit' }} 
+                                                            />
+                                                        </div>
+
+                                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                                            <div>
+                                                                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '600', color: '#4b5563', marginBottom: '0.25rem' }}>Badge Text</label>
+                                                                <input 
+                                                                    type="text" 
+                                                                    value={msg.badge} 
+                                                                    onChange={(e) => handleUpdateMessage(index, 'badge', e.target.value)} 
+                                                                    placeholder="e.g. New 🎉"
+                                                                    style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #d1d5db', fontSize: '0.875rem' }}
+                                                                />
+                                                            </div>
+                                                            <div>
+                                                                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '600', color: '#4b5563', marginBottom: '0.25rem' }}>Icon</label>
+                                                                <input 
+                                                                    type="text" 
+                                                                    value={msg.icon} 
+                                                                    onChange={(e) => handleUpdateMessage(index, 'icon', e.target.value)} 
+                                                                    placeholder="e.g. ✦"
+                                                                    style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #d1d5db', fontSize: '0.875rem' }}
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div style={{ paddingTop: '1rem', borderTop: '1px solid #e5e7eb', display: 'flex', justifyContent: 'flex-end' }}>
