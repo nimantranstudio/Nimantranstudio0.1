@@ -6,16 +6,18 @@ import { auth } from '@/lib/firebase';
 
 export default function SettingsPage() {
     const [activeTab, setActiveTab] = useState('general');
-    const [bannerMessages, setBannerMessages] = useState<Array<{icon: string, text: string, badge: string}>>([
+    const [bannerMessages, setBannerMessages] = useState<Array<{icon: string, text: string, badge: string, active?: boolean}>>([
         {
             icon: '✦',
             text: 'Your wedding communication ready in <strong>5 mins</strong>. Try now for free.',
             badge: 'New 🎉',
+            active: true
         },
         {
             icon: '✦',
             text: '<strong>Launch Offer</strong> - Create Your Complete Wedding Invitation Suite in Minutes',
             badge: 'Hot 🔥',
+            active: true
         }
     ]);
     const [bannerActive, setBannerActive] = useState(true);
@@ -42,14 +44,14 @@ export default function SettingsPage() {
     }, []);
 
     const handleAddMessage = () => {
-        setBannerMessages(prev => [...prev, { icon: '✦', text: '', badge: '' }]);
+        setBannerMessages(prev => [...prev, { icon: '✦', text: '', badge: '', active: true }]);
     };
 
     const handleRemoveMessage = (index: number) => {
         setBannerMessages(prev => prev.filter((_, idx) => idx !== index));
     };
 
-    const handleUpdateMessage = (index: number, field: 'icon' | 'text' | 'badge', val: string) => {
+    const handleUpdateMessage = (index: number, field: 'icon' | 'text' | 'badge' | 'active', val: any) => {
         setBannerMessages(prev => prev.map((item, idx) => idx === index ? { ...item, [field]: val } : item));
     };
 
@@ -188,12 +190,23 @@ export default function SettingsPage() {
                                                 <div key={index} style={{ padding: '1.25rem', border: '1px solid #e5e7eb', borderRadius: '8px', background: '#fcfcfc', position: 'relative' }}>
                                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                                                         <span style={{ fontSize: '0.8rem', fontWeight: '700', color: '#6366f1', textTransform: 'uppercase' }}>Message #{index + 1}</span>
-                                                        <button 
-                                                            type="button"
-                                                            onClick={() => handleRemoveMessage(index)}
-                                                            style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: '0.875rem', cursor: 'pointer', fontWeight: '600' }}>
-                                                            Remove
-                                                        </button>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+                                                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.875rem', cursor: 'pointer', color: '#374151', fontWeight: '500' }}>
+                                                                    <input 
+                                                                        type="checkbox" 
+                                                                        checked={msg.active !== false} 
+                                                                        onChange={(e) => handleUpdateMessage(index, 'active', e.target.checked)}
+                                                                        style={{ cursor: 'pointer', width: '15px', height: '15px' }}
+                                                                    />
+                                                                    Active
+                                                            </label>
+                                                            <button 
+                                                                type="button"
+                                                                onClick={() => handleRemoveMessage(index)}
+                                                                style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: '0.875rem', cursor: 'pointer', fontWeight: '600' }}>
+                                                                Remove
+                                                            </button>
+                                                        </div>
                                                     </div>
 
                                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>

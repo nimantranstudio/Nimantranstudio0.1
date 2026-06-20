@@ -29,8 +29,9 @@ export function AnnouncementStrip() {
         const res = await fetch('/api/settings');
         const data = await res.json();
         if (data.success) {
-          if (data.settings?.banner_messages) {
-            setMessages(data.settings.banner_messages);
+          if (data.settings?.banner_messages && Array.isArray(data.settings.banner_messages)) {
+            const activeMsgs = data.settings.banner_messages.filter((m: any) => m.active !== false);
+            setMessages(activeMsgs);
           }
           if (data.settings?.banner_active !== undefined) {
             setIsActive(data.settings.banner_active);
