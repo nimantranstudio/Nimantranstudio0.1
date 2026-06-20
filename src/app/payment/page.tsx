@@ -135,12 +135,13 @@ export default function PaymentPage() {
 
                     const getDefaultHeading = (eName: string) => {
                         const n = (eName || '').toLowerCase();
-                        if (n.includes('haldi')) return "Haldi Ceremony";
-                        if (n.includes('mehendi')) return "Mehendi Ceremony";
-                        if (n.includes('sangeet')) return "Sangeet Ceremoney";
-                        if (n.includes('wedding')) return "Wedding Ceremony";
-                        if (n.includes('reception')) return "Reception Ceremony";
-                        return `${eName || 'Wedding'} Ceremony`;
+                        if (n.includes('save the date') || n.includes('savethedate')) return "Save the Date";
+                        if (n.includes('haldi')) return "Haldi";
+                        if (n.includes('mehendi') || n.includes('mehndi') || n.includes('mehendhi')) return "Mehendi";
+                        if (n.includes('sangeet')) return "Sangeet";
+                        if (n.includes('wedding')) return "Wedding";
+                        if (n.includes('reception')) return "Reception";
+                        return eName || 'Wedding';
                     };
 
                     const displayEventName = item.event?.heading || (item.event?.name ? getDefaultHeading(item.event.name) : (item.name || 'Wedding Ceremony'));

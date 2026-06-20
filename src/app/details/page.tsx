@@ -940,12 +940,13 @@ function getDefaultWelcomeMessage(eventName: string): string {
 
 function getDefaultHeading(eventName: string): string {
     const name = eventName.toLowerCase();
-    if (name.includes('haldi')) return "Haldi Ceremony";
-    if (name.includes('mehendi')) return "Mehendi Ceremony";
-    if (name.includes('sangeet')) return "Sangeet Ceremoney";
-    if (name.includes('wedding')) return "Wedding Ceremony";
-    if (name.includes('reception')) return "Reception Ceremony";
-    return `${eventName} Ceremony`;
+    if (name.includes('save the date') || name.includes('savethedate')) return "Save the Date";
+    if (name.includes('haldi')) return "Haldi";
+    if (name.includes('mehendi') || name.includes('mehndi') || name.includes('mehendhi')) return "Mehendi";
+    if (name.includes('sangeet')) return "Sangeet";
+    if (name.includes('wedding')) return "Wedding";
+    if (name.includes('reception')) return "Reception";
+    return eventName || 'Wedding';
 }
 
 // --- Sub Components ---

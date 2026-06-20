@@ -6,7 +6,7 @@ import styles from './Preview.module.css';
 import { Play } from 'lucide-react';
 import Image from 'next/image';
 
-import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
+import { useState, useEffect, useRef, forwardRef, useImperativeHandle, useMemo } from 'react';
 import { clsx } from 'clsx';
 
 export interface InvitationCardRef {
@@ -57,6 +57,19 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
     const [iframeHeight, setIframeHeight] = useState(889);
     const isHTMLDesign = customImage?.toLowerCase().endsWith('.html') || (customImage?.includes('item-Wedding_Invitation') && customImage.toLowerCase().includes('.html')); // Robust check
 
+    const cacheBuster = useMemo(() => Date.now(), []);
+    const iframeSrc = useMemo(() => {
+        if (!customImage) return '';
+        const separator = customImage.includes('?') ? '&' : '?';
+        return `${customImage}${separator}cb=${cacheBuster}`;
+    }, [customImage, cacheBuster]);
+
+    const [isReady, setIsReady] = useState(false);
+
+    useEffect(() => {
+        setIsReady(false);
+    }, [iframeSrc]);
+
     useImperativeHandle(ref, () => ({
         saveEdits: () => {
             if (!iframeRef.current) return {};
@@ -97,7 +110,7 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                 const wrapper = doc.querySelector('.invitation-wrapper') || 
                               doc.querySelector('.invite-wrapper') || 
                               doc.body.firstElementChild;
-                const targetHeight = (wrapper as HTMLElement)?.offsetHeight || 705;
+                const targetHeight = (wrapper as HTMLElement)?.offsetHeight || 889;
 
                 win.html2canvas(doc.body, { 
                     useCORS: true, 
@@ -205,21 +218,24 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
 
             const getDefaultHeading = (eName: string) => {
                 const n = (eName || '').toLowerCase();
-                if (n.includes('haldi')) return "Haldi Ceremony";
-                if (n.includes('mehendi')) return "Mehendi Ceremony";
-                if (n.includes('sangeet')) return "Sangeet Ceremony";
-                if (n.includes('wedding')) return "Wedding Ceremony";
-                if (n.includes('reception')) return "Reception Ceremony";
-                return `${eName || 'Wedding'} Ceremony`;
+                if (n.includes('save the date') || n.includes('savethedate')) return "Save the Date";
+                if (n.includes('haldi')) return "Haldi";
+                if (n.includes('mehendi') || n.includes('mehndi') || n.includes('mehendhi')) return "Mehendi";
+                if (n.includes('sangeet')) return "Sangeet";
+                if (n.includes('wedding')) return "Wedding";
+                if (n.includes('reception')) return "Reception";
+                return eName || 'Wedding';
             };
 
+            const isWedding = event.name?.toLowerCase().includes('wedding') || event.name?.toLowerCase().includes('invitation');
+            const isSpecialEvent = !isWedding; // Protect all non-wedding events from tagline override fallback
             const displayEventName = event.heading || (event.name ? getDefaultHeading(event.name) : undefined);
 
             const fullMapping: Record<string, string | undefined> = {
                 'event-name': displayEventName,
-                'heading': displayEventName,
-                'subheading': event.tagline || 'We are pleased to invite you to the wedding of',
-                'event-subheading': event.tagline || 'We are pleased to invite you to the wedding of',
+                'heading': (isSpecialEvent && !event.tagline) ? undefined : (event.tagline || 'We are pleased to invite you to the wedding of'),
+                'subheading': (isSpecialEvent && !event.tagline) ? undefined : event.tagline,
+                'event-subheading': (isSpecialEvent && !event.tagline) ? undefined : event.tagline,
                 'groom-name': groomName,
                 'bride-name': brideName,
                 'groom-parents': groomParents,
@@ -284,24 +300,62 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                 
                 // Fallback for uploaded templates that are missing IDs
                 if (!el) {
-                    const knownPlaceholders: Record<string, string[]> = {
-                        'event-date': ['14th February 2026', '16th February', '15th February 2026', '14th February'],
-                        'event-time': ['6:30 pm', '4:30 pm', '10:30 am', '11:30 am', '7:30 pm'],
-                        'event-venue': ['The Rajputana palace, Adarsh Nagar, Rajasthan', 'The Rajputana palace, Adarsh Nagar', 'The Rajputana palace'],
-                        'bride-name': ['Anjali ke haldi', 'Anjali'],
-                        'groom-name': ['Rahul'],
-                        'subheading': ['We are pleased to invite you to the wedding of', 'We invite you to share our joy', 'formal invite to follow']
+                    const customClassMap: Record<string, string> = {
+                        'event-date': 'style-date',
+                        'event-time': 'style-time',
+                        'event-venue': 'style-venue',
+                        'event-name': 'style-eventName',
+                        'bride-parents': 'style-brideParents',
+                        'groom-parents': 'style-groomParents'
                     };
-                    const textsToLookFor = knownPlaceholders[id] || [];
-                    if (textsToLookFor.length > 0) {
-                        const elements = Array.from(doc.querySelectorAll('div, span, p, h1, h2, h3, h4, h5, h6'));
-                        for (const element of elements) {
-                            const text = element.textContent?.trim();
-                            if (text && textsToLookFor.includes(text)) {
-                                el = element as HTMLElement;
-                                // Assign the ID so it works next time
+                    const customClass = customClassMap[id];
+                    if (customClass) {
+                        const matchedEl = doc.querySelector(`.${customClass}`);
+                        if (matchedEl) {
+                            el = matchedEl as HTMLElement;
+                            el.id = id;
+                        }
+                    }
+                    
+                    if (!el) {
+                        const normalizedId = id.replace(/-/g, '').toLowerCase();
+                        const classesToTry = [
+                            `style-${id}`, 
+                            `style-${id.replace(/-([a-z])/g, (g) => g[1].toUpperCase())}`, 
+                            `style-${normalizedId}`, 
+                            id,
+                            normalizedId
+                        ];
+                        for (const cls of classesToTry) {
+                            const matchedEl = doc.querySelector(`.${cls}`);
+                            if (matchedEl) {
+                                el = matchedEl as HTMLElement;
                                 el.id = id;
                                 break;
+                            }
+                        }
+                    }
+
+                    if (!el) {
+                        const knownPlaceholders: Record<string, string[]> = {
+                            'event-date': ['14th February 2026', '16th February', '15th February 2026', '14th February'],
+                            'event-time': ['6:30 pm', '4:30 pm', '10:30 am', '11:30 am', '7:30 pm'],
+                            'event-venue': ['The Rajputana palace, Adarsh Nagar, Rajasthan', 'The Rajputana palace, Adarsh Nagar', 'The Rajputana palace'],
+                            'bride-name': ['Anjali ke haldi', 'Anjali'],
+                            'groom-name': ['Rahul'],
+                            'subheading': ['We are pleased to invite you to the wedding of', 'We invite you to share our joy', 'formal invite to follow']
+                        };
+                        const textsToLookFor = knownPlaceholders[id] || [];
+                        if (textsToLookFor.length > 0) {
+                            const elements = Array.from(doc.querySelectorAll('div, span, p, h1, h2, h3, h4, h5, h6'));
+                            for (const element of elements) {
+                                const text = element.textContent?.trim();
+                                if (text && textsToLookFor.includes(text)) {
+                                    el = element as HTMLElement;
+                                    // Assign the ID so it works next time
+                                    el.id = id;
+                                    break;
+                                }
                             }
                         }
                     }
@@ -315,6 +369,30 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                     if (el.innerHTML !== formattedValue) {
                         el.innerHTML = formattedValue;
                     }
+                }
+            });
+
+            // 3. Global default name replacement fallback
+            const finalWalker = doc.createTreeWalker(doc.body, NodeFilter.SHOW_TEXT, null);
+            let finalNode;
+            const finalNodes: Text[] = [];
+            while ((finalNode = finalWalker.nextNode())) {
+                finalNodes.push(finalNode as Text);
+            }
+            finalNodes.forEach(textNode => {
+                let text = textNode.nodeValue || '';
+                let changed = false;
+                
+                if (text.includes('Anjali')) {
+                    text = text.replace(/Anjali/g, brideName || 'Bride');
+                    changed = true;
+                }
+                if (text.includes('Rahul')) {
+                    text = text.replace(/Rahul/g, groomName || 'Groom');
+                    changed = true;
+                }
+                if (changed) {
+                    textNode.nodeValue = text;
                 }
             });
 
@@ -356,6 +434,10 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                     background-size: cover !important;
                     background-position: center !important;
                     background-repeat: no-repeat !important;
+                }
+                .invitation-wrapper, .invite-wrapper {
+                    max-height: none !important;
+                    height: auto !important;
                 }
                 * { hyphens: none !important; -webkit-hyphens: none !important; }
                 .text-overlay { padding-top: 15vh !important; }
@@ -418,9 +500,9 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                 if (h > 0 && h !== iframeHeight) {
                     setIframeHeight(h);
                 }
-            } else if (iframeHeight !== 705) {
-                // Default to 705 for most templates if no wrapper detected yet
-                setIframeHeight(705);
+            } else if (iframeHeight !== 889) {
+                // Default to 889 (9:16 ratio for 500px width) if no wrapper detected yet
+                setIframeHeight(889);
             }
 
             if (showSizingBoxes) {
@@ -538,9 +620,16 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
         const handleLoad = () => {
             // Try immediately
             updateContent();
+            setIsReady(true);
             // And retry once after a short delay to ensure assets/fonts are settled
-            setTimeout(updateContent, 100);
-            setTimeout(updateContent, 500);
+            setTimeout(() => {
+                updateContent();
+                setIsReady(true);
+            }, 100);
+            setTimeout(() => {
+                updateContent();
+                setIsReady(true);
+            }, 500);
         };
 
         if (currentIframe.contentDocument?.readyState === 'complete') {
@@ -581,12 +670,15 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                     pointerEvents: (onClick && !showSizingBoxes) ? 'none' : 'auto'
                 }}>
                     <iframe
+                        key={iframeSrc}
                         ref={iframeRef}
-                        src={customImage}
+                        src={iframeSrc}
                         style={{
                             width: '100%',
                             height: '100%',
                             border: 'none',
+                            opacity: isReady ? 1 : 0,
+                            transition: 'opacity 0.15s ease-in-out'
                         }}
                         scrolling="no"
                         title="Invitation Template"
