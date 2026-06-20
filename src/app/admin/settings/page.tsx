@@ -6,7 +6,18 @@ import { auth } from '@/lib/firebase';
 
 export default function SettingsPage() {
     const [activeTab, setActiveTab] = useState('general');
-    const [bannerMessages, setBannerMessages] = useState<Array<{icon: string, text: string, badge: string}>>([]);
+    const [bannerMessages, setBannerMessages] = useState<Array<{icon: string, text: string, badge: string}>>([
+        {
+            icon: '✦',
+            text: 'Your wedding communication ready in <strong>5 mins</strong>. Try now for free.',
+            badge: 'New 🎉',
+        },
+        {
+            icon: '✦',
+            text: '<strong>Launch Offer</strong> - Create Your Complete Wedding Invitation Suite in Minutes',
+            badge: 'Hot 🔥',
+        }
+    ]);
     const [bannerActive, setBannerActive] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
 
@@ -16,7 +27,7 @@ export default function SettingsPage() {
                 const res = await fetch('/api/settings');
                 const data = await res.json();
                 if (data.success) {
-                    if (data.settings?.banner_messages) {
+                    if (data.settings?.banner_messages && Array.isArray(data.settings.banner_messages) && data.settings.banner_messages.length > 0) {
                         setBannerMessages(data.settings.banner_messages);
                     }
                     if (data.settings?.banner_active !== undefined) {
