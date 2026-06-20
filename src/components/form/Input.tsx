@@ -1,5 +1,7 @@
 import clsx from 'clsx';
 import styles from './Form.module.css';
+import { DatePicker } from './DatePicker';
+import { TimePicker } from './TimePicker';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement | HTMLTextAreaElement> {
     label: string;
@@ -26,6 +28,28 @@ export const Input = ({ label, error, helperText, className, id, type, hideLabel
                     rows={4}
                     {...(props as React.TextareaHTMLAttributes<HTMLTextAreaElement>)}
                     value={props.value ?? ''}
+                />
+            ) : type === 'date' ? (
+                <DatePicker 
+                    id={inputId}
+                    value={props.value as string}
+                    onChange={(val) => {
+                        const event = { target: { value: val } } as any;
+                        if (props.onChange) props.onChange(event);
+                    }}
+                    error={!!error}
+                    className={className}
+                />
+            ) : type === 'time' ? (
+                <TimePicker 
+                    id={inputId}
+                    value={props.value as string}
+                    onChange={(val) => {
+                        const event = { target: { value: val } } as any;
+                        if (props.onChange) props.onChange(event);
+                    }}
+                    error={!!error}
+                    className={className}
                 />
             ) : (
                 <input

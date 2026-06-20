@@ -224,3 +224,21 @@ model SiteSetting {
   value String // Can store JSON
   @@map("SiteSetting")
 }
+
+model Blog {
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  title           String
+  category        String
+  date            String
+  readTime        String
+  excerpt         String
+  image           String
+  content         String   @db.Text
+  metaDescription String
+  published       Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("Blog")
+}

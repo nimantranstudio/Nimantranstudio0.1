@@ -1,0 +1,197 @@
+.container {
+    position: relative;
+    width: 100%;
+}
+
+.inputWrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+}
+
+.value {
+    color: var(--foreground);
+}
+
+.placeholder {
+    color: var(--muted-foreground);
+}
+
+.icon {
+    color: var(--muted-foreground);
+    transition: color 0.2s ease;
+}
+
+.inputWrapper:hover .icon {
+    color: var(--foreground);
+}
+
+.popover {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    z-index: 50;
+    width: 320px;
+    background: white;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: 0 10px 40px -10px rgba(0,0,0,0.1);
+    padding: 1.25rem;
+    font-family: var(--font-sans);
+}
+
+.popoverTime {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    z-index: 50;
+    background: white;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: 0 10px 40px -10px rgba(0,0,0,0.1);
+    padding: 1rem;
+    font-family: var(--font-sans);
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.navBtn {
+    background: none;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--foreground);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.navBtn:hover {
+    background: var(--muted);
+}
+
+.monthLabel {
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+}
+
+.dayName {
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--muted-foreground);
+    padding-bottom: 0.5rem;
+}
+
+.dayBtn {
+    background: none;
+    border: none;
+    border-radius: 6px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+    cursor: pointer;
+    color: var(--foreground);
+    transition: all 0.2s ease;
+}
+
+.dayBtn:hover {
+    background: var(--muted);
+}
+
+.daySelected {
+    background: var(--foreground) !important;
+    color: var(--background) !important;
+    font-weight: 500;
+}
+
+.dayToday {
+    color: #D4AF37;
+    font-weight: 600;
+}
+
+.timeColumns {
+    display: flex;
+    gap: 1rem;
+}
+
+.timeColumn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.timeLabel {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--muted-foreground);
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+}
+
+.scrollList {
+    height: 200px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding-right: 4px;
+}
+
+.scrollList::-webkit-scrollbar {
+    width: 4px;
+}
+.scrollList::-webkit-scrollbar-track {
+    background: transparent;
+}
+.scrollList::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 4px;
+}
+
+.ampmList {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    height: 100%;
+    justify-content: center;
+}
+
+.timeBtn {
+    background: none;
+    border: none;
+    border-radius: 6px;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    cursor: pointer;
+    color: var(--foreground);
+    transition: all 0.2s ease;
+}
+
+.timeBtn:hover {
+    background: var(--muted);
+}
+
+.timeSelected {
+    background: var(--foreground) !important;
+    color: var(--background) !important;
+    font-weight: 500;
+}

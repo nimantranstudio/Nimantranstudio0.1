@@ -365,11 +365,11 @@ function PreviewContent() {
                                     venue: formData.defaultVenueName
                                 }}
                                 theme={theme}
-                                groomName={formData.groomName || undefined}
-                                brideName={formData.brideName || undefined}
-                                groomParents={formData.groomParents || undefined}
-                                brideParents={formData.brideParents || undefined}
-                                welcomeMessage={formData.invitationMessage || undefined}
+                                groomName={formData.groomName || ''}
+                                brideName={formData.brideName || ''}
+                                groomParents={formData.groomParents || ''}
+                                brideParents={formData.brideParents || ''}
+                                welcomeMessage={formData.invitationMessage || ''}
                                 isPlaceholder={true}
                                 isRawPreview={false}
                                 type='image'

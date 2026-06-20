@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <iframe id="my-frame" src="about:blank"></iframe>
+    <script>
+        const frame = document.getElementById('my-frame');
+        console.log("Initial readyState:", frame.contentDocument.readyState);
+        frame.src = "https://example.com";
+        console.log("Immediately after changing src:", frame.contentDocument.readyState);
+    </script>
+</body>
+</html>

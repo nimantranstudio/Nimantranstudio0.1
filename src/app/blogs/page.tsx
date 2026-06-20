@@ -3,7 +3,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { MoveRight, Clock, BookOpen } from 'lucide-react';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
-import { BLOG_POSTS } from './blogData';
+import { getPrisma } from '@/lib/prisma';
 import styles from './blogs.module.css';
 
 export const metadata: Metadata = {
@@ -16,10 +16,18 @@ export const metadata: Metadata = {
     },
 };
 
-const featured = BLOG_POSTS[0];
-const rest = BLOG_POSTS.slice(1);
+export const dynamic = 'force-dynamic';
 
-export default function BlogsPage() {
+export default async function BlogsPage() {
+    const prisma = getPrisma();
+    const allBlogs = await prisma.blog.findMany({
+        where: { published: true },
+        orderBy: { createdAt: 'desc' }
+    });
+
+    const featured = allBlogs.length > 0 ? allBlogs[0] : null;
+    const rest = allBlogs.length > 1 ? allBlogs.slice(1) : [];
+
     return (
         <main className={styles.page}>
             <header className={styles.header}>
@@ -43,19 +51,25 @@ export default function BlogsPage() {
                     </p>
                 </div>
 
-                {/* Featured Post */}
-                <Link href={`/blogs/${featured.slug}`} className={styles.featuredCard}>
-                    <div className={styles.featuredImage}>
-                        <Image
-                            src={featured.image}
-                            alt={featured.title}
-                            fill
-                            className={styles.image}
-                            priority
-                            sizes="(max-width: 768px) 100vw, 60vw"
-                        />
-                        <span className={styles.featuredBadge}>Featured</span>
+                {!featured ? (
+                    <div style={{ textAlign: 'center', padding: '4rem', background: '#F9FAFB', borderRadius: '1rem', color: '#6B7280' }}>
+                        No blogs published yet. Check back soon!
                     </div>
+                ) : (
+                    <>
+                        {/* Featured Post */}
+                        <Link href={`/blogs/${featured.slug}`} className={styles.featuredCard}>
+                            <div className={styles.featuredImage}>
+                                <Image
+                                    src={featured.image || '/logo.png'}
+                                    alt={featured.title}
+                                    fill
+                                    className={styles.image}
+                                    priority
+                                    sizes="(max-width: 768px) 100vw, 60vw"
+                                />
+                                <span className={styles.featuredBadge}>Featured</span>
+                            </div>
                     <div className={styles.featuredContent}>
                         <div className={styles.meta}>
                             <span className={styles.category}>{featured.category}</span>
@@ -78,7 +92,7 @@ export default function BlogsPage() {
                         <Link key={post.slug} href={`/blogs/${post.slug}`} className={styles.card}>
                             <div className={styles.imageWrapper}>
                                 <Image
-                                    src={post.image}
+                                    src={post.image || '/logo.png'}
                                     alt={post.title}
                                     fill
                                     className={styles.image}
@@ -100,6 +114,8 @@ export default function BlogsPage() {
                         </Link>
                     ))}
                 </section>
+                </>
+                )}
 
                 {/* Newsletter CTA */}
                 <div className={styles.newsletter}>

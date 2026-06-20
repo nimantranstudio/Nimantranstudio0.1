@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { Package, TrendingUp, Palette, Users, Loader2 } from "lucide-react";
 import { auth } from '@/lib/firebase';
 
@@ -72,15 +73,17 @@ export default function AdminDashboard() {
                 </div>
 
                 {/* Weddings/Users */}
-                <div style={{ background: 'white', padding: '1.5rem', borderRadius: '12px', border: '1px solid #E5E0D8', display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-                    <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#E8F0E6', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#4F634A' }}>
-                        <Users size={24} />
+                <Link href="/admin/active-weddings" style={{ textDecoration: 'none' }}>
+                    <div style={{ background: 'white', padding: '1.5rem', borderRadius: '12px', border: '1px solid #E5E0D8', display: 'flex', alignItems: 'center', gap: '1.5rem', cursor: 'pointer', transition: 'transform 0.2s', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}>
+                        <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#E8F0E6', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#4F634A' }}>
+                            <Users size={24} />
+                        </div>
+                        <div>
+                            <div style={{ fontSize: '0.9rem', color: '#6b7280', fontWeight: '500' }}>Active Weddings</div>
+                            <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1A1A1A' }}>{stats.weddingsCount}</div>
+                        </div>
                     </div>
-                    <div>
-                        <div style={{ fontSize: '0.9rem', color: '#6b7280', fontWeight: '500' }}>Active Weddings</div>
-                        <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1A1A1A' }}>{stats.weddingsCount}</div>
-                    </div>
-                </div>
+                </Link>
 
                 {/* Stat Card 2 - Revenue */}
                 <div style={{ background: 'white', padding: '1.5rem', borderRadius: '12px', border: '1px solid #E5E0D8', display: 'flex', alignItems: 'center', gap: '1.5rem' }}>

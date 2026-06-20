@@ -282,6 +282,22 @@ exports.Prisma.SiteSettingScalarFieldEnum = {
   value: 'value'
 };
 
+exports.Prisma.BlogScalarFieldEnum = {
+  id: 'id',
+  slug: 'slug',
+  title: 'title',
+  category: 'category',
+  date: 'date',
+  readTime: 'readTime',
+  excerpt: 'excerpt',
+  image: 'image',
+  content: 'content',
+  metaDescription: 'metaDescription',
+  published: 'published',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -311,7 +327,8 @@ exports.Prisma.ModelName = {
   RSVP: 'RSVP',
   Package: 'Package',
   BundleInvoice: 'BundleInvoice',
-  SiteSetting: 'SiteSetting'
+  SiteSetting: 'SiteSetting',
+  Blog: 'Blog'
 };
 
 /**

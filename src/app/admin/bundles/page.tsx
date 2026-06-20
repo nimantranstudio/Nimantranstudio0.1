@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Plus, Package, Loader2, Check, Star, Edit, Trash2, Globe, Lock, Image as ImageIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { BundleModal } from '@/components/admin/BundleModal';
 
@@ -96,6 +97,7 @@ export default function BundlesPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedBundle, setSelectedBundle] = useState<Bundle | null>(null);
+    const router = useRouter();
 
     const fetchBundles = async () => {
         setIsLoading(true);
@@ -117,13 +119,11 @@ export default function BundlesPage() {
     }, []);
 
     const handleAddNew = () => {
-        setSelectedBundle(null);
-        setIsModalOpen(true);
+        router.push('/admin/bundles/new/edit');
     };
 
     const handleEdit = (bundle: Bundle) => {
-        setSelectedBundle(bundle);
-        setIsModalOpen(true);
+        router.push(`/admin/bundles/${bundle.id}/edit`);
     };
 
     const handleDelete = async (id: string) => {

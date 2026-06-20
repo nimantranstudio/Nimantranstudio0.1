@@ -69,7 +69,6 @@
             z-index: 10;
         }
 
-        .text-block:empty { display: none; margin: 0; padding: 0; }
         .text-block {
             box-sizing: border-box;
             max-width: 100%; /* Keep within the padded frame */
@@ -99,16 +98,3 @@
 </head>
 <body>
     <div class="invitation-wrapper">
-        <div class="content-safe-area">
-            <div class="text-block eventName" style="">Save the Date</div>
-            <div class="text-block subheading" style="">to celebrate the wedding of</div>
-            <div id="bride-name" class="text-block names" style="">Anjali</div>
-            <div class="text-block names" style="">&</div>
-            <div id="groom-name" class="text-block names" style="">Rahul</div>
-            <div class="text-block details" style="font-weight: 700;margin-top: 1.7cqi; opacity: 0.9; font-size: 0.9em;">On</div>
-            <div id="event-date" class="text-block details" style="margin-top: -1.7cqi;">16th February</div>
-            <div class="text-block welcome" style="">formal invite to follow</div>
-        </div>
-    </div>
-</body>
-</html>

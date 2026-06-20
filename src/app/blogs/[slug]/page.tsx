@@ -3,18 +3,18 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowLeft, Clock, Calendar, MoveRight } from 'lucide-react';
-import { BLOG_POSTS, getBlogPost } from '../blogData';
+import { getPrisma } from '@/lib/prisma';
 import styles from './post.module.css';
 
-export async function generateStaticParams() {
-    return BLOG_POSTS.map((post) => ({ slug: post.slug }));
-}
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata(
     { params }: { params: Promise<{ slug: string }> }
 ): Promise<Metadata> {
     const { slug } = await params;
-    const post = getBlogPost(slug);
+    const prisma = getPrisma();
+    const post = await prisma.blog.findUnique({ where: { slug } });
+    
     if (!post) return { title: 'Post Not Found | Nimantran Studio' };
     return {
         title: `${post.title} | Nimantran Studio Blog`,
@@ -119,10 +119,15 @@ function inlineFormat(text: string): string {
 
 export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params;
-    const post = getBlogPost(slug);
+    const prisma = getPrisma();
+    const post = await prisma.blog.findUnique({ where: { slug } });
     if (!post) notFound();
 
-    const related = BLOG_POSTS.filter(p => p.slug !== post.slug).slice(0, 3);
+    const related = await prisma.blog.findMany({
+        where: { published: true, slug: { not: slug } },
+        take: 3,
+        orderBy: { createdAt: 'desc' }
+    });
 
     return (
         <main className={styles.page}>
@@ -161,7 +166,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
             <div className="container">
                 <div className={styles.coverWrapper}>
                     <Image
-                        src={post.image}
+                        src={post.image || '/logo.png'}
                         alt={post.title}
                         fill
                         className={styles.coverImage}

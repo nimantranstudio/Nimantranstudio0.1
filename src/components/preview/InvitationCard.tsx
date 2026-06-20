@@ -207,17 +207,19 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                 const n = (eName || '').toLowerCase();
                 if (n.includes('haldi')) return "Haldi Ceremony";
                 if (n.includes('mehendi')) return "Mehendi Ceremony";
-                if (n.includes('sangeet')) return "Sangeet Ceremoney";
+                if (n.includes('sangeet')) return "Sangeet Ceremony";
                 if (n.includes('wedding')) return "Wedding Ceremony";
                 if (n.includes('reception')) return "Reception Ceremony";
                 return `${eName || 'Wedding'} Ceremony`;
             };
 
-
             const displayEventName = event.heading || (event.name ? getDefaultHeading(event.name) : undefined);
 
-            const mapping: Record<string, string | undefined> = {
+            const fullMapping: Record<string, string | undefined> = {
                 'event-name': displayEventName,
+                'heading': displayEventName,
+                'subheading': event.tagline || 'We are pleased to invite you to the wedding of',
+                'event-subheading': event.tagline || 'We are pleased to invite you to the wedding of',
                 'groom-name': groomName,
                 'bride-name': brideName,
                 'groom-parents': groomParents,
@@ -227,30 +229,77 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                 'event-date': formatDate(event.date),
                 'event-time': formatTime(event.time),
                 'event-venue': event.venue,
-                'venue': event.venue
+                'venue': event.venue,
+                'ampersand': '&',
+                'date_label': 'On',
+                'time_label': 'At',
+                'venue_label': 'Venue:'
             };
 
-            const knownPlaceholders: Record<string, string[]> = {
-                'event-date': ['14th February 2026', '16th February', '15th February 2026', '14th February'],
-                'event-time': ['6:30 pm', '4:30 pm', '10:30 am', '11:30 am', '7:30 pm'],
-                'event-venue': ['The Rajputana palace, Adarsh Nagar, Rajasthan', 'The Rajputana palace, Adarsh Nagar', 'The Rajputana palace'],
-                'bride-name': ['Anjali ke haldi', 'Anjali'],
-                'groom-name': ['Rahul']
-            };
+            // 1. Replace all mustache tags in text nodes globally
+            const walker = doc.createTreeWalker(doc.body, NodeFilter.SHOW_TEXT, null);
+            let node;
+            const textNodes: Text[] = [];
+            while ((node = walker.nextNode())) {
+                textNodes.push(node as Text);
+            }
+            
+            textNodes.forEach(textNode => {
+                let text = textNode.nodeValue || '';
+                let changed = false;
+                
+                Object.entries(fullMapping).forEach(([key, value]) => {
+                    if (value === undefined || value === null) return;
+                    const valStr = value.toString();
+                    
+                    const regexDash = new RegExp(`{{\\s*${key}\\s*}}`, 'g');
+                    const regexUnder = new RegExp(`{{\\s*${key.replace('-', '_')}\\s*}}`, 'g');
+                    
+                    if (regexDash.test(text)) {
+                        text = text.replace(regexDash, valStr);
+                        changed = true;
+                    }
+                    if (regexUnder.test(text)) {
+                        text = text.replace(regexUnder, valStr);
+                        changed = true;
+                    }
+                });
 
-            Object.entries(mapping).forEach(([id, value]) => {
+                // Clear any remaining unmapped mustache tags to clean up the UI
+                const unknownRegex = /{{\s*[a-zA-Z0-9_-]+\s*}}/g;
+                if (unknownRegex.test(text)) {
+                    text = text.replace(unknownRegex, '');
+                    changed = true;
+                }
+                
+                if (changed) {
+                    textNode.nodeValue = text;
+                }
+            });
+
+            // 2. ID and text fallback replacements
+            Object.entries(fullMapping).forEach(([id, value]) => {
+                if (value === undefined || value === null) return;
                 let el = doc.getElementById(id);
                 
                 // Fallback for uploaded templates that are missing IDs
                 if (!el) {
+                    const knownPlaceholders: Record<string, string[]> = {
+                        'event-date': ['14th February 2026', '16th February', '15th February 2026', '14th February'],
+                        'event-time': ['6:30 pm', '4:30 pm', '10:30 am', '11:30 am', '7:30 pm'],
+                        'event-venue': ['The Rajputana palace, Adarsh Nagar, Rajasthan', 'The Rajputana palace, Adarsh Nagar', 'The Rajputana palace'],
+                        'bride-name': ['Anjali ke haldi', 'Anjali'],
+                        'groom-name': ['Rahul'],
+                        'subheading': ['We are pleased to invite you to the wedding of', 'We invite you to share our joy', 'formal invite to follow']
+                    };
                     const textsToLookFor = knownPlaceholders[id] || [];
-                    if (textsToLookFor.length > 0 && value !== undefined && value !== null) {
+                    if (textsToLookFor.length > 0) {
                         const elements = Array.from(doc.querySelectorAll('div, span, p, h1, h2, h3, h4, h5, h6'));
                         for (const element of elements) {
                             const text = element.textContent?.trim();
                             if (text && textsToLookFor.includes(text)) {
                                 el = element as HTMLElement;
-                                // Assign the ID so it works next time and can be saved
+                                // Assign the ID so it works next time
                                 el.id = id;
                                 break;
                             }
@@ -258,29 +307,16 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                     }
                 }
 
-                // Only replace if value is explicitly defined and not empty string (unless we specifically want empty defaults)
-                // For raw previews, passing undefined won't overwrite the designer's template text.
-                if (el && value !== undefined && value !== null) {
+                if (el) {
                     let formattedValue = value.toString().replace(/\n/g, '<br/>');
-                    
-                    // Special case: if the fallback found "Anjali ke haldi", append "ke haldi"
                     if (id === 'bride-name' && el.textContent?.trim() === 'Anjali ke haldi') {
                         formattedValue = formattedValue + ' ke haldi';
                     }
-
-                    // Use innerHTML but handle line breaks
                     if (el.innerHTML !== formattedValue) {
                         el.innerHTML = formattedValue;
                     }
                 }
             });
-
-            // Ensure specific IDs for wedding names are handled if they differ
-            let groomParentsEl = doc.getElementById('groom-parents') || doc.getElementById('groom-parent-name');
-            if (groomParentsEl && groomParents !== undefined) groomParentsEl.innerHTML = groomParents;
-
-            let brideParentsEl = doc.getElementById('bride-parents') || doc.getElementById('bride-parent-name');
-            if (brideParentsEl && brideParents !== undefined) brideParentsEl.innerHTML = brideParents;
 
             // OVERRIDE: Force user input to take priority for main text elements
             const eventNameEl = doc.getElementById('event-name');
@@ -305,13 +341,22 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                 styleTags.forEach(tag => {
                     if (tag.innerHTML.includes('vw')) {
                         // Use lookahead to ensure we only replace CSS values and not base64 strings
-                        tag.innerHTML = tag.innerHTML.replace(/([\d.]+)vw(?=[\s;},!\)])/g, '$1vmax');
+                        tag.innerHTML = tag.innerHTML.replace(/([\d.]+)vw(?=[\s;},!)])/g, '$1vmax');
                     }
                 });
                 doc.body.dataset.vwFixed = "true";
             }
 
             styleEl.textContent = `
+                html, body { 
+                    margin: 0 !important; 
+                    padding: 0 !important;
+                }
+                body {
+                    background-size: cover !important;
+                    background-position: center !important;
+                    background-repeat: no-repeat !important;
+                }
                 * { hyphens: none !important; -webkit-hyphens: none !important; }
                 .text-overlay { padding-top: 15vh !important; }
                 ${showSizingBoxes ? `
@@ -379,7 +424,7 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
             }
 
             if (showSizingBoxes) {
-                Object.keys(mapping).forEach(id => {
+                Object.keys(fullMapping).forEach(id => {
                     const el = doc.getElementById(id);
                     if (el && !el.classList.contains('sizing-box')) {
                         el.classList.add('sizing-box');
@@ -472,7 +517,7 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                     doc.body.appendChild(scriptEl);
                 }
             } else {
-                Object.keys(mapping).forEach(id => {
+                Object.keys(fullMapping).forEach(id => {
                     const el = doc.getElementById(id);
                     if (el && el.classList.contains('sizing-box')) {
                         el.classList.remove('sizing-box');
@@ -520,7 +565,9 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                     cursor: onClick ? 'pointer' : 'default',
                     overflow: 'hidden',
                     position: 'relative',
-                    background: 'white' // Ensure background is filled
+                    background: 'white', // Ensure background is filled
+                    aspectRatio: 'auto',
+                    height: `${iframeHeight * containerScale}px`
                 }}
             >
                 <div style={{
