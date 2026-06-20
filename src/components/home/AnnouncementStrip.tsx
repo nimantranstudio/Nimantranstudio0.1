@@ -18,6 +18,7 @@ export function AnnouncementStrip() {
       badge: 'Hot 🔥',
     }
   ]);
+  const [isActive, setIsActive] = useState(true);
   const [showStrip, setShowStrip] = useState(true);
   const [msgIndex, setMsgIndex] = useState(0);
   const [mounted, setMounted] = useState(false);
@@ -27,8 +28,13 @@ export function AnnouncementStrip() {
       try {
         const res = await fetch('/api/settings');
         const data = await res.json();
-        if (data.success && data.settings?.banner_messages) {
-          setMessages(data.settings.banner_messages);
+        if (data.success) {
+          if (data.settings?.banner_messages) {
+            setMessages(data.settings.banner_messages);
+          }
+          if (data.settings?.banner_active !== undefined) {
+            setIsActive(data.settings.banner_active);
+          }
         }
       } catch (error) {
         console.error("Failed to fetch settings", error);
@@ -48,7 +54,7 @@ export function AnnouncementStrip() {
   if (!mounted) return null;
 
   const current = messages[msgIndex];
-  if (!current) return null;
+  if (!showStrip || !isActive || !current) return null;
 
   return (
     <AnimatePresence>

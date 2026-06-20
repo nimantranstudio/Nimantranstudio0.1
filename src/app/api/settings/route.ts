@@ -23,8 +23,8 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
     try {
-        const authResult = await verifyAuth(req);
-        if (!authResult.success) {
+        const { user, error } = await verifyAuth(req);
+        if (error || user?.role !== 'admin') {
             return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
         }
         

@@ -2,9 +2,14 @@
 
 import { Settings, Bell, Shield, Globe, Type } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { auth } from '@/lib/firebase';
+
 export default function SettingsPage() {
     const [activeTab, setActiveTab] = useState('general');
     const [bannerText, setBannerText] = useState('');
+    const [bannerActive, setBannerActive] = useState(true);
+    const [bannerBadge, setBannerBadge] = useState('Update 🎉');
+    const [bannerIcon, setBannerIcon] = useState('✦');
     const [isSaving, setIsSaving] = useState(false);
 
     useEffect(() => {
@@ -12,11 +17,17 @@ export default function SettingsPage() {
             try {
                 const res = await fetch('/api/settings');
                 const data = await res.json();
-                if (data.success && data.settings?.banner_messages) {
-                    // Extract just the text from the first message for simplicity in the UI
-                    const msgs = data.settings.banner_messages;
-                    if (msgs.length > 0) {
-                        setBannerText(msgs[0].text);
+                if (data.success) {
+                    if (data.settings?.banner_messages) {
+                        const msgs = data.settings.banner_messages;
+                        if (msgs.length > 0) {
+                            setBannerText(msgs[0].text || '');
+                            setBannerBadge(msgs[0].badge || 'Update 🎉');
+                            setBannerIcon(msgs[0].icon || '✦');
+                        }
+                    }
+                    if (data.settings?.banner_active !== undefined) {
+                        setBannerActive(data.settings.banner_active);
                     }
                 }
             } catch (error) {
@@ -29,19 +40,40 @@ export default function SettingsPage() {
     const handleSaveBanner = async () => {
         setIsSaving(true);
         try {
+            await auth.authStateReady();
+            const token = auth.currentUser ? await auth.currentUser.getIdToken() : '';
+
             const newBannerMessages = [
                 {
-                    icon: '✦',
+                    icon: bannerIcon,
                     text: bannerText,
-                    badge: 'Update 🎉',
+                    badge: bannerBadge,
                 }
             ];
-            await fetch('/api/settings', {
+
+            const res1 = await fetch('/api/settings', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
                 body: JSON.stringify({ key: 'banner_messages', value: newBannerMessages })
             });
-            alert("Banner updated successfully!");
+
+            const res2 = await fetch('/api/settings', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ key: 'banner_active', value: bannerActive })
+            });
+
+            if (res1.ok && res2.ok) {
+                alert("Banner settings updated successfully!");
+            } else {
+                alert("Failed to update some settings.");
+            }
         } catch (e) {
             console.error(e);
             alert("Failed to update banner.");
@@ -114,8 +146,21 @@ export default function SettingsPage() {
                             <h3 style={{ fontSize: '1.125rem', fontWeight: '600', color: '#111827', marginBottom: '1.5rem' }}>UI & Messaging</h3>
 
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: '#f9fafb', padding: '1rem', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
+                                    <input 
+                                        type="checkbox" 
+                                        id="bannerActive" 
+                                        checked={bannerActive} 
+                                        onChange={(e) => setBannerActive(e.target.checked)}
+                                        style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                                    />
+                                    <label htmlFor="bannerActive" style={{ fontSize: '0.9rem', fontWeight: '600', color: '#111827', cursor: 'pointer' }}>
+                                        Enable Top Announcement Banner
+                                    </label>
+                                </div>
+
                                 <div>
-                                    <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: '#374151', marginBottom: '0.5rem' }}>Top Banner Announcement</label>
+                                    <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: '#374151', marginBottom: '0.5rem' }}>Top Banner Announcement Text</label>
                                     <textarea 
                                         value={bannerText}
                                         onChange={(e) => setBannerText(e.target.value)}
@@ -124,6 +169,29 @@ export default function SettingsPage() {
                                         style={{ width: '100%', padding: '0.625rem', borderRadius: '8px', border: '1px solid #d1d5db', fontFamily: 'inherit' }} 
                                     />
                                     <p style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.25rem' }}>You can use basic HTML tags like &lt;strong&gt; for bold text.</p>
+                                </div>
+
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: '#374151', marginBottom: '0.5rem' }}>Badge Text</label>
+                                        <input 
+                                            type="text" 
+                                            value={bannerBadge} 
+                                            onChange={(e) => setBannerBadge(e.target.value)} 
+                                            placeholder="e.g. New 🎉"
+                                            style={{ width: '100%', padding: '0.625rem', borderRadius: '8px', border: '1px solid #d1d5db' }}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: '#374151', marginBottom: '0.5rem' }}>Icon</label>
+                                        <input 
+                                            type="text" 
+                                            value={bannerIcon} 
+                                            onChange={(e) => setBannerIcon(e.target.value)} 
+                                            placeholder="e.g. ✦"
+                                            style={{ width: '100%', padding: '0.625rem', borderRadius: '8px', border: '1px solid #d1d5db' }}
+                                        />
+                                    </div>
                                 </div>
 
                                 <div style={{ paddingTop: '1rem', borderTop: '1px solid #e5e7eb', display: 'flex', justifyContent: 'flex-end' }}>
