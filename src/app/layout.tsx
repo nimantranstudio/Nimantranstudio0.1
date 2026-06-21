@@ -4,6 +4,7 @@ import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import RootWrapper from "@/components/layout/RootWrapper";
 import { FloatingWhatsApp } from "@/components/ui/FloatingWhatsApp";
+import { GoogleAnalytics } from '@next/third-parties/google';
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair" });
@@ -57,6 +58,9 @@ export default function RootLayout({
         <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
           <RootWrapper>{children}</RootWrapper>
         </div>
+        {process.env.NEXT_PUBLIC_GA_ID && (
+          <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
+        )}
       </body>
     </html>
   );
