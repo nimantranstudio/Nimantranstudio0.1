@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint src/",
-    "postinstall": "prisma generate"
+    "postinstall": "rm -rf node_modules/.prisma/client && prisma generate"
   },
   "dependencies": {
     "@next/third-parties": "^16.2.9",
