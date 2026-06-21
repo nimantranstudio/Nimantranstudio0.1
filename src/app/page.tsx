@@ -10,6 +10,9 @@ import { HeroActions } from "@/components/home/HeroActions";
 import { prisma } from "@/lib/prisma";
 import * as motion from "framer-motion/client";
 
+export const dynamic = 'force-dynamic';
+
+
 import { PricingSection } from "@/components/home/PricingSection";
 import { CTASection } from "@/components/home/CTASection";
 import { BundleGridSection } from "@/components/home/BundleGridSection";

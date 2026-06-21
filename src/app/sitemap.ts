@@ -2,6 +2,9 @@ import { MetadataRoute } from 'next';
 import { BLOG_POSTS } from './blogs/blogData';
 import { prisma } from '@/lib/prisma';
 
+export const dynamic = 'force-dynamic';
+
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const baseUrl = 'https://nimantranstudio.com';
 
