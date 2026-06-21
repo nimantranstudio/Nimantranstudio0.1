@@ -5,18 +5,24 @@ import { prisma } from '@/lib/prisma';
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const baseUrl = 'https://nimantranstudio.com';
 
-    // Fetch dynamic themes
-    const themes = await prisma.theme.findMany({
-        where: { isActive: true },
-        select: { id: true, updatedAt: true }
-    });
+    let themeRoutes = [];
 
-    const themeRoutes = themes.map((theme) => ({
-        url: `${baseUrl}/themes/${theme.id}`,
-        lastModified: theme.updatedAt || new Date(),
-        changeFrequency: 'weekly' as const,
-        priority: 0.8,
-    }));
+    // Fetch dynamic themes with error handling
+    try {
+        const themes = await prisma.theme.findMany({
+            where: { isActive: true },
+            select: { id: true, updatedAt: true }
+        });
+
+        themeRoutes = themes.map((theme) => ({
+            url: `${baseUrl}/themes/${theme.id}`,
+            lastModified: theme.updatedAt || new Date(),
+            changeFrequency: 'weekly' as const,
+            priority: 0.8,
+        }));
+    } catch (error) {
+        console.error('Failed to fetch themes for sitemap:', error);
+    }
 
     const blogRoutes = BLOG_POSTS.map((post) => ({
         url: `${baseUrl}/blogs/${post.slug}`,
