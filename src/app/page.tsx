@@ -2,7 +2,6 @@ import styles from "./page.module.css";
 import { Sparkles, Heart, Smartphone, Users, CreditCard, Clock, Printer, Languages, ShieldCheck } from "lucide-react";
 import HeroGradient from "@/components/ui/HeroGradient";
 import { FloatingHearts } from "@/components/ui/FloatingHearts";
-import dynamic from "next/dynamic";
 import HeroImage from "@/components/home/HeroImage";
 
 import { ThemeShowcase } from "@/components/home/ThemeShowcase";
