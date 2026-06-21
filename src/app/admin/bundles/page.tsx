@@ -205,7 +205,7 @@ export default function BundlesPage() {
                                         {images.length > 0 ? (
                                             <img
                                                 src={images[0]}
-                                                alt={bundle.BundleName || bundle.name}
+                                                alt={bundle.name}
                                                 style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' }}
                                             />
                                         ) : (
@@ -221,7 +221,7 @@ export default function BundlesPage() {
                                     </div>
                                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '0.25rem' }}>
-                                            <h3 style={{ fontSize: '1.2rem', fontFamily: 'var(--font-serif)', color: '#1C1917', margin: 0 }}>{bundle.BundleName || bundle.name}</h3>
+                                            <h3 style={{ fontSize: '1.2rem', fontFamily: 'var(--font-serif)', color: '#1C1917', margin: 0 }}>{bundle.name}</h3>
                                             <span style={{
                                                 fontSize: '0.65rem',
                                                 padding: '2px 8px',
