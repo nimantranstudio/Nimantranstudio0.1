@@ -125,9 +125,9 @@ export default function DashboardPage() {
 
     const previewItems = buildPreviewItems();
 
-    // Generate RSVP Link based on couple names
-    const rsvpSlug = `${formData.groomName?.toLowerCase()?.split(' ')[0] || 'wedding'}-${formData.brideName?.toLowerCase()?.split(' ')[0] || 'rsvp'}`;
-    const rsvpFullUrl = `https://nimantran.app/rsvp/${rsvpSlug}`;
+    // Generate RSVP Link based on actual saved wedding ID and current origin
+    const rsvpSlug = useWeddingStore((state) => state.lastSavedWeddingId) || `${formData.groomName?.toLowerCase()?.split(' ')[0] || 'wedding'}-${formData.brideName?.toLowerCase()?.split(' ')[0] || 'rsvp'}`;
+    const rsvpFullUrl = `${typeof window !== 'undefined' ? window.location.origin : 'https://nimantran.app'}/rsvp/${rsvpSlug}`;
     const [copyStatus, setCopyStatus] = useState(false);
 
     const handleCopyRsvpLink = async () => {
@@ -211,7 +211,7 @@ export default function DashboardPage() {
                             </button>
                             <button
                                 onClick={() => {
-                                    const text = encodeURIComponent(`Check out our wedding invite!\n\nhttps://nimantran.app/rsvp/vivek-priyanka`);
+                                    const text = encodeURIComponent(`Check out our wedding invite!\n\n${rsvpFullUrl}`);
                                     window.open(`https://wa.me/?text=${text}`, '_blank');
                                 }}
                                 style={{

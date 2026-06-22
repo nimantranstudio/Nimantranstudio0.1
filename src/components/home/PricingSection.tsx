@@ -148,7 +148,7 @@ export const PricingSection = () => {
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
                                 <ShieldCheck size={13} color="#94A3B8" style={{ flexShrink: 0 }} />
                                 <span style={{ fontSize: '0.75rem', color: '#94A3B8', lineHeight: 1.4 }}>
-                                    Preview free · 7-day refund guarantee · Secure via Razorpay
+                                    Preview free · Satisfaction guarantee · Secure via Razorpay
                                 </span>
                             </div>
                         </div>

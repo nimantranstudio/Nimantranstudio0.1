@@ -1,5 +1,7 @@
+'use client';
+
 import Image from 'next/image';
-import { Check } from 'lucide-react';
+import { useRef, useCallback, useEffect, useState } from 'react';
 import type { Theme } from '@/lib/constants/themes';
 import styles from './ThemeCard.module.css';
 import clsx from 'clsx';
@@ -10,22 +12,107 @@ interface ThemeCardProps {
 }
 
 export const ThemeCard = ({ theme, onSelect }: ThemeCardProps) => {
-    // For demonstration purposes, if the theme is named "test theme", we show it as best seller
     const isBestSeller = theme.isBestSeller || theme.name.toLowerCase().includes('test theme');
-    
+
+    // Build the list of images to cycle through on hover
+    // previewImages can be a string (JSON) from the DB or an actual array
+    let parsedImages: string[] = [];
+    try {
+        if (Array.isArray(theme.previewImages)) {
+            parsedImages = theme.previewImages;
+        } else if (typeof theme.previewImages === 'string' && theme.previewImages.length > 0) {
+            const parsed = JSON.parse(theme.previewImages);
+            parsedImages = Array.isArray(parsed) ? parsed : [];
+        }
+    } catch {
+        parsedImages = [];
+    }
+    const images: string[] = Array.isArray(parsedImages) && parsedImages.length > 1
+        ? parsedImages
+        : [theme.thumbnail];
+
+    const hasMultipleImages = Array.isArray(images) && images.length > 1;
+
+    const [activeIndex, setActiveIndex] = useState(0);
+    const [isHovering, setIsHovering] = useState(false);
+    const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+    const startSlideshow = useCallback(() => {
+        if (!hasMultipleImages) return;
+        setIsHovering(true);
+        // Start from the second image (first is already showing as thumbnail)
+        let currentIdx = 0;
+        intervalRef.current = setInterval(() => {
+            currentIdx = (currentIdx + 1) % images.length;
+            setActiveIndex(currentIdx);
+        }, 1800); // Change image every 1.8 seconds
+    }, [hasMultipleImages, images.length]);
+
+    const stopSlideshow = useCallback(() => {
+        setIsHovering(false);
+        if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+        }
+        setActiveIndex(0);
+    }, []);
+
+    // Cleanup on unmount
+    useEffect(() => {
+        return () => {
+            if (intervalRef.current) {
+                clearInterval(intervalRef.current);
+            }
+        };
+    }, []);
+
     return (
         <div
             className={styles.card}
             onClick={() => onSelect(theme.id)}
+            onMouseEnter={startSlideshow}
+            onMouseLeave={stopSlideshow}
         >
             <div className={styles.imageWrapper}>
-                <Image
-                    src={theme.thumbnail}
-                    alt={theme.name}
-                    fill
-                    className={styles.image}
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                />
+                {/* Stack all images on top of each other, crossfade via opacity */}
+                {hasMultipleImages ? (
+                    images.map((src, i) => (
+                        <Image
+                            key={src + i}
+                            src={src}
+                            alt={`${theme.name} preview ${i + 1}`}
+                            fill
+                            className={clsx(styles.image, styles.stackedImage, {
+                                [styles.stackedImageActive]: i === activeIndex,
+                            })}
+                            sizes="(max-width: 768px) 100vw, 33vw"
+                            priority={i === 0}
+                        />
+                    ))
+                ) : (
+                    <Image
+                        src={theme.thumbnail}
+                        alt={theme.name}
+                        fill
+                        className={styles.image}
+                        sizes="(max-width: 768px) 100vw, 33vw"
+                    />
+                )}
+
+                {/* Progress dots indicator */}
+                {hasMultipleImages && isHovering && (
+                    <div className={styles.dotsIndicator}>
+                        {images.map((_, i) => (
+                            <span
+                                key={i}
+                                className={clsx(styles.dot, {
+                                    [styles.dotActive]: i === activeIndex,
+                                })}
+                            />
+                        ))}
+                    </div>
+                )}
+
                 {(theme.tag || isBestSeller || theme.isPopular) && (
                     <div className={clsx(styles.tag, {
                         [styles.bestSeller]: isBestSeller,

@@ -118,7 +118,7 @@ export default function PricingPage() {
                             GET STARTED — ₹999
                         </Link>
                         <p style={{ textAlign: 'center', fontSize: '0.78rem', color: '#94A3B8', marginBottom: '1.5rem', lineHeight: 1.6 }}>
-                            Preview free · 7-day refund guarantee · Trusted by Indian couples
+                            Preview free · Satisfaction guarantee · Trusted by Indian couples
                         </p>
 
                         <ul style={{ listStyle: 'none', padding: 0, margin: 0, textAlign: 'left' }}>

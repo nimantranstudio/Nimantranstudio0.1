@@ -249,6 +249,23 @@ function DetailsContent() {
                             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
                             className={styles.transitionContent}
                         >
+                            {/* Glaze Effect */}
+                            <motion.div
+                                initial={{ left: '-150%' }}
+                                animate={{ left: '150%' }}
+                                transition={{ duration: 1.2, ease: "easeInOut", delay: 1.2 }}
+                                style={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    bottom: 0,
+                                    width: '50%',
+                                    background: 'linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(212,175,55,0.15) 50%, rgba(255,255,255,0) 100%)',
+                                    transform: 'skewX(-25deg)',
+                                    zIndex: 0,
+                                    pointerEvents: 'none'
+                                }}
+                            />
+
                             <motion.div
                                 initial={{ scale: 0.8, opacity: 0 }}
                                 animate={{ scale: 1, opacity: 1 }}
@@ -276,19 +293,12 @@ function DetailsContent() {
                                 Now let’s personalise your wedding invitation suite.
                             </motion.p>
 
-                            <div className={styles.progressTrack}>
-                                <motion.div
-                                    initial={{ width: 0 }}
-                                    animate={{ width: '100%' }}
-                                    transition={{ duration: 3, ease: "easeInOut", delay: 1.5 }}
-                                    className={styles.progressFill}
-                                />
-                            </div>
+
 
                             <motion.div
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 3, duration: 0.8 }}
+                                transition={{ delay: 1.5, duration: 0.8 }}
                                 className={styles.reassuranceContainer}
                             >
                                 <span className={styles.reassurancePrimary}>Setting up your wedding workspace…</span>
@@ -1109,18 +1119,22 @@ function ArchitectureSummary() {
 // --- Confetti Particles Component ---
 function WeddingCelebration() {
     const [particles] = useState(() => 
-        Array.from({ length: 45 }).map((_, i) => ({
-            id: i,
-            x: Math.random() * 100,
-            y: -10 - Math.random() * 20,
-            size: 8 + Math.random() * 12,
-            type: ['heart', 'petal', 'sparkle', 'flake'][Math.floor(Math.random() * 4)],
-            color: ['#D4AF37', '#FDFBF7', '#FDA4AF', '#EBCDC3'][Math.floor(Math.random() * 4)],
-            duration: 4.0 + Math.random() * 2.0,
-            delay: Math.random() * 0.8,
-            rotation: Math.random() * 360,
-            drift: (Math.random() - 0.5) * 40
-        }))
+        Array.from({ length: 40 }).map((_, i) => {
+            const angle = Math.random() * Math.PI * 2;
+            const distance = 15 + Math.random() * 35; // distance in vw/vh
+            return {
+                id: i,
+                endX: 50 + Math.cos(angle) * distance,
+                endY: 50 + Math.sin(angle) * distance + 10, // slight downward bias
+                size: 6 + Math.random() * 8, // refined smaller size
+                type: ['heart', 'petal', 'sparkle'][Math.floor(Math.random() * 3)],
+                color: ['#D4AF37', '#FDFBF7', '#FDA4AF', '#EBCDC3'][Math.floor(Math.random() * 4)],
+                duration: 2.0 + Math.random() * 1.5,
+                delay: Math.random() * 0.1, // immediate burst
+                rotation: Math.random() * 360,
+                endRotation: Math.random() * 360 + 180
+            };
+        })
     );
 
     return (
@@ -1135,29 +1149,28 @@ function WeddingCelebration() {
                 <motion.div
                     key={p.id}
                     initial={{
-                        x: `${p.x}vw`,
-                        y: `${p.y}vh`,
+                        x: '50vw',
+                        y: '50vh',
                         rotate: p.rotation,
-                        opacity: 1,
-                        scale: 0.5
+                        opacity: 0,
+                        scale: 0
                     }}
                     animate={{
-                        y: '110vh',
-                        x: `${p.x + p.drift}vw`,
-                        rotate: p.rotation + 720,
-                        opacity: [1, 1, 0],
-                        scale: [0.8, 1, 0.7]
+                        x: `${p.endX}vw`,
+                        y: `${p.endY}vh`,
+                        rotate: p.endRotation,
+                        opacity: [0, 1, 1, 0],
+                        scale: [0, 1, 1, 0.8]
                     }}
                     transition={{
                         duration: p.duration,
                         delay: p.delay,
-                        ease: "linear"
+                        ease: [0.16, 1, 0.3, 1] // Custom snappy ease out
                     }}
                     style={{
                         position: 'absolute',
                         color: p.color,
-                        filter: p.size < 12 ? 'blur(1px)' : 'none',
-                        opacity: 0.8
+                        opacity: 0.9
                     }}
                 >
                     {p.type === 'heart' && <Heart size={p.size} fill="currentColor" stroke="none" />}
@@ -1172,18 +1185,10 @@ function WeddingCelebration() {
                     )}
                     {p.type === 'sparkle' && (
                         <div style={{
-                            width: 2,
-                            height: p.size,
+                            width: p.size * 2,
+                            height: p.size * 2,
                             background: 'currentColor',
-                            boxShadow: `0 0 ${p.size / 2}px currentColor`
-                        }} />
-                    )}
-                    {p.type === 'flake' && (
-                        <div style={{
-                            width: p.size / 2,
-                            height: p.size / 2,
-                            background: 'currentColor',
-                            borderRadius: '2px'
+                            clipPath: 'polygon(50% 0%, 65% 35%, 100% 50%, 65% 65%, 50% 100%, 35% 65%, 0% 50%, 35% 35%)'
                         }} />
                     )}
                 </motion.div>

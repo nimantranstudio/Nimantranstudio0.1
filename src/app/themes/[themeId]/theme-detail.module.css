@@ -704,6 +704,23 @@
     border: 1px solid #F3F4F6;
 }
 
+/* ─── Crossfade Layer for Smooth Image Transitions ─── */
+.crossfadeLayer {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: opacity;
+    z-index: 1;
+}
+
+.crossfadeLayerActive {
+    opacity: 1;
+    z-index: 2;
+}
+
 .galleryPrevBtn,
 .galleryNextBtn {
     position: absolute;

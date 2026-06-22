@@ -32,7 +32,7 @@ import type { Theme } from '@/lib/constants/themes';
 import { useWeddingStore } from '@/store/wedding-store';
 import { ThemeCard } from '@/components/ui/ThemeCard';
 import styles from './theme-detail.module.css';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import clsx from 'clsx';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { motion } from 'framer-motion';
@@ -147,6 +147,38 @@ export default function ThemeDetailClient({
         setSelectedAssetIndex(0);
         setActiveSlide(0);
     }, [selectedPlan]);
+
+    // Auto-cycling gallery slideshow
+    const autoPlayRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const pauseTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    const startAutoPlay = useCallback(() => {
+        if (autoPlayRef.current) clearInterval(autoPlayRef.current);
+        autoPlayRef.current = setInterval(() => {
+            setSelectedAssetIndex((prev) => {
+                const maxIndex = Math.min(assets?.length || 1, 5);
+                return (prev + 1) % maxIndex;
+            });
+        }, 3000); // Change every 3 seconds (slow)
+    }, []);
+
+    // Pause auto-play on manual interaction, resume after 6s
+    const pauseAndResume = useCallback(() => {
+        if (autoPlayRef.current) clearInterval(autoPlayRef.current);
+        if (pauseTimeoutRef.current) clearTimeout(pauseTimeoutRef.current);
+        pauseTimeoutRef.current = setTimeout(() => {
+            startAutoPlay();
+        }, 6000);
+    }, [startAutoPlay]);
+
+    // Start auto-cycling on mount
+    useEffect(() => {
+        startAutoPlay();
+        return () => {
+            if (autoPlayRef.current) clearInterval(autoPlayRef.current);
+            if (pauseTimeoutRef.current) clearTimeout(pauseTimeoutRef.current);
+        };
+    }, [startAutoPlay]);
 
     // Track scroll for sticky bar
     useEffect(() => {
@@ -422,7 +454,7 @@ export default function ThemeDetailClient({
                                         styles.thumbnailItem,
                                         selectedAssetIndex === index ? styles.thumbnailItemActive : styles.thumbnailItemInactive
                                     )}
-                                    onClick={() => setSelectedAssetIndex(index)}
+                                    onClick={() => { setSelectedAssetIndex(index); pauseAndResume(); }}
                                 >
                                     <div className={styles.thumbnailItemInner}>
                                         {asset.image.toLowerCase().endsWith('.html') ? (
@@ -463,44 +495,55 @@ export default function ThemeDetailClient({
                             )}
                         </div>
 
-                        {/* Main Image on the right */}
+                        {/* Main Image on the right - Crossfade Stack */}
                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
                                 <div
                                     className={styles.mainImageWrapper}
                                     onClick={() => setPreviewIndex(selectedAssetIndex)}
                                 >
-                                    {assets[selectedAssetIndex].image.toLowerCase().endsWith('.html') ? (
-                                        <InvitationCard
-                                            event={DUMMY_EVENT as any}
-                                            theme={theme}
-                                            groomName={undefined as unknown as string}
-                                            brideName={undefined as unknown as string}
-                                            groomParents={undefined}
-                                            brideParents={undefined}
-                                            customImage={assets[selectedAssetIndex].image}
-                                            isRawPreview={true}
-                                        />
-                                    ) : (
-                                        <Image
-                                            src={assets[selectedAssetIndex].image}
-                                            alt={assets[selectedAssetIndex].name}
-                                            fill
-                                            style={{
-                                                objectFit: 'cover',
-                                                zIndex: 2
-                                            }}
-                                            priority
-                                            onError={(e) => {
-                                                const target = e.target as HTMLImageElement;
-                                                target.style.display = 'none';
-                                            }}
-                                        />
-                                    )}
+                                    {assets.slice(0, 5).map((asset, idx) => (
+                                        asset.image.toLowerCase().endsWith('.html') ? (
+                                            <div
+                                                key={asset.image + idx}
+                                                className={clsx(styles.crossfadeLayer, {
+                                                    [styles.crossfadeLayerActive]: idx === selectedAssetIndex
+                                                })}
+                                            >
+                                                <InvitationCard
+                                                    event={DUMMY_EVENT as any}
+                                                    theme={theme}
+                                                    groomName={undefined as unknown as string}
+                                                    brideName={undefined as unknown as string}
+                                                    groomParents={undefined}
+                                                    brideParents={undefined}
+                                                    customImage={asset.image}
+                                                    isRawPreview={true}
+                                                />
+                                            </div>
+                                        ) : (
+                                            <Image
+                                                key={asset.image + idx}
+                                                src={asset.image}
+                                                alt={asset.name}
+                                                fill
+                                                className={clsx(styles.crossfadeLayer, {
+                                                    [styles.crossfadeLayerActive]: idx === selectedAssetIndex
+                                                })}
+                                                style={{ objectFit: 'cover' }}
+                                                priority={idx === 0}
+                                                onError={(e) => {
+                                                    const target = e.target as HTMLImageElement;
+                                                    target.style.display = 'none';
+                                                }}
+                                            />
+                                        )
+                                    ))}
                                 </div>
 
                             {/* Floating Prev Button */}
                             <div className={styles.galleryPrevBtn} onClick={() => {
                                 setSelectedAssetIndex((prev) => (prev - 1 + Math.min(assets.length, 5)) % Math.min(assets.length, 5));
+                                pauseAndResume();
                             }}>
                                 <ChevronLeft size={24} />
                             </div>
@@ -508,6 +551,7 @@ export default function ThemeDetailClient({
                             {/* Floating Next Button */}
                             <div className={styles.galleryNextBtn} onClick={() => {
                                 setSelectedAssetIndex((prev) => (prev + 1) % Math.min(assets.length, 5));
+                                pauseAndResume();
                             }}>
                                 <ChevronRight size={24} />
                             </div>
