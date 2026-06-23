@@ -49,7 +49,7 @@ export function ProcessingOverlay({ onComplete }: ProcessingOverlayProps) {
             // Celebrate then exit
             const triggerBurst = (delay: number, xOrigin: number, yOrigin: number = 0.6) => {
                 setTimeout(() => {
-                    // Slow drifting background confetti
+                    // Slow drifting background confetti (behind card, but in front of overlay)
                     confetti({
                         particleCount: 150,
                         spread: 120,
@@ -61,7 +61,7 @@ export function ProcessingOverlay({ onComplete }: ProcessingOverlayProps) {
                         ticks: 800, // Stay on screen longer
                         startVelocity: 30,
                         drift: 0.2, // Drifting sideways
-                        zIndex: 9998 // Behind the card
+                        zIndex: 10000 // In front of overlay (9999) but behind card (10001)
                     });
                     
                     // Foregound confetti (cinematic depth of field simulation)
@@ -107,7 +107,7 @@ export function ProcessingOverlay({ onComplete }: ProcessingOverlayProps) {
                 >
                     <motion.div 
                         className={styles.transitionCard}
-                        style={{ position: 'relative', zIndex: 10000, overflow: 'hidden' }}
+                        style={{ position: 'relative', zIndex: 10001, overflow: 'hidden' }}
                         initial={{ scale: 0.9, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
