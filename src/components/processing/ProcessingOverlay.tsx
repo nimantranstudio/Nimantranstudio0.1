@@ -47,42 +47,44 @@ export function ProcessingOverlay({ onComplete }: ProcessingOverlayProps) {
     useEffect(() => {
         if (isFinished) {
             // Celebrate then exit
-            const triggerBurst = (delay: number, xOrigin: number, yOrigin: number = 0.6) => {
+            const triggerBurst = (delay: number, xOrigin: number, yOrigin: number = 0.6, angle: number = 90) => {
                 setTimeout(() => {
                     // Slow drifting background confetti (behind card, but in front of overlay)
                     confetti({
-                        particleCount: 150,
-                        spread: 120,
+                        particleCount: 200, // Massive blast
+                        spread: 100,
                         origin: { x: xOrigin, y: yOrigin },
+                        angle: angle,
                         colors: ['#D4AF37', '#AA861E', '#FFFFFF', '#E5E4E2'],
                         shapes: ['circle', 'square'],
-                        gravity: 0.1, // Slow float down
-                        scalar: 1.2,
-                        ticks: 800, // Stay on screen longer
-                        startVelocity: 30,
-                        drift: 0.2, // Drifting sideways
+                        gravity: 0.15, // Slow float down
+                        scalar: 1.8, // Much larger background shapes
+                        ticks: 1000, // Stay on screen longer
+                        startVelocity: 55, // Explode higher
+                        drift: 0.1, 
                         zIndex: 10000 // In front of overlay (9999) but behind card (10001)
                     });
                     
                     // Foregound confetti (cinematic depth of field simulation)
                     confetti({
-                        particleCount: 25,
-                        spread: 180,
+                        particleCount: 40,
+                        spread: 120,
                         origin: { x: xOrigin, y: yOrigin },
+                        angle: angle,
                         colors: ['#D4AF37', '#FFFFFF'],
                         shapes: ['circle'],
                         gravity: 0.2,
-                        scalar: 2.5, // Larger shapes for foreground
-                        ticks: 800,
-                        startVelocity: 45,
+                        scalar: 3.5, // Massive foreground shapes
+                        ticks: 1000,
+                        startVelocity: 70,
                         zIndex: 10005 // In front of the card
                     });
                 }, delay);
             };
 
-            triggerBurst(0, 0.5, 0.7);      
-            triggerBurst(2000, 0.2, 0.5);   
-            triggerBurst(4000, 0.8, 0.5);
+            // Two giant simultaneous side blasts angled inwards from the bottom corners
+            triggerBurst(0, 0.05, 0.9, 60);   // Left blast, angled right
+            triggerBurst(0, 0.95, 0.9, 120);  // Right blast, angled left
 
             // Auto-exit after 10 seconds
             const exitTimer = setTimeout(() => {
