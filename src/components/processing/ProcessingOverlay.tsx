@@ -51,33 +51,33 @@ export function ProcessingOverlay({ onComplete }: ProcessingOverlayProps) {
                 setTimeout(() => {
                     // Refined background confetti
                     confetti({
-                        particleCount: 80, // Reduced count
+                        particleCount: 80, 
                         spread: 140,
                         origin: { x: xOrigin, y: yOrigin },
-                        angle: 90, // Straight up
+                        angle: 90, 
                         colors: ['#D4AF37', '#AA861E', '#FFFFFF', '#E5E4E2'],
                         shapes: ['circle', 'square'],
-                        gravity: 0.15, 
-                        scalar: 1.0, // Reduced size
-                        ticks: 800, 
-                        startVelocity: 45, 
+                        gravity: 0.3, // Faster fall
+                        scalar: 1.0, 
+                        ticks: 400, // Reduced ticks
+                        startVelocity: 35, // Doesn't shoot as high
                         drift: 0.1, 
-                        zIndex: 10000 // In front of overlay (9999) but behind card (10001)
+                        zIndex: 10000 
                     });
                     
                     // Refined foreground confetti (cinematic depth of field simulation)
                     confetti({
-                        particleCount: 15, // Reduced count
+                        particleCount: 15, 
                         spread: 160,
                         origin: { x: xOrigin, y: yOrigin },
-                        angle: 90, // Straight up
+                        angle: 90, 
                         colors: ['#D4AF37', '#FFFFFF'],
                         shapes: ['circle'],
-                        gravity: 0.2,
-                        scalar: 1.8, // Reduced size
-                        ticks: 800,
-                        startVelocity: 55,
-                        zIndex: 10005 // In front of the card
+                        gravity: 0.4, // Faster fall
+                        scalar: 1.8, 
+                        ticks: 400, // Reduced ticks
+                        startVelocity: 45, // Doesn't shoot as high
+                        zIndex: 10005 
                     });
                 }, delay);
             };
@@ -86,13 +86,13 @@ export function ProcessingOverlay({ onComplete }: ProcessingOverlayProps) {
             triggerBurst(0, 0.5, 0.6);      // First burst
             triggerBurst(1500, 0.5, 0.6);   // Second burst
 
-            // Auto-exit after 10 seconds
+            // Auto-exit faster (4 seconds instead of 10)
             const exitTimer = setTimeout(() => {
                 setIsExiting(true);
                 setTimeout(() => {
                     if (onComplete) onComplete();
                 }, 1000); // Wait for fade out
-            }, 10000);
+            }, 4000);
 
             return () => clearTimeout(exitTimer);
         }
