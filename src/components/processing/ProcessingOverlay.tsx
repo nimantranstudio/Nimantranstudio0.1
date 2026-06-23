@@ -47,24 +47,42 @@ export function ProcessingOverlay({ onComplete }: ProcessingOverlayProps) {
     useEffect(() => {
         if (isFinished) {
             // Celebrate then exit
-            const triggerBurst = (delay: number, xOrigin: number) => {
+            const triggerBurst = (delay: number, xOrigin: number, yOrigin: number = 0.6) => {
                 setTimeout(() => {
+                    // Slow drifting background confetti
                     confetti({
-                        particleCount: 200,
+                        particleCount: 150,
+                        spread: 120,
+                        origin: { x: xOrigin, y: yOrigin },
+                        colors: ['#D4AF37', '#AA861E', '#FFFFFF', '#E5E4E2'],
+                        shapes: ['circle', 'square'],
+                        gravity: 0.1, // Slow float down
+                        scalar: 1.2,
+                        ticks: 800, // Stay on screen longer
+                        startVelocity: 30,
+                        drift: 0.2, // Drifting sideways
+                        zIndex: 9998 // Behind the card
+                    });
+                    
+                    // Foregound confetti (cinematic depth of field simulation)
+                    confetti({
+                        particleCount: 25,
                         spread: 180,
-                        origin: { x: xOrigin, y: 0.6 },
-                        colors: ['#D4AF37', '#AA861E', '#FFFFFF'],
-                        gravity: 0.5,
-                        scalar: 1.5,
-                        ticks: 500,
+                        origin: { x: xOrigin, y: yOrigin },
+                        colors: ['#D4AF37', '#FFFFFF'],
+                        shapes: ['circle'],
+                        gravity: 0.2,
+                        scalar: 2.5, // Larger shapes for foreground
+                        ticks: 800,
                         startVelocity: 45,
-                        zIndex: 20000
+                        zIndex: 10005 // In front of the card
                     });
                 }, delay);
             };
 
-            triggerBurst(0, 0.5);      
-            triggerBurst(5000, 0.8);   
+            triggerBurst(0, 0.5, 0.7);      
+            triggerBurst(2000, 0.2, 0.5);   
+            triggerBurst(4000, 0.8, 0.5);
 
             // Auto-exit after 10 seconds
             const exitTimer = setTimeout(() => {
@@ -89,10 +107,28 @@ export function ProcessingOverlay({ onComplete }: ProcessingOverlayProps) {
                 >
                     <motion.div 
                         className={styles.transitionCard}
+                        style={{ position: 'relative', zIndex: 10000, overflow: 'hidden' }}
                         initial={{ scale: 0.9, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
                     >
+                        {isFinished && (
+                            <motion.div
+                                initial={{ left: '-150%' }}
+                                animate={{ left: '150%' }}
+                                transition={{ duration: 1.5, ease: "easeInOut", delay: 0.2 }}
+                                style={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    bottom: 0,
+                                    width: '50%',
+                                    background: 'linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(212,175,55,0.15) 50%, rgba(255,255,255,0) 100%)',
+                                    transform: 'skewX(-25deg)',
+                                    zIndex: 0,
+                                    pointerEvents: 'none'
+                                }}
+                            />
+                        )}
                         <div className={styles.topSection}>
                             <motion.h1 className={styles.headline}>
                                 {isFinished ? "Success! Everything is ready." : "Sit back and relax."}
@@ -131,12 +167,14 @@ export function ProcessingOverlay({ onComplete }: ProcessingOverlayProps) {
                             </div>
                         </div>
 
-                        <div className={styles.progressBarContainer}>
-                            <motion.div 
-                                className={styles.progressBar}
-                                animate={{ width: `${progress}%` }}
-                            />
-                        </div>
+                        {!isFinished && (
+                            <div className={styles.progressBarContainer}>
+                                <motion.div 
+                                    className={styles.progressBar}
+                                    animate={{ width: `${progress}%` }}
+                                />
+                            </div>
+                        )}
                     </motion.div>
                 </motion.div>
             )}
