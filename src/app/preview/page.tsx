@@ -167,12 +167,12 @@ function PreviewContent() {
     }, [selectedThemeId]);
 
     // Auto-close modal if auth state changes to true (e.g. cross-tab login or delayed hydration)
-    useEffect(() => {
-        if (isAuthenticated && showLoginModal) {
-            setShowLoginModal(false);
-            setIsSecuring(true);
-        }
-    }, [isAuthenticated, showLoginModal]);
+    // useEffect(() => {
+    //     if (isAuthenticated && showLoginModal) {
+    //         setShowLoginModal(false);
+    //         setIsSecuring(true);
+    //     }
+    // }, [isAuthenticated, showLoginModal]);
 
     // Navigate to payment screen when securing bundle
     useEffect(() => {
@@ -189,10 +189,11 @@ function PreviewContent() {
         const state = useWeddingStore.getState();
         const currentAuth = state.isAuthenticated;
 
-        if (currentAuth) {
-            setIsSecuring(true);
-            return;
-        }
+        // Force showing login modal for demonstration/testing
+        // if (currentAuth) {
+        //     setIsSecuring(true);
+        //     return;
+        // }
 
         // If not auth, check if we have a phone number (maybe just need to re-verify?)
         // For now, always prompt login, but LoginModal will handle existing users better

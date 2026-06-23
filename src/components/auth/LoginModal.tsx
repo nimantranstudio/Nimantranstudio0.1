@@ -22,12 +22,13 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
 
     useEffect(() => {
         if (isOpen) {
-            if (isAuthenticated && userPhone) {
-                // Determine if we should auto-close or just fill
-                // If the user opened this, it implies they think they needed to login, OR the app forced them.
-                // If the app forced them but they ARE logged in, we should auto-succeed.
-                onSuccess(userPhone);
-            } else if (userPhone) {
+            // if (isAuthenticated && userPhone) {
+            //     // Determine if we should auto-close or just fill
+            //     // If the user opened this, it implies they think they needed to login, OR the app forced them.
+            //     // If the app forced them but they ARE logged in, we should auto-succeed.
+            //     onSuccess(userPhone);
+            // } else if (userPhone) {
+            if (userPhone) {
                 setPhoneNumber(userPhone);
             }
         }
