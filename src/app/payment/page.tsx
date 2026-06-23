@@ -11,78 +11,13 @@ export default function PaymentPage() {
     const { formData, selectedThemeId, selectedPlan } = useWeddingStore();
     
     const [isDownloading, setIsDownloading] = useState(false);
-    const [isPaying, setIsPaying] = useState(false);
     const [invoiceData, setInvoiceData] = useState<any>(null);
     const [themeBundle, setThemeBundle] = useState<any>(null);
 
-    useEffect(() => {
-        // Load Razorpay Script
-        const script = document.createElement('script');
-        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-        script.async = true;
-        document.body.appendChild(script);
-        return () => { document.body.removeChild(script); };
-    }, []);
-
-    const handlePay = async () => {
-        try {
-            setIsPaying(true);
-            const amountToPay = invoiceData?.finalSellingPrice || invoiceData?.discountedPrice || 999;
-            
-            // 1. Generate Image Blobs securely on the client
-            // (In a full production flow, we would upload these to Firebase Storage here and get public URLs)
-            // const blobs = await generateBundleBlobs();
-            // const uploadedUrls = await uploadBlobsToStorage(blobs);
-            const uploadedUrls = ['https://placeholder.com/wedding.png']; // Simulated for now
-            
-            // 2. Create Razorpay Order
-            const res = await fetch('/api/payment/create-order', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    amount: amountToPay,
-                    notes: {
-                        whatsappNumber: formData.phone || '+919999999999', // From guest/user form
-                        imageUrls: JSON.stringify(uploadedUrls),
-                        rsvpLink: `${typeof window !== 'undefined' ? window.location.origin : ''}/rsvp/${formData.groomName?.split(' ')[0]}-${formData.brideName?.split(' ')[0]}`
-                    }
-                })
-            });
-            
-            const order = await res.json();
-            if (!order || !order.id) throw new Error("Failed to create order");
-
-            // 3. Initialize Checkout
-            const options = {
-                key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "YOUR_KEY_ID",
-                amount: order.amount,
-                currency: order.currency,
-                name: "Nimantran Studio",
-                description: "Wedding Invitation Bundle",
-                order_id: order.id,
-                handler: function (response: any) {
-                    alert(`Payment Successful! Razorpay Payment ID: ${response.razorpay_payment_id}`);
-                    router.push('/dashboard/demo-id');
-                },
-                prefill: {
-                    name: `${formData.groomName} & ${formData.brideName}`,
-                    email: "customer@example.com",
-                    contact: formData.phone || "9999999999"
-                },
-                theme: { color: "#D4AF37" }
-            };
-
-            const rzp = new (window as any).Razorpay(options);
-            rzp.on('payment.failed', function (response: any){
-                alert("Payment Failed. Reason: " + response.error.description);
-            });
-            rzp.open();
-        } catch (error) {
-            console.error('Payment Error:', error);
-            alert('Something went wrong during checkout. Did you run npm install?');
-        } finally {
-            setIsPaying(false);
-        }
+    const handlePay = () => {
+        alert("Payment Gateway Integration Pending!");
+        // Simulate a success and go to dashboard
+        router.push('/dashboard/demo-id');
     };
 
     useEffect(() => {
@@ -472,14 +407,13 @@ export default function PaymentPage() {
                             <h2 className={styles.sectionTitle}>Select Payment Method</h2>
                             
                             <div className={styles.paymentMethods}>
-                                <button className={styles.payBtn} onClick={handlePay} disabled={isPaying}>
-                                    <Lock size={18} /> {isPaying ? 'Processing...' : 'Pay & Get Cards on WhatsApp'}
-                                </button>
-                            </div>
-                            <div className={styles.paymentMethods} style={{ marginTop: '1rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                                 <button className={styles.methodBtn} onClick={handlePay}>
                                     <div className={styles.methodIcon}>UPI</div>
                                     <div className={styles.methodText}>Google Pay, PhonePe, Paytm</div>
+                                </button>
+                                
+                                <button className={styles.payBtn} onClick={handlePay}>
+                                    <Lock size={18} /> Pay securely
                                 </button>
                                 
                                 <button className={styles.methodBtn} onClick={handlePay}>
