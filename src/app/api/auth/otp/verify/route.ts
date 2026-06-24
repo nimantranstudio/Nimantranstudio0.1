@@ -81,32 +81,22 @@ export async function POST(request: Request) {
             data: { isUsed: true }
         });
 
-        // Find or Create User
-        let user = await prisma.user.findUnique({
-            where: { mobileNumber }
-        });
-
         const isUserAdmin = mobileNumber === ADMIN_MOBILE;
 
-        if (!user) {
-            user = await prisma.user.create({
-                data: {
-                    mobileNumber,
-                    isMobileVerified: true,
-                    role: isUserAdmin ? 'admin' : 'user',
-                    status: 'active'
-                }
-            });
-        } else {
-            // Update verified status and role if it's the admin number
-            user = await prisma.user.update({
-                where: { mobileNumber },
-                data: {
-                    isMobileVerified: true,
-                    role: isUserAdmin ? 'admin' : user.role // Keep existing role unless it's the designated admin number
-                }
-            });
-        }
+        // Find or Create User using Upsert for atomicity and performance
+        const user = await prisma.user.upsert({
+            where: { mobileNumber },
+            create: {
+                mobileNumber,
+                isMobileVerified: true,
+                role: isUserAdmin ? 'admin' : 'user',
+                status: 'active'
+            },
+            update: {
+                isMobileVerified: true,
+                ...(isUserAdmin ? { role: 'admin' } : {})
+            }
+        });
 
         return NextResponse.json({
             success: true,
