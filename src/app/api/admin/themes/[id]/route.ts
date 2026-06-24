@@ -47,9 +47,8 @@ export async function PUT(
             const uploadDir = path.join(process.cwd(), 'public/Image/theme');
             await mkdir(uploadDir, { recursive: true });
 
-            const newPaths: string[] = [];
-            for (const file of files) {
-                if (file.size === 0) continue;
+            const uploadPromises = files.map(async (file) => {
+                if (file.size === 0) return null;
                 const bytes = await file.arrayBuffer();
                 const buffer = Buffer.from(bytes);
 
@@ -58,8 +57,11 @@ export async function PUT(
                 const filepath = path.join(uploadDir, filename);
 
                 await writeFile(filepath, buffer);
-                newPaths.push(`/Image/theme/${filename}`);
-            }
+                return `/Image/theme/${filename}`;
+            });
+
+            const results = await Promise.all(uploadPromises);
+            const newPaths = results.filter((path): path is string => path !== null);
 
             if (newPaths.length > 0) {
                 savedImagePaths = [...savedImagePaths, ...newPaths];
