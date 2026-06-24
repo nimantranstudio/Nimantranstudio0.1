@@ -85,7 +85,13 @@ export async function POST(req: NextRequest) {
     }
 }
 
+let cachedGuestUserId: string | null = null;
+
 async function getOrCreateGuestUser() {
+    if (cachedGuestUserId) {
+        return cachedGuestUserId;
+    }
+
     const guestEmail = 'guest@nimantranstudio.com';
     let user = await prisma.user.findUnique({ where: { email: guestEmail } });
     if (!user) {
@@ -97,5 +103,6 @@ async function getOrCreateGuestUser() {
             }
         });
     }
+    cachedGuestUserId = user.id;
     return user.id;
 }
