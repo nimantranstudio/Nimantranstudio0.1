@@ -2,7 +2,8 @@ import { prisma } from '@/lib/prisma';
 import styles from './rsvp.module.css';
 import { RSVPForm } from './RSVPForm';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
+export const dynamicParams = true;
 
 export default async function RSVPPage({
     params,
