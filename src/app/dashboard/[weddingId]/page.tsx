@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import { auth } from '@/lib/firebase';
 import {
@@ -56,16 +56,18 @@ export default function DashboardPage() {
         if (weddingId) fetchRSVPs();
     }, [weddingId]);
 
-    const stats = rsvps.reduce((acc, rsvp) => {
-        if (rsvp.attending) {
-            acc.attending += 1;
-            acc.adults += rsvp.adultCount;
-            acc.children += rsvp.childCount;
-        } else {
-            acc.regrets += 1;
-        }
-        return acc;
-    }, { attending: 0, regrets: 0, adults: 0, children: 0 });
+    const stats = useMemo(() => {
+        return rsvps.reduce((acc, rsvp) => {
+            if (rsvp.attending) {
+                acc.attending += 1;
+                acc.adults += rsvp.adultCount;
+                acc.children += rsvp.childCount;
+            } else {
+                acc.regrets += 1;
+            }
+            return acc;
+        }, { attending: 0, regrets: 0, adults: 0, children: 0 });
+    }, [rsvps]);
 
     const shareUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/rsvp/${weddingId}`;
 
