@@ -268,21 +268,17 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                     if (value === undefined || value === null) return;
                     const valStr = value.toString();
                     
-                    const regexDash = new RegExp(`{{\\s*${key}\\s*}}`, 'g');
-                    const regexUnder = new RegExp(`{{\\s*${key.replace('-', '_')}\\s*}}`, 'g');
+                    const flexibleKey = key.split('-').join('[-_]+');
+                    const regexFlexible = new RegExp(`\\\\{\\\\s*\\\\{\\\\s*${flexibleKey}\\\\s*\\\\}\\\\s*\\\\}`, 'gi');
                     
-                    if (regexDash.test(text)) {
-                        text = text.replace(regexDash, valStr);
-                        changed = true;
-                    }
-                    if (regexUnder.test(text)) {
-                        text = text.replace(regexUnder, valStr);
+                    if (regexFlexible.test(text)) {
+                        text = text.replace(regexFlexible, valStr);
                         changed = true;
                     }
                 });
 
                 // Clear any remaining unmapped mustache tags to clean up the UI
-                const unknownRegex = /{{\s*[a-zA-Z0-9_-]+\s*}}/g;
+                const unknownRegex = /\{\s*\{\s*[a-zA-Z0-9_-]+\s*\}\s*\}/g;
                 if (unknownRegex.test(text)) {
                     text = text.replace(unknownRegex, '');
                     changed = true;
@@ -620,16 +616,18 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
         const handleLoad = () => {
             // Try immediately
             updateContent();
-            setIsReady(true);
+            // Wait before showing to prevent flashing raw {{variables}}
+            
             // And retry once after a short delay to ensure assets/fonts are settled
             setTimeout(() => {
                 updateContent();
-                setIsReady(true);
             }, 100);
+            
+            // Final pass and reveal
             setTimeout(() => {
                 updateContent();
                 setIsReady(true);
-            }, 500);
+            }, 400);
         };
 
         if (currentIframe.contentDocument?.readyState === 'complete') {
