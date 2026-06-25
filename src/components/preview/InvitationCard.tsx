@@ -12,6 +12,7 @@ import { clsx } from 'clsx';
 export interface InvitationCardRef {
     saveEdits: () => Record<string, string>;
     downloadImage: () => void;
+    sendMessage: (payload: any) => void;
 }
 
 interface InvitationCardProps {
@@ -135,6 +136,11 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                 doc.head.appendChild(script);
             } else {
                 executeDownload();
+            }
+        },
+        sendMessage: (payload: any) => {
+            if (iframeRef.current && iframeRef.current.contentWindow) {
+                iframeRef.current.contentWindow.postMessage(payload, '*');
             }
         }
     }));
@@ -469,59 +475,40 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                     background: rgba(255, 255, 255, 0.9);
                 }
                 
-                /* Custom Resize Handles */
+                /* Custom Handles */
                 .resize-handle {
                     position: absolute;
-                    width: 14px;
-                    height: 14px;
-                    background: white;
-                    border: 2px solid #3B82F6;
+                    width: 12px; height: 12px;
+                    background: #3B82F6;
+                    border: 2px solid white;
+                    border-radius: 50%;
+                    z-index: 10;
+                    display: none;
+                }
+                .sizing-box.selected .resize-handle { display: block; }
+                .resize-handle.tl { top: -6px; left: -6px; cursor: nwse-resize; }
+                .resize-handle.tr { top: -6px; right: -6px; cursor: nesw-resize; }
+                .resize-handle.bl { bottom: -6px; left: -6px; cursor: nesw-resize; }
+                .resize-handle.br { bottom: -6px; right: -6px; cursor: nwse-resize; }
+
+                /* Delete Handle */
+                .delete-handle {
+                    position: absolute;
+                    top: -10px; right: -10px;
+                    width: 20px; height: 20px;
+                    background: #EF4444;
                     border-radius: 50%;
                     display: none;
-                    z-index: 30;
-                }
-                .sizing-box.selected .resize-handle {
-                    display: block;
-                }
-                .resize-handle.tl { top: -7px; left: -7px; cursor: nwse-resize; }
-                .resize-handle.tr { top: -7px; right: -7px; cursor: nesw-resize; }
-                .resize-handle.bl { bottom: -7px; left: -7px; cursor: nesw-resize; }
-                .resize-handle.br { bottom: -7px; right: -7px; cursor: nwse-resize; }
-
-                /* Floating Toolbar */
-                .editor-toolbar {
-                    position: absolute;
-                    top: 0; left: 0;
-                    background: #1F2937;
-                    border-radius: 8px;
-                    padding: 6px;
-                    display: flex;
-                    gap: 8px;
-                    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-                    z-index: 100;
-                    opacity: 0;
-                    pointer-events: none;
-                    transition: opacity 0.2s, transform 0.2s;
-                    align-items: center;
-                }
-                .editor-toolbar.visible {
-                    opacity: 1;
-                    pointer-events: auto;
-                }
-                .editor-toolbar button {
-                    background: transparent;
-                    border: none;
-                    color: white;
-                    cursor: pointer;
-                    padding: 6px;
-                    border-radius: 4px;
-                    display: flex;
                     align-items: center;
                     justify-content: center;
+                    cursor: pointer;
+                    z-index: 11;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
                 }
-                .editor-toolbar button:hover { background: #374151; }
-                .editor-toolbar input[type="color"] {
-                    width: 24px; height: 24px; padding: 0; border: none; border-radius: 4px; cursor: pointer;
+                .sizing-box.selected .delete-handle { display: flex; }
+                .delete-handle:hover {
+                    background: #DC2626;
+                    transform: scale(1.1);
                 }
 
                 /* Snap Guides */
@@ -578,40 +565,27 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                         let resizingHandle = null;
                         let startX, startY, initialTx, initialTy, initialW;
                         let selectedBox = null;
-                        let toolbar = null;
                         let guideX = null;
                         let guideY = null;
                         
                         // Initialization
                         function initEditor() {
-                            // Inject Toolbar
-                            toolbar = document.createElement('div');
-                            toolbar.className = 'editor-toolbar';
-                            toolbar.innerHTML = \`
-                                <input type="color" id="tb-color" title="Text Color">
-                                <button id="tb-align-left" title="Align Left"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="21" y1="6" x2="3" y2="6"></line><line x1="15" y1="12" x2="3" y2="12"></line><line x1="17" y1="18" x2="3" y2="18"></line></svg></button>
-                                <button id="tb-align-center" title="Align Center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="21" y1="6" x2="3" y2="6"></line><line x1="19" y1="12" x2="5" y2="12"></line><line x1="17" y1="18" x2="7" y2="18"></line></svg></button>
-                                <button id="tb-align-right" title="Align Right"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="21" y1="6" x2="3" y2="6"></line><line x1="21" y1="12" x2="9" y2="12"></line><line x1="21" y1="18" x2="7" y2="18"></line></svg></button>
-                                <div style="width: 1px; height: 16px; background: #4B5563; margin: 0 4px;"></div>
-                                <button id="tb-delete" title="Delete" style="color: #F87171;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg></button>
-                            \`;
-                            document.body.appendChild(toolbar);
-                            
                             // Inject Guides
                             guideX = document.createElement('div'); guideX.className = 'snap-guide x'; document.body.appendChild(guideX);
                             guideY = document.createElement('div'); guideY.className = 'snap-guide y'; document.body.appendChild(guideY);
 
-                            // Toolbar events
-                            document.getElementById('tb-color').addEventListener('input', (e) => {
-                                if(selectedBox) selectedBox.style.color = e.target.value;
-                            });
-                            document.getElementById('tb-align-left').addEventListener('click', () => selectedBox && (selectedBox.style.textAlign = 'left'));
-                            document.getElementById('tb-align-center').addEventListener('click', () => selectedBox && (selectedBox.style.textAlign = 'center'));
-                            document.getElementById('tb-align-right').addEventListener('click', () => selectedBox && (selectedBox.style.textAlign = 'right'));
-                            document.getElementById('tb-delete').addEventListener('click', () => {
-                                if(selectedBox) {
-                                    selectedBox.style.display = 'none';
-                                    deselect();
+                            window.addEventListener('message', (e) => {
+                                if (!selectedBox) return;
+                                const { type, payload } = e.data;
+                                if (type === 'FORMAT_TEXT') {
+                                    if (payload.color) selectedBox.style.color = payload.color;
+                                    if (payload.align) selectedBox.style.textAlign = payload.align;
+                                    if (payload.fontWeight) selectedBox.style.fontWeight = payload.fontWeight;
+                                    if (payload.textTransform) selectedBox.style.textTransform = payload.textTransform;
+                                    if (payload.delete) {
+                                        selectedBox.style.display = 'none';
+                                        deselect();
+                                    }
                                 }
                             });
                         }
@@ -623,12 +597,19 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                                 handle.className = \`resize-handle \${pos}\`;
                                 box.appendChild(handle);
                             });
+                            const delBtn = document.createElement('div');
+                            delBtn.className = 'delete-handle';
+                            delBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+                            delBtn.addEventListener('click', (e) => {
+                                e.stopPropagation();
+                                box.style.display = 'none';
+                                deselect();
+                            });
+                            box.appendChild(delBtn);
                         }
 
                         function updateToolbarPosition() {
-                            if (!selectedBox) return;
-                            const rect = selectedBox.getBoundingClientRect();
-                            toolbar.style.transform = \`translate(\${rect.left + rect.width/2 - toolbar.offsetWidth/2}px, \${Math.max(10, rect.top - 50)}px)\`;
+                            // Position updates removed as toolbar is now native React parent
                         }
 
                         function selectBox(box) {
@@ -637,15 +618,25 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                             selectedBox = box;
                             ensureHandles(box);
                             box.classList.add('selected');
-                            toolbar.classList.add('visible');
                             
                             const style = window.getComputedStyle(box);
+                            let hex = '#000000';
                             const rgb = style.color.match(/\\d+/g);
                             if(rgb && rgb.length >= 3) {
-                                const hex = '#' + rgb.slice(0,3).map(x => parseInt(x).toString(16).padStart(2, '0')).join('');
-                                document.getElementById('tb-color').value = hex;
+                                hex = '#' + rgb.slice(0,3).map(x => parseInt(x).toString(16).padStart(2, '0')).join('');
                             }
-                            updateToolbarPosition();
+                            
+                            window.parent.postMessage({
+                                type: 'SELECTION_CHANGED',
+                                payload: {
+                                    id: box.id,
+                                    color: hex,
+                                    align: style.textAlign,
+                                    fontWeight: style.fontWeight,
+                                    textTransform: style.textTransform,
+                                    text: box.innerText
+                                }
+                            }, '*');
                         }
                         
                         function deselect() {
@@ -655,7 +646,7 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                                 selectedBox.removeAttribute('contenteditable');
                             }
                             selectedBox = null;
-                            toolbar.classList.remove('visible');
+                            window.parent.postMessage({ type: 'SELECTION_CLEARED' }, '*');
                         }
 
                         const handleStart = (e) => {

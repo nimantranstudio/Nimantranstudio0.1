@@ -5,6 +5,30 @@
     background-color: #FDFBF7; /* Brand Ivory Background */
 }
 
+.toolbarBtn {
+    background: transparent;
+    border: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    color: #6B7280;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.toolbarBtn:hover {
+    color: #111827;
+    background: #F3F4F6;
+}
+
+.toolbarBtn span {
+    font-size: 11px;
+    font-weight: 500;
+}
+
 .header {
     padding: 1.5rem 0;
     border-bottom: 1px solid #eee;

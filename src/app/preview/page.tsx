@@ -6,7 +6,7 @@ import { useWeddingStore } from '@/store/wedding-store';
 import type { Theme } from '@/lib/constants/themes';
 import { InvitationCard, InvitationCardRef } from '@/components/preview/InvitationCard';
 import styles from '@/components/preview/Preview.module.css';
-import { ChevronLeft, ChevronRight, X, Headphones, Play, Edit, Download, Share2, Check, Lock, Link as LinkIcon, Copy, Sparkles, MessageCircle, Activity, ShieldCheck } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, Headphones, Play, Edit, Download, Share2, Check, Lock, Link as LinkIcon, Copy, Sparkles, MessageCircle, Activity, ShieldCheck, Type, Image as ImageIcon, MapPin, Bold, AlignLeft, AlignCenter, AlignRight, Type as FormatIcon, Maximize, Sticker, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import modalStyles from '@/app/themes/[themeId]/theme-detail.module.css';
 import { clsx } from 'clsx';
@@ -76,12 +76,25 @@ function PreviewContent() {
     const [showLoginModal, setShowLoginModal] = useState(false);
     const [selectedPreviewIndex, setSelectedPreviewIndex] = useState<number | null>(null);
     const [isEditMode, setIsEditMode] = useState(false);
+    const [activeSelection, setActiveSelection] = useState<{ id: string, color: string, align: string, text: string } | null>(null);
     const [isButtonHovered, setIsButtonHovered] = useState(false);
     const [resetKey, setResetKey] = useState(0);
     const cardRef = useRef<InvitationCardRef>(null);
     const suiteRefs = useRef<Record<string, InvitationCardRef | null>>({});
     const router = useRouter();
     const searchParams = useSearchParams();
+
+    useEffect(() => {
+        const handleMessage = (e: MessageEvent) => {
+            if (e.data?.type === 'SELECTION_CHANGED') {
+                setActiveSelection(e.data.payload);
+            } else if (e.data?.type === 'SELECTION_CLEARED') {
+                setActiveSelection(null);
+            }
+        };
+        window.addEventListener('message', handleMessage);
+        return () => window.removeEventListener('message', handleMessage);
+    }, []);
     
     // Fluid transition state
     const [showProcessing, setShowProcessing] = useState(searchParams.get('processing') === 'true');
@@ -342,17 +355,95 @@ function PreviewContent() {
     const previewItems = buildPreviewItems();
 
 
-
+    const handleFormat = (payload: any) => {
+        if (cardRef.current && cardRef.current.sendMessage) {
+            cardRef.current.sendMessage({ type: 'FORMAT_TEXT', payload });
+            
+            // Optimistically update local state so UI feels instantly responsive
+            if (activeSelection) {
+                setActiveSelection(prev => prev ? { ...prev, ...payload } : null);
+            }
+        }
+    };
 
     return (
         <div className={styles.previewPage}>
             {/* Fullscreen Preview Modal */}
             {selectedPreviewIndex !== null && theme && (
-                <div className={modalStyles.overlayBackdrop} onClick={() => setSelectedPreviewIndex(null)}>
-                    <div className={modalStyles.overlayContent} onClick={(e) => e.stopPropagation()}>
-                        <button className={modalStyles.closeBtn} onClick={() => setSelectedPreviewIndex(null)} style={{ position: 'fixed', top: '2rem', right: '2rem', zIndex: 100 }}>
-                            <X size={28} />
-                        </button>
+                <div className={modalStyles.overlayBackdrop} style={isEditMode ? { background: '#E5E7EB' } : {}} onClick={() => !isEditMode && setSelectedPreviewIndex(null)}>
+                    <div className={modalStyles.overlayContent} style={isEditMode ? { width: '100vw', height: '100vh', maxWidth: '100%', maxHeight: '100%', borderRadius: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingTop: '60px', paddingBottom: '80px' } : {}} onClick={(e) => e.stopPropagation()}>
+                        
+                        {!isEditMode && (
+                            <button className={modalStyles.closeBtn} onClick={() => setSelectedPreviewIndex(null)} style={{ position: 'fixed', top: '2rem', right: '2rem', zIndex: 100 }}>
+                                <X size={28} />
+                            </button>
+                        )}
+
+                        {/* Top Toolbar (Edit Mode) */}
+                        {isEditMode && (
+                            <div style={{
+                                position: 'fixed',
+                                top: '20px',
+                                background: 'white',
+                                borderRadius: '9999px',
+                                padding: '8px 24px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '20px',
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+                                zIndex: 100
+                            }}>
+                                <button className={styles.toolbarBtn} style={{ opacity: activeSelection ? 1 : 0.5, pointerEvents: activeSelection ? 'auto' : 'none' }}>
+                                    <Edit size={20} />
+                                    <span>Edit</span>
+                                </button>
+                                <button className={styles.toolbarBtn} style={{ opacity: activeSelection ? 1 : 0.5, pointerEvents: activeSelection ? 'auto' : 'none' }}>
+                                    <Type size={20} />
+                                    <span>Font</span>
+                                </button>
+                                <button className={styles.toolbarBtn} style={{ opacity: activeSelection ? 1 : 0.5, pointerEvents: activeSelection ? 'auto' : 'none' }}>
+                                    <FormatIcon size={20} />
+                                    <span>Resize</span>
+                                </button>
+                                <button className={styles.toolbarBtn} style={{ opacity: activeSelection ? 1 : 0.5, pointerEvents: activeSelection ? 'auto' : 'none' }}>
+                                    <Maximize size={20} />
+                                    <span>Box Resize</span>
+                                </button>
+                                <div style={{ width: '1px', height: '24px', background: '#E5E7EB' }} />
+                                <button className={styles.toolbarBtn} onClick={() => handleFormat({ delete: true })} style={{ opacity: activeSelection ? 1 : 0.5, pointerEvents: activeSelection ? 'auto' : 'none' }}>
+                                    <Trash2 size={20} color="#EF4444" />
+                                    <span>Delete</span>
+                                </button>
+                                <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', opacity: activeSelection ? 1 : 0.5, pointerEvents: activeSelection ? 'auto' : 'none' }}>
+                                    <input 
+                                        type="color" 
+                                        value={activeSelection?.color || '#000000'}
+                                        onChange={(e) => handleFormat({ color: e.target.value })}
+                                        style={{ width: '20px', height: '20px', padding: 0, border: 'none', cursor: 'pointer', borderRadius: '4px' }}
+                                    />
+                                    <span style={{ fontSize: '11px', color: '#6B7280', marginTop: '4px' }}>Color</span>
+                                </div>
+                                <button className={styles.toolbarBtn} onClick={() => handleFormat({ fontWeight: activeSelection?.fontWeight === 'bold' ? 'normal' : 'bold' })} style={{ opacity: activeSelection ? 1 : 0.5, pointerEvents: activeSelection ? 'auto' : 'none' }}>
+                                    <Bold size={20} color={activeSelection?.fontWeight === 'bold' ? '#000' : '#6B7280'} />
+                                    <span>Bold</span>
+                                </button>
+                                <div style={{ display: 'flex', gap: '4px' }}>
+                                    <button className={styles.toolbarBtn} onClick={() => handleFormat({ align: 'left' })} style={{ opacity: activeSelection ? 1 : 0.5, pointerEvents: activeSelection ? 'auto' : 'none' }}>
+                                        <AlignLeft size={20} color={activeSelection?.align === 'left' ? '#000' : '#6B7280'} />
+                                    </button>
+                                    <button className={styles.toolbarBtn} onClick={() => handleFormat({ align: 'center' })} style={{ opacity: activeSelection ? 1 : 0.5, pointerEvents: activeSelection ? 'auto' : 'none' }}>
+                                        <AlignCenter size={20} color={(!activeSelection?.align || activeSelection?.align === 'center') ? '#000' : '#6B7280'} />
+                                    </button>
+                                    <button className={styles.toolbarBtn} onClick={() => handleFormat({ align: 'right' })} style={{ opacity: activeSelection ? 1 : 0.5, pointerEvents: activeSelection ? 'auto' : 'none' }}>
+                                        <AlignRight size={20} color={activeSelection?.align === 'right' ? '#000' : '#6B7280'} />
+                                    </button>
+                                </div>
+                                <button className={styles.toolbarBtn} onClick={() => handleFormat({ textTransform: activeSelection?.textTransform === 'uppercase' ? 'none' : 'uppercase' })} style={{ opacity: activeSelection ? 1 : 0.5, pointerEvents: activeSelection ? 'auto' : 'none' }}>
+                                    <Type size={20} />
+                                    <span>CAPITAL</span>
+                                </button>
+                            </div>
+                        )}
 
                         <div className={modalStyles.previewImageWrapper} style={{ borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', height: 'min(85vh, 850px)', aspectRatio: '9/16' }}>
                             <InvitationCard
@@ -441,134 +532,147 @@ function PreviewContent() {
                                     </button>
                                 </div>
                             ) : (
-                                /* Done Editing Button */
+                                /* Bottom Toolbar (Edit Mode) */
                                 <div style={{
-                                    position: 'absolute', top: '1.5rem', right: '1.5rem',
-                                    display: 'flex', gap: '1rem', zIndex: 10
+                                    position: 'fixed',
+                                    bottom: '0',
+                                    left: '0',
+                                    right: '0',
+                                    background: 'white',
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    padding: '16px 24px',
+                                    gap: '32px',
+                                    borderTop: '1px solid #E5E7EB',
+                                    zIndex: 100,
+                                    boxShadow: '0 -4px 12px rgba(0,0,0,0.05)'
                                 }}>
-                                    <button
-                                        onClick={() => {
-                                            setResetKey(prev => prev + 1); // Discard layout changes by force remounting
-                                            setIsEditMode(false);
-                                        }}
-                                        style={{
-                                            background: 'white', color: '#dc2626', border: '1px solid #dc2626', borderRadius: '50%',
-                                            width: '48px', height: '48px', cursor: 'pointer',
-                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                            boxShadow: '0 4px 14px rgba(0,0,0,0.2)',
-                                            transition: 'background 0.2s, transform 0.2s',
-                                        }}
-                                        onMouseOver={(e) => { e.currentTarget.style.background = '#fef2f2'; e.currentTarget.style.transform = 'scale(1.1)'; }}
-                                        onMouseOut={(e) => { e.currentTarget.style.background = 'white'; e.currentTarget.style.transform = 'scale(1)'; }}
-                                        title="Cancel"
-                                    >
-                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <line x1="18" y1="6" x2="6" y2="18"></line>
-                                            <line x1="6" y1="6" x2="18" y2="18"></line>
-                                        </svg>
+                                    <button className={styles.toolbarBtn} onClick={() => {
+                                        setResetKey(prev => prev + 1); // Discard layout changes by force remounting
+                                        setIsEditMode(false);
+                                    }}>
+                                        <X size={24} />
+                                        <span>Cancel</span>
                                     </button>
-                                    <button
-                                        onClick={() => {
-                                            if (cardRef.current && selectedPreviewIndex !== null) {
-                                                const edits = cardRef.current.saveEdits();
-                                                console.log("Saving invitation edits:", edits);
-                                                
-                                                // Apply global edits
-                                                const newFormData = { ...formData };
-                                                let formDataChanged = false;
-                                                
-                                                const currentItem = previewItems[selectedPreviewIndex];
-                                                const currentEvent = currentItem?.event;
 
-                                                if (edits['groom-name'] !== undefined && edits['groom-name'] !== formData.groomName) {
-                                                    newFormData.groomName = edits['groom-name'];
+                                    <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
+                                        <button className={styles.toolbarBtn}>
+                                            <Type size={24} />
+                                            <span>Add Text</span>
+                                        </button>
+                                        <button className={styles.toolbarBtn}>
+                                            <ImageIcon size={24} />
+                                            <span>Photo</span>
+                                        </button>
+                                        <button className={styles.toolbarBtn}>
+                                            <Sticker size={24} />
+                                            <span>Sticker</span>
+                                        </button>
+                                        <button className={styles.toolbarBtn}>
+                                            <MapPin size={24} />
+                                            <span>QR Map</span>
+                                        </button>
+                                    </div>
+
+                                    <button className={styles.toolbarBtn} onClick={() => {
+                                        if (cardRef.current && selectedPreviewIndex !== null) {
+                                            const edits = cardRef.current.saveEdits();
+                                            // Apply global edits
+                                            const newFormData = { ...formData };
+                                            let formDataChanged = false;
+                                            
+                                            const currentItem = previewItems[selectedPreviewIndex];
+                                            const currentEvent = currentItem?.event;
+
+                                            if (edits['groom-name'] !== undefined && edits['groom-name'] !== formData.groomName) {
+                                                newFormData.groomName = edits['groom-name'];
+                                                formDataChanged = true;
+                                            }
+                                            if (edits['bride-name'] !== undefined && edits['bride-name'] !== formData.brideName) {
+                                                newFormData.brideName = edits['bride-name'];
+                                                formDataChanged = true;
+                                            }
+                                            if ((edits['groom-parents'] !== undefined || edits['groom-parent-name'] !== undefined)) {
+                                                const gp = edits['groom-parents'] !== undefined ? edits['groom-parents'] : edits['groom-parent-name'];
+                                                if (gp !== undefined && gp !== formData.groomParents) {
+                                                    newFormData.groomParents = gp;
                                                     formDataChanged = true;
-                                                }
-                                                if (edits['bride-name'] !== undefined && edits['bride-name'] !== formData.brideName) {
-                                                    newFormData.brideName = edits['bride-name'];
-                                                    formDataChanged = true;
-                                                }
-                                                if ((edits['groom-parents'] !== undefined || edits['groom-parent-name'] !== undefined)) {
-                                                    const gp = edits['groom-parents'] !== undefined ? edits['groom-parents'] : edits['groom-parent-name'];
-                                                    if (gp !== undefined && gp !== formData.groomParents) {
-                                                        newFormData.groomParents = gp;
-                                                        formDataChanged = true;
-                                                    }
-                                                }
-                                                if ((edits['bride-parents'] !== undefined || edits['bride-parent-name'] !== undefined)) {
-                                                    const bp = edits['bride-parents'] !== undefined ? edits['bride-parents'] : edits['bride-parent-name'];
-                                                    if (bp !== undefined && bp !== formData.brideParents) {
-                                                        newFormData.brideParents = bp;
-                                                        formDataChanged = true;
-                                                    }
-                                                }
-
-                                                if ((edits['event-venue'] !== undefined || edits['venue'] !== undefined)) {
-                                                    const v = edits['event-venue'] !== undefined ? (edits['event-venue'] || currentEvent?.venue) : (edits['venue'] || currentEvent?.venue);
-                                                    if (v !== undefined && v !== formData.defaultVenueName) {
-                                                        newFormData.defaultVenueName = v;
-                                                        formDataChanged = true;
-                                                    }
-                                                }
-                                                if (edits['event-date'] !== undefined && edits['event-date'] !== formData.primaryDate) {
-                                                    newFormData.primaryDate = edits['event-date'];
-                                                    formDataChanged = true;
-                                                }
-                                                if (edits['event-time'] !== undefined && edits['event-time'] !== formData.primaryTime) {
-                                                    newFormData.primaryTime = edits['event-time'];
-                                                    formDataChanged = true;
-                                                }
-
-                                                if (formDataChanged) {
-                                                    updateFormData(newFormData);
-                                                }
-
-                                                if (currentEvent) {
-                                                    let eventChanged = false;
-                                                    const updatedEvent = { ...currentEvent };
-
-                                                    if (edits['event-name'] !== undefined && edits['event-name'] !== (currentEvent.heading || currentEvent.name)) {
-                                                        updatedEvent.heading = edits['event-name'];
-                                                        eventChanged = true;
-                                                    }
-                                                    if (edits['event-date'] !== undefined && edits['event-date'] !== currentEvent.date) {
-                                                        updatedEvent.date = edits['event-date'];
-                                                        eventChanged = true;
-                                                    }
-                                                    if (edits['event-time'] !== undefined && edits['event-time'] !== currentEvent.time) {
-                                                        updatedEvent.time = edits['event-time'];
-                                                        eventChanged = true;
-                                                    }
-                                                    if ((edits['event-venue'] !== undefined || edits['venue'] !== undefined)) {
-                                                        const v = edits['event-venue'] !== undefined ? edits['event-venue'] : edits['venue'];
-                                                        if (v !== undefined && v !== currentEvent.venue) {
-                                                            updatedEvent.venue = v;
-                                                            updatedEvent.isCustomVenue = true;
-                                                            eventChanged = true;
-                                                        }
-                                                    }
-                                                    
-                                                    if (eventChanged) {
-                                                        updateEvent(currentEvent.id, updatedEvent);
-                                                    }
                                                 }
                                             }
-                                            setIsEditMode(false);
-                                        }}
-                                        style={{
-                                            background: '#1a4d2e', color: 'white', border: 'none', borderRadius: '50%',
-                                            width: '48px', height: '48px', cursor: 'pointer',
-                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                            boxShadow: '0 4px 14px rgba(0,0,0,0.3)',
-                                            transition: 'transform 0.2s',
-                                        }}
-                                        onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
-                                        onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                                        title="Done"
-                                    >
-                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <polyline points="20 6 9 17 4 12"></polyline>
-                                        </svg>
+                                            if ((edits['bride-parents'] !== undefined || edits['bride-parent-name'] !== undefined)) {
+                                                const bp = edits['bride-parents'] !== undefined ? edits['bride-parents'] : edits['bride-parent-name'];
+                                                if (bp !== undefined && bp !== formData.brideParents) {
+                                                    newFormData.brideParents = bp;
+                                                    formDataChanged = true;
+                                                }
+                                            }
+
+                                            if ((edits['event-venue'] !== undefined || edits['venue'] !== undefined)) {
+                                                const v = edits['event-venue'] !== undefined ? (edits['event-venue'] || currentEvent?.venue) : (edits['venue'] || currentEvent?.venue);
+                                                if (v !== undefined && v !== formData.defaultVenueName) {
+                                                    newFormData.defaultVenueName = v;
+                                                    formDataChanged = true;
+                                                }
+                                            }
+                                            if (edits['event-date'] !== undefined && edits['event-date'] !== formData.primaryDate) {
+                                                newFormData.primaryDate = edits['event-date'];
+                                                formDataChanged = true;
+                                            }
+                                            if (edits['event-time'] !== undefined && edits['event-time'] !== formData.primaryTime) {
+                                                newFormData.primaryTime = edits['event-time'];
+                                                formDataChanged = true;
+                                            }
+
+                                            if (formDataChanged) {
+                                                updateFormData(newFormData);
+                                            }
+
+                                            if (currentEvent) {
+                                                let eventChanged = false;
+                                                const updatedEvent = { ...currentEvent };
+
+                                                if (edits['event-name'] !== undefined && edits['event-name'] !== (currentEvent.heading || currentEvent.name)) {
+                                                    updatedEvent.heading = edits['event-name'];
+                                                    eventChanged = true;
+                                                }
+                                                if (edits['event-date'] !== undefined && edits['event-date'] !== currentEvent.date) {
+                                                    updatedEvent.date = edits['event-date'];
+                                                    eventChanged = true;
+                                                }
+                                                if (edits['event-time'] !== undefined && edits['event-time'] !== currentEvent.time) {
+                                                    updatedEvent.time = edits['event-time'];
+                                                    eventChanged = true;
+                                                }
+                                                if ((edits['event-venue'] !== undefined || edits['venue'] !== undefined)) {
+                                                    const v = edits['event-venue'] !== undefined ? edits['event-venue'] : edits['venue'];
+                                                    if (v !== undefined && v !== currentEvent.venue) {
+                                                        updatedEvent.venue = v;
+                                                        updatedEvent.isCustomVenue = true;
+                                                        eventChanged = true;
+                                                    }
+                                                }
+                                                
+                                                if (eventChanged) {
+                                                    updateEvent(currentEvent.id, updatedEvent);
+                                                }
+                                            }
+                                        }
+                                        setIsEditMode(false);
+                                    }} style={{ 
+                                        background: '#EAB308', 
+                                        color: '#000', 
+                                        border: 'none', 
+                                        borderRadius: '9999px',
+                                        padding: '12px 24px',
+                                        fontWeight: '600',
+                                        fontSize: '16px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '8px',
+                                        cursor: 'pointer'
+                                    }}>
+                                        <span>Download</span>
                                     </button>
                                 </div>
                             )}
