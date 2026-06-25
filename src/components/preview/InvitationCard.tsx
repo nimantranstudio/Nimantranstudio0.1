@@ -339,7 +339,11 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                             'event-venue': ['The Rajputana palace, Adarsh Nagar, Rajasthan', 'The Rajputana palace, Adarsh Nagar', 'The Rajputana palace'],
                             'bride-name': ['Anjali ke haldi', 'Anjali'],
                             'groom-name': ['Rahul'],
-                            'subheading': ['We are pleased to invite you to the wedding of', 'We invite you to share our joy', 'formal invite to follow']
+                            'subheading': ['We are pleased to invite you to the wedding of', 'We invite you to share our joy', 'formal invite to follow'],
+                            'date_label': ['On', 'on', 'ON'],
+                            'time_label': ['At', 'at', 'AT'],
+                            'venue_label': ['Venue:', 'venue:', 'VENUE:', 'Venue'],
+                            'ampersand': ['&', 'and', 'And']
                         };
                         const textsToLookFor = knownPlaceholders[id] || [];
                         if (textsToLookFor.length > 0) {
