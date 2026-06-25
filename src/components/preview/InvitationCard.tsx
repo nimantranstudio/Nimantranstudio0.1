@@ -587,14 +587,14 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                             // Inject Toolbar
                             toolbar = document.createElement('div');
                             toolbar.className = 'editor-toolbar';
-                            toolbar.innerHTML = \\\`
+                            toolbar.innerHTML = \`
                                 <input type="color" id="tb-color" title="Text Color">
                                 <button id="tb-align-left" title="Align Left"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="21" y1="6" x2="3" y2="6"></line><line x1="15" y1="12" x2="3" y2="12"></line><line x1="17" y1="18" x2="3" y2="18"></line></svg></button>
                                 <button id="tb-align-center" title="Align Center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="21" y1="6" x2="3" y2="6"></line><line x1="19" y1="12" x2="5" y2="12"></line><line x1="17" y1="18" x2="7" y2="18"></line></svg></button>
                                 <button id="tb-align-right" title="Align Right"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="21" y1="6" x2="3" y2="6"></line><line x1="21" y1="12" x2="9" y2="12"></line><line x1="21" y1="18" x2="7" y2="18"></line></svg></button>
                                 <div style="width: 1px; height: 16px; background: #4B5563; margin: 0 4px;"></div>
                                 <button id="tb-delete" title="Delete" style="color: #F87171;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg></button>
-                            \\\`;
+                            \`;
                             document.body.appendChild(toolbar);
                             
                             // Inject Guides
@@ -620,7 +620,7 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                             if (box.querySelector('.resize-handle')) return;
                             ['tl', 'tr', 'bl', 'br'].forEach(pos => {
                                 const handle = document.createElement('div');
-                                handle.className = \\\`resize-handle \${pos}\\\`;
+                                handle.className = \`resize-handle \${pos}\`;
                                 box.appendChild(handle);
                             });
                         }
@@ -628,7 +628,7 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                         function updateToolbarPosition() {
                             if (!selectedBox) return;
                             const rect = selectedBox.getBoundingClientRect();
-                            toolbar.style.transform = \\\`translate(\${rect.left + rect.width/2 - toolbar.offsetWidth/2}px, \${Math.max(10, rect.top - 50)}px)\\\`;
+                            toolbar.style.transform = \`translate(\${rect.left + rect.width/2 - toolbar.offsetWidth/2}px, \${Math.max(10, rect.top - 50)}px)\`;
                         }
 
                         function selectBox(box) {
@@ -735,7 +735,7 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                                 
                                 draggingEl.dataset.tx = newTx;
                                 draggingEl.dataset.ty = newTy;
-                                draggingEl.style.transform = \\\`translate(\${newTx}px, \${newTy}px)\\\`;
+                                draggingEl.style.transform = \`translate(\${newTx}px, \${newTy}px)\`;
                                 updateToolbarPosition();
                             }
                         };
