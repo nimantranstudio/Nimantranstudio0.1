@@ -582,6 +582,12 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                                     if (payload.align) selectedBox.style.textAlign = payload.align;
                                     if (payload.fontWeight) selectedBox.style.fontWeight = payload.fontWeight;
                                     if (payload.textTransform) selectedBox.style.textTransform = payload.textTransform;
+                                    if (payload.fontSize) selectedBox.style.fontSize = payload.fontSize;
+                                    if (payload.fontFamily) selectedBox.style.fontFamily = payload.fontFamily;
+                                    if (payload.edit) {
+                                        selectedBox.setAttribute('contenteditable', 'true');
+                                        selectedBox.focus();
+                                    }
                                     if (payload.delete) {
                                         selectedBox.style.display = 'none';
                                         deselect();

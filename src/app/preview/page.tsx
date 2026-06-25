@@ -6,7 +6,7 @@ import { useWeddingStore } from '@/store/wedding-store';
 import type { Theme } from '@/lib/constants/themes';
 import { InvitationCard, InvitationCardRef } from '@/components/preview/InvitationCard';
 import styles from '@/components/preview/Preview.module.css';
-import { ChevronLeft, ChevronRight, X, Headphones, Play, Edit, Download, Share2, Check, Lock, Link as LinkIcon, Copy, Sparkles, MessageCircle, Activity, ShieldCheck, Type, Image as ImageIcon, MapPin, Bold, AlignLeft, AlignCenter, AlignRight, Type as FormatIcon, Maximize, Sticker, Trash2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, Headphones, Play, Edit, Download, Share2, Check, Lock, Link as LinkIcon, Copy, Sparkles, MessageCircle, Activity, ShieldCheck, Type, Image as ImageIcon, MapPin, Bold, AlignLeft, AlignCenter, AlignRight, Type as FormatIcon, Maximize, Sticker, Trash2, Palette, Square, AlignJustify, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 import modalStyles from '@/app/themes/[themeId]/theme-detail.module.css';
 import { clsx } from 'clsx';
@@ -380,66 +380,162 @@ function PreviewContent() {
                         )}
 
                         {/* Top Toolbar (Edit Mode) */}
+                        {/* Top Toolbar (Edit Mode) */}
                         {isEditMode && (
                             <div style={{
                                 position: 'fixed',
                                 top: '20px',
                                 background: 'white',
-                                borderRadius: '9999px',
-                                padding: '8px 24px',
+                                borderRadius: '12px',
+                                padding: '8px 12px',
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: '20px',
-                                boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+                                gap: '8px',
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
                                 zIndex: 100
                             }}>
-                                <button className={styles.toolbarBtn} style={{ opacity: activeSelection ? 1 : 0.5, pointerEvents: activeSelection ? 'auto' : 'none' }}>
+                                <button className={styles.toolbarBtn} onClick={() => handleFormat({ edit: true })} style={{ opacity: activeSelection ? 1 : 0.5, pointerEvents: activeSelection ? 'auto' : 'none' }}>
                                     <Edit size={20} />
                                     <span>Edit</span>
                                 </button>
-                                <button className={styles.toolbarBtn} style={{ opacity: activeSelection ? 1 : 0.5, pointerEvents: activeSelection ? 'auto' : 'none' }}>
-                                    <Type size={20} />
-                                    <span>Font</span>
-                                </button>
-                                <button className={styles.toolbarBtn} style={{ opacity: activeSelection ? 1 : 0.5, pointerEvents: activeSelection ? 'auto' : 'none' }}>
-                                    <FormatIcon size={20} />
-                                    <span>Resize</span>
-                                </button>
+                                
+                                <div style={{ position: 'relative' }}>
+                                    <button className={styles.toolbarBtn} style={{ opacity: activeSelection ? 1 : 0.5, pointerEvents: activeSelection ? 'auto' : 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                                            <span style={{ fontSize: '18px', fontFamily: 'serif', fontStyle: 'italic', lineHeight: 1 }}>Style</span>
+                                        </div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                                            <span>Font</span>
+                                            <ChevronDown size={12} />
+                                        </div>
+                                    </button>
+                                    {activeSelection && (
+                                        <select 
+                                            value={activeSelection?.fontFamily || 'inherit'}
+                                            onChange={(e) => handleFormat({ fontFamily: e.target.value })}
+                                            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }}
+                                        >
+                                            <option value="inherit">Default</option>
+                                            <option value="Arial, sans-serif">Arial</option>
+                                            <option value="'Times New Roman', serif">Times New Roman</option>
+                                            <option value="'Courier New', monospace">Courier</option>
+                                            <option value="Georgia, serif">Georgia</option>
+                                            <option value="'Trebuchet MS', sans-serif">Trebuchet</option>
+                                            <option value="Verdana, sans-serif">Verdana</option>
+                                        </select>
+                                    )}
+                                </div>
+
+                                <div style={{ position: 'relative' }}>
+                                    <button className={styles.toolbarBtn} style={{ opacity: activeSelection ? 1 : 0.5, pointerEvents: activeSelection ? 'auto' : 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                        <span style={{ fontSize: '18px', fontWeight: 600, lineHeight: 1 }}>A+</span>
+                                        <span>Resize</span>
+                                    </button>
+                                    {activeSelection && (
+                                        <select
+                                            value={activeSelection?.fontSize || ''}
+                                            onChange={(e) => handleFormat({ fontSize: e.target.value })}
+                                            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }}
+                                        >
+                                            <option value="">Default</option>
+                                            <option value="12px">12px</option>
+                                            <option value="14px">14px</option>
+                                            <option value="16px">16px</option>
+                                            <option value="18px">18px</option>
+                                            <option value="20px">20px</option>
+                                            <option value="24px">24px</option>
+                                            <option value="28px">28px</option>
+                                            <option value="32px">32px</option>
+                                            <option value="36px">36px</option>
+                                            <option value="48px">48px</option>
+                                            <option value="64px">64px</option>
+                                        </select>
+                                    )}
+                                </div>
+
                                 <button className={styles.toolbarBtn} style={{ opacity: activeSelection ? 1 : 0.5, pointerEvents: activeSelection ? 'auto' : 'none' }}>
                                     <Maximize size={20} />
                                     <span>Box Resize</span>
                                 </button>
-                                <div style={{ width: '1px', height: '24px', background: '#E5E7EB' }} />
+                                
                                 <button className={styles.toolbarBtn} onClick={() => handleFormat({ delete: true })} style={{ opacity: activeSelection ? 1 : 0.5, pointerEvents: activeSelection ? 'auto' : 'none' }}>
-                                    <Trash2 size={20} color="#EF4444" />
+                                    <Trash2 size={20} />
                                     <span>Delete</span>
                                 </button>
-                                <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', opacity: activeSelection ? 1 : 0.5, pointerEvents: activeSelection ? 'auto' : 'none' }}>
-                                    <input 
-                                        type="color" 
-                                        value={activeSelection?.color || '#000000'}
-                                        onChange={(e) => handleFormat({ color: e.target.value })}
-                                        style={{ width: '20px', height: '20px', padding: 0, border: 'none', cursor: 'pointer', borderRadius: '4px' }}
-                                    />
-                                    <span style={{ fontSize: '11px', color: '#6B7280', marginTop: '4px' }}>Color</span>
+
+                                <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', opacity: activeSelection ? 1 : 0.5, pointerEvents: activeSelection ? 'auto' : 'none', cursor: 'pointer' }} className={styles.toolbarBtn}>
+                                    <Palette size={20} />
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                                        <span>Color</span>
+                                        <ChevronDown size={12} />
+                                    </div>
+                                    {activeSelection && (
+                                        <input 
+                                            type="color" 
+                                            value={activeSelection?.color || '#000000'}
+                                            onChange={(e) => handleFormat({ color: e.target.value })}
+                                            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }}
+                                        />
+                                    )}
                                 </div>
-                                <button className={styles.toolbarBtn} onClick={() => handleFormat({ fontWeight: activeSelection?.fontWeight === 'bold' ? 'normal' : 'bold' })} style={{ opacity: activeSelection ? 1 : 0.5, pointerEvents: activeSelection ? 'auto' : 'none' }}>
-                                    <Bold size={20} color={activeSelection?.fontWeight === 'bold' ? '#000' : '#6B7280'} />
+
+                                <button 
+                                    className={styles.toolbarBtn} 
+                                    onClick={() => handleFormat({ fontWeight: activeSelection?.fontWeight === 'bold' ? 'normal' : 'bold' })} 
+                                    style={{ 
+                                        opacity: activeSelection ? 1 : 0.5, 
+                                        pointerEvents: activeSelection ? 'auto' : 'none',
+                                        background: activeSelection?.fontWeight === 'bold' ? '#FEF3C7' : 'transparent',
+                                        color: activeSelection?.fontWeight === 'bold' ? '#D97706' : '#6B7280',
+                                        border: activeSelection?.fontWeight === 'bold' ? '1px solid #FDE68A' : '1px solid transparent'
+                                    }}
+                                >
+                                    <Bold size={20} />
                                     <span>Bold</span>
                                 </button>
-                                <div style={{ display: 'flex', gap: '4px' }}>
-                                    <button className={styles.toolbarBtn} onClick={() => handleFormat({ align: 'left' })} style={{ opacity: activeSelection ? 1 : 0.5, pointerEvents: activeSelection ? 'auto' : 'none' }}>
-                                        <AlignLeft size={20} color={activeSelection?.align === 'left' ? '#000' : '#6B7280'} />
+
+                                <div style={{ position: 'relative' }}>
+                                    <button className={styles.toolbarBtn} style={{ opacity: activeSelection ? 1 : 0.5, pointerEvents: activeSelection ? 'auto' : 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                        <AlignJustify size={20} />
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                                            <span>Format</span>
+                                            <ChevronDown size={12} />
+                                        </div>
                                     </button>
-                                    <button className={styles.toolbarBtn} onClick={() => handleFormat({ align: 'center' })} style={{ opacity: activeSelection ? 1 : 0.5, pointerEvents: activeSelection ? 'auto' : 'none' }}>
-                                        <AlignCenter size={20} color={(!activeSelection?.align || activeSelection?.align === 'center') ? '#000' : '#6B7280'} />
-                                    </button>
-                                    <button className={styles.toolbarBtn} onClick={() => handleFormat({ align: 'right' })} style={{ opacity: activeSelection ? 1 : 0.5, pointerEvents: activeSelection ? 'auto' : 'none' }}>
-                                        <AlignRight size={20} color={activeSelection?.align === 'right' ? '#000' : '#6B7280'} />
+                                    {activeSelection && (
+                                        <select
+                                            value={activeSelection?.align || 'center'}
+                                            onChange={(e) => handleFormat({ align: e.target.value })}
+                                            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }}
+                                        >
+                                            <option value="left">Left</option>
+                                            <option value="center">Center</option>
+                                            <option value="right">Right</option>
+                                            <option value="justify">Justify</option>
+                                        </select>
+                                    )}
+                                </div>
+
+                                <div style={{ position: 'relative' }}>
+                                    <button className={styles.toolbarBtn} style={{ opacity: activeSelection ? 1 : 0.5, pointerEvents: activeSelection ? 'auto' : 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                        <Square size={20} />
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                                            <span>Border</span>
+                                            <ChevronDown size={12} />
+                                        </div>
                                     </button>
                                 </div>
-                                <button className={styles.toolbarBtn} onClick={() => handleFormat({ textTransform: activeSelection?.textTransform === 'uppercase' ? 'none' : 'uppercase' })} style={{ opacity: activeSelection ? 1 : 0.5, pointerEvents: activeSelection ? 'auto' : 'none' }}>
-                                    <Type size={20} />
+
+                                <button 
+                                    className={styles.toolbarBtn} 
+                                    onClick={() => handleFormat({ textTransform: activeSelection?.textTransform === 'uppercase' ? 'none' : 'uppercase' })} 
+                                    style={{ 
+                                        opacity: activeSelection ? 1 : 0.5, 
+                                        pointerEvents: activeSelection ? 'auto' : 'none',
+                                        background: activeSelection?.textTransform === 'uppercase' ? '#F3F4F6' : 'transparent',
+                                    }}
+                                >
+                                    <span style={{ fontSize: '18px', fontWeight: 600, lineHeight: 1 }}>Aa</span>
                                     <span>CAPITAL</span>
                                 </button>
                             </div>
