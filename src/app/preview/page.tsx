@@ -387,22 +387,22 @@ function PreviewContent() {
                                 top: '20px',
                                 background: 'white',
                                 borderRadius: '12px',
-                                padding: '8px 12px',
+                                padding: '4px 8px',
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: '8px',
+                                gap: '2px',
                                 boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
                                 zIndex: 100
                             }}>
                                 <button className={styles.toolbarBtn} onClick={() => handleFormat({ edit: true })} style={{ opacity: activeSelection ? 1 : 0.5, pointerEvents: activeSelection ? 'auto' : 'none' }}>
-                                    <Edit size={20} />
+                                    <Edit size={18} />
                                     <span>Edit</span>
                                 </button>
                                 
                                 <div style={{ position: 'relative' }}>
                                     <button className={styles.toolbarBtn} style={{ opacity: activeSelection ? 1 : 0.5, pointerEvents: activeSelection ? 'auto' : 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
-                                            <span style={{ fontSize: '18px', fontFamily: 'serif', fontStyle: 'italic', lineHeight: 1 }}>Style</span>
+                                            <span style={{ fontSize: '16px', fontFamily: 'serif', fontStyle: 'italic', lineHeight: 1 }}>Style</span>
                                         </div>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
                                             <span>Font</span>
@@ -428,7 +428,7 @@ function PreviewContent() {
 
                                 <div style={{ position: 'relative' }}>
                                     <button className={styles.toolbarBtn} style={{ opacity: activeSelection ? 1 : 0.5, pointerEvents: activeSelection ? 'auto' : 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                        <span style={{ fontSize: '18px', fontWeight: 600, lineHeight: 1 }}>A+</span>
+                                        <span style={{ fontSize: '16px', fontWeight: 600, lineHeight: 1 }}>A+</span>
                                         <span>Resize</span>
                                     </button>
                                     {activeSelection && (
@@ -454,17 +454,17 @@ function PreviewContent() {
                                 </div>
 
                                 <button className={styles.toolbarBtn} style={{ opacity: activeSelection ? 1 : 0.5, pointerEvents: activeSelection ? 'auto' : 'none' }}>
-                                    <Maximize size={20} />
+                                    <Maximize size={18} />
                                     <span>Box Resize</span>
                                 </button>
                                 
                                 <button className={styles.toolbarBtn} onClick={() => handleFormat({ delete: true })} style={{ opacity: activeSelection ? 1 : 0.5, pointerEvents: activeSelection ? 'auto' : 'none' }}>
-                                    <Trash2 size={20} />
+                                    <Trash2 size={18} />
                                     <span>Delete</span>
                                 </button>
 
                                 <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', opacity: activeSelection ? 1 : 0.5, pointerEvents: activeSelection ? 'auto' : 'none', cursor: 'pointer' }} className={styles.toolbarBtn}>
-                                    <Palette size={20} />
+                                    <Palette size={18} />
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
                                         <span>Color</span>
                                         <ChevronDown size={12} />
@@ -490,13 +490,13 @@ function PreviewContent() {
                                         border: activeSelection?.fontWeight === 'bold' ? '1px solid #FDE68A' : '1px solid transparent'
                                     }}
                                 >
-                                    <Bold size={20} />
+                                    <Bold size={18} />
                                     <span>Bold</span>
                                 </button>
 
                                 <div style={{ position: 'relative' }}>
                                     <button className={styles.toolbarBtn} style={{ opacity: activeSelection ? 1 : 0.5, pointerEvents: activeSelection ? 'auto' : 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                        <AlignJustify size={20} />
+                                        <AlignJustify size={18} />
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
                                             <span>Format</span>
                                             <ChevronDown size={12} />
@@ -518,7 +518,7 @@ function PreviewContent() {
 
                                 <div style={{ position: 'relative' }}>
                                     <button className={styles.toolbarBtn} style={{ opacity: activeSelection ? 1 : 0.5, pointerEvents: activeSelection ? 'auto' : 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                        <Square size={20} />
+                                        <Square size={18} />
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
                                             <span>Border</span>
                                             <ChevronDown size={12} />
@@ -535,7 +535,7 @@ function PreviewContent() {
                                         background: activeSelection?.textTransform === 'uppercase' ? '#F3F4F6' : 'transparent',
                                     }}
                                 >
-                                    <span style={{ fontSize: '18px', fontWeight: 600, lineHeight: 1 }}>Aa</span>
+                                    <span style={{ fontSize: '16px', fontWeight: 600, lineHeight: 1 }}>Aa</span>
                                     <span>CAPITAL</span>
                                 </button>
                             </div>
