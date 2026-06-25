@@ -384,13 +384,16 @@ function PreviewContent() {
                         {isEditMode && (
                             <div style={{
                                 position: 'fixed',
-                                top: '20px',
+                                top: 0,
+                                left: 0,
+                                width: '100%',
                                 background: 'white',
-                                borderRadius: '12px',
-                                padding: '4px 8px',
+                                borderRadius: 0,
+                                padding: '6px 8px',
                                 display: 'flex',
+                                justifyContent: 'center',
                                 alignItems: 'center',
-                                gap: '2px',
+                                gap: '4px',
                                 boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
                                 zIndex: 100
                             }}>
