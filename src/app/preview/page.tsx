@@ -370,7 +370,7 @@ function PreviewContent() {
         <div className={styles.previewPage}>
             {/* Fullscreen Preview Modal */}
             {selectedPreviewIndex !== null && theme && (
-                <div className={modalStyles.overlayBackdrop} style={isEditMode ? { background: '#E5E7EB' } : {}} onClick={() => !isEditMode && setSelectedPreviewIndex(null)}>
+                <div className={modalStyles.overlayBackdrop} onClick={() => !isEditMode && setSelectedPreviewIndex(null)}>
                     <div className={modalStyles.overlayContent} style={isEditMode ? { width: '100vw', height: '100vh', maxWidth: '100%', maxHeight: '100%', borderRadius: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingTop: '60px', paddingBottom: '80px' } : {}} onClick={(e) => e.stopPropagation()}>
                         
                         {!isEditMode && (
