@@ -444,50 +444,96 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                 ${showSizingBoxes ? `
                 .sizing-box {
                     position: relative;
-                    outline: 1px dashed rgba(0,0,0,0.4);
-                    outline-offset: 4px;
+                    outline: 1px dashed transparent;
                     border-radius: 2px;
                     transition: outline 0.2s, background 0.2s;
-                    cursor: move;
-                    resize: both !important;
-                    overflow: hidden !important;
+                    cursor: pointer;
                     flex: none !important;
-                    min-width: 50px;
+                    min-width: 20px;
                     min-height: 20px;
                     z-index: 10;
                 }
                 .sizing-box:hover {
-                    outline: 2px solid #10B981;
-                    outline-offset: 4px;
+                    outline: 1px dashed #10B981;
                     background: rgba(16, 185, 129, 0.05);
                 }
-                .sizing-box:focus {
-                    cursor: text;
+                .sizing-box.selected {
                     outline: 2px solid #3B82F6 !important;
+                    outline-offset: 4px;
                     background: rgba(59, 130, 246, 0.05);
+                    cursor: move;
+                    z-index: 20;
                 }
-                .sizing-box:hover::after {
-                    content: '';
+                .sizing-box.editing {
+                    cursor: text;
+                    background: rgba(255, 255, 255, 0.9);
+                }
+                
+                /* Custom Resize Handles */
+                .resize-handle {
                     position: absolute;
-                    bottom: -8px;
-                    right: -8px;
-                    width: 8px;
-                    height: 8px;
+                    width: 14px;
+                    height: 14px;
                     background: white;
-                    border: 2px solid #10B981;
+                    border: 2px solid #3B82F6;
                     border-radius: 50%;
+                    display: none;
+                    z-index: 30;
                 }
-                .sizing-box:hover::before {
-                    content: '';
+                .sizing-box.selected .resize-handle {
+                    display: block;
+                }
+                .resize-handle.tl { top: -7px; left: -7px; cursor: nwse-resize; }
+                .resize-handle.tr { top: -7px; right: -7px; cursor: nesw-resize; }
+                .resize-handle.bl { bottom: -7px; left: -7px; cursor: nesw-resize; }
+                .resize-handle.br { bottom: -7px; right: -7px; cursor: nwse-resize; }
+
+                /* Floating Toolbar */
+                .editor-toolbar {
                     position: absolute;
-                    top: -8px;
-                    left: -8px;
-                    width: 8px;
-                    height: 8px;
-                    background: white;
-                    border: 2px solid #10B981;
-                    border-radius: 50%;
+                    top: 0; left: 0;
+                    background: #1F2937;
+                    border-radius: 8px;
+                    padding: 6px;
+                    display: flex;
+                    gap: 8px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                    z-index: 100;
+                    opacity: 0;
+                    pointer-events: none;
+                    transition: opacity 0.2s, transform 0.2s;
+                    align-items: center;
                 }
+                .editor-toolbar.visible {
+                    opacity: 1;
+                    pointer-events: auto;
+                }
+                .editor-toolbar button {
+                    background: transparent;
+                    border: none;
+                    color: white;
+                    cursor: pointer;
+                    padding: 6px;
+                    border-radius: 4px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+                .editor-toolbar button:hover { background: #374151; }
+                .editor-toolbar input[type="color"] {
+                    width: 24px; height: 24px; padding: 0; border: none; border-radius: 4px; cursor: pointer;
+                }
+
+                /* Snap Guides */
+                .snap-guide {
+                    position: absolute;
+                    background: #EF4444;
+                    z-index: 5;
+                    display: none;
+                }
+                .snap-guide.x { top: 0; bottom: 0; width: 1px; left: 50%; }
+                .snap-guide.y { left: 0; right: 0; height: 1px; top: 50%; }
+                .snap-guide.visible { display: block; }
                 ` : ''}
             `;
 
@@ -510,7 +556,7 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                     const el = doc.getElementById(id);
                     if (el && !el.classList.contains('sizing-box')) {
                         el.classList.add('sizing-box');
-                        el.setAttribute('contenteditable', 'true');
+                        // Remove contenteditable initialization so single click doesn't edit
                         if ((doc.defaultView as any)?.textScaler) (doc.defaultView as any).textScaler.observe(el);
                     }
                 });
@@ -518,7 +564,6 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                     const el = doc.getElementById(id);
                     if (el && !el.classList.contains('sizing-box')) {
                         el.classList.add('sizing-box');
-                        el.setAttribute('contenteditable', 'true');
                         if ((doc.defaultView as any)?.textScaler) (doc.defaultView as any).textScaler.observe(el);
                     }
                 });
@@ -530,48 +575,208 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                     scriptEl.id = 'drag-script';
                     scriptEl.textContent = `
                         let draggingEl = null;
-                        let startX, startY, initialTx, initialTy;
+                        let resizingHandle = null;
+                        let startX, startY, initialTx, initialTy, initialW;
+                        let selectedBox = null;
+                        let toolbar = null;
+                        let guideX = null;
+                        let guideY = null;
                         
-                        document.addEventListener('mousedown', (e) => {
+                        // Initialization
+                        function initEditor() {
+                            // Inject Toolbar
+                            toolbar = document.createElement('div');
+                            toolbar.className = 'editor-toolbar';
+                            toolbar.innerHTML = \\\`
+                                <input type="color" id="tb-color" title="Text Color">
+                                <button id="tb-align-left" title="Align Left"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="21" y1="6" x2="3" y2="6"></line><line x1="15" y1="12" x2="3" y2="12"></line><line x1="17" y1="18" x2="3" y2="18"></line></svg></button>
+                                <button id="tb-align-center" title="Align Center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="21" y1="6" x2="3" y2="6"></line><line x1="19" y1="12" x2="5" y2="12"></line><line x1="17" y1="18" x2="7" y2="18"></line></svg></button>
+                                <button id="tb-align-right" title="Align Right"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="21" y1="6" x2="3" y2="6"></line><line x1="21" y1="12" x2="9" y2="12"></line><line x1="21" y1="18" x2="7" y2="18"></line></svg></button>
+                                <div style="width: 1px; height: 16px; background: #4B5563; margin: 0 4px;"></div>
+                                <button id="tb-delete" title="Delete" style="color: #F87171;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg></button>
+                            \\\`;
+                            document.body.appendChild(toolbar);
+                            
+                            // Inject Guides
+                            guideX = document.createElement('div'); guideX.className = 'snap-guide x'; document.body.appendChild(guideX);
+                            guideY = document.createElement('div'); guideY.className = 'snap-guide y'; document.body.appendChild(guideY);
+
+                            // Toolbar events
+                            document.getElementById('tb-color').addEventListener('input', (e) => {
+                                if(selectedBox) selectedBox.style.color = e.target.value;
+                            });
+                            document.getElementById('tb-align-left').addEventListener('click', () => selectedBox && (selectedBox.style.textAlign = 'left'));
+                            document.getElementById('tb-align-center').addEventListener('click', () => selectedBox && (selectedBox.style.textAlign = 'center'));
+                            document.getElementById('tb-align-right').addEventListener('click', () => selectedBox && (selectedBox.style.textAlign = 'right'));
+                            document.getElementById('tb-delete').addEventListener('click', () => {
+                                if(selectedBox) {
+                                    selectedBox.style.display = 'none';
+                                    deselect();
+                                }
+                            });
+                        }
+                        
+                        function ensureHandles(box) {
+                            if (box.querySelector('.resize-handle')) return;
+                            ['tl', 'tr', 'bl', 'br'].forEach(pos => {
+                                const handle = document.createElement('div');
+                                handle.className = \\\`resize-handle \${pos}\\\`;
+                                box.appendChild(handle);
+                            });
+                        }
+
+                        function updateToolbarPosition() {
+                            if (!selectedBox) return;
+                            const rect = selectedBox.getBoundingClientRect();
+                            toolbar.style.transform = \\\`translate(\${rect.left + rect.width/2 - toolbar.offsetWidth/2}px, \${Math.max(10, rect.top - 50)}px)\\\`;
+                        }
+
+                        function selectBox(box) {
+                            if (selectedBox === box) return;
+                            deselect();
+                            selectedBox = box;
+                            ensureHandles(box);
+                            box.classList.add('selected');
+                            toolbar.classList.add('visible');
+                            
+                            const style = window.getComputedStyle(box);
+                            const rgb = style.color.match(/\\d+/g);
+                            if(rgb && rgb.length >= 3) {
+                                const hex = '#' + rgb.slice(0,3).map(x => parseInt(x).toString(16).padStart(2, '0')).join('');
+                                document.getElementById('tb-color').value = hex;
+                            }
+                            updateToolbarPosition();
+                        }
+                        
+                        function deselect() {
+                            if (selectedBox) {
+                                selectedBox.classList.remove('selected');
+                                selectedBox.classList.remove('editing');
+                                selectedBox.removeAttribute('contenteditable');
+                            }
+                            selectedBox = null;
+                            toolbar.classList.remove('visible');
+                        }
+
+                        const handleStart = (e) => {
+                            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                            
+                            if (e.target.closest('.editor-toolbar')) return;
+                            
+                            const resizeHandle = e.target.closest('.resize-handle');
+                            if (resizeHandle) {
+                                e.preventDefault();
+                                resizingHandle = resizeHandle;
+                                selectedBox = resizeHandle.parentElement;
+                                startX = clientX; startY = clientY;
+                                initialW = selectedBox.offsetWidth;
+                                return;
+                            }
+                            
                             const sizingBox = e.target.closest('.sizing-box');
                             if (sizingBox) {
-                                const rect = sizingBox.getBoundingClientRect();
-                                const offsetX = e.clientX - rect.left;
-                                const offsetY = e.clientY - rect.top;
-                                
-                                // Ignore drag if clicking on the bottom-right resize handle (approx 20x20 px)
-                                const isResizeHandle = (rect.width - offsetX < 20) && (rect.height - offsetY < 20);
-                                if(isResizeHandle) return; // Allow native resize to work
-
-                                // Ignore drag if the element is currently being text-edited (focused)
-                                if (document.activeElement === sizingBox) return;
-
+                                if (sizingBox.classList.contains('editing')) return;
+                                e.preventDefault();
+                                selectBox(sizingBox);
                                 draggingEl = sizingBox;
-                                startX = e.clientX;
-                                startY = e.clientY;
-                                
+                                startX = clientX; startY = clientY;
                                 initialTx = parseFloat(draggingEl.dataset.tx) || 0;
                                 initialTy = parseFloat(draggingEl.dataset.ty) || 0;
+                            } else {
+                                deselect();
                             }
-                        });
+                        };
                         
-                        document.addEventListener('mousemove', (e) => {
-                            if (draggingEl) {
-                                const dx = e.clientX - startX;
-                                const dy = e.clientY - startY;
+                        const handleMove = (e) => {
+                            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                            
+                            if (resizingHandle && selectedBox) {
+                                e.preventDefault();
+                                const dx = clientX - startX;
+                                let newW = initialW;
                                 
-                                const newTx = initialTx + dx;
-                                const newTy = initialTy + dy;
+                                if (resizingHandle.classList.contains('tr') || resizingHandle.classList.contains('br')) {
+                                    newW = initialW + dx;
+                                } else {
+                                    newW = initialW - dx;
+                                }
+                                
+                                if (newW > 50) {
+                                    selectedBox.style.width = newW + 'px';
+                                }
+                                updateToolbarPosition();
+                            } else if (draggingEl) {
+                                e.preventDefault();
+                                let dx = clientX - startX;
+                                let dy = clientY - startY;
+                                
+                                let newTx = initialTx + dx;
+                                let newTy = initialTy + dy;
+                                
+                                const rect = draggingEl.getBoundingClientRect();
+                                const centerX = rect.left + rect.width / 2;
+                                const centerY = rect.top + rect.height / 2;
+                                const bodyW = document.body.clientWidth;
+                                const bodyH = document.body.clientHeight;
+                                
+                                guideX.classList.remove('visible');
+                                guideY.classList.remove('visible');
+                                
+                                if (Math.abs(centerX - bodyW/2) < 10) {
+                                    newTx -= (centerX - bodyW/2);
+                                    guideX.classList.add('visible');
+                                }
+                                if (Math.abs(centerY - bodyH/2) < 10) {
+                                    newTy -= (centerY - bodyH/2);
+                                    guideY.classList.add('visible');
+                                }
                                 
                                 draggingEl.dataset.tx = newTx;
                                 draggingEl.dataset.ty = newTy;
+                                draggingEl.style.transform = \\\`translate(\${newTx}px, \${newTy}px)\\\`;
+                                updateToolbarPosition();
+                            }
+                        };
+                        
+                        const handleEnd = () => {
+                            draggingEl = null;
+                            resizingHandle = null;
+                            if (guideX) guideX.classList.remove('visible');
+                            if (guideY) guideY.classList.remove('visible');
+                        };
+
+                        // Events
+                        document.addEventListener('mousedown', handleStart);
+                        document.addEventListener('mousemove', handleMove);
+                        document.addEventListener('mouseup', handleEnd);
+                        
+                        document.addEventListener('touchstart', handleStart, {passive: false});
+                        document.addEventListener('touchmove', handleMove, {passive: false});
+                        document.addEventListener('touchend', handleEnd);
+
+                        // Double click to edit text
+                        document.addEventListener('dblclick', (e) => {
+                            const sizingBox = e.target.closest('.sizing-box');
+                            if (sizingBox) {
+                                sizingBox.classList.add('editing');
+                                sizingBox.setAttribute('contenteditable', 'true');
+                                sizingBox.focus();
                                 
-                                draggingEl.style.transform = \`translate(\${newTx}px, \${newTy}px)\`;
+                                // Hide resize handles while editing
+                                sizingBox.querySelectorAll('.resize-handle').forEach(h => h.style.display = 'none');
                             }
                         });
                         
-                        document.addEventListener('mouseup', () => {
-                            draggingEl = null;
+                        // Show handles again when blur
+                        document.addEventListener('focusout', (e) => {
+                            const sizingBox = e.target.closest('.sizing-box');
+                            if (sizingBox && sizingBox.classList.contains('editing')) {
+                                sizingBox.classList.remove('editing');
+                                sizingBox.removeAttribute('contenteditable');
+                                sizingBox.querySelectorAll('.resize-handle').forEach(h => h.style.display = '');
+                            }
                         });
 
                         // RESIZE OBSERVER FOR FONT SCALING
@@ -594,6 +799,7 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                             }
                         });
                         
+                        initEditor();
                         document.querySelectorAll('.sizing-box').forEach(el => window.textScaler.observe(el));
                     `;
                     doc.body.appendChild(scriptEl);
