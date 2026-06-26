@@ -32,6 +32,7 @@ interface InvitationCardProps {
     isSecured?: boolean; // Added isSecured to props
     showSizingBoxes?: boolean; // Added showSizingBoxes
     isRawPreview?: boolean; // Added to just show the HTML as is
+    onLayoutMeasure?: (layout: { width: number; height: number; aspectRatio: number }) => void;
 }
 
 export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>(({
@@ -50,13 +51,52 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
     className,
     isSecured = false,
     showSizingBoxes = false,
-    isRawPreview = isPlaceholder // Default to raw preview for placeholders (previews)
+    isRawPreview = false,
+    onLayoutMeasure
 }, ref) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const [containerScale, setContainerScale] = useState(1);
     const [iframeHeight, setIframeHeight] = useState(889);
     const isHTMLDesign = customImage?.toLowerCase().endsWith('.html') || (customImage?.includes('item-Wedding_Invitation') && customImage.toLowerCase().includes('.html')); // Robust check
+    const [imageDimensions, setImageDimensions] = useState<{ width: number; height: number }>({ width: 600, height: 800 });
+    const [imageRatio, setImageRatio] = useState<number>(3/4);
+
+    useEffect(() => {
+        if (customImage && !isHTMLDesign) {
+            const img = new window.Image();
+            img.src = customImage;
+            img.onload = () => {
+                if (img.width > 0 && img.height > 0) {
+                    const ratio = img.width / img.height;
+                    setImageDimensions({ width: img.width, height: img.height });
+                    setImageRatio(ratio);
+                    
+                    if (isRawPreview) {
+                        onLayoutMeasure?.({
+                            width: img.width,
+                            height: img.height,
+                            aspectRatio: ratio
+                        });
+                    } else {
+                        onLayoutMeasure?.({
+                            width: 600,
+                            height: 800,
+                            aspectRatio: 600 / 800
+                        });
+                    }
+                }
+            };
+        } else if (!isHTMLDesign && !customImage) {
+            if (!isRawPreview) {
+                onLayoutMeasure?.({
+                    width: 600,
+                    height: 800,
+                    aspectRatio: 600 / 800
+                });
+            }
+        }
+    }, [customImage, isHTMLDesign, isRawPreview, onLayoutMeasure]);
 
     const cacheBuster = useMemo(() => Date.now(), []);
     const iframeSrc = useMemo(() => {
@@ -67,8 +107,11 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
 
     const [isReady, setIsReady] = useState(false);
 
+    const hasLoadedSavedLayout = useRef(false);
+
     useEffect(() => {
         setIsReady(false);
+        hasLoadedSavedLayout.current = false;
     }, [iframeSrc]);
 
     useImperativeHandle(ref, () => ({
@@ -95,45 +138,138 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
             return values;
         },
         downloadImage: () => {
-            if (!iframeRef.current) return;
-            const doc = iframeRef.current.contentDocument || iframeRef.current.contentWindow?.document;
-            if (!doc) return;
-
             const executeDownload = () => {
-                const win = iframeRef.current?.contentWindow as any;
-                if (!win || !win.html2canvas) return;
+                if (isHTMLDesign) {
+                    if (!iframeRef.current) return;
+                    const doc = iframeRef.current.contentDocument || iframeRef.current.contentWindow?.document;
+                    if (!doc) return;
 
-                // Hide styling boxes before screenshot
-                const style = doc.createElement('style');
-                style.textContent = `.sizing-box { outline: none !important; cursor: default !important; }`;
-                doc.head.appendChild(style);
+                    const win = iframeRef.current?.contentWindow as any;
+                    if (!win || !win.html2canvas) return;
 
-                const wrapper = doc.querySelector('.invitation-wrapper') || 
-                              doc.querySelector('.invite-wrapper') || 
-                              doc.body.firstElementChild;
-                const targetHeight = (wrapper as HTMLElement)?.offsetHeight || 889;
+                    const wrapper = doc.querySelector('.invitation-wrapper') || 
+                                  doc.querySelector('.invite-wrapper') || 
+                                  doc.body.firstElementChild;
+                    
+                    if (!wrapper) return;
 
-                win.html2canvas(doc.body, { 
-                    useCORS: true, 
-                    scale: 2, 
-                    width: 500,
-                    height: targetHeight,
-                    backgroundColor: null 
-                }).then((canvas: HTMLCanvasElement) => {
-                    const link = document.createElement('a');
-                    link.download = `Wedding-Invitation-Design.png`;
-                    link.href = canvas.toDataURL('image/png');
-                    link.click();
-                    doc.head.removeChild(style);
-                });
+                    // Save original wrapper style to restore later
+                    const originalWrapperStyle = (wrapper as HTMLElement).getAttribute('style') || '';
+
+                    // Inject combined style: hide resize handles + override height constraints
+                    const style = doc.createElement('style');
+                    style.id = 'html2canvas-capture-style';
+                    style.innerHTML = `
+                        .sizing-box { outline: none !important; cursor: default !important; }
+                        body { overflow: visible !important; width: 500px !important; min-height: 100% !important; }
+                        .invitation-wrapper, .invite-wrapper { 
+                            max-height: none !important; 
+                            height: auto !important; 
+                            aspect-ratio: auto !important;
+                            overflow: visible !important;
+                            background-size: 100% 100% !important; 
+                            transform: none !important;
+                            margin: 0 !important;
+                            width: 100% !important;
+                        }
+                    `;
+                    doc.head.appendChild(style);
+
+                    // Temporarily remove constraints on the wrapper and set it to auto height at 500px width
+                    (wrapper as HTMLElement).style.setProperty('max-width', 'none', 'important');
+                    (wrapper as HTMLElement).style.setProperty('max-height', 'none', 'important');
+                    (wrapper as HTMLElement).style.setProperty('width', '500px', 'important');
+                    (wrapper as HTMLElement).style.setProperty('height', 'auto', 'important');
+
+                    // Measure natural height of the template when rendering unconstrained at 500px width
+                    const targetHeight = Math.max((wrapper as HTMLElement).scrollHeight, (wrapper as HTMLElement).offsetHeight, Math.round(500 * 16 / 9));
+
+                    // Lock the wrapper styles to exactly 500px width and the measured targetHeight
+                    (wrapper as HTMLElement).style.setProperty('height', `${targetHeight}px`, 'important');
+
+                    // Temporary body styling adjustments to prevent flex layout shifts in html2canvas
+                    const originalBodyStyle = doc.body.getAttribute('style') || '';
+                    doc.body.style.setProperty('display', 'block', 'important');
+                    doc.body.style.setProperty('margin', '0', 'important');
+                    doc.body.style.setProperty('padding', '0', 'important');
+                    doc.body.style.setProperty('width', '500px', 'important');
+                    doc.body.style.setProperty('height', `${targetHeight}px`, 'important');
+
+                    const elementToCapture = wrapper;
+
+                    win.html2canvas(elementToCapture, { 
+                        useCORS: true, 
+                        scale: 2, 
+                        width: 500,
+                        height: targetHeight,
+                        backgroundColor: null 
+                    }).then((canvas: HTMLCanvasElement) => {
+                        const link = document.createElement('a');
+                        link.download = `Wedding-Invitation-Design.png`;
+                        link.href = canvas.toDataURL('image/png');
+                        link.click();
+                        
+                        doc.body.setAttribute('style', originalBodyStyle);
+                        (wrapper as HTMLElement).setAttribute('style', originalWrapperStyle);
+                        if (style.parentNode) style.parentNode.removeChild(style);
+                        const boxStyle = doc.head.querySelector('style:last-child');
+                        if (boxStyle && boxStyle.textContent?.includes('.sizing-box')) boxStyle.parentNode?.removeChild(boxStyle);
+                    }).catch((e: any) => {
+                        console.error("Error capturing canvas:", e);
+                        doc.body.setAttribute('style', originalBodyStyle);
+                        (wrapper as HTMLElement).setAttribute('style', originalWrapperStyle);
+                        if (style.parentNode) style.parentNode.removeChild(style);
+                        const boxStyle = doc.head.querySelector('style:last-child');
+                        if (boxStyle && boxStyle.textContent?.includes('.sizing-box')) boxStyle.parentNode?.removeChild(boxStyle);
+                    });
+                } else {
+                    // Fallback for non-HTML designs (using html2canvas on the container div)
+                    if (!containerRef.current) return;
+                    
+                    // We need html2canvas to be loaded in the main window
+                    const mainWin = window as any;
+                    const captureMainElement = () => {
+                        if (!mainWin.html2canvas) return;
+                        
+                        mainWin.html2canvas(containerRef.current, {
+                            useCORS: true,
+                            scale: 2,
+                            backgroundColor: null
+                        }).then((canvas: HTMLCanvasElement) => {
+                            const link = document.createElement('a');
+                            link.download = `Wedding-Invitation-Design.png`;
+                            link.href = canvas.toDataURL('image/png');
+                            link.click();
+                        }).catch((e: any) => {
+                            console.error("Error capturing non-HTML design canvas:", e);
+                        });
+                    };
+
+                    if (!mainWin.html2canvas) {
+                        const script = document.createElement('script');
+                        script.src = "https://html2canvas.hertzen.com/dist/html2canvas.min.js";
+                        script.onload = captureMainElement;
+                        document.head.appendChild(script);
+                    } else {
+                        captureMainElement();
+                    }
+                }
             };
 
-            if (!doc.getElementById('html2canvas-script')) {
-                const script = doc.createElement('script');
-                script.id = 'html2canvas-script';
-                script.src = "https://html2canvas.hertzen.com/dist/html2canvas.min.js";
-                script.onload = executeDownload;
-                doc.head.appendChild(script);
+            if (isHTMLDesign) {
+                if (!iframeRef.current) return;
+                const doc = iframeRef.current.contentDocument || iframeRef.current.contentWindow?.document;
+                if (!doc) return;
+
+                if (!doc.getElementById('html2canvas-script')) {
+                    const script = doc.createElement('script');
+                    script.id = 'html2canvas-script';
+                    script.src = "https://html2canvas.hertzen.com/dist/html2canvas.min.js";
+                    script.onload = executeDownload;
+                    doc.head.appendChild(script);
+                } else {
+                    executeDownload();
+                }
             } else {
                 executeDownload();
             }
@@ -142,6 +278,30 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
             if (iframeRef.current && iframeRef.current.contentWindow) {
                 iframeRef.current.contentWindow.postMessage(payload, '*');
             }
+        },
+        saveLayout: () => {
+            if (!iframeRef.current) return;
+            const doc = iframeRef.current.contentDocument || iframeRef.current.contentWindow?.document;
+            if (!doc) return;
+
+            // Deselect any selected box to clean the saved layout markup
+            const win = iframeRef.current.contentWindow as any;
+            if (win && typeof win.deselect === 'function') {
+                try {
+                    win.deselect();
+                } catch (e) {
+                    console.error("Error deselecting:", e);
+                }
+            }
+
+            const storageKey = `wedding-card-edits-${event.id}-${theme.id}`;
+            // Clean up any remaining resize/delete handles just in case deselect didn't catch them
+            doc.querySelectorAll('.resize-handle, .delete-handle').forEach(el => el.remove());
+            doc.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
+            doc.querySelectorAll('.snap-guide').forEach(el => el.classList.remove('visible'));
+
+            localStorage.setItem(storageKey, doc.body.innerHTML);
+            console.log("Saved layout to localStorage under key:", storageKey);
         }
     }));
 
@@ -216,11 +376,28 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
 
     // Map user fields to HTML template IDs
     useEffect(() => {
-        if (!isHTMLDesign || !iframeRef.current || isRawPreview) return;
+        if (!isHTMLDesign || !iframeRef.current || isRawPreview || !event || !theme) return;
 
         const updateContent = () => {
             const doc = iframeRef.current?.contentDocument || iframeRef.current?.contentWindow?.document;
             if (!doc || !doc.body || !doc.head) return;
+
+            // Load saved layout from localStorage if it exists and hasn't been loaded in this render session
+            const storageKey = `wedding-card-edits-${event.id}-${theme.id}`;
+            const savedLayout = typeof window !== 'undefined' ? localStorage.getItem(storageKey) : null;
+            if (savedLayout && !hasLoadedSavedLayout.current) {
+                doc.body.innerHTML = savedLayout;
+                hasLoadedSavedLayout.current = true;
+                // Re-initialize event listeners in the editor iframe
+                const win = iframeRef.current?.contentWindow as any;
+                if (win && typeof win.initEditor === 'function') {
+                    try {
+                        win.initEditor();
+                    } catch (e) {
+                        console.error("Error re-initializing editor:", e);
+                    }
+                }
+            }
 
             const getDefaultHeading = (eName: string) => {
                 const n = (eName || '').toLowerCase();
@@ -242,6 +419,8 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                 'heading': (isSpecialEvent && !event.tagline) ? undefined : (event.tagline || 'We are pleased to invite you to the wedding of'),
                 'subheading': (isSpecialEvent && !event.tagline) ? undefined : event.tagline,
                 'event-subheading': (isSpecialEvent && !event.tagline) ? undefined : event.tagline,
+                'event-description': event.description,
+                'description': event.description,
                 'groom-name': groomName,
                 'bride-name': brideName,
                 'groom-parents': groomParents,
@@ -526,16 +705,29 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
 
             // Auto-adjust height based on content
             const wrapper = doc.querySelector('.invitation-wrapper') || 
-                          doc.querySelector('.invite-wrapper') || 
-                          doc.body.firstElementChild;
+                           doc.querySelector('.invite-wrapper') || 
+                           doc.body.firstElementChild;
             if (wrapper) {
                 const h = (wrapper as HTMLElement).offsetHeight;
-                if (h > 0 && h !== iframeHeight) {
-                    setIframeHeight(h);
+                if (h > 0) {
+                    if (h !== iframeHeight) {
+                        setIframeHeight(h);
+                        onLayoutMeasure?.({
+                            width: 500,
+                            height: h,
+                            aspectRatio: 500 / h
+                        });
+                    }
                 }
-            } else if (iframeHeight !== 889) {
-                // Default to 889 (9:16 ratio for 500px width) if no wrapper detected yet
-                setIframeHeight(889);
+            } else {
+                if (iframeHeight !== 889) {
+                    setIframeHeight(889);
+                    onLayoutMeasure?.({
+                        width: 500,
+                        height: 889,
+                        aspectRatio: 500 / 889
+                    });
+                }
             }
 
             if (showSizingBoxes) {
@@ -568,6 +760,54 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                         let guideX = null;
                         let guideY = null;
                         
+                        function addQrCode(link, title) {
+                            deselect();
+                            const container = document.querySelector('.invitation-wrapper') || 
+                                              document.querySelector('.invite-wrapper') || 
+                                              document.body;
+                            if (!container) return;
+                            
+                            const qrBox = document.createElement('div');
+                            qrBox.id = 'qr-code-' + Date.now();
+                            qrBox.className = 'sizing-box';
+                            qrBox.style.position = 'absolute';
+                            qrBox.style.width = '120px';
+                            qrBox.style.height = '135px';
+                            qrBox.style.left = '50%';
+                            qrBox.style.top = '45%';
+                            qrBox.style.transform = 'translate(-50%, -50%)';
+                            qrBox.dataset.tx = '0';
+                            qrBox.dataset.ty = '0';
+                            
+                            const img = document.createElement('img');
+                            // Golden/brownish QR color (b38b40) matching mockup
+                            img.src = 'https://quickchart.io/qr?text=' + encodeURIComponent(link) + '&light=0000&dark=b38b40&size=200';
+                            img.style.width = '100%';
+                            img.style.height = '82%';
+                            img.style.objectFit = 'contain';
+                            img.style.pointerEvents = 'none';
+                            img.style.display = 'block';
+                            
+                            const titleEl = document.createElement('div');
+                            titleEl.innerText = title || 'SCAN FOR LOCATION';
+                            titleEl.style.fontSize = '8px';
+                            titleEl.style.color = '#b38b40';
+                            titleEl.style.textAlign = 'center';
+                            titleEl.style.height = '15%';
+                            titleEl.style.marginTop = '4px';
+                            titleEl.style.fontWeight = 'bold';
+                            titleEl.style.width = '100%';
+                            titleEl.style.textTransform = 'uppercase';
+                            titleEl.style.overflow = 'hidden';
+                            titleEl.style.whiteSpace = 'nowrap';
+                            titleEl.style.textOverflow = 'ellipsis';
+                            
+                            qrBox.appendChild(img);
+                            qrBox.appendChild(titleEl);
+                            container.appendChild(qrBox);
+                            selectBox(qrBox);
+                        }
+
                         // Initialization
                         function initEditor() {
                             // Inject Guides
@@ -575,8 +815,13 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                             guideY = document.createElement('div'); guideY.className = 'snap-guide y'; document.body.appendChild(guideY);
 
                             window.addEventListener('message', (e) => {
-                                if (!selectedBox) return;
                                 const { type, payload } = e.data;
+                                if (type === 'ADD_QR') {
+                                    addQrCode(payload.link, payload.title);
+                                    return;
+                                }
+
+                                if (!selectedBox) return;
                                 if (type === 'FORMAT_TEXT') {
                                     if (payload.color) selectedBox.style.color = payload.color;
                                     if (payload.align) selectedBox.style.textAlign = payload.align;
@@ -702,6 +947,9 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                                 
                                 if (newW > 50) {
                                     selectedBox.style.width = newW + 'px';
+                                    if (selectedBox.id && selectedBox.id.startsWith('qr-code')) {
+                                        selectedBox.style.height = Math.round(newW * 1.125) + 'px';
+                                    }
                                 }
                                 updateToolbarPosition();
                             } else if (draggingEl) {
@@ -843,7 +1091,7 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
             currentIframe.addEventListener('load', handleLoad);
             return () => currentIframe.removeEventListener('load', handleLoad);
         }
-    }, [isHTMLDesign, event, welcomeMessage, groomName, brideName, groomParents, brideParents, customImage, showSizingBoxes, isRawPreview]);
+    }, [isHTMLDesign, event, welcomeMessage, groomName, brideName, groomParents, brideParents, customImage, showSizingBoxes, isRawPreview, onLayoutMeasure]);
 
     const isHaldi = event.name?.toLowerCase().includes('haldi');
     const isContract = variant === 'contract';
@@ -859,11 +1107,23 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                     cursor: onClick ? 'pointer' : 'default',
                     overflow: 'hidden',
                     position: 'relative',
-                    background: 'white', // Ensure background is filled
+                    background: 'transparent',
                     aspectRatio: 'auto',
                     height: `${iframeHeight * containerScale}px`
                 }}
             >
+                {/* Loading shimmer - visible until iframe is ready */}
+                {!isReady && (
+                    <div style={{
+                        position: 'absolute',
+                        inset: 0,
+                        zIndex: 5,
+                        borderRadius: 'inherit',
+                        background: 'linear-gradient(110deg, #f0ede8 8%, #f7f4ef 18%, #f0ede8 33%)',
+                        backgroundSize: '200% 100%',
+                        animation: 'shimmer 1.5s infinite linear',
+                    }} />
+                )}
                 <div style={{
                     position: 'absolute',
                     top: 0,
@@ -872,7 +1132,9 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                     height: `${iframeHeight}px`,
                     transform: `scale(${containerScale})`,
                     transformOrigin: 'top left',
-                    pointerEvents: (onClick && !showSizingBoxes) ? 'none' : 'auto'
+                    pointerEvents: (onClick && !showSizingBoxes) ? 'none' : 'auto',
+                    opacity: isReady ? 1 : 0,
+                    transition: 'opacity 0.3s ease-in-out'
                 }}>
                     <iframe
                         key={iframeSrc}
@@ -882,15 +1144,13 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                             width: '100%',
                             height: '100%',
                             border: 'none',
-                            opacity: isReady ? 1 : 0,
-                            transition: 'opacity 0.15s ease-in-out'
                         }}
                         scrolling="no"
                         title="Invitation Template"
                     />
                 </div>
-                {isSecured && (
-                    <div className={styles.watermark}>
+                {isSecured && isReady && (
+                    <div className={styles.watermark} style={{ opacity: isReady ? 1 : 0, transition: 'opacity 0.3s ease-in-out' }}>
                         <span>nimantranstudio.in &nbsp; nimantranstudio.in &nbsp; nimantranstudio.in &nbsp; nimantranstudio.in &nbsp; nimantranstudio.in &nbsp; nimantranstudio.in</span>
                         <span>nimantranstudio.in &nbsp; nimantranstudio.in &nbsp; nimantranstudio.in &nbsp; nimantranstudio.in &nbsp; nimantranstudio.in &nbsp; nimantranstudio.in</span>
                         <span>nimantranstudio.in &nbsp; nimantranstudio.in &nbsp; nimantranstudio.in &nbsp; nimantranstudio.in &nbsp; nimantranstudio.in &nbsp; nimantranstudio.in</span>
@@ -900,28 +1160,39 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
         );
     }
 
+    const vw = isRawPreview ? imageDimensions.width : 600;
+    const vh = isRawPreview ? imageDimensions.height : 800;
+    const cx = vw / 2;
+    const scaleX = (x: number) => (x / 600) * vw;
+    const scaleY = (y: number) => (y / 800) * vh;
+    const scaleFont = (size: number) => Math.round(size * (vw / 600));
+
     return (
         <div
+            ref={containerRef}
             className={styles.invitationCard}
             style={{
                 '--theme-primary': '#D4AF37',
                 cursor: onClick ? 'pointer' : 'default',
                 background: 'transparent',
                 border: 'none',
-                boxShadow: 'none'
+                boxShadow: 'none',
+                aspectRatio: `${vw} / ${vh}`,
+                width: '100%',
+                height: 'auto'
             } as any}
             onClick={onClick}
         >
-            <svg viewBox="0 0 600 800" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+            <svg viewBox={`0 0 ${vw} ${vh}`} width="100%" height="100%" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
                 {/* Background Image */}
                 {customImage && (
                     <image
                         href={customImage}
                         x="0"
                         y="0"
-                        width="600"
-                        height="800"
-                        preserveAspectRatio="xMidYMid slice"
+                        width={vw}
+                        height={vh}
+                        preserveAspectRatio="xMidYMid meet"
                     />
                 )}
 
@@ -931,31 +1202,31 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                         /* Save The Date Layout (Design 8) */
                         <g>
                             {/* Masking Rect to hide original text - Color picked to match dark maroon background */}
-                            <rect x="40" y="220" width="520" height="500" fill="#3E0E18" rx="10" />
+                            <rect x={scaleX(40)} y={scaleY(220)} width={scaleX(520)} height={scaleY(500)} fill="#3E0E18" rx={scaleFont(10)} />
 
                             {/* Header */}
-                            <text x="300" y="280" fill="#FFF" fontSize="42" fontFamily="var(--font-serif)" style={{ letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                            <text x={cx} y={scaleY(280)} fill="#FFF" fontSize={scaleFont(42)} fontFamily="var(--font-serif)" style={{ letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                                 Save The Date
                             </text>
-                            <text x="300" y="320" fill="#E5E7EB" fontSize="18" fontFamily="var(--font-serif)" fontStyle="italic">
+                            <text x={cx} y={scaleY(320)} fill="#E5E7EB" fontSize={scaleFont(18)} fontFamily="var(--font-serif)" fontStyle="italic">
                                 to celebrate the wedding of
                             </text>
 
                             {/* Names */}
-                            <text x="300" y="420" fill="#FFF" fontFamily="'Great Vibes', cursive" fontSize="72" filter="url(#shadow)">
+                            <text x={cx} y={scaleY(420)} fill="#FFF" fontFamily="'Great Vibes', cursive" fontSize={scaleFont(72)} filter="url(#shadow)">
                                 {groomName || 'Groom'}   &   {brideName || 'Bride'}
                             </text>
 
                             {/* Date */}
-                            <text x="300" y="550" fill="#FFF" fontSize="28" fontWeight="600" fontFamily="var(--font-serif)" style={{ letterSpacing: '0.05em' }}>
+                            <text x={cx} y={scaleY(550)} fill="#FFF" fontSize={scaleFont(28)} fontWeight="600" fontFamily="var(--font-serif)" style={{ letterSpacing: '0.05em' }}>
                                 {formatDate(event.date) || '1st February 2026'}
                             </text>
-                            <text x="300" y="590" fill="#D1D5DB" fontSize="20" fontFamily="var(--font-serif)">
+                            <text x={cx} y={scaleY(590)} fill="#D1D5DB" fontSize={scaleFont(20)} fontFamily="var(--font-serif)">
                                 {event.venue || 'Venue details to follow'}
                             </text>
 
                             {/* Footer */}
-                            <text x="300" y="660" fill="#9CA3AF" fontSize="14" style={{ letterSpacing: '0.2em', textTransform: 'uppercase' }}>
+                            <text x={cx} y={scaleY(660)} fill="#9CA3AF" fontSize={scaleFont(14)} style={{ letterSpacing: '0.2em', textTransform: 'uppercase' }}>
                                 Formal Invitation to follow
                             </text>
                         </g>
@@ -964,73 +1235,73 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                         /* Contract Card Layout */
                         <g>
                             {/* Names for "Between" section */}
-                            <text x="300" y="295" fill="#4a3b2b" fontFamily="'Great Vibes', cursive" fontSize="52" filter="url(#shadow-sm)">
+                            <text x={cx} y={scaleY(295)} fill="#4a3b2b" fontFamily="'Great Vibes', cursive" fontSize={scaleFont(52)} filter="url(#shadow-sm)">
                                 {groomName || 'Groom'}   &   {brideName || 'Bride'}
                             </text>
                             {/* Signatures at bottom */}
-                            <text x="150" y="660" fill="#4a3b2b" fontFamily="'Great Vibes', cursive" fontSize="32" transform="rotate(-5, 150, 660)">
+                            <text x={scaleX(150)} y={scaleY(660)} fill="#4a3b2b" fontFamily="'Great Vibes', cursive" fontSize={scaleFont(32)} transform={`rotate(-5, ${scaleX(150)}, ${scaleY(660)})`}>
                                 {groomName || 'Groom'}
                             </text>
-                            <text x="450" y="660" fill="#4a3b2b" fontFamily="'Great Vibes', cursive" fontSize="32" transform="rotate(-5, 450, 660)">
+                            <text x={scaleX(450)} y={scaleY(660)} fill="#4a3b2b" fontFamily="'Great Vibes', cursive" fontSize={scaleFont(32)} transform={`rotate(-5, ${scaleX(450)}, ${scaleY(660)})`}>
                                 {brideName || 'Bride'}
                             </text>
                             {/* Date for "On" section - approximate placement */}
-                            <text x="300" y="740" fill="#FFF" fontSize="24" fontWeight="600" fontFamily="var(--font-serif)">
+                            <text x={cx} y={scaleY(740)} fill="#FFF" fontSize={scaleFont(24)} fontWeight="600" fontFamily="var(--font-serif)">
                                 {formatDate(event.date) || '1st February 2026'}
                             </text>
                         </g>
                     ) : isHaldi ? (
                         <>
-                            <text x="300" y="240" fill="#FFF" fontSize="36" fontFamily="var(--font-serif)" style={{ letterSpacing: '0.1em', textTransform: 'uppercase' }} filter="url(#shadow)">
+                            <text x={cx} y={scaleY(240)} fill="#FFF" fontSize={scaleFont(36)} fontFamily="var(--font-serif)" style={{ letterSpacing: '0.1em', textTransform: 'uppercase' }} filter="url(#shadow)">
                                 {event.name}
                             </text>
-                            <text x="300" y="380" fill="#FFF" fontFamily="'Great Vibes', cursive" fontSize="72" filter="url(#shadow)">
+                            <text x={cx} y={scaleY(380)} fill="#FFF" fontFamily="'Great Vibes', cursive" fontSize={scaleFont(72)} filter="url(#shadow)">
                                 {brideName || 'Bride'}
-                                <tspan dx="10" fontSize="36" fontFamily="var(--font-serif)" fontStyle="italic" dy="-10">ke haldi</tspan>
+                                <tspan dx={scaleX(10)} fontSize={scaleFont(36)} fontFamily="var(--font-serif)" fontStyle="italic" dy={scaleY(-10)}>ke haldi</tspan>
                             </text>
-                            <text x="300" y="440" fill="#FFE4B5" fontSize="20" fontStyle="italic" style={{ letterSpacing: '0.05em' }}>
-                                <tspan x="300" dy="0">bless the couple with showers of yellow</tspan>
-                                <tspan x="300" dy="25">health and happiness</tspan>
+                            <text x={cx} y={scaleY(440)} fill="#FFE4B5" fontSize={scaleFont(20)} fontStyle="italic" style={{ letterSpacing: '0.05em' }}>
+                                <tspan x={cx} dy="0">bless the couple with showers of yellow</tspan>
+                                <tspan x={cx} dy={scaleY(25)}>health and happiness</tspan>
                             </text>
                         </>
                     ) : (
                         <>
-                            <text x="300" y="240" fill="#FFF" fontSize="36" fontFamily="var(--font-serif)" style={{ letterSpacing: '0.1em', textTransform: 'uppercase' }} filter="url(#shadow)">
+                            <text x={cx} y={scaleY(240)} fill="#FFF" fontSize={scaleFont(36)} fontFamily="var(--font-serif)" style={{ letterSpacing: '0.1em', textTransform: 'uppercase' }} filter="url(#shadow)">
                                 {event.name}
                             </text>
-                            <text x="300" y="380" fill="#FFF" fontFamily="'Great Vibes', cursive" fontSize="64" filter="url(#shadow)">
+                            <text x={cx} y={scaleY(380)} fill="#FFF" fontFamily="'Great Vibes', cursive" fontSize={scaleFont(64)} filter="url(#shadow)">
                                 {groomName || 'Groom'}
-                                <tspan dx="10" fontSize="32" opacity="0.8">&</tspan>
-                                <tspan dx="10">{brideName || 'Bride'}</tspan>
+                                <tspan dx={scaleX(10)} fontSize={scaleFont(32)} opacity="0.8">&</tspan>
+                                <tspan dx={scaleX(10)}>{brideName || 'Bride'}</tspan>
                             </text>
-                            <text x="300" y="440" fill="#FFE4B5" fontSize="18" fontStyle="italic" style={{ letterSpacing: '0.05em' }}>
-                                <tspan x="300" dy="0">Request the honor of your presence to bless the couple</tspan>
-                                <tspan x="300" dy="25">with showers of love, health, and happiness.</tspan>
+                            <text x={cx} y={scaleY(440)} fill="#FFE4B5" fontSize={scaleFont(18)} fontStyle="italic" style={{ letterSpacing: '0.05em' }}>
+                                <tspan x={cx} dy="0">Request the honor of your presence to bless the couple</tspan>
+                                <tspan x={cx} dy={scaleY(25)}>with showers of love, health, and happiness.</tspan>
                             </text>
                         </>
                     )}
 
                     {/* Bottom Details (Only for non-contract cards) */}
                     {!isContract && (event.date || event.time || event.venue || !isPlaceholder) && (
-                        <g transform="translate(0, 600)" fill="#FFF" fontSize="22" fontWeight="600">
+                        <g transform={`translate(0, ${scaleY(600)})`} fill="#FFF" fontSize={scaleFont(22)} fontWeight="600">
                             {event.date && (
-                                <text x="300" y="0">
-                                    <tspan fill="#FFE4B5" fontSize="16" style={{ letterSpacing: '0.1em', textTransform: 'uppercase' }} dy="-25">On</tspan>
-                                    <tspan x="300" dy="25">{formatDate(event.date)}</tspan>
+                                <text x={cx} y="0">
+                                    <tspan fill="#FFE4B5" fontSize={scaleFont(16)} style={{ letterSpacing: '0.1em', textTransform: 'uppercase' }} dy={scaleY(-25)}>On</tspan>
+                                    <tspan x={cx} dy={scaleY(25)}>{formatDate(event.date)}</tspan>
                                 </text>
                             )}
 
                             {event.time && (
-                                <text x="300" y="80">
-                                    <tspan fill="#FFE4B5" fontSize="16" style={{ letterSpacing: '0.1em', textTransform: 'uppercase' }} dy="-25">At</tspan>
-                                    <tspan x="300" dy="25">{formatTime(event.time)}</tspan>
+                                <text x={cx} y={scaleY(80)}>
+                                    <tspan fill="#FFE4B5" fontSize={scaleFont(16)} style={{ letterSpacing: '0.1em', textTransform: 'uppercase' }} dy={scaleY(-25)}>At</tspan>
+                                    <tspan x={cx} dy={scaleY(25)}>{formatTime(event.time)}</tspan>
                                 </text>
                             )}
 
                             {event.venue && (
-                                <text x="300" y="160">
-                                    <tspan fill="#FFE4B5" fontSize="16" style={{ letterSpacing: '0.1em', textTransform: 'uppercase' }} dy="-25">Venue</tspan>
-                                    <tspan x="300" dy="25" fontSize="20" >{event.venue}</tspan>
+                                <text x={cx} y={scaleY(160)}>
+                                    <tspan fill="#FFE4B5" fontSize={scaleFont(16)} style={{ letterSpacing: '0.1em', textTransform: 'uppercase' }} dy={scaleY(-25)}>Venue</tspan>
+                                    <tspan x={cx} dy={scaleY(25)} fontSize={scaleFont(20)} >{event.venue}</tspan>
                                 </text>
                             )}
                         </g>
