@@ -50,7 +50,7 @@ export default function DashboardPage() {
     const [suitePreview, setSuitePreview] = useState(false);
     const [suitePreviewIndex, setSuitePreviewIndex] = useState(0);
     const [bundleAssets, setBundleAssets] = useState<Record<string, string>>({});
-    const [activeEventId, setActiveEventId] = useState<string | undefined>(formData.events?.[0]?.id);
+    const [activeEventId, setActiveEventId] = useState<string>('save_the_date');
     const [timeLeft, setTimeLeft] = useState({
         days: '00',
         hours: '00',
