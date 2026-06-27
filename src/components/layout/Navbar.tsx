@@ -104,15 +104,15 @@ export const Navbar = () => {
                                     <div className={styles.dropdownMenu}>
                                         <div className={styles.dropdownHeader}>
                                             <span className={styles.userName}>Hi, {getDisplayName()}</span>
-                                            <span className={styles.userRole}>{isAdmin ? 'Administrator' : 'User Account'}</span>
+                                            <span className={styles.userRole}>User Account</span>
                                         </div>
                                         <Link
-                                            href={isAdmin ? "/admin" : "/dashboard"}
+                                            href="/dashboard"
                                             className={styles.dropdownItem}
                                             onClick={() => setIsProfileOpen(false)}
                                         >
                                             <LayoutDashboard size={16} />
-                                            {isAdmin ? 'Admin Panel' : 'Dashboard'}
+                                            Dashboard
                                         </Link>
                                         <button onClick={handleLogout} className={clsx(styles.dropdownItem, styles.logout)}>
                                             <LogOut size={16} />
@@ -154,13 +154,13 @@ export const Navbar = () => {
                             <div style={{ padding: '1rem', borderTop: '1px solid #eee', marginTop: '0.5rem' }}>
                                 <div style={{ fontWeight: '600', marginBottom: '0.5rem' }}>Hi, {getDisplayName()}</div>
                                 <Link
-                                    href={isAdmin ? "/admin" : "/dashboard"}
+                                    href="/dashboard"
                                     className={clsx("btn btn-secondary", styles.mobileBtn)}
                                     onClick={() => setIsOpen(false)}
                                     style={{ marginBottom: '0.5rem' }}
                                 >
                                     <LayoutDashboard size={18} style={{ marginRight: '0.5rem' }} />
-                                    {isAdmin ? "Admin Panel" : "Dashboard"}
+                                    Dashboard
                                 </Link>
                                 <button
                                     onClick={() => { handleLogout(); setIsOpen(false); }}
