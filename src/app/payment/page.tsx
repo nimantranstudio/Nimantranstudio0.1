@@ -145,10 +145,11 @@ export default function PaymentPage() {
             // Open immediately instead of with delay
             rzp.open();
 
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error initiating payment:', error);
             setIsProcessing(false);
-            alert("Could not initiate payment. Please try again later.");
+            const errorMessage = error?.message || 'Unknown error';
+            alert(`Payment Error: ${errorMessage}`);
         }
     };
 
