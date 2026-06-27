@@ -34,14 +34,44 @@ export default function PaymentPage() {
                     currency: 'INR'
                 })
             });
-            
+
             const data = await res.json();
-            
-            if (!data.orderId) {
-                throw new Error(data.error || 'Failed to create order');
+
+            if (!data.orderId || !data.key) {
+                throw new Error(data.error || 'Failed to create order - missing orderId or key');
             }
 
+            console.log('Order created:', data);
+
             // Step 4: Open Razorpay Modal
+            // Ensure Razorpay script is loaded before trying to instantiate
+            if (typeof (window as any).Razorpay === 'undefined') {
+                console.log('Razorpay script not found, loading manually...');
+                // Script not yet loaded — load it manually and wait
+                await new Promise<void>((resolve, reject) => {
+                    const existing = document.getElementById('razorpay-checkout-js');
+                    if (existing) {
+                        console.log('Razorpay script already exists');
+                        resolve();
+                        return;
+                    }
+                    const script = document.createElement('script');
+                    script.id = 'razorpay-checkout-js';
+                    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+                    script.onload = () => {
+                        console.log('Razorpay script loaded successfully');
+                        resolve();
+                    };
+                    script.onerror = () => {
+                        console.error('Failed to load Razorpay script');
+                        reject(new Error('Failed to load Razorpay'));
+                    };
+                    document.head.appendChild(script);
+                });
+            } else {
+                console.log('Razorpay already available');
+            }
+
             const options = {
                 key: data.key,
                 amount: data.amount,
@@ -51,6 +81,7 @@ export default function PaymentPage() {
                 order_id: data.orderId,
                 handler: async function (response: any) {
                     try {
+                        console.log('Payment successful:', response);
                         // Step 5: Verify Payment
                         const verifyRes = await fetch('/api/payment/verify', {
                             method: 'POST',
@@ -61,25 +92,25 @@ export default function PaymentPage() {
                                 razorpay_signature: response.razorpay_signature
                             })
                         });
-                        
+
                         const verifyData = await verifyRes.json();
                         if (verifyData.success) {
                             setPaymentStatus('success');
-                            
+
                             // Step 7/8: Generate Bundle
                             await fetch('/api/generate-bundle', {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ bundleId: storeBundleItems?.[0]?.id })
                             });
-                            
+
                             // Redirect
                             router.push('/dashboard');
                         } else {
                             throw new Error('Payment verification failed');
                         }
                     } catch (err) {
-                        console.error(err);
+                        console.error('Payment verification error:', err);
                         setPaymentStatus('failed');
                         setIsProcessing(false);
                         alert("Payment failed or verification issue. Please try again.");
@@ -91,40 +122,28 @@ export default function PaymentPage() {
                     contact: userPhone || formData.rsvpContact || ''
                 },
                 theme: {
-                    color: "#C8A951" // Nimantran Brand Gold
-                },
-                config: {
-                    display: {
-                        hide: [
-                            { method: "wallet" },
-                            { method: "emi" },
-                            { method: "paylater" }
-                        ],
-                        preferences: {
-                            show_default_blocks: true
-                        }
-                    }
+                    color: "#C8A951"
                 },
                 modal: {
                     ondismiss: function() {
+                        console.log('Payment modal closed');
                         setIsProcessing(false);
-                        alert("Your order is ready whenever you are.");
                     }
                 }
             };
 
+            console.log('Creating Razorpay instance with options:', options);
             const rzp = new (window as any).Razorpay(options);
             rzp.on('payment.failed', function (response: any) {
+                console.error('Payment failed:', response);
                 setPaymentStatus('failed');
                 setIsProcessing(false);
                 alert("Payment failed. Nothing has been charged.");
             });
-            
-            // Add a small artificial delay so the "Preparing Secure Checkout" 
-            // loading state is visible for a moment to feel more secure
-            setTimeout(() => {
-                rzp.open();
-            }, 1500);
+
+            console.log('Opening Razorpay modal...');
+            // Open immediately instead of with delay
+            rzp.open();
 
         } catch (error) {
             console.error('Error initiating payment:', error);
@@ -263,7 +282,7 @@ export default function PaymentPage() {
 
     return (
         <div className={styles.paymentPage}>
-            <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
+            <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="afterInteractive" onLoad={() => console.log('Razorpay script loaded')} />
             
             {/* Success Overlay */}
             {paymentStatus === 'success' && (
