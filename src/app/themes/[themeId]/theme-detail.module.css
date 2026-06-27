@@ -67,8 +67,8 @@
     position: relative;
     height: min(70vh, 700px);
     width: auto;
-    aspect-ratio: 1/1.6;
-    background-color: #111;
+    aspect-ratio: 9 / 16;
+    background-color: transparent;
     border-radius: 16px;
     overflow: hidden;
     box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.9);

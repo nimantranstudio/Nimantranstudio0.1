@@ -106,13 +106,26 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
     }, [customImage, cacheBuster]);
 
     const [isReady, setIsReady] = useState(false);
+    const [staticQrCode, setStaticQrCode] = useState<{link: string, title: string} | null>(null);
 
     const hasLoadedSavedLayout = useRef(false);
 
     useEffect(() => {
         setIsReady(false);
         hasLoadedSavedLayout.current = false;
-    }, [iframeSrc]);
+        
+        if (!isHTMLDesign && event?.id && theme?.id) {
+            const qrStorageKey = `wedding-card-qr-${event.id}-${theme.id}`;
+            const savedQr = typeof window !== 'undefined' ? localStorage.getItem(qrStorageKey) : null;
+            if (savedQr) {
+                try {
+                    setStaticQrCode(JSON.parse(savedQr));
+                } catch(e) {}
+            } else {
+                setStaticQrCode(null);
+            }
+        }
+    }, [iframeSrc, event?.id, isHTMLDesign, theme?.id]);
 
     useImperativeHandle(ref, () => ({
         saveEdits: () => {
@@ -275,8 +288,16 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
             }
         },
         sendMessage: (payload: any) => {
-            if (iframeRef.current && iframeRef.current.contentWindow) {
-                iframeRef.current.contentWindow.postMessage(payload, '*');
+            if (isHTMLDesign) {
+                if (iframeRef.current && iframeRef.current.contentWindow) {
+                    iframeRef.current.contentWindow.postMessage(payload, '*');
+                }
+            } else {
+                if (payload.type === 'ADD_QR' && event?.id && theme?.id) {
+                    const qrData = { link: payload.payload.link, title: payload.payload.title };
+                    setStaticQrCode(qrData);
+                    localStorage.setItem(`wedding-card-qr-${event.id}-${theme.id}`, JSON.stringify(qrData));
+                }
             }
         },
         saveLayout: () => {
@@ -419,8 +440,6 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                 'heading': (isSpecialEvent && !event.tagline) ? undefined : (event.tagline || 'We are pleased to invite you to the wedding of'),
                 'subheading': (isSpecialEvent && !event.tagline) ? undefined : event.tagline,
                 'event-subheading': (isSpecialEvent && !event.tagline) ? undefined : event.tagline,
-                'event-description': event.description,
-                'description': event.description,
                 'groom-name': groomName,
                 'bride-name': brideName,
                 'groom-parents': groomParents,
@@ -747,12 +766,13 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                     }
                 });
 
-                // INJECT DRAG AND DROP SCRIPT
-                let scriptEl = doc.getElementById('drag-script');
-                if (!scriptEl) {
-                    scriptEl = doc.createElement('script');
-                    scriptEl.id = 'drag-script';
-                    scriptEl.textContent = `
+                // INJECT DRAG AND DROP SCRIPT (Force recreate to ensure evaluation if loaded from innerHTML)
+                let oldScript = doc.getElementById('drag-script');
+                if (oldScript) oldScript.remove();
+                
+                let scriptEl = doc.createElement('script');
+                scriptEl.id = 'drag-script';
+                scriptEl.textContent = `
                         let draggingEl = null;
                         let resizingHandle = null;
                         let startX, startY, initialTx, initialTy, initialW;
@@ -986,10 +1006,14 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                         };
                         
                         const handleEnd = () => {
+                            let didChange = (draggingEl !== null || resizingHandle !== null);
                             draggingEl = null;
                             resizingHandle = null;
                             if (guideX) guideX.classList.remove('visible');
                             if (guideY) guideY.classList.remove('visible');
+                            if (didChange) {
+                                window.parent.postMessage({ type: 'LAYOUT_CHANGED' }, '*');
+                            }
                         };
 
                         // Events
@@ -1018,6 +1042,7 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                         document.addEventListener('focusout', (e) => {
                             const sizingBox = e.target.closest('.sizing-box');
                             if (sizingBox && sizingBox.classList.contains('editing')) {
+                                window.parent.postMessage({ type: 'LAYOUT_CHANGED' }, '*');
                                 sizingBox.classList.remove('editing');
                                 sizingBox.removeAttribute('contenteditable');
                                 sizingBox.querySelectorAll('.resize-handle').forEach(h => h.style.display = '');
@@ -1048,7 +1073,6 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                         document.querySelectorAll('.sizing-box').forEach(el => window.textScaler.observe(el));
                     `;
                     doc.body.appendChild(scriptEl);
-                }
             } else {
                 Object.keys(fullMapping).forEach(id => {
                     const el = doc.getElementById(id);
@@ -1307,6 +1331,22 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                         </g>
                     )}
                 </g>
+
+                {/* QR Code for Image Designs */}
+                {staticQrCode && (
+                    <g transform={`translate(${scaleX(420)}, ${scaleY(620)})`}>
+                        <rect width={scaleX(160)} height={scaleX(160)} fill="#FFF" rx={scaleFont(12)} filter="url(#shadow)" />
+                        <image 
+                            href={`https://quickchart.io/qr?text=${encodeURIComponent(staticQrCode.link)}&light=0000&dark=b38b40&size=150`}
+                            x={scaleX(15)} y={scaleY(15)} width={scaleX(130)} height={scaleX(130)}
+                        />
+                        {staticQrCode.title && (
+                            <text x={scaleX(80)} y={scaleY(175)} fill="#FFF" fontSize={scaleFont(14)} textAnchor="middle" fontFamily="var(--font-serif)" filter="url(#shadow-sm)">
+                                {staticQrCode.title}
+                            </text>
+                        )}
+                    </g>
+                )}
 
                 {/* Filters */}
                 <defs>

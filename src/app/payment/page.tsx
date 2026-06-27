@@ -3,21 +3,134 @@
 import { useWeddingStore } from '@/store/wedding-store';
 import styles from './payment.module.css';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, Lock } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Lock, Check, Mail, Phone, ShieldCheck, Zap } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import Script from 'next/script';
+import { auth } from '@/lib/firebase';
+import { InvitationCard } from '@/components/preview/InvitationCard';
+import clsx from 'clsx';
 
 export default function PaymentPage() {
     const router = useRouter();
-    const { formData, selectedThemeId, selectedPlan } = useWeddingStore();
-    
-    const [isDownloading, setIsDownloading] = useState(false);
+    const { formData, selectedThemeId, selectedPlan, userPhone, bundleItems: storeBundleItems } = useWeddingStore();
     const [invoiceData, setInvoiceData] = useState<any>(null);
-    const [themeBundle, setThemeBundle] = useState<any>(null);
+    const [theme, setTheme] = useState<any>(null);
+    const [selectedPreviewIndex, setSelectedPreviewIndex] = useState(0);
+    const [isProcessing, setIsProcessing] = useState(false);
+    const [paymentStatus, setPaymentStatus] = useState<'idle' | 'success' | 'failed'>('idle');
 
-    const handlePay = () => {
-        alert("Payment Gateway Integration Pending!");
-        // Simulate a success and go to dashboard
-        router.push('/dashboard/demo-id');
+    const handlePay = async () => {
+        setIsProcessing(true);
+        try {
+            // Step 2: Create Order
+            const res = await fetch('/api/payment/create-order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    bundleId: storeBundleItems?.[0]?.id || 'demo_bundle',
+                    amount: 1000, // Hardcoded to ₹10 (1000 paise) for testing
+                    currency: 'INR'
+                })
+            });
+            
+            const data = await res.json();
+            
+            if (!data.orderId) {
+                throw new Error(data.error || 'Failed to create order');
+            }
+
+            // Step 4: Open Razorpay Modal
+            const options = {
+                key: data.key,
+                amount: data.amount,
+                currency: data.currency,
+                name: "Nimantran Studio",
+                description: "Wedding Essentials Bundle",
+                order_id: data.orderId,
+                handler: async function (response: any) {
+                    try {
+                        // Step 5: Verify Payment
+                        const verifyRes = await fetch('/api/payment/verify', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                razorpay_payment_id: response.razorpay_payment_id,
+                                razorpay_order_id: response.razorpay_order_id,
+                                razorpay_signature: response.razorpay_signature
+                            })
+                        });
+                        
+                        const verifyData = await verifyRes.json();
+                        if (verifyData.success) {
+                            setPaymentStatus('success');
+                            
+                            // Step 7/8: Generate Bundle
+                            await fetch('/api/generate-bundle', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ bundleId: storeBundleItems?.[0]?.id })
+                            });
+                            
+                            // Redirect
+                            router.push('/dashboard');
+                        } else {
+                            throw new Error('Payment verification failed');
+                        }
+                    } catch (err) {
+                        console.error(err);
+                        setPaymentStatus('failed');
+                        setIsProcessing(false);
+                        alert("Payment failed or verification issue. Please try again.");
+                    }
+                },
+                prefill: {
+                    name: formData.groomName || formData.brideName ? `${formData.groomName || ''} ${formData.brideName || ''}`.trim() : '',
+                    email: auth.currentUser?.email || '',
+                    contact: userPhone || formData.rsvpContact || ''
+                },
+                theme: {
+                    color: "#C8A951" // Nimantran Brand Gold
+                },
+                config: {
+                    display: {
+                        hide: [
+                            { method: "wallet" },
+                            { method: "emi" },
+                            { method: "paylater" }
+                        ],
+                        preferences: {
+                            show_default_blocks: true
+                        }
+                    }
+                },
+                modal: {
+                    ondismiss: function() {
+                        setIsProcessing(false);
+                        alert("Your order is ready whenever you are.");
+                    }
+                }
+            };
+
+            const rzp = new (window as any).Razorpay(options);
+            rzp.on('payment.failed', function (response: any) {
+                setPaymentStatus('failed');
+                setIsProcessing(false);
+                alert("Payment failed. Nothing has been charged.");
+            });
+            
+            // Add a small artificial delay so the "Preparing Secure Checkout" 
+            // loading state is visible for a moment to feel more secure
+            setTimeout(() => {
+                rzp.open();
+            }, 1500);
+
+        } catch (error) {
+            console.error('Error initiating payment:', error);
+            setIsProcessing(false);
+            alert("Could not initiate payment. Please try again later.");
+        }
     };
 
     useEffect(() => {
@@ -30,489 +143,332 @@ export default function PaymentPage() {
             const themeData = await themeRes.json();
             const pkgsData = await pkgsRes.json();
             
-            const bundle = themeData.theme?.bundles?.[0];
-            setThemeBundle(bundle);
-            
-            if (bundle && pkgsData.packages) {
-                const pkg = pkgsData.packages.find((p: any) => p.name === selectedPlan);
-                if (pkg && bundle.bundleInvoices) {
-                    const invoice = bundle.bundleInvoices.find((inv: any) => inv.packageId === pkg.id);
-                    if (invoice) {
-                        setInvoiceData(invoice);
+            if (themeData.theme) {
+                setTheme(themeData.theme);
+                const bundle = themeData.theme?.bundles?.[0];
+                if (bundle) {
+                    if (pkgsData.packages) {
+                        const pkg = pkgsData.packages.find((p: any) => p.name === selectedPlan);
+                        if (pkg && bundle.bundleInvoices) {
+                            const invoice = bundle.bundleInvoices.find((inv: any) => inv.packageId === pkg.id);
+                            if (invoice) {
+                                setInvoiceData(invoice);
+                            }
+                        }
                     }
                 }
             }
-        }).catch(err => console.error("Failed to load invoice", err));
+        }).catch(err => console.error("Failed to load data", err));
     }, [selectedThemeId, selectedPlan]);
 
-    const generateBundleBlobs = async () => {
-        const currentStore = useWeddingStore.getState();
-        const { events, defaultVenueName, primaryDate, primaryTime, groomName, brideName, groomParents, brideParents, invitationMessage } = currentStore.formData;
-        const actualBundleItems = currentStore.bundleItems || [];
-        
-        let items: any[] = [];
-        
-        if (!actualBundleItems || actualBundleItems.length === 0) {
-            const images = (currentStore.bundleImages && currentStore.bundleImages.length > 0) ? currentStore.bundleImages : [];
-            images.forEach((img, i) => items.push({ name: `Design_${i+1}`, file: img }));
-        } else {
-            const weddingEvents = currentStore.formData.events || [];
-            actualBundleItems.forEach(bi => {
-                if (!bi.templatePath) return; // Renamed
-                const biType = (bi.eventType || bi.event?.eventName || '').toUpperCase().replace(/_/g, '');
-                let matchedEvent = weddingEvents.find(evt => {
-                    const evtId = evt.id.toUpperCase();
-                    const evtType = (evt.eventType || '').toUpperCase();
-                    const evtName = (evt.name || '').toUpperCase();
-                    if (biType.includes(evtId) || evtId.includes(biType)) return true;
-                    if (evtType && (biType.includes(evtType) || evtType.includes(biType))) return true;
-                    if (biType.includes(evtName) || evtName.includes(biType)) return true;
-                    return false;
-                });
-                items.push({
-                    name: bi.templateName || bi.eventType || bi.event?.eventName || 'Design',
-                    file: bi.templatePath, // Renamed
-                    event: matchedEvent
-                });
-            });
-        }
+    // Same mapping logic as preview/page.tsx
+    const buildPreviewItems = () => {
+        if (!storeBundleItems || storeBundleItems.length === 0) return [];
 
-        const blobs: { name: string, blob: Blob, ext: string }[] = [];
+        const ID_MAPPING: Record<string, string> = {
+            'evt_1': 'wedding', 'evt_2': 'wedding', 'evt_3': 'wedding',
+            'evt_4': 'wedding', 'evt_5': 'wedding', 'evt_6': 'save_the_date',
+            'evt_7': 'wedding', 'evt_8': 'haldi', 'evt_9': 'sangeet',
+            'evt_10': 'mehendi', 'evt_11': 'wedding', 'evt_12': 'rsvp',
+            'evt_13': 'reception', 'evt_14': 'wedding', 'evt_15': 'haldi',
+            'evt_16': 'mehendi', 'evt_17': 'wedding'
+        };
 
-        for (let i = 0; i < items.length; i++) {
-            const item = items[i];
-            if (!item.file) continue;
+        const weddingEvents = formData.events || [];
+        const items: Array<{ id: string; name: string; image: string; event: any }> = [];
+
+        for (const bi of storeBundleItems) {
+            if (!bi.templatePath) continue; 
             
-            try {
-                const res = await fetch(item.file);
-                if (!res.ok) continue;
-                
-                const isHTML = item.file.toLowerCase().endsWith('.html');
-                
-                if (isHTML) {
-                    const htmlText = await res.text();
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(htmlText, 'text/html');
-                    
-                    const getOrdinal = (n: number) => {
-                        const s = ["th", "st", "nd", "rd"];
-                        const v = n % 100;
-                        return n + (s[(v - 20) % 10] || s[v] || s[0]);
-                    };
+            // Only show images, not SVGs/HTMLs if possible, actually we render all in phone mockups
+            const rawType = bi.eventType || bi.event?.eventName || '';
+            const biType = rawType.toUpperCase().replace(/_/g, '');
+            const dbEventId = bi.eventId;
 
-                    const formatDate = (dateStr?: string) => {
-                        if (!dateStr) return dateStr;
-                        if (/[a-zA-Z]/.test(dateStr)) return dateStr;
-                        try {
-                            const date = new Date(dateStr);
-                            if (isNaN(date.getTime())) return dateStr;
-                            const day = getOrdinal(date.getDate());
-                            const month = date.toLocaleString('en-US', { month: 'long' });
-                            const year = date.getFullYear();
-                            return `${day} ${month} ${year}`;
-                        } catch (e) {
-                            return dateStr;
-                        }
-                    };
-
-                    const formatTime = (timeStr?: string) => {
-                        if (!timeStr) return timeStr;
-                        if (timeStr.toLowerCase().includes('am') || timeStr.toLowerCase().includes('pm')) return timeStr;
-                        try {
-                            const [h, m] = timeStr.split(':');
-                            if (h === undefined || m === undefined) return timeStr;
-                            let hours = parseInt(h);
-                            const minutes = m.substring(0, 2);
-                            const ampm = hours >= 12 ? 'PM' : 'AM';
-                            hours = hours % 12;
-                            hours = hours ? hours : 12;
-                            return `${hours}:${minutes} ${ampm}`;
-                        } catch (e) {
-                            return timeStr;
-                        }
-                    };
-
-                    const getDefaultHeading = (eName: string) => {
-                        const n = (eName || '').toLowerCase();
-                        if (n.includes('save the date') || n.includes('savethedate')) return "Save the Date";
-                        if (n.includes('haldi')) return "Haldi";
-                        if (n.includes('mehendi') || n.includes('mehndi') || n.includes('mehendhi')) return "Mehendi";
-                        if (n.includes('sangeet')) return "Sangeet";
-                        if (n.includes('wedding')) return "Wedding";
-                        if (n.includes('reception')) return "Reception";
-                        return eName || 'Wedding';
-                    };
-
-                    const displayEventName = item.event?.heading || (item.event?.name ? getDefaultHeading(item.event.name) : (item.name || 'Wedding Ceremony'));
-                    
-                    const mapping: Record<string, string | undefined> = {
-                        'event-name': displayEventName,
-                        'groom-name': currentStore.formData.groomName,
-                        'bride-name': currentStore.formData.brideName,
-                        'groom-parents': currentStore.formData.groomParents,
-                        'groom-parent-name': currentStore.formData.groomParents,
-                        'bride-parents': currentStore.formData.brideParents,
-                        'bride-parent-name': currentStore.formData.brideParents,
-                        'event-date': formatDate(item.event?.date || currentStore.formData.primaryDate),
-                        'event-time': formatTime(item.event?.time || currentStore.formData.primaryTime),
-                        'event-venue': (item.event?.venue || currentStore.formData.defaultVenueName),
-                        'venue': (item.event?.venue || currentStore.formData.defaultVenueName),
-                    };
-
-                    Object.entries(mapping).forEach(([id, value]) => {
-                        if (value !== undefined && value !== null) {
-                            const el = doc.getElementById(id);
-                            if (el) el.innerHTML = value.toString().replace(/\\n/g, '<br/>');
-                        }
-                    });
-                    
-                    const styleTags = doc.querySelectorAll('style:not(#runtime-preview-fix)');
-                    styleTags.forEach(tag => {
-                        if (tag.innerHTML.includes('vw') || tag.innerHTML.includes('cqi')) {
-                            // Use lookahead to ensure we only replace CSS values and not base64 strings
-                            tag.innerHTML = tag.innerHTML.replace(/([\d.]+)(vw|cqi)(?=[\s;},!\)])/g, '$1vmax');
-                        }
-                    });
-                    
-                    const finalHtml = "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
-
-                    // Render HTML to PNG Blob using hidden iframe
-                    const blob = await new Promise<Blob>((resolve, reject) => {
-                        const iframe = document.createElement('iframe');
-                        iframe.style.position = 'absolute';
-                        iframe.style.top = '-9999px';
-                        iframe.style.width = '500px';
-                        iframe.style.height = '889px';
-                        document.body.appendChild(iframe);
-                        
-                        iframe.onload = () => {
-                            const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-                            if (!iframeDoc) return reject();
-                            
-                            // Inject base tag to handle relative paths correctly
-                            const baseUrl = window.location.origin + item.file.substring(0, item.file.lastIndexOf('/') + 1);
-                            if (!iframeDoc.querySelector('base')) {
-                                const base = iframeDoc.createElement('base');
-                                base.href = baseUrl;
-                                iframeDoc.head.insertBefore(base, iframeDoc.head.firstChild);
-                            }
-
-                            // Wait for all images to load
-                            const checkLoaded = () => {
-                                const images = Array.from(iframeDoc.querySelectorAll('img'));
-                                const allLoaded = images.every(img => img.complete);
-                                
-                                if (allLoaded) {
-                                    const win = iframe.contentWindow as any;
-                                    const execute = () => {
-                                        const wrapper = iframeDoc.querySelector('.invitation-wrapper') || 
-                                                       iframeDoc.querySelector('.invite-wrapper') || 
-                                                       iframeDoc.body.firstElementChild;
-                                        
-                                        const targetHeight = (wrapper as HTMLElement)?.offsetHeight || 705;
-
-                                        // Ensure body has dimensions
-                                        iframeDoc.body.style.width = '500px';
-                                        iframeDoc.body.style.height = `${targetHeight}px`;
-                                        iframeDoc.body.style.margin = '0';
-                                        iframeDoc.body.style.padding = '0';
-                                        iframeDoc.body.style.overflow = 'hidden';
-
-                                        win.html2canvas(iframeDoc.body, { 
-                                            useCORS: true, 
-                                            scale: 2,
-                                            width: 500,
-                                            height: targetHeight,
-                                            backgroundColor: '#ffffff' 
-                                        }).then((canvas: HTMLCanvasElement) => {
-                                            canvas.toBlob(b => {
-                                                document.body.removeChild(iframe);
-                                                if (b) resolve(b); else reject(new Error("Canvas toBlob failed"));
-                                            }, 'image/png');
-                                        }).catch((err: any) => {
-                                            document.body.removeChild(iframe);
-                                            reject(err);
-                                        });
-                                    };
-
-                                    if (!win.html2canvas) {
-                                        const script = iframeDoc.createElement('script');
-                                        script.src = "https://html2canvas.hertzen.com/dist/html2canvas.min.js";
-                                        script.onload = execute;
-                                        script.onerror = () => reject(new Error("Failed to load html2canvas in iframe"));
-                                        iframeDoc.head.appendChild(script);
-                                    } else {
-                                        execute();
-                                    }
-                                } else {
-                                    setTimeout(checkLoaded, 100);
-                                }
-                            };
-
-                            setTimeout(checkLoaded, 500); // Initial delay to start checking
-                        };
-                        
-                        const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-                        if (iframeDoc) {
-                            iframeDoc.open();
-                            iframeDoc.write(finalHtml);
-                            iframeDoc.close();
-                        }
-                    });
-
-                    blobs.push({ name: item.name, blob, ext: 'png' });
-                } else {
-                    const blob = await res.blob();
-                    const ext = item.file.split('.').pop() || 'png';
-                    blobs.push({ name: item.name, blob, ext });
-                }
-        } catch(e) { 
-            console.error("Could not fetch or format", item.file, e); 
-            // Fallback: just add the raw file if HTML conversion fails
-            try {
-                const res = await fetch(item.file);
-                if (res.ok) {
-                    const blob = await res.blob();
-                    const ext = item.file.split('.').pop() || 'html';
-                    blobs.push({ name: item.name, blob, ext });
-                }
-            } catch (fallbackErr) {
-                console.error("Fallback also failed", fallbackErr);
-            }
-        }
-    }
-    return blobs;
-};
-
-    const handleDownload = async () => {
-        setIsDownloading(true);
-        try {
-            if (!(window as any).JSZip) {
-                await new Promise<void>((resolve, reject) => {
-                    const script = document.createElement('script');
-                    script.src = "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js";
-                    script.onload = () => resolve();
-                    script.onerror = () => reject(new Error("Failed to load JSZip"));
-                    document.head.appendChild(script);
-                });
-            }
-            
-            const JSZip = (window as any).JSZip;
-            const zip = new JSZip();
-            
-            const blobs = await generateBundleBlobs();
-            blobs.forEach(b => {
-                zip.file(`Nimantran_${b.name.replace(/[^a-zA-Z0-9]/g, '_')}.${b.ext}`, b.blob);
+            let matchedEvent = weddingEvents.find(evt => {
+                const masterId = evt.id.toLowerCase();
+                if (dbEventId && ID_MAPPING[dbEventId] === masterId) return true;
+                if (!biType) return false;
+                const evtName = (evt.name || '').toUpperCase();
+                if (evtName && biType.includes(evtName)) return true;
+                if (biType.includes('WEDDING') && masterId.includes('wedding')) return true;
+                if (biType.includes('HALDI') && masterId.includes('haldi')) return true;
+                if (biType.includes('MEHENDI') && masterId.includes('mehendi')) return true;
+                if (biType.includes('SANGEET') && masterId.includes('sangeet')) return true;
+                if (biType.includes('RECEPTION') && masterId.includes('reception')) return true;
+                return false;
             });
 
-            const content = await zip.generateAsync({ type: "blob" });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(content);
-            link.download = `Nimantran-Wedding-Bundle.zip`;
-            link.click();
-            URL.revokeObjectURL(link.href);
-        } catch (err: any) {
-            console.error("Download Error:", err);
-            alert(`Error generating zip bundle: ${err.message || 'Unknown error'}`);
-        } finally {
-            setIsDownloading(false);
+            if (!matchedEvent && biType.includes('WEDDING')) {
+                matchedEvent = weddingEvents.find(e => e.id === 'wedding');
+            }
+
+            const displayName = matchedEvent?.heading || matchedEvent?.name || bi.event?.eventName || bi.templateName || bi.eventType || 'Invitation';
+
+            items.push({
+                id: bi.id,
+                name: displayName,
+                image: bi.templatePath,
+                event: matchedEvent ? {
+                    id: matchedEvent.id,
+                    name: matchedEvent.heading || matchedEvent.name,
+                    date: matchedEvent.date || formData.primaryDate,
+                    time: matchedEvent.time || formData.primaryTime,
+                    venue: matchedEvent.venue || formData.defaultVenueName,
+                    tagline: matchedEvent.tagline,
+                    description: matchedEvent.description,
+                    heading: matchedEvent.heading
+                } : {
+                    id: bi.id,
+                    name: displayName,
+                    date: formData.primaryDate,
+                    time: formData.primaryTime,
+                    venue: formData.defaultVenueName
+                }
+            });
         }
+        return items;
     };
+
+    const previewItems = buildPreviewItems();
+
+    // Auto-slide effect
+    useEffect(() => {
+        if (previewItems.length <= 1) return;
+        
+        const interval = setInterval(() => {
+            setSelectedPreviewIndex((prevIndex) => 
+                prevIndex === previewItems.length - 1 ? 0 : prevIndex + 1
+            );
+        }, 3000);
+
+        return () => clearInterval(interval);
+    }, [previewItems.length]);
+    // Dynamic user details
+    const groom = formData.groomName || 'Vivek';
+    const bride = formData.brideName || 'Priyanka';
+    const coupleNames = `${groom} & ${bride}`;
+
+    // Safe fallback email
+    const userEmail = auth.currentUser?.email || 'vivek@example.com';
+    const rawPhone = userPhone || formData.rsvpContact || '9876543210';
+    const userPhoneFormatted = rawPhone.length === 10 
+        ? `+91 ${rawPhone.substring(0, 5)} ${rawPhone.substring(5)}` 
+        : rawPhone;
+
+    // Pricing calculation (hardcoded to ₹10 for testing)
+    const totalAmount = 10;
+    const basePrice = 8.47;
+    const gstAmount = 1.53;
 
     return (
         <div className={styles.paymentPage}>
-            <header className={styles.header}>
-                <div className="container">
-                    <button onClick={() => router.back()} className={styles.backButton}>
-                        <ChevronLeft size={20} />
-                        Back to Preview
-                    </button>
-                    <h1 className={styles.title}>Secure Checkout</h1>
+            <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
+            
+            {/* Success Overlay */}
+            {paymentStatus === 'success' && (
+                <div style={{
+                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                    background: '#FDFBF7', zIndex: 9999, display: 'flex',
+                    flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                    fontFamily: 'var(--font-sans)', color: '#1F1F1F'
+                }}>
+                    <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '32px', marginBottom: '16px' }}>🎉 Payment Successful</h1>
+                    <p style={{ fontSize: '18px', color: 'var(--muted-foreground)', marginBottom: '32px' }}>Your Wedding Bundle has been unlocked successfully.</p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '16px' }}>
+                        <div className="spinner" style={{
+                            width: '24px', height: '24px', border: '3px solid var(--muted)',
+                            borderTopColor: 'var(--primary)', borderRadius: '50%', animation: 'spin 1s linear infinite'
+                        }} />
+                        Preparing your wedding assets...
+                    </div>
+                    <style dangerouslySetInnerHTML={{__html: `
+                        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+                    `}} />
                 </div>
-            </header>
+            )}
 
-            <main className="container">
-                <div className={styles.mainLayout}>
-                    <div className={styles.leftColumn}>
-                        <div className={styles.sectionCard}>
-                            <h2 className={styles.sectionTitle}>Order Summary</h2>
-                            {invoiceData ? (
-                                <>
-                                    {invoiceData.invitationDesignSuite > 0 && (
-                                        <div className={styles.summaryItem}>
-                                            <span>Invitation Design Suite</span>
-                                            <span>₹{invoiceData.invitationDesignSuite}</span>
-                                        </div>
-                                    )}
-                                    {invoiceData.rsvpManagementTracking > 0 && (
-                                        <div className={styles.summaryItem}>
-                                            <span>RSVP Management Tracking</span>
-                                            <span>₹{invoiceData.rsvpManagementTracking}</span>
-                                        </div>
-                                    )}
-                                    {invoiceData.guestDashboard > 0 && (
-                                        <div className={styles.summaryItem}>
-                                            <span>Guest Dashboard & Hosting</span>
-                                            <span>₹{invoiceData.guestDashboard}</span>
-                                        </div>
-                                    )}
-                                    <div className={styles.divider}></div>
-                                    <div className={styles.summaryItem}>
-                                        <span>Total Wedding Suite Value</span>
-                                        <span>₹{invoiceData.totalWeddingSuiteValue}</span>
+            <div className={styles.breadcrumbBar}>
+                <div className={styles.breadcrumbContainer}>
+                    <button onClick={() => router.back()} className={styles.backLink}>
+                        <ChevronLeft size={16} />
+                        Back
+                    </button>
+                </div>
+            </div>
+            
+            <main className={styles.mainContainer}>
+                <div className={styles.premiumLayout}>
+                    {/* Left Column - Gallery Layout (Thumbnails + Phone Frame) */}
+                    <div className={styles.gallerySection}>
+                        
+                        {/* Thumbnails */}
+                        <div className={styles.thumbnailList}>
+                            {previewItems.map((item, idx) => (
+                                <div 
+                                    key={item.id + idx}
+                                    className={clsx(styles.thumbnailWrapper, {
+                                        [styles.thumbnailActive]: idx === selectedPreviewIndex
+                                    })}
+                                    onClick={() => setSelectedPreviewIndex(idx)}
+                                >
+                                    <div className={styles.thumbnailInner}>
+                                        <InvitationCard
+                                            event={item.event}
+                                            theme={theme}
+                                            groomName={groom}
+                                            brideName={bride}
+                                            groomParents={formData.groomParents}
+                                            brideParents={formData.brideParents}
+                                            customImage={item.image}
+                                            isPlaceholder={true}
+                                            isRawPreview={false}
+                                            type='image'
+                                        />
                                     </div>
-                                    {invoiceData.discount > 0 && (
-                                        <div className={styles.summaryItem} style={{ color: '#16a34a' }}>
-                                            <span>Offer / Discount ({invoiceData.discount}%)</span>
-                                            <span>- ₹{invoiceData.totalWeddingSuiteValue - invoiceData.discountedPrice}</span>
-                                        </div>
-                                    )}
-                                    <div className={styles.divider}></div>
-                                    <div className={`${styles.summaryItem} ${styles.totalItem}`}>
-                                        <span>Total Amount to Pay</span>
-                                        <span>₹{invoiceData.finalSellingPrice || invoiceData.discountedPrice}</span>
-                                    </div>
-                                </>
-                            ) : (
-                                <>
-                                    <div className={styles.summaryItem}>
-                                        <span>{selectedPlan || 'Theme Complete Bundle'}</span>
-                                        <span>...</span>
-                                    </div>
-                                    <div className={styles.divider}></div>
-                                    <div className={`${styles.summaryItem} ${styles.totalItem}`}>
-                                        <span>Total Amount to Pay</span>
-                                        <span>...</span>
-                                    </div>
-                                </>
-                            )}
+                                    <div className={styles.thumbnailLabel}>{item.name}</div>
+                                </div>
+                            ))}
                         </div>
 
-                        <div className={styles.sectionCard}>
-                            <h2 className={styles.sectionTitle}>Contact Informatiom</h2>
-                            <div className={styles.contactInfo}>
-                                <p><strong>Name:</strong> {formData.groomName || 'Couple'} & {formData.brideName || 'Partner'}</p>
-                                <p><strong>Email:</strong> (Associated with account)</p>
+                        {/* Phone Mockup Frame */}
+                        <div className={styles.phoneFrameWrapper}>
+                            {previewItems.length > 1 && (
+                                <button 
+                                    className={styles.carouselButton} 
+                                    onClick={() => setSelectedPreviewIndex(prev => prev === 0 ? previewItems.length - 1 : prev - 1)}
+                                >
+                                    <ChevronLeft size={24} />
+                                </button>
+                            )}
+                            <div className={styles.phoneMockup}>
+                                <div className={styles.phoneNotch}></div>
+                                {previewItems.length > 0 && (
+                                    <div className={styles.phoneScreen}>
+                                        {previewItems.map((item, idx) => (
+                                            <div 
+                                                key={`slider-item-${idx}`}
+                                                style={{
+                                                    position: 'absolute',
+                                                    top: 0,
+                                                    left: 0,
+                                                    width: '100%',
+                                                    height: '100%',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    opacity: idx === selectedPreviewIndex ? 1 : 0,
+                                                    transition: 'none',
+                                                    pointerEvents: idx === selectedPreviewIndex ? 'auto' : 'none',
+                                                    zIndex: idx === selectedPreviewIndex ? 1 : 0
+                                                }}
+                                            >
+                                                <InvitationCard
+                                                    event={item.event}
+                                                    theme={theme}
+                                                    groomName={groom}
+                                                    brideName={bride}
+                                                    groomParents={formData.groomParents}
+                                                    brideParents={formData.brideParents}
+                                                    customImage={item.image}
+                                                    isPlaceholder={true}
+                                                    isRawPreview={false}
+                                                    type='image'
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
+                            {previewItems.length > 1 && (
+                                <button 
+                                    className={styles.carouselButton} 
+                                    onClick={() => setSelectedPreviewIndex(prev => prev === previewItems.length - 1 ? 0 : prev + 1)}
+                                >
+                                    <ChevronRight size={24} />
+                                </button>
+                            )}
                         </div>
                     </div>
 
-                    <div className={styles.rightColumn}>
-                        <div className={styles.paymentCard}>
-                            <div className={styles.secureBadge}>
-                                <Lock size={16} />
-                                100% Secure Payment
-                            </div>
-                            
-                            <h2 className={styles.sectionTitle}>Select Payment Method</h2>
-                            
-                            <div className={styles.paymentMethods}>
-                                <button className={styles.methodBtn} onClick={handlePay}>
-                                    <div className={styles.methodIcon}>UPI</div>
-                                    <div className={styles.methodText}>Google Pay, PhonePe, Paytm</div>
-                                </button>
-                                
-                                <button className={styles.payBtn} onClick={handlePay}>
-                                    <Lock size={18} /> Pay securely
-                                </button>
-                                
-                                <button className={styles.methodBtn} onClick={handlePay}>
-                                    <div className={styles.methodIcon}>💳</div>
-                                    <div className={styles.methodText}>Credit / Debit Cards</div>
-                                </button>
+                    {/* Right Column - Payment Actions (Consolidated) */}
+                    <div className={styles.paymentActionSection}>
+                        
+                        <div className={styles.orderSummaryHeader}>
+                            <h1 className={styles.pageTitle}>Review Your Order</h1>
+                            <p className={styles.pageSubtitle}>Complete your purchase to unlock the digital suite for {coupleNames}.</p>
+                        </div>
 
-                                <button className={styles.methodBtn} onClick={handlePay}>
-                                    <div className={styles.methodIcon}>🏦</div>
-                                    <div className={styles.methodText}>Net Banking</div>
-                                </button>
+                        <div className={styles.actionCard}>
+                            <div className={styles.productSummaryHeader}>
+                                <h3 className={styles.productName}>Digital Wedding Suite</h3>
+                                <p className={styles.productDesc}>Everything you need to invite with elegance and ease.</p>
+                                
+                                <ul className={styles.premiumChecklist}>
+                                    <li><Check size={14} /> High-Resolution Images</li>
+                                    <li><Check size={14} /> RSVP Tracking Dashboard</li>
+                                    <li><Check size={14} /> Unlimited WhatsApp Sharing</li>
+                                    <li><Check size={14} /> Free Edits (15 Days)</li>
+                                </ul>
                             </div>
                             
-                            <hr style={{ margin: '2rem 0', border: 'none', borderTop: '1px solid #e2e8f0' }} />
-                            
-                            <h2 className={styles.sectionTitle}>Or Download Directly</h2>
-                            <button className={styles.downloadBtn} onClick={handleDownload} disabled={isDownloading}>
-                                {isDownloading ? (
+                            <div className={styles.pricingBreakdown}>
+                                <div className={styles.priceItem}>
+                                    <span className={styles.priceLabel}>Base Price</span>
+                                    <span className={styles.priceValue}>₹{basePrice.toFixed(2)}</span>
+                                </div>
+                                <div className={styles.priceItem}>
+                                    <span className={styles.priceLabel}>Taxes (18% GST)</span>
+                                    <span className={styles.priceValue}>₹{gstAmount.toFixed(2)}</span>
+                                </div>
+                                <div className={styles.divider}></div>
+                                <div className={styles.totalPriceItem}>
+                                    <span className={styles.totalLabel}>Total Payable</span>
+                                    <span className={styles.totalValue}>₹{totalAmount.toFixed(2)}</span>
+                                </div>
+                            </div>
+
+
+
+                            <button 
+                                className={styles.premiumPayBtn} 
+                                onClick={handlePay}
+                                disabled={isProcessing}
+                                style={{
+                                    opacity: isProcessing ? 0.7 : 1,
+                                    cursor: isProcessing ? 'not-allowed' : 'pointer'
+                                }}
+                            >
+                                {isProcessing ? (
                                     <>
-                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{marginRight: '8px'}} className={styles.spin}>
-                                            <line x1="12" y1="2" x2="12" y2="6"></line>
-                                            <line x1="12" y1="18" x2="12" y2="22"></line>
-                                            <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line>
-                                            <line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line>
-                                            <line x1="2" y1="12" x2="6" y2="12"></line>
-                                            <line x1="18" y1="12" x2="22" y2="12"></line>
-                                            <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line>
-                                            <line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line>
-                                        </svg>
-                                        Generating...
+                                        <div className="spinner" style={{
+                                            width: '16px', height: '16px', border: '2px solid rgba(255,255,255,0.3)',
+                                            borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 1s linear infinite',
+                                            marginRight: '8px', display: 'inline-block', verticalAlign: 'middle'
+                                        }} />
+                                        Preparing Secure Checkout...
                                     </>
                                 ) : (
                                     <>
-                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{marginRight: '8px'}}>
-                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                            <polyline points="7 10 12 15 17 10"></polyline>
-                                            <line x1="12" y1="15" x2="12" y2="3"></line>
-                                        </svg>
-                                        Download Bundle Now
+                                        <Lock size={16} />
+                                        Pay Securely ₹{totalAmount.toFixed(2)}
                                     </>
                                 )}
                             </button>
+
+                            <div className={styles.trustBadges}>
+                                <div className={styles.trustItem}>
+                                    <ShieldCheck size={16} />
+                                    <span>256-bit SSL</span>
+                                </div>
+                                <div className={styles.trustItem}>
+                                    <Zap size={16} />
+                                    <span>Instant Access</span>
+                                </div>
+                            </div>
                             
-                            <button className={styles.whatsappBtn} onClick={async () => {
-                                setIsDownloading(true);
-                                try {
-                                    // 1. Generate individual images
-                                    const blobs = await generateBundleBlobs();
-                                    
-                                    // 2. Download them individually so they can be dragged cleanly
-                                    for(let i=0; i<blobs.length; i++) {
-                                        const b = blobs[i];
-                                        const url = URL.createObjectURL(b.blob);
-                                        const link = document.createElement('a');
-                                        link.href = url;
-                                        link.download = `Nimantran_${b.name.replace(/[^a-zA-Z0-9]/g, '_')}.${b.ext}`;
-                                        link.click();
-                                        setTimeout(() => URL.revokeObjectURL(url), 1000);
-                                        await new Promise(r => setTimeout(r, 200)); // Stagger downloads slightly
-                                    }
-                                    
-                                    // 3. Open WhatsApp pre-filled with the message
-                                    const currentStore = useWeddingStore.getState();
-                                    const rawPhone = currentStore.userPhone || '';
-                                    const userPhone = rawPhone.length === 10 ? `91${rawPhone}` : rawPhone;
-                                    
-                                    const message = `Hey! Here is the finalized wedding invitation bundle from Nimantran Studio! 💍✨ (Please attach the images that were just downloaded)`;
-                                    
-                                    setTimeout(() => {
-                                        window.open(`https://api.whatsapp.com/send?phone=${userPhone}&text=${encodeURIComponent(message)}`, '_blank');
-                                    }, 1000); // Give user a second after the last download
-                                } catch (err) {
-                                    console.error(err);
-                                    alert("Error generating images for WhatsApp.");
-                                } finally {
-                                    setIsDownloading(false);
-                                }
-                            }} disabled={isDownloading}>
-                                {isDownloading ? (
-                                    <>
-                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{marginRight: '8px'}} className={styles.spin}>
-                                            <line x1="12" y1="2" x2="12" y2="6"></line>
-                                            <line x1="12" y1="18" x2="12" y2="22"></line>
-                                        </svg>
-                                        Preparing Bundle...
-                                    </>
-                                ) : (
-                                    <>
-                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{marginRight: '8px'}}>
-                                            <path d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9L3 21"></path>
-                                            <path d="M9 10a.5.5 0 0 0 1 0V9a.5.5 0 0 0-1 0v1a5 5 0 0 0 5 5h1a.5.5 0 0 0 0-1h-1a.5.5 0 0 0 0 1"></path>
-                                        </svg>
-                                        Send on WhatsApp
-                                    </>
-                                )}
-                            </button>
-                            
-                            <p className={styles.trustText}>
-                                By proceeding, you agree to our Terms and Conditions and Privacy Policy. All transactions are securely encrypted.
+                            <p className={styles.termsText}>
+                                By proceeding, you agree to our <Link href="/terms">Terms</Link> & <Link href="/privacy">Privacy Policy</Link>
                             </p>
                         </div>
                     </div>

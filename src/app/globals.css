@@ -169,3 +169,9 @@ a {
   box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
   border-radius: 24px;
 }
+
+/* --- Shimmer Loading Animation --- */
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}

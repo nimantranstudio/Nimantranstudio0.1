@@ -53,8 +53,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} ${playfair.variable}`} suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning style={{ backgroundColor: '#FDFBF7' }}>
+      <body className={`${inter.variable} ${playfair.variable}`} suppressHydrationWarning style={{ backgroundColor: '#FDFBF7' }}>
         <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
           <RootWrapper>{children}</RootWrapper>
         </div>

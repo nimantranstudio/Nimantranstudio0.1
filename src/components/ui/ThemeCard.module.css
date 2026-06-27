@@ -10,6 +10,9 @@
     display: flex;
     flex-direction: column;
     height: 100%;
+    /* Reset anchor tag defaults */
+    text-decoration: none;
+    color: inherit;
 }
 
 /* Golden Glare Effect */

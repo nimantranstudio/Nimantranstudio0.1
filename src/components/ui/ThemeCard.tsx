@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import { useRef, useCallback, useEffect, useState } from 'react';
 import type { Theme } from '@/lib/constants/themes';
 import styles from './ThemeCard.module.css';
@@ -67,9 +68,9 @@ export const ThemeCard = ({ theme, onSelect }: ThemeCardProps) => {
     }, []);
 
     return (
-        <div
+        <Link
+            href={`/themes/${theme.id}`}
             className={styles.card}
-            onClick={() => onSelect(theme.id)}
             onMouseEnter={startSlideshow}
             onMouseLeave={stopSlideshow}
         >
@@ -178,16 +179,10 @@ export const ThemeCard = ({ theme, onSelect }: ThemeCardProps) => {
                 <div className={styles.details}>
                     {theme.description || 'A complete wedding communication system not just an invite'}
                 </div>
-                <button 
-                    className={styles.cta}
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        onSelect(theme.id);
-                    }}
-                >
+                <div className={styles.cta}>
                     Select Theme
-                </button>
+                </div>
             </div>
-        </div>
+        </Link>
     );
 };

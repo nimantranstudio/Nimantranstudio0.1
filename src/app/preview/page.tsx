@@ -14,6 +14,7 @@ import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { LoginModal } from '@/components/auth/LoginModal';
+import { auth } from '@/lib/firebase';
 import confetti from 'canvas-confetti';
 import { Suspense } from 'react';
 
@@ -44,7 +45,6 @@ import { ProcessingOverlay } from '@/components/processing/ProcessingOverlay';
 
 function PreviewContent() {
     const { formData, selectedThemeId, isAuthenticated, login, bundleImages, bundleItems, selectedPlan } = useWeddingStore();
-    const [isSecuring, setIsSecuring] = useState(false);
     const [packages, setPackages] = useState<any[]>([]);
     const [theme, setTheme] = useState<any | null>(null);
 
@@ -75,10 +75,31 @@ function PreviewContent() {
     const amountSaved = pricing.discountedPrice;
     const [showLoginModal, setShowLoginModal] = useState(false);
     const [selectedPreviewIndex, setSelectedPreviewIndex] = useState<number | null>(null);
+    const [cardLayout, setCardLayout] = useState<{ width: number; height: number; aspectRatio: number }>({
+        width: 500,
+        height: 889,
+        aspectRatio: 9/16
+    });
+
+    const handleLayoutMeasure = (layout: { width: number; height: number; aspectRatio: number }) => {
+        setCardLayout(prev => {
+            if (prev.width === layout.width && prev.height === layout.height && prev.aspectRatio === layout.aspectRatio) {
+                return prev;
+            }
+            return layout;
+        });
+    };
+
     const [isEditMode, setIsEditMode] = useState(false);
-    const [activeSelection, setActiveSelection] = useState<{ id: string, color: string, align: string, text: string } | null>(null);
+    const [activeSelection, setActiveSelection] = useState<any | null>(null);
     const [isButtonHovered, setIsButtonHovered] = useState(false);
     const [resetKey, setResetKey] = useState(0);
+    const [isQrPopoverOpen, setIsQrPopoverOpen] = useState(false);
+    const [showExitConfirm, setShowExitConfirm] = useState(false);
+    const [qrLink, setQrLink] = useState('');
+    const [qrTitle, setQrTitle] = useState('SCAN FOR LOCATION');
+    const [uploadedPhotos, setUploadedPhotos] = useState<Record<number, string>>({});
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const cardRef = useRef<InvitationCardRef>(null);
     const suiteRefs = useRef<Record<string, InvitationCardRef | null>>({});
     const router = useRouter();
@@ -90,11 +111,41 @@ function PreviewContent() {
                 setActiveSelection(e.data.payload);
             } else if (e.data?.type === 'SELECTION_CLEARED') {
                 setActiveSelection(null);
+            } else if (e.data?.type === 'LAYOUT_CHANGED') {
+                if (cardRef.current && typeof (cardRef.current as any).saveLayout === 'function') {
+                    try {
+                        (cardRef.current as any).saveLayout();
+                    } catch (e) { }
+                }
             }
         };
         window.addEventListener('message', handleMessage);
         return () => window.removeEventListener('message', handleMessage);
     }, []);
+
+    const isPoppingHistoryState = useRef(false);
+
+    useEffect(() => {
+        if (!isEditMode) return;
+
+        // Push state so back button pops it first instead of leaving the page
+        window.history.pushState({ noBackExitsEditMode: true }, '');
+
+        const handlePopState = (e: PopStateEvent) => {
+            if (isPoppingHistoryState.current) {
+                isPoppingHistoryState.current = false;
+                return;
+            }
+            // Put it back
+            window.history.pushState({ noBackExitsEditMode: true }, '');
+            setShowExitConfirm(true);
+        };
+
+        window.addEventListener('popstate', handlePopState);
+        return () => {
+            window.removeEventListener('popstate', handlePopState);
+        };
+    }, [isEditMode]);
     
     // Fluid transition state
     const [showProcessing, setShowProcessing] = useState(searchParams.get('processing') === 'true');
@@ -187,36 +238,25 @@ function PreviewContent() {
     //     }
     // }, [isAuthenticated, showLoginModal]);
 
-    // Navigate to payment screen when securing bundle
-    useEffect(() => {
-        if (isSecuring) {
-            const timer = setTimeout(() => {
-                router.push('/payment');
-            }, 1000);
-            return () => clearTimeout(timer);
-        }
-    }, [isSecuring, router]);
+
 
     const handleCheckout = () => {
         // Direct read to ensure we have the latest persisted state
         const state = useWeddingStore.getState();
         const currentAuth = state.isAuthenticated;
 
-        // Force showing login modal for demonstration/testing
-        // if (currentAuth) {
-        //     setIsSecuring(true);
-        //     return;
-        // }
+        if (currentAuth) {
+            router.push('/payment');
+            return;
+        }
 
-        // If not auth, check if we have a phone number (maybe just need to re-verify?)
-        // For now, always prompt login, but LoginModal will handle existing users better
         setShowLoginModal(true);
     };
 
     const handleLoginSuccess = (phone: string) => {
         setShowLoginModal(false);
         login(phone);
-        setIsSecuring(true);
+        router.push('/payment');
     };
 
     if (!theme) {
@@ -229,21 +269,7 @@ function PreviewContent() {
         );
     }
 
-    if (isSecuring) {
-        return (
-            <div className={styles.securingOverlay}>
-                <h2 className={styles.securingTitle}>Securing your bundle...</h2>
-                <p className={styles.securingSubtitle}>Redirecting to checkout</p>
-                <div className={styles.spinner}></div>
-                <button
-                    onClick={() => setIsSecuring(false)}
-                    className={styles.cancelPayment}
-                >
-                    Cancel Payment
-                </button>
-            </div>
-        );
-    }
+
 
     const buildPreviewItems = () => {
         if (!bundleItems || bundleItems.length === 0) {
@@ -363,53 +389,83 @@ function PreviewContent() {
             if (activeSelection) {
                 setActiveSelection(prev => prev ? { ...prev, ...payload } : null);
             }
+
+            // Auto-save layout so formatting changes persist even if closed directly
+            setTimeout(() => {
+                if (cardRef.current && typeof (cardRef.current as any).saveLayout === 'function') {
+                    try {
+                        (cardRef.current as any).saveLayout();
+                    } catch (e) { }
+                }
+            }, 100);
+        }
+    };
+
+    const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file && selectedPreviewIndex !== null) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                if (event.target?.result) {
+                    setUploadedPhotos(prev => ({
+                        ...prev,
+                        [selectedPreviewIndex]: event.target!.result as string
+                    }));
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+        // Reset input so the same file can be uploaded again if needed
+        if (e.target) {
+            e.target.value = '';
         }
     };
 
     return (
         <div className={styles.previewPage}>
+            {/* Hidden File Input for Photo Upload */}
+            <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handlePhotoUpload} 
+                accept="image/*" 
+                style={{ display: 'none' }} 
+            />
             {/* Fullscreen Preview Modal */}
             {selectedPreviewIndex !== null && theme && (
                 <div className={modalStyles.overlayBackdrop} onClick={() => !isEditMode && setSelectedPreviewIndex(null)}>
                     <div className={modalStyles.overlayContent} style={isEditMode ? { width: '100vw', height: '100vh', maxWidth: '100%', maxHeight: '100%', borderRadius: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingTop: '60px', paddingBottom: '80px' } : {}} onClick={(e) => e.stopPropagation()}>
                         
-                        {!isEditMode && (
-                            <button className={modalStyles.closeBtn} onClick={() => setSelectedPreviewIndex(null)} style={{ position: 'fixed', top: '2rem', right: '2rem', zIndex: 100 }}>
-                                <X size={28} />
-                            </button>
-                        )}
+                        <button 
+                            className={modalStyles.closeBtn} 
+                            onClick={() => {
+                                if (isEditMode) {
+                                    setShowExitConfirm(true);
+                                } else {
+                                    setSelectedPreviewIndex(null);
+                                }
+                            }} 
+                            style={{ position: 'fixed', top: '2rem', right: '2rem', zIndex: 100 }}
+                        >
+                            <X size={28} />
+                        </button>
 
                         {/* Top Toolbar (Edit Mode) */}
-                        {/* Top Toolbar (Edit Mode) */}
                         {isEditMode && (
-                            <div style={{
-                                position: 'fixed',
-                                top: 0,
-                                left: 0,
-                                width: '100%',
-                                background: 'white',
-                                borderRadius: 0,
-                                padding: '6px 8px',
-                                display: 'flex',
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                gap: '4px',
-                                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                                zIndex: 100
-                            }}>
+                            <div className={styles.topToolbar}>
                                 <button className={styles.toolbarBtn} onClick={() => handleFormat({ edit: true })} style={{ opacity: activeSelection ? 1 : 0.5, pointerEvents: activeSelection ? 'auto' : 'none' }}>
-                                    <Edit size={18} />
+                                    <Edit size={24} />
                                     <span>Edit</span>
                                 </button>
                                 
                                 <div style={{ position: 'relative' }}>
                                     <button className={styles.toolbarBtn} style={{ opacity: activeSelection ? 1 : 0.5, pointerEvents: activeSelection ? 'auto' : 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
-                                            <span style={{ fontSize: '16px', fontFamily: 'serif', fontStyle: 'italic', lineHeight: 1 }}>Style</span>
+                                            <span style={{ fontSize: '20px', fontFamily: 'serif', fontStyle: 'italic', lineHeight: 1 }}>Style</span>
                                         </div>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
                                             <span>Font</span>
-                                            <ChevronDown size={12} />
+                                            <ChevronDown size={16} />
                                         </div>
                                     </button>
                                     {activeSelection && (
@@ -431,7 +487,7 @@ function PreviewContent() {
 
                                 <div style={{ position: 'relative' }}>
                                     <button className={styles.toolbarBtn} style={{ opacity: activeSelection ? 1 : 0.5, pointerEvents: activeSelection ? 'auto' : 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                        <span style={{ fontSize: '16px', fontWeight: 600, lineHeight: 1 }}>A+</span>
+                                        <span style={{ fontSize: '20px', fontWeight: 600, lineHeight: 1 }}>A+</span>
                                         <span>Resize</span>
                                     </button>
                                     {activeSelection && (
@@ -457,20 +513,20 @@ function PreviewContent() {
                                 </div>
 
                                 <button className={styles.toolbarBtn} style={{ opacity: activeSelection ? 1 : 0.5, pointerEvents: activeSelection ? 'auto' : 'none' }}>
-                                    <Maximize size={18} />
+                                    <Maximize size={24} />
                                     <span>Box Resize</span>
                                 </button>
                                 
                                 <button className={styles.toolbarBtn} onClick={() => handleFormat({ delete: true })} style={{ opacity: activeSelection ? 1 : 0.5, pointerEvents: activeSelection ? 'auto' : 'none' }}>
-                                    <Trash2 size={18} />
+                                    <Trash2 size={24} />
                                     <span>Delete</span>
                                 </button>
 
                                 <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', opacity: activeSelection ? 1 : 0.5, pointerEvents: activeSelection ? 'auto' : 'none', cursor: 'pointer' }} className={styles.toolbarBtn}>
-                                    <Palette size={18} />
+                                    <Palette size={24} />
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
                                         <span>Color</span>
-                                        <ChevronDown size={12} />
+                                        <ChevronDown size={16} />
                                     </div>
                                     {activeSelection && (
                                         <input 
@@ -493,16 +549,16 @@ function PreviewContent() {
                                         border: activeSelection?.fontWeight === 'bold' ? '1px solid #FDE68A' : '1px solid transparent'
                                     }}
                                 >
-                                    <Bold size={18} />
+                                    <Bold size={24} />
                                     <span>Bold</span>
                                 </button>
 
                                 <div style={{ position: 'relative' }}>
                                     <button className={styles.toolbarBtn} style={{ opacity: activeSelection ? 1 : 0.5, pointerEvents: activeSelection ? 'auto' : 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                        <AlignJustify size={18} />
+                                        <AlignJustify size={24} />
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
                                             <span>Format</span>
-                                            <ChevronDown size={12} />
+                                            <ChevronDown size={16} />
                                         </div>
                                     </button>
                                     {activeSelection && (
@@ -521,10 +577,10 @@ function PreviewContent() {
 
                                 <div style={{ position: 'relative' }}>
                                     <button className={styles.toolbarBtn} style={{ opacity: activeSelection ? 1 : 0.5, pointerEvents: activeSelection ? 'auto' : 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                        <Square size={18} />
+                                        <Square size={24} />
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
                                             <span>Border</span>
-                                            <ChevronDown size={12} />
+                                            <ChevronDown size={16} />
                                         </div>
                                     </button>
                                 </div>
@@ -538,13 +594,23 @@ function PreviewContent() {
                                         background: activeSelection?.textTransform === 'uppercase' ? '#F3F4F6' : 'transparent',
                                     }}
                                 >
-                                    <span style={{ fontSize: '16px', fontWeight: 600, lineHeight: 1 }}>Aa</span>
+                                    <span style={{ fontSize: '20px', fontWeight: 600, lineHeight: 1 }}>Aa</span>
                                     <span>CAPITAL</span>
                                 </button>
                             </div>
                         )}
 
-                        <div className={modalStyles.previewImageWrapper} style={{ borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', height: 'min(85vh, 850px)', aspectRatio: '9/16' }}>
+                        <div className={modalStyles.previewImageWrapper} style={{ 
+                            borderRadius: '16px', 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'center', 
+                            position: 'relative',
+                            width: cardLayout.aspectRatio > 1 ? 'min(90vw, 1000px)' : 'auto',
+                            height: cardLayout.aspectRatio > 1 ? 'auto' : (isEditMode ? 'calc(100vh - 160px)' : 'min(85vh, 850px)'),
+                            aspectRatio: cardLayout.aspectRatio,
+                            transition: 'width 0.3s ease, height 0.3s ease, aspect-ratio 0.3s ease'
+                        }}>
                             <InvitationCard
                                 ref={cardRef}
                                 key={`preview-${selectedPreviewIndex}-${resetKey}`}
@@ -564,9 +630,10 @@ function PreviewContent() {
                                 isPlaceholder={true}
                                 isRawPreview={false}
                                 type='image'
-                                customImage={previewItems[selectedPreviewIndex]?.image}
+                                customImage={uploadedPhotos[selectedPreviewIndex] || previewItems[selectedPreviewIndex]?.image}
                                 isSecured={true}
                                 showSizingBoxes={isEditMode}
+                                onLayoutMeasure={handleLayoutMeasure}
                             />
 
 
@@ -632,25 +699,8 @@ function PreviewContent() {
                                 </div>
                             ) : (
                                 /* Bottom Toolbar (Edit Mode) */
-                                <div style={{
-                                    position: 'fixed',
-                                    bottom: '0',
-                                    left: '0',
-                                    right: '0',
-                                    background: 'white',
-                                    display: 'flex',
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                    padding: '16px 24px',
-                                    gap: '32px',
-                                    borderTop: '1px solid #E5E7EB',
-                                    zIndex: 100,
-                                    boxShadow: '0 -4px 12px rgba(0,0,0,0.05)'
-                                }}>
-                                    <button className={styles.toolbarBtn} onClick={() => {
-                                        setResetKey(prev => prev + 1); // Discard layout changes by force remounting
-                                        setIsEditMode(false);
-                                    }}>
+                                <div className={styles.bottomToolbar}>
+                                    <button className={styles.toolbarBtn} onClick={() => setShowExitConfirm(true)}>
                                         <X size={24} />
                                         <span>Cancel</span>
                                     </button>
@@ -660,7 +710,7 @@ function PreviewContent() {
                                             <Type size={24} />
                                             <span>Add Text</span>
                                         </button>
-                                        <button className={styles.toolbarBtn}>
+                                        <button className={styles.toolbarBtn} onClick={() => fileInputRef.current?.click()}>
                                             <ImageIcon size={24} />
                                             <span>Photo</span>
                                         </button>
@@ -668,7 +718,7 @@ function PreviewContent() {
                                             <Sticker size={24} />
                                             <span>Sticker</span>
                                         </button>
-                                        <button className={styles.toolbarBtn}>
+                                        <button className={styles.toolbarBtn} onClick={() => setIsQrPopoverOpen(true)}>
                                             <MapPin size={24} />
                                             <span>QR Map</span>
                                         </button>
@@ -756,6 +806,15 @@ function PreviewContent() {
                                                     updateEvent(currentEvent.id, updatedEvent);
                                                 }
                                             }
+                                            
+                                            // Call saveLayout to persist the custom html design layout & QR maps
+                                            if (cardRef.current && typeof (cardRef.current as any).saveLayout === 'function') {
+                                                try {
+                                                    (cardRef.current as any).saveLayout();
+                                                } catch (e) {
+                                                    console.error("Error saving card layout:", e);
+                                                }
+                                            }
                                         }
                                         setIsEditMode(false);
                                     }} style={{ 
@@ -771,17 +830,13 @@ function PreviewContent() {
                                         gap: '8px',
                                         cursor: 'pointer'
                                     }}>
-                                        <span>Download</span>
+                                        <span>Save</span>
                                     </button>
                                 </div>
                             )}
                         </div>
 
-                        <div className={modalStyles.previewInfo}>
-                            <p className={modalStyles.previewCount}>
-                                {selectedPreviewIndex + 1} / {previewItems.length}
-                            </p>
-                        </div>
+
 
                         <div className={modalStyles.navContainer}>
                             <button 
@@ -1033,7 +1088,7 @@ function PreviewContent() {
                                     onMouseEnter={() => setIsButtonHovered(true)}
                                     onMouseLeave={() => setIsButtonHovered(false)}
                                 >
-                                    Unlock My Wedding Invites
+                                    Unlock My Wedding Suite
                                 </button>
 
                                 <div className={styles.featureList}>
@@ -1090,6 +1145,346 @@ function PreviewContent() {
             />
             {showProcessing && (
                 <ProcessingOverlay onComplete={() => setShowProcessing(false)} />
+            )}
+
+            {isQrPopoverOpen && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0, left: 0, right: 0, bottom: 0,
+                    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                    backdropFilter: 'blur(8px)',
+                    zIndex: 2000,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontFamily: 'var(--font-sans)'
+                }} onClick={() => {
+                    setIsQrPopoverOpen(false);
+                    setQrLink('');
+                }}>
+                    <div style={{
+                        background: 'var(--background)',
+                        borderRadius: '24px',
+                        padding: '36px',
+                        width: '90%',
+                        maxWidth: '520px',
+                        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.3)',
+                        position: 'relative'
+                    }} onClick={(e) => e.stopPropagation()}>
+                        
+                        {/* Text Area Dotted Field */}
+                        <div style={{ position: 'relative', marginBottom: '24px' }}>
+                            <textarea
+                                value={qrLink}
+                                onChange={(e) => setQrLink(e.target.value)}
+                                placeholder="Paste your Google Maps link here..."
+                                style={{
+                                    width: '100%',
+                                    minHeight: '120px',
+                                    padding: '20px',
+                                    fontSize: '16px',
+                                    lineHeight: '1.5',
+                                    textAlign: 'center',
+                                    border: '1.5px dashed var(--primary)',
+                                    borderRadius: '16px',
+                                    outline: 'none',
+                                    resize: 'none',
+                                    color: 'var(--foreground)',
+                                    background: '#FFFFFF',
+                                    transition: 'border-color 0.2s, box-shadow 0.2s'
+                                }}
+                                onFocus={(e) => {
+                                    e.currentTarget.style.borderColor = 'var(--primary)';
+                                    e.currentTarget.style.boxShadow = '0 0 0 4px rgba(200, 169, 81, 0.1)';
+                                }}
+                                onBlur={(e) => {
+                                    e.currentTarget.style.borderColor = 'var(--primary)';
+                                    e.currentTarget.style.boxShadow = 'none';
+                                }}
+                            />
+                        </div>
+
+                        {/* Title input field */}
+                        <div style={{ marginBottom: '24px' }}>
+                            <label style={{
+                                display: 'block',
+                                color: 'var(--primary)',
+                                fontSize: '12px',
+                                fontWeight: '600',
+                                textTransform: 'uppercase',
+                                marginBottom: '8px',
+                                letterSpacing: '0.05em'
+                            }}>
+                                Title
+                            </label>
+                            <input
+                                type="text"
+                                value={qrTitle}
+                                onChange={(e) => setQrTitle(e.target.value.slice(0, 32))}
+                                maxLength={32}
+                                placeholder="e.g., SCAN FOR LOCATION"
+                                style={{
+                                    width: '100%',
+                                    padding: '8px 0',
+                                    fontSize: '18px',
+                                    fontWeight: '500',
+                                    border: 'none',
+                                    borderBottom: '1.5px solid var(--border)',
+                                    outline: 'none',
+                                    color: 'var(--foreground)',
+                                    background: 'transparent',
+                                    transition: 'border-color 0.2s'
+                                }}
+                                onFocus={(e) => e.currentTarget.style.borderBottomColor = 'var(--primary)'}
+                                onBlur={(e) => e.currentTarget.style.borderBottomColor = 'var(--border)'}
+                            />
+                            <div style={{
+                                display: 'flex',
+                                justifyContent: 'flex-end',
+                                fontSize: '12px',
+                                color: 'var(--muted-foreground)',
+                                marginTop: '6px'
+                            }}>
+                                <span>Max character limit is 32</span>
+                            </div>
+                        </div>
+
+                        {/* Info link */}
+                        <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            color: 'var(--foreground)',
+                            fontSize: '14px',
+                            fontWeight: '500',
+                            cursor: 'pointer',
+                            marginBottom: '32px',
+                            transition: 'color 0.2s'
+                        }} 
+                        onMouseOver={(e) => e.currentTarget.style.color = 'var(--primary)'}
+                        onMouseOut={(e) => e.currentTarget.style.color = 'var(--foreground)'}
+                        onClick={() => window.open('https://support.google.com/maps/answer/144154', '_blank')}>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <circle cx="12" cy="12" r="10" />
+                                <line x1="12" y1="16" x2="12" y2="12" />
+                                <line x1="12" y1="8" x2="12.01" y2="8" />
+                            </svg>
+                            <span>How to copy a Location Link from Google Maps</span>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div style={{
+                            display: 'flex',
+                            justifyContent: 'flex-end',
+                            gap: '12px'
+                        }}>
+                            <button
+                                onClick={() => {
+                                    setIsQrPopoverOpen(false);
+                                    setQrLink('');
+                                }}
+                                style={{
+                                    background: 'var(--muted)',
+                                    color: 'var(--foreground)',
+                                    border: 'none',
+                                    borderRadius: '9999px',
+                                    padding: '14px 28px',
+                                    fontWeight: '500',
+                                    fontSize: '15px',
+                                    cursor: 'pointer',
+                                    transition: 'background 0.2s'
+                                }}
+                                onMouseOver={(e) => e.currentTarget.style.background = '#DFDEDC'}
+                                onMouseOut={(e) => e.currentTarget.style.background = 'var(--muted)'}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                disabled={!qrLink.trim()}
+                                onClick={() => {
+                                    if (cardRef.current && qrLink.trim()) {
+                                        cardRef.current.sendMessage({
+                                            type: 'ADD_QR',
+                                            payload: {
+                                                link: qrLink.trim(),
+                                                title: qrTitle.trim() || 'SCAN FOR LOCATION'
+                                            }
+                                        });
+                                        
+                                        // Auto-save the layout after adding the QR code so the user doesn't lose it if they exit directly
+                                        setTimeout(() => {
+                                            if (cardRef.current && typeof (cardRef.current as any).saveLayout === 'function') {
+                                                try {
+                                                    (cardRef.current as any).saveLayout();
+                                                } catch (e) { }
+                                            }
+                                        }, 100);
+                                        
+                                        setIsQrPopoverOpen(false);
+                                        setQrLink('');
+                                    }
+                                }}
+                                style={{
+                                    background: 'linear-gradient(135deg, #ECC878 0%, #D4AF37 100%)',
+                                    color: '#111111',
+                                    border: 'none',
+                                    borderRadius: '9999px',
+                                    padding: '14px 28px',
+                                    fontWeight: '600',
+                                    fontSize: '15px',
+                                    cursor: qrLink.trim() ? 'pointer' : 'not-allowed',
+                                    opacity: qrLink.trim() ? 1 : 0.5,
+                                    boxShadow: qrLink.trim() ? '0 4px 12px rgba(212, 175, 55, 0.2)' : 'none',
+                                    transition: 'all 0.2s'
+                                }}
+                                onMouseOver={(e) => {
+                                    if (qrLink.trim()) {
+                                        e.currentTarget.style.background = 'linear-gradient(135deg, #f0d59a 0%, #e0c15a 100%)';
+                                        e.currentTarget.style.boxShadow = '0 8px 18px rgba(212, 175, 55, 0.3)';
+                                        e.currentTarget.style.transform = 'translateY(-1px)';
+                                    }
+                                }}
+                                onMouseOut={(e) => {
+                                    if (qrLink.trim()) {
+                                        e.currentTarget.style.background = 'linear-gradient(135deg, #ECC878 0%, #D4AF37 100%)';
+                                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(212, 175, 55, 0.2)';
+                                        e.currentTarget.style.transform = 'none';
+                                    }
+                                }}
+                            >
+                                Generate QR CODE
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {showExitConfirm && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0, left: 0, right: 0, bottom: 0,
+                    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                    backdropFilter: 'blur(8px)',
+                    zIndex: 2000,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontFamily: 'var(--font-sans)'
+                }} onClick={() => setShowExitConfirm(false)}>
+                    <div style={{
+                        background: 'var(--background)',
+                        borderRadius: '24px',
+                        padding: '36px 32px',
+                        width: '90%',
+                        maxWidth: '460px',
+                        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.3)',
+                        position: 'relative',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center'
+                    }} onClick={(e) => e.stopPropagation()}>
+                        
+                        {/* Exclamation Circle */}
+                        <div style={{
+                            border: '2px solid var(--primary)',
+                            borderRadius: '50%',
+                            width: '64px',
+                            height: '64px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            marginBottom: '24px',
+                            backgroundColor: 'rgba(200, 169, 81, 0.05)'
+                        }}>
+                            <span style={{ fontSize: '32px', color: 'var(--primary)', fontWeight: 400, lineHeight: 1 }}>!</span>
+                        </div>
+
+                        {/* Title */}
+                        <h3 style={{
+                            fontFamily: 'var(--font-serif)',
+                            fontSize: '26px',
+                            fontWeight: '500',
+                            textAlign: 'center',
+                            color: 'var(--foreground)',
+                            margin: '0 0 12px',
+                            letterSpacing: '0.02em'
+                        }}>
+                            Do you want to exit?
+                        </h3>
+
+                        {/* Description */}
+                        <p style={{
+                            fontSize: '15px',
+                            color: 'var(--muted-foreground)',
+                            textAlign: 'center',
+                            lineHeight: '1.6',
+                            margin: '0 0 32px',
+                            padding: '0 10px'
+                        }}>
+                            If you exit now, any unsaved layout changes will be lost.
+                        </p>
+
+                        {/* Buttons */}
+                        <div style={{
+                            display: 'flex',
+                            width: '100%',
+                            gap: '12px'
+                        }}>
+                            <button
+                                onClick={() => setShowExitConfirm(false)}
+                                style={{
+                                    flex: 1,
+                                    background: 'var(--muted)',
+                                    color: 'var(--foreground)',
+                                    border: 'none',
+                                    borderRadius: '9999px',
+                                    padding: '14px 0',
+                                    fontWeight: '500',
+                                    fontSize: '15px',
+                                    cursor: 'pointer',
+                                    transition: 'background 0.2s'
+                                }}
+                                onMouseOver={(e) => e.currentTarget.style.background = '#DFDEDC'}
+                                onMouseOut={(e) => e.currentTarget.style.background = 'var(--muted)'}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setResetKey(prev => prev + 1); // Discard layout changes by force remounting
+                                    setIsEditMode(false);
+                                    setShowExitConfirm(false);
+                                    if (typeof window !== 'undefined' && window.history.state?.noBackExitsEditMode) {
+                                        isPoppingHistoryState.current = true;
+                                        window.history.back();
+                                    }
+                                }}
+                                style={{
+                                    flex: 1,
+                                    background: 'var(--foreground)',
+                                    color: '#FFFFFF',
+                                    border: 'none',
+                                    borderRadius: '9999px',
+                                    padding: '14px 0',
+                                    fontWeight: '500',
+                                    fontSize: '15px',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s'
+                                }}
+                                onMouseOver={(e) => {
+                                    e.currentTarget.style.background = '#000000';
+                                    e.currentTarget.style.transform = 'translateY(-1px)';
+                                }}
+                                onMouseOut={(e) => {
+                                    e.currentTarget.style.background = 'var(--foreground)';
+                                    e.currentTarget.style.transform = 'none';
+                                }}
+                            >
+                                Exit Without Saving
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );
