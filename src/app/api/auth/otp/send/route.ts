@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { sendOTP } from '@/lib/sms';
+import { sendWhatsAppOTP } from '@/lib/whatsapp';
 
 export async function POST(request: Request) {
     try {
@@ -10,15 +11,30 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Invalid mobile number' }, { status: 400 });
         }
 
-        // Generate 4-digit OTP
-        const otp = Math.floor(1000 + Math.random() * 9000).toString();
+        // Rate limiting: max 3 requests per hour per number
+        const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+        const recentRequests = await prisma.oTPRequest.count({
+            where: {
+                mobileNumber,
+                createdAt: { gt: oneHourAgo }
+            }
+        });
 
-        // In this implementation we store plain OTP for simplicity of the walkthrough
-        // but in prod use hash: crypto.createHash('sha256').update(otp).digest('hex')
+        if (recentRequests >= 3) {
+            return NextResponse.json(
+                { error: 'Too many OTP requests. Please try again after 1 hour.' },
+                { status: 429 }
+            );
+        }
+
+        // Generate 6-digit OTP
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+        // Store OTP hash (in production use bcrypt)
         const otpHash = otp;
 
-        // Set expiration (5 minutes from now)
-        const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+        // Set expiration (10 minutes from now)
+        const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
         // Delete old unused OTPs for this number to keep DB clean
         await prisma.oTPRequest.deleteMany({
@@ -29,7 +45,7 @@ export async function POST(request: Request) {
         });
 
         // Create new OTP request
-        await prisma.oTPRequest.create({
+        const otpRequest = await prisma.oTPRequest.create({
             data: {
                 mobileNumber,
                 otpHash,
@@ -37,19 +53,43 @@ export async function POST(request: Request) {
             }
         });
 
-        // Send OTP via SMS (Twilio)
-        const sent = await sendOTP(mobileNumber, otp);
-
-        if (!sent.success) {
-            console.error('Failed to send SMS:', sent.error);
-            // Optionally we could return an error here, but for now we fallback to letting
-            // the user potentially see the console log or try again. 
-            // In a strict prod env, you might want to return 500.
-        }
-
         console.log(`[AUTH] Generated OTP ${otp} for ${mobileNumber}`);
 
-        return NextResponse.json({ success: true, message: 'OTP sent successfully' });
+        // Try WhatsApp first (primary method)
+        const whatsappResult = await sendWhatsAppOTP(mobileNumber, otp);
+
+        if (whatsappResult.success) {
+            // Store WhatsApp message ID if available
+            if (whatsappResult.messageId) {
+                await prisma.oTPRequest.update({
+                    where: { id: otpRequest.id },
+                    data: { messageId: whatsappResult.messageId }
+                });
+            }
+            return NextResponse.json({
+                success: true,
+                message: 'OTP sent to your WhatsApp',
+                method: 'whatsapp'
+            });
+        }
+
+        // Fallback to SMS if WhatsApp fails
+        console.warn('WhatsApp OTP failed, falling back to SMS:', whatsappResult.error);
+        const smsResult = await sendOTP(mobileNumber, otp);
+
+        if (!smsResult.success) {
+            console.error('Both WhatsApp and SMS OTP delivery failed');
+            return NextResponse.json(
+                { error: 'Failed to send OTP. Please try again.' },
+                { status: 500 }
+            );
+        }
+
+        return NextResponse.json({
+            success: true,
+            message: 'OTP sent via SMS',
+            method: 'sms'
+        });
     } catch (error: any) {
         console.error('OTP Send Error:', error);
         return NextResponse.json({ error: 'Failed to send OTP' }, { status: 500 });
