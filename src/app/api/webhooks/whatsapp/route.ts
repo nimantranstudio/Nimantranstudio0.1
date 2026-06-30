@@ -9,17 +9,38 @@ export async function GET(req: NextRequest) {
 
         const verifyToken = process.env.WHATSAPP_VERIFY_TOKEN;
 
-        // Verify webhook token
-        if (mode === 'subscribe' && token === verifyToken && challenge) {
-            console.log('WhatsApp webhook verified successfully');
-            return new NextResponse(challenge, {
-                status: 200,
-                headers: { 'Content-Type': 'text/plain' }
-            });
+        // If accessed directly via browser without parameters
+        if (!mode && !token && !challenge) {
+            return NextResponse.json({
+                status: 'online',
+                message: 'WhatsApp Webhook endpoint is active and listening for Meta verification requests.',
+                configured: !!verifyToken
+            }, { status: 200 });
         }
 
-        console.warn('Invalid webhook verification attempt');
-        return NextResponse.json({ error: 'Invalid verification token' }, { status: 403 });
+        // Verify webhook token
+        if (mode === 'subscribe' && challenge) {
+            if (!verifyToken) {
+                console.error('WhatsApp Webhook verification failed: WHATSAPP_VERIFY_TOKEN is not defined in server environment variables.');
+                return NextResponse.json({ 
+                    error: 'Server configuration error: verification token not configured.' 
+                }, { status: 500 });
+            }
+
+            if (token === verifyToken) {
+                console.log('WhatsApp webhook verified successfully');
+                return new NextResponse(challenge, {
+                    status: 200,
+                    headers: { 'Content-Type': 'text/plain' }
+                });
+            } else {
+                console.warn(`WhatsApp Webhook verification failed: Token mismatch. Expected: ${verifyToken.substring(0, 3)}... (length: ${verifyToken.length}), Received: ${token ? (token.substring(0, 3) + '... (length: ' + token.length + ')') : 'null'}`);
+                return NextResponse.json({ error: 'Invalid verification token' }, { status: 403 });
+            }
+        }
+
+        console.warn('Invalid webhook verification parameters');
+        return NextResponse.json({ error: 'Invalid verification request parameters' }, { status: 400 });
     } catch (error) {
         console.error('Webhook verification error:', error);
         return NextResponse.json({ error: 'Verification failed' }, { status: 500 });

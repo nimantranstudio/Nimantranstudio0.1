@@ -4,7 +4,7 @@
  */
 
 const WHATSAPP_API_VERSION = 'v18.0';
-const WHATSAPP_API_BASE = `https://graph.instagram.com/${WHATSAPP_API_VERSION}`;
+const WHATSAPP_API_BASE = `https://graph.facebook.com/${WHATSAPP_API_VERSION}`;
 
 interface SendMessageResponse {
     success: boolean;
