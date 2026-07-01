@@ -259,18 +259,6 @@ function PreviewContent() {
         router.push('/payment');
     };
 
-    if (!theme) {
-        return (
-            <div className={styles.previewPage}>
-                <div className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh', color: '#666' }}>
-                    <div>Loading theme details...</div>
-                </div>
-            </div>
-        );
-    }
-
-
-
     const buildPreviewItems = () => {
         if (!bundleItems || bundleItems.length === 0) {
             return [];
@@ -424,6 +412,17 @@ function PreviewContent() {
             e.target.value = '';
         }
     };
+
+    // Guard AFTER all hooks so the Rules of Hooks are respected
+    if (!theme) {
+        return (
+            <div className={styles.previewPage}>
+                <div className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh', color: '#666' }}>
+                    <div>Loading theme details...</div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className={styles.previewPage}>
