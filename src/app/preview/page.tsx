@@ -512,12 +512,36 @@ function PreviewContent() {
                                     )}
                                 </div>
 
-                                <button className={styles.toolbarBtn} style={{ opacity: activeSelection ? 1 : 0.5, pointerEvents: activeSelection ? 'auto' : 'none' }}>
-                                    <Maximize size={24} />
-                                    <span>Box Resize</span>
-                                </button>
-                                
-                                <button className={styles.toolbarBtn} onClick={() => handleFormat({ delete: true })} style={{ opacity: activeSelection ? 1 : 0.5, pointerEvents: activeSelection ? 'auto' : 'none' }}>
+                                <div style={{ position: 'relative' }}>
+                                    <button className={styles.toolbarBtn} style={{ opacity: activeSelection ? 1 : 0.5, pointerEvents: activeSelection ? 'auto' : 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                        <Maximize size={24} />
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                                            <span>Box Resize</span>
+                                            <ChevronDown size={16} />
+                                        </div>
+                                    </button>
+                                    {activeSelection && (
+                                        <select
+                                            defaultValue=""
+                                            onChange={(e) => { if (e.target.value) handleFormat({ boxWidth: e.target.value }); }}
+                                            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }}
+                                        >
+                                            <option value="">Width…</option>
+                                            <option value="fit">Fit content</option>
+                                            <option value="40%">Narrow (40%)</option>
+                                            <option value="60%">Medium (60%)</option>
+                                            <option value="80%">Wide (80%)</option>
+                                            <option value="100%">Full (100%)</option>
+                                        </select>
+                                    )}
+                                </div>
+
+                                <button
+                                    className={styles.toolbarBtn}
+                                    onClick={() => handleFormat({ delete: true })}
+                                    title={activeSelection?.isCustom ? 'Delete this element' : 'Only elements you added can be deleted'}
+                                    style={{ opacity: activeSelection?.isCustom ? 1 : 0.4, pointerEvents: activeSelection?.isCustom ? 'auto' : 'none' }}
+                                >
                                     <Trash2 size={24} />
                                     <span>Delete</span>
                                 </button>
@@ -583,6 +607,27 @@ function PreviewContent() {
                                             <ChevronDown size={16} />
                                         </div>
                                     </button>
+                                    {activeSelection && (
+                                        <select
+                                            defaultValue=""
+                                            onChange={(e) => {
+                                                const v = e.target.value;
+                                                if (v === 'none') handleFormat({ border: 'none', borderRadius: '0px' });
+                                                else if (v === 'thin') handleFormat({ border: '1px solid currentColor' });
+                                                else if (v === 'medium') handleFormat({ border: '2px solid currentColor' });
+                                                else if (v === 'thick') handleFormat({ border: '4px solid currentColor' });
+                                                else if (v === 'rounded') handleFormat({ border: '2px solid currentColor', borderRadius: '12px' });
+                                            }}
+                                            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }}
+                                        >
+                                            <option value="">Border…</option>
+                                            <option value="none">None</option>
+                                            <option value="thin">Thin</option>
+                                            <option value="medium">Medium</option>
+                                            <option value="thick">Thick</option>
+                                            <option value="rounded">Rounded</option>
+                                        </select>
+                                    )}
                                 </div>
 
                                 <button 
@@ -706,7 +751,7 @@ function PreviewContent() {
                                     </button>
 
                                     <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
-                                        <button className={styles.toolbarBtn}>
+                                        <button className={styles.toolbarBtn} onClick={() => cardRef.current?.sendMessage({ type: 'ADD_TEXT' })}>
                                             <Type size={24} />
                                             <span>Add Text</span>
                                         </button>
@@ -714,7 +759,7 @@ function PreviewContent() {
                                             <ImageIcon size={24} />
                                             <span>Photo</span>
                                         </button>
-                                        <button className={styles.toolbarBtn}>
+                                        <button className={styles.toolbarBtn} onClick={() => cardRef.current?.sendMessage({ type: 'ADD_STICKER', payload: { emoji: '❤️' } })}>
                                             <Sticker size={24} />
                                             <span>Sticker</span>
                                         </button>

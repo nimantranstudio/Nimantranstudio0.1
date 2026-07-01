@@ -658,8 +658,10 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                     z-index: 10;
                 }
                 .sizing-box:hover {
-                    outline: 1px dashed #10B981;
-                    background: rgba(16, 185, 129, 0.05);
+                    outline: 2px dashed #10B981 !important;
+                    outline-offset: 3px;
+                    background: rgba(16, 185, 129, 0.10);
+                    box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.35);
                 }
                 .sizing-box.selected {
                     outline: 2px solid #3B82F6 !important;
@@ -672,6 +674,27 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                     cursor: text;
                     background: rgba(255, 255, 255, 0.9);
                 }
+
+                /* Drag Handle (big, clear move affordance) */
+                .drag-handle {
+                    position: absolute;
+                    top: -44px; left: 50%;
+                    transform: translateX(-50%);
+                    width: 36px; height: 36px;
+                    background: #F59E0B;
+                    border: 3px solid white;
+                    border-radius: 50%;
+                    display: none;
+                    align-items: center;
+                    justify-content: center;
+                    cursor: move;
+                    z-index: 30;
+                    box-shadow: 0 3px 10px rgba(0,0,0,0.35);
+                    touch-action: none;
+                }
+                .sizing-box.selected .drag-handle { display: flex; }
+                .sizing-box.editing .drag-handle { display: none; }
+                .drag-handle:hover { background: #D97706; transform: translateX(-50%) scale(1.1); }
                 
                 /* Custom Handles */
                 .resize-handle {
@@ -790,6 +813,7 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                             const qrBox = document.createElement('div');
                             qrBox.id = 'qr-code-' + Date.now();
                             qrBox.className = 'sizing-box';
+                            qrBox.dataset.custom = 'true';
                             qrBox.style.position = 'absolute';
                             qrBox.style.width = '120px';
                             qrBox.style.height = '135px';
@@ -828,6 +852,58 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                             selectBox(qrBox);
                         }
 
+                        function getContainer() {
+                            return document.querySelector('.invitation-wrapper') ||
+                                   document.querySelector('.invite-wrapper') ||
+                                   document.body;
+                        }
+
+                        function addCustomText(text) {
+                            deselect();
+                            const container = getContainer();
+                            if (!container) return;
+                            const box = document.createElement('div');
+                            box.id = 'custom-text-' + Date.now();
+                            box.className = 'sizing-box';
+                            box.dataset.custom = 'true';
+                            box.dataset.tx = '0';
+                            box.dataset.ty = '0';
+                            box.style.position = 'absolute';
+                            box.style.left = '50%';
+                            box.style.top = '40%';
+                            box.style.transform = 'translate(-50%, -50%)';
+                            box.style.color = '#ffffff';
+                            box.style.fontSize = '24px';
+                            box.style.textAlign = 'center';
+                            box.style.minWidth = '80px';
+                            box.innerText = text || 'Your text';
+                            container.appendChild(box);
+                            if (window.textScaler) window.textScaler.observe(box);
+                            selectBox(box);
+                        }
+
+                        function addCustomSticker(emoji) {
+                            deselect();
+                            const container = getContainer();
+                            if (!container) return;
+                            const box = document.createElement('div');
+                            box.id = 'custom-sticker-' + Date.now();
+                            box.className = 'sizing-box';
+                            box.dataset.custom = 'true';
+                            box.dataset.tx = '0';
+                            box.dataset.ty = '0';
+                            box.style.position = 'absolute';
+                            box.style.left = '50%';
+                            box.style.top = '40%';
+                            box.style.transform = 'translate(-50%, -50%)';
+                            box.style.fontSize = '48px';
+                            box.style.lineHeight = '1';
+                            box.innerText = emoji || '❤️';
+                            container.appendChild(box);
+                            if (window.textScaler) window.textScaler.observe(box);
+                            selectBox(box);
+                        }
+
                         // Initialization
                         function initEditor() {
                             // Inject Guides
@@ -840,6 +916,14 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                                     addQrCode(payload.link, payload.title);
                                     return;
                                 }
+                                if (type === 'ADD_TEXT') {
+                                    addCustomText(payload && payload.text);
+                                    return;
+                                }
+                                if (type === 'ADD_STICKER') {
+                                    addCustomSticker(payload && payload.emoji);
+                                    return;
+                                }
 
                                 if (!selectedBox) return;
                                 if (type === 'FORMAT_TEXT') {
@@ -849,34 +933,66 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                                     if (payload.textTransform) selectedBox.style.textTransform = payload.textTransform;
                                     if (payload.fontSize) selectedBox.style.fontSize = payload.fontSize;
                                     if (payload.fontFamily) selectedBox.style.fontFamily = payload.fontFamily;
+
+                                    // Box Resize — set the bounding box width relative to the card
+                                    if (payload.boxWidth) {
+                                        if (payload.boxWidth === 'fit') {
+                                            selectedBox.style.width = 'auto';
+                                        } else {
+                                            selectedBox.style.width = payload.boxWidth;
+                                        }
+                                        window.parent.postMessage({ type: 'LAYOUT_CHANGED' }, '*');
+                                    }
+
+                                    // Border styling
+                                    if (payload.border !== undefined) {
+                                        selectedBox.style.border = payload.border;
+                                    }
+                                    if (payload.borderRadius !== undefined) {
+                                        selectedBox.style.borderRadius = payload.borderRadius;
+                                    }
+
                                     if (payload.edit) {
                                         selectedBox.setAttribute('contenteditable', 'true');
                                         selectedBox.focus();
                                     }
                                     if (payload.delete) {
-                                        selectedBox.style.display = 'none';
-                                        deselect();
+                                        // Only user-created elements may be deleted; original text is protected
+                                        if (selectedBox.dataset.custom === 'true') {
+                                            selectedBox.remove();
+                                            deselect();
+                                        }
                                     }
                                 }
                             });
                         }
                         
                         function ensureHandles(box) {
-                            if (box.querySelector('.resize-handle')) return;
+                            if (box.querySelector('.resize-handle') || box.querySelector('.drag-handle')) return;
                             ['tl', 'tr', 'bl', 'br'].forEach(pos => {
                                 const handle = document.createElement('div');
                                 handle.className = \`resize-handle \${pos}\`;
                                 box.appendChild(handle);
                             });
-                            const delBtn = document.createElement('div');
-                            delBtn.className = 'delete-handle';
-                            delBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
-                            delBtn.addEventListener('click', (e) => {
-                                e.stopPropagation();
-                                box.style.display = 'none';
-                                deselect();
-                            });
-                            box.appendChild(delBtn);
+
+                            // Big, clear drag handle (move icon)
+                            const dragBtn = document.createElement('div');
+                            dragBtn.className = 'drag-handle';
+                            dragBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 9 2 12 5 15"></polyline><polyline points="9 5 12 2 15 5"></polyline><polyline points="15 19 12 22 9 19"></polyline><polyline points="19 9 22 12 19 15"></polyline><line x1="2" y1="12" x2="22" y2="12"></line><line x1="12" y1="2" x2="12" y2="22"></line></svg>';
+                            box.appendChild(dragBtn);
+
+                            // Delete handle ONLY for user-created elements (never original template text)
+                            if (box.dataset.custom === 'true') {
+                                const delBtn = document.createElement('div');
+                                delBtn.className = 'delete-handle';
+                                delBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+                                delBtn.addEventListener('click', (e) => {
+                                    e.stopPropagation();
+                                    box.remove();
+                                    deselect();
+                                });
+                                box.appendChild(delBtn);
+                            }
                         }
 
                         function updateToolbarPosition() {
@@ -905,7 +1021,8 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                                     align: style.textAlign,
                                     fontWeight: style.fontWeight,
                                     textTransform: style.textTransform,
-                                    text: box.innerText
+                                    text: box.innerText,
+                                    isCustom: box.dataset.custom === 'true'
                                 }
                             }, '*');
                         }
