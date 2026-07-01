@@ -11,7 +11,7 @@ import Link from 'next/link';
 import modalStyles from '@/app/themes/[themeId]/theme-detail.module.css';
 import { clsx } from 'clsx';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { LoginModal } from '@/components/auth/LoginModal';
 import { auth } from '@/lib/firebase';
@@ -81,14 +81,14 @@ function PreviewContent() {
         aspectRatio: 9/16
     });
 
-    const handleLayoutMeasure = (layout: { width: number; height: number; aspectRatio: number }) => {
+    const handleLayoutMeasure = useCallback((layout: { width: number; height: number; aspectRatio: number }) => {
         setCardLayout(prev => {
             if (prev.width === layout.width && prev.height === layout.height && prev.aspectRatio === layout.aspectRatio) {
                 return prev;
             }
             return layout;
         });
-    };
+    }, []);
 
     const [isEditMode, setIsEditMode] = useState(false);
     const [activeSelection, setActiveSelection] = useState<any | null>(null);
@@ -378,7 +378,11 @@ function PreviewContent() {
         return "Elegant WhatsApp-ready image card";
     };
 
-    const previewItems = buildPreviewItems();
+    // Memoized so the `event` object handed to the editor keeps a stable identity
+    // across re-renders (selecting text re-renders the page; an unstable event
+    // object would re-run the iframe effect and drop the selection).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const previewItems = useMemo(() => buildPreviewItems(), [bundleItems, formData]);
 
 
     const handleFormat = (payload: any) => {
