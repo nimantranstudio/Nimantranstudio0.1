@@ -3,7 +3,7 @@
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { useWeddingStore } from "@/store/wedding-store";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function AdminLayout({
@@ -11,26 +11,21 @@ export default function AdminLayout({
 }: {
     children: React.ReactNode;
 }) {
-    const pathname = usePathname();
     const router = useRouter();
     const { isAdmin } = useWeddingStore();
     const [mounted, setMounted] = useState(false);
-    const isLoginPage = pathname === '/admin/login';
 
     useEffect(() => {
         setMounted(true);
     }, []);
 
     useEffect(() => {
-        if (mounted && !isLoginPage && !isAdmin) {
-            router.replace('/admin/login');
+        // Admin access is granted only to the owner's number after OTP login.
+        // Anyone else is sent to the normal login screen.
+        if (mounted && !isAdmin) {
+            router.replace('/login');
         }
-    }, [mounted, isLoginPage, isAdmin, router]);
-
-    // The passcode screen renders bare — no admin chrome, no guard.
-    if (isLoginPage) {
-        return <>{children}</>;
-    }
+    }, [mounted, isAdmin, router]);
 
     // Wait for persisted auth to hydrate, and block content for non-admins.
     if (!mounted || !isAdmin) {

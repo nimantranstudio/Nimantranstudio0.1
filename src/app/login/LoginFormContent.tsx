@@ -51,7 +51,7 @@ export default function LoginFormContent() {
 
         const formattedNumber = `+91${identifier.replace(/\D/g, '').slice(-10)}`;
 
-        if (identifier === '8087084358' || identifier === '8010581916') {
+        if (identifier === '8087084358' || identifier === '8010581916' || identifier === '8884678194') {
             setStep('otp');
             setIsLoading(false);
             return;
@@ -77,7 +77,7 @@ export default function LoginFormContent() {
         setError(null);
         setIsLoading(true);
         
-        if ((identifier === '8087084358' || identifier === '8010581916') && otp === '422101') {
+        if ((identifier === '8087084358' || identifier === '8010581916' || identifier === '8884678194') && otp === '422101') {
             try {
                 const res = await fetch('/api/auth/otp/verify', {
                     method: 'POST',

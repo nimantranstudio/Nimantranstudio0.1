@@ -3,7 +3,8 @@ import { prisma } from '@/lib/prisma';
 
 import { adminAuth } from '@/lib/firebase-admin';
 
-const ADMIN_MOBILE = '8010581916';
+// Only this number gets admin access. Configurable via env; defaults to the owner's number.
+const ADMIN_MOBILE = process.env.ADMIN_MOBILE || '8884678194';
 
 export async function POST(request: Request) {
     try {

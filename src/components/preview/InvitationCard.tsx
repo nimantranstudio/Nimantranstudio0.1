@@ -789,30 +789,11 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                     }
                 });
 
-                // ROBUST FALLBACK: make every text element selectable, even if it never
-                // got a mapped id. Templates commonly use `.text-block` / `.style-*` classes.
-                const selectableEls = doc.querySelectorAll(
-                    '.text-block, [class*="style-"], [class*="text-"], .content-safe-area > div, .content-safe-area > span, .content-safe-area > p'
-                );
-                selectableEls.forEach(el => {
-                    const node = el as HTMLElement;
-                    // Skip structural wrappers and empty nodes
-                    if (node.classList.contains('invitation-wrapper') ||
-                        node.classList.contains('invite-wrapper') ||
-                        node.classList.contains('content-safe-area') ||
-                        node.classList.contains('text-overlay')) return;
-                    if (!node.textContent || !node.textContent.trim()) return;
-                    if (!node.classList.contains('sizing-box')) {
-                        node.classList.add('sizing-box');
-                        if ((doc.defaultView as any)?.textScaler) (doc.defaultView as any).textScaler.observe(node);
-                    }
-                });
-
-                // INJECT DRAG AND DROP SCRIPT ONCE. Re-injecting on every re-render
-                // stacks duplicate document listeners and resets the current selection,
-                // which made selected text immediately deselect on a single click.
-                if (!doc.getElementById('drag-script')) {
-                const scriptEl = doc.createElement('script');
+                // INJECT DRAG AND DROP SCRIPT (Force recreate to ensure evaluation if loaded from innerHTML)
+                let oldScript = doc.getElementById('drag-script');
+                if (oldScript) oldScript.remove();
+                
+                let scriptEl = doc.createElement('script');
                 scriptEl.id = 'drag-script';
                 scriptEl.textContent = `
                         let draggingEl = null;
@@ -1209,7 +1190,6 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                         document.querySelectorAll('.sizing-box').forEach(el => window.textScaler.observe(el));
                     `;
                     doc.body.appendChild(scriptEl);
-                }
             } else {
                 Object.keys(fullMapping).forEach(id => {
                     const el = doc.getElementById(id);
