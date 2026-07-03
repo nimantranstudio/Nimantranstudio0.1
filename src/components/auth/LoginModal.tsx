@@ -1,9 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { X, Phone } from 'lucide-react';
 import styles from './LoginModal.module.css';
+import { auth } from '@/lib/firebase';
+import { RecaptchaVerifier, signInWithPhoneNumber, type ConfirmationResult } from 'firebase/auth';
 
 import { useWeddingStore } from '@/store/wedding-store';
 
@@ -19,6 +21,30 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
     const [phoneNumber, setPhoneNumber] = useState('');
     const [otp, setOtp] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState('');
+    const recaptchaRef = useRef<RecaptchaVerifier | null>(null);
+    const confirmationRef = useRef<ConfirmationResult | null>(null);
+
+    // Lazily create an invisible reCAPTCHA verifier (required by Firebase Phone Auth)
+    const getRecaptcha = () => {
+        if (recaptchaRef.current) return recaptchaRef.current;
+        recaptchaRef.current = new RecaptchaVerifier(auth as any, 'recaptcha-container', {
+            size: 'invisible',
+        });
+        return recaptchaRef.current;
+    };
+
+    // Reset verifier when the modal closes so a fresh one is made next open
+    useEffect(() => {
+        if (!isOpen) {
+            try { recaptchaRef.current?.clear(); } catch { }
+            recaptchaRef.current = null;
+            confirmationRef.current = null;
+            setError('');
+            setOtp('');
+            setStep('phone');
+        }
+    }, [isOpen]);
 
     useEffect(() => {
         if (isOpen) {
@@ -36,28 +62,64 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
 
     if (!isOpen) return null;
 
-    const handleGetOTP = (e: React.FormEvent) => {
+    const handleGetOTP = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!phoneNumber || phoneNumber.length < 10) return;
+        setError('');
+        if (!phoneNumber || phoneNumber.length < 10) {
+            setError('Enter a valid 10-digit number');
+            return;
+        }
+        if (!auth || !(auth as any).app) {
+            setError('Login is not configured yet. Please try again shortly.');
+            return;
+        }
 
         setIsLoading(true);
-        // Simulate API call
-        setTimeout(() => {
-            setIsLoading(false);
+        try {
+            const verifier = getRecaptcha();
+            const confirmation = await signInWithPhoneNumber(auth as any, `+91${phoneNumber}`, verifier);
+            confirmationRef.current = confirmation;
             setStep('otp');
-        }, 800);
+        } catch (err: any) {
+            console.error('Failed to send OTP:', err);
+            // Reset reCAPTCHA so the next attempt gets a clean token
+            try { recaptchaRef.current?.clear(); } catch { }
+            recaptchaRef.current = null;
+            if (err?.code === 'auth/too-many-requests') {
+                setError('Too many attempts. Please try again later.');
+            } else if (err?.code === 'auth/invalid-phone-number') {
+                setError('That phone number looks invalid.');
+            } else {
+                setError('Could not send OTP. Please try again.');
+            }
+        } finally {
+            setIsLoading(false);
+        }
     };
 
-    const handleVerifyOTP = (e: React.FormEvent) => {
+    const handleVerifyOTP = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (otp.length < 4) return; // Changed condition
+        setError('');
+        if (otp.length < 6) {
+            setError('Enter the 6-digit code');
+            return;
+        }
+        if (!confirmationRef.current) {
+            setError('Please request a new code.');
+            setStep('phone');
+            return;
+        }
 
         setIsLoading(true);
-        // Simulate verification
-        setTimeout(() => {
+        try {
+            await confirmationRef.current.confirm(otp);
+            onSuccess(phoneNumber);
+        } catch (err: any) {
+            console.error('OTP verification failed:', err);
+            setError(err?.code === 'auth/invalid-verification-code' ? 'Incorrect code. Try again.' : 'Verification failed. Try again.');
+        } finally {
             setIsLoading(false);
-            onSuccess(phoneNumber); // Pass phone number
-        }, 1500); // Changed timeout duration
+        }
     };
 
     return (
@@ -66,6 +128,14 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
                 <button className={styles.closeBtn} onClick={onClose}>
                     <X size={24} />
                 </button>
+
+                {/* Invisible reCAPTCHA host required by Firebase Phone Auth */}
+                <div id="recaptcha-container" />
+                {error && (
+                    <p style={{ color: '#c62828', fontSize: '0.85rem', textAlign: 'center', margin: '0 0 0.75rem' }}>
+                        {error}
+                    </p>
+                )}
 
                 {step === 'phone' ? (
                     <>
@@ -136,7 +206,7 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
                     <>
                         <h2 className={styles.title}>Enter Verification Code</h2>
                         <p style={{ color: '#666', marginBottom: '2rem' }}>
-                            We sent a 4-digit code to +91 {phoneNumber}
+                            We sent a 6-digit code to +91 {phoneNumber}
                         </p>
 
                         <form onSubmit={handleVerifyOTP} className={styles.form}>
