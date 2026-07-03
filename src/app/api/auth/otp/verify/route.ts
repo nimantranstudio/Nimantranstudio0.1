@@ -1,8 +1,28 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { createAdminToken, ADMIN_COOKIE } from '@/lib/admin-session';
 
 // Only this number gets admin access. Configurable via env; defaults to the owner's number.
 const ADMIN_MOBILE = process.env.ADMIN_MOBILE || '8884678194';
+
+// Build a success response and attach a signed admin cookie for admins only.
+async function successResponse(user: { id: string; mobileNumber: string; role: string }) {
+    const response = NextResponse.json({
+        success: true,
+        user: { id: user.id, mobileNumber: user.mobileNumber, role: user.role },
+    });
+    if (user.role === 'admin') {
+        const token = await createAdminToken(user.mobileNumber);
+        response.cookies.set(ADMIN_COOKIE, token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            path: '/',
+            maxAge: 7 * 86400,
+        });
+    }
+    return response;
+}
 
 export async function POST(request: Request) {
     try {
@@ -42,14 +62,7 @@ export async function POST(request: Request) {
                 });
             }
 
-            return NextResponse.json({
-                success: true,
-                user: {
-                    id: user.id,
-                    mobileNumber: user.mobileNumber,
-                    role: user.role
-                }
-            });
+            return await successResponse(user);
         }
 
         // Find the latest valid OTP request
@@ -109,14 +122,7 @@ export async function POST(request: Request) {
             });
         }
 
-        return NextResponse.json({
-            success: true,
-            user: {
-                id: user.id,
-                mobileNumber: user.mobileNumber,
-                role: user.role
-            }
-        });
+        return await successResponse(user);
 
     } catch (error: any) {
         console.error('OTP Verification Error:', error);

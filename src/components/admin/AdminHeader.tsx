@@ -27,6 +27,8 @@ export function AdminHeader() {
     }, []);
 
     const handleLogout = () => {
+        // Clear the server-side admin session cookie, then the client store
+        fetch('/api/auth/logout', { method: 'POST' }).catch(() => { });
         logout();
         setIsProfileOpen(false);
         router.push('/');

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
 import { adminAuth } from '@/lib/firebase-admin';
+import { createAdminToken, ADMIN_COOKIE } from '@/lib/admin-session';
 
 // Only this number gets admin access. Configurable via env; defaults to the owner's number.
 const ADMIN_MOBILE = process.env.ADMIN_MOBILE || '8884678194';
@@ -75,7 +76,7 @@ export async function POST(request: Request) {
         }
 
         console.log("Auth Sync: SUCCESS");
-        return NextResponse.json({
+        const response = NextResponse.json({
             success: true,
             user: {
                 id: user.id,
@@ -83,6 +84,20 @@ export async function POST(request: Request) {
                 role: user.role
             }
         });
+
+        // Grant a signed, httpOnly admin session cookie only to admins
+        if (user.role === 'admin') {
+            const token = await createAdminToken(mobileNumber);
+            response.cookies.set(ADMIN_COOKIE, token, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'lax',
+                path: '/',
+                maxAge: 7 * 86400,
+            });
+        }
+
+        return response;
 
     } catch (error: any) {
         console.error('Auth Sync Error - FULL DETAILS:', error);
