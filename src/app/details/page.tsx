@@ -40,13 +40,13 @@ function DetailsContent() {
             setShowWelcomeOverlay(true);
             setShowConfetti(true);
             
-            // Auto dismiss after 5.5s
+            // Auto dismiss after 3.5s
             const timer = setTimeout(() => {
                 setShowWelcomeOverlay(false);
                 // Clean up URL
                 const newUrl = window.location.pathname;
                 window.history.replaceState({}, '', newUrl);
-            }, 5500);
+            }, 3500);
             return () => clearTimeout(timer);
         }
     }, [searchParams]);

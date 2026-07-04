@@ -13,6 +13,7 @@ export interface InvitationCardRef {
     saveEdits: () => Record<string, string>;
     downloadImage: () => void;
     sendMessage: (payload: any) => void;
+    getSerializedHtml?: () => string;
 }
 
 interface InvitationCardProps {
@@ -26,6 +27,7 @@ interface InvitationCardProps {
     isPlaceholder?: boolean;
     type?: 'image' | 'video';
     customImage?: string;
+    srcDoc?: string;
     onClick?: () => void;
     variant?: 'default' | 'contract' | 'save-the-date';
     className?: string; // Added className to props
@@ -46,6 +48,7 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
     isPlaceholder,
     type,
     customImage,
+    srcDoc,
     onClick,
     variant = 'default',
     className,
@@ -58,7 +61,7 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const [containerScale, setContainerScale] = useState(1);
     const [iframeHeight, setIframeHeight] = useState(889);
-    const isHTMLDesign = customImage?.toLowerCase().endsWith('.html') || (customImage?.includes('item-Wedding_Invitation') && customImage.toLowerCase().includes('.html')); // Robust check
+    const isHTMLDesign = !!srcDoc || customImage?.toLowerCase().endsWith('.html') || (customImage?.includes('item-Wedding_Invitation') && customImage.toLowerCase().includes('.html')); // Robust check
     const [imageDimensions, setImageDimensions] = useState<{ width: number; height: number }>({ width: 600, height: 800 });
     const [imageRatio, setImageRatio] = useState<number>(3/4);
 
@@ -144,6 +147,12 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                     let val = el.innerText || '';
                     // Some browsers add trailing newlines for contenteditable
                     val = val.replace(/[\r\n]+$/, '').trim();
+                    // Treat placeholder texts as empty string
+                    if (id === 'groom-name' && val === 'Groom Name') val = '';
+                    else if (id === 'bride-name' && val === 'Bride Name') val = '';
+                    else if (id === 'event-date' && val === 'Event Date') val = '';
+                    else if (id === 'event-time' && val === 'Event Time') val = '';
+                    else if ((id === 'event-venue' || id === 'venue') && val === 'Event Venue') val = '';
                     values[id] = val;
                 }
             });
@@ -305,24 +314,29 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
             const doc = iframeRef.current.contentDocument || iframeRef.current.contentWindow?.document;
             if (!doc) return;
 
-            // Deselect any selected box to clean the saved layout markup
-            const win = iframeRef.current.contentWindow as any;
-            if (win && typeof win.deselect === 'function') {
-                try {
-                    win.deselect();
-                } catch (e) {
-                    console.error("Error deselecting:", e);
-                }
-            }
-
             const storageKey = `wedding-card-edits-${event.id}-${theme.id}`;
-            // Clean up any remaining resize/delete handles just in case deselect didn't catch them
-            doc.querySelectorAll('.resize-handle, .delete-handle').forEach(el => el.remove());
-            doc.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
-            doc.querySelectorAll('.snap-guide').forEach(el => el.classList.remove('visible'));
+            
+            // Clone the body to avoid mutating the live DOM and clearing the active selection state
+            const bodyClone = doc.body.cloneNode(true) as HTMLElement;
+            bodyClone.querySelectorAll('.resize-handle, .delete-handle, .drag-handle').forEach(el => el.remove());
+            bodyClone.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
+            bodyClone.querySelectorAll('.snap-guide').forEach(el => el.classList.remove('visible'));
 
-            localStorage.setItem(storageKey, doc.body.innerHTML);
-            console.log("Saved layout to localStorage under key:", storageKey);
+            localStorage.setItem(storageKey, bodyClone.innerHTML);
+            console.log("Saved layout clone to localStorage under key:", storageKey);
+        },
+        getSerializedHtml: () => {
+            if (!iframeRef.current) return '';
+            const doc = iframeRef.current.contentDocument || iframeRef.current.contentWindow?.document;
+            if (!doc) return '';
+            const clone = doc.documentElement.cloneNode(true) as HTMLElement;
+            clone.querySelectorAll('.resize-handle, .delete-handle, .drag-handle, .snap-guide').forEach(el => el.remove());
+            clone.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
+            clone.querySelector('#runtime-preview-fix')?.remove();
+            clone.querySelector('#drag-script')?.remove();
+            clone.querySelector('#html2canvas-script')?.remove();
+            clone.querySelector('#html2canvas-capture-style')?.remove();
+            return "<!DOCTYPE html>\n" + clone.outerHTML;
         }
     }));
 
@@ -399,6 +413,27 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
     useEffect(() => {
         if (!isHTMLDesign || !iframeRef.current || isRawPreview || !event || !theme) return;
 
+        const measureLayout = () => {
+            if (!iframeRef.current) return;
+            const doc = iframeRef.current.contentDocument || iframeRef.current.contentWindow?.document;
+            if (!doc) return;
+            const wrapper = doc.getElementById('invitation-wrapper') ||
+                            doc.querySelector('.invitation-wrapper') ||
+                            doc.querySelector('.invite-wrapper') ||
+                            doc.body?.firstElementChild;
+            if (wrapper) {
+                const h = (wrapper as HTMLElement).offsetHeight;
+                if (h > 0 && h !== iframeHeight) {
+                    setIframeHeight(h);
+                    onLayoutMeasure?.({
+                        width: 500,
+                        height: h,
+                        aspectRatio: 500 / h
+                    });
+                }
+            }
+        };
+
         const updateContent = () => {
             const doc = iframeRef.current?.contentDocument || iframeRef.current?.contentWindow?.document;
             if (!doc || !doc.body || !doc.head) return;
@@ -407,15 +442,30 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
             const storageKey = `wedding-card-edits-${event.id}-${theme.id}`;
             const savedLayout = typeof window !== 'undefined' ? localStorage.getItem(storageKey) : null;
             if (savedLayout && !hasLoadedSavedLayout.current) {
-                doc.body.innerHTML = savedLayout;
-                hasLoadedSavedLayout.current = true;
-                // Re-initialize event listeners in the editor iframe
-                const win = iframeRef.current?.contentWindow as any;
-                if (win && typeof win.initEditor === 'function') {
-                    try {
-                        win.initEditor();
-                    } catch (e) {
-                        console.error("Error re-initializing editor:", e);
+                // Validate that core elements originally present in the template are not deleted in the saved layout
+                const isSavedLayoutBroken = !savedLayout.includes('id="bride-name"') || 
+                                            !savedLayout.includes('id="groom-name"') || 
+                                            !savedLayout.includes('id="event-date"');
+
+                if (isSavedLayoutBroken) {
+                    console.warn("Saved layout is missing core elements. Discarding to restore defaults.");
+                    localStorage.removeItem(storageKey);
+                    hasLoadedSavedLayout.current = true;
+                    // Reset iframe src to force reload clean template
+                    if (iframeRef.current) {
+                        iframeRef.current.src = iframeSrc;
+                    }
+                } else {
+                    doc.body.innerHTML = savedLayout;
+                    hasLoadedSavedLayout.current = true;
+                    // Re-initialize event listeners in the editor iframe
+                    const win = iframeRef.current?.contentWindow as any;
+                    if (win && typeof win.initEditor === 'function') {
+                        try {
+                            win.initEditor();
+                        } catch (e) {
+                            console.error("Error re-initializing editor:", e);
+                        }
                     }
                 }
             }
@@ -566,12 +616,24 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                 }
 
                 if (el) {
-                    let formattedValue = value.toString().replace(/\n/g, '<br/>');
+                    let displayValue = value.toString();
+                    if (!displayValue && showSizingBoxes) {
+                        if (id === 'groom-name') displayValue = 'Groom Name';
+                        else if (id === 'bride-name') displayValue = 'Bride Name';
+                        else if (id === 'event-date') displayValue = 'Event Date';
+                        else if (id === 'event-time') displayValue = 'Event Time';
+                        else if (id === 'event-venue' || id === 'venue') displayValue = 'Event Venue';
+                        else displayValue = `[${id.replace('-', ' ')}]`;
+                    }
+                    let formattedValue = displayValue.replace(/\n/g, '<br/>');
                     if (id === 'bride-name' && el.textContent?.trim() === 'Anjali ke haldi') {
                         formattedValue = formattedValue + ' ke haldi';
                     }
                     if (el.innerHTML !== formattedValue) {
+                        // Preserve handles if they exist inside the element
+                        const handles = Array.from(el.querySelectorAll('.resize-handle, .drag-handle, .delete-handle'));
                         el.innerHTML = formattedValue;
+                        handles.forEach(h => el.appendChild(h));
                     }
                 }
             });
@@ -603,7 +665,12 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
             // OVERRIDE: Force user input to take priority for main text elements
             const eventNameEl = doc.getElementById('event-name');
             if (eventNameEl && displayEventName !== undefined) {
-                eventNameEl.innerHTML = displayEventName.toString().replace(/\n/g, '<br/>');
+                const formattedVal = displayEventName.toString().replace(/\n/g, '<br/>');
+                if (eventNameEl.innerHTML !== formattedVal) {
+                    const handles = Array.from(eventNameEl.querySelectorAll('.resize-handle, .drag-handle, .delete-handle'));
+                    eventNameEl.innerHTML = formattedVal;
+                    handles.forEach(h => eventNameEl.appendChild(h));
+                }
             }
 
 
@@ -641,14 +708,14 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                 }
                 .invitation-wrapper, .invite-wrapper {
                     max-height: none !important;
-                    height: auto !important;
                 }
                 * { hyphens: none !important; -webkit-hyphens: none !important; }
                 .text-overlay { padding-top: 15vh !important; }
                 ${showSizingBoxes ? `
-                .sizing-box {
+                 .sizing-box {
                     position: relative;
-                    outline: 1px dashed transparent;
+                    outline: 2px solid transparent;
+                    outline-offset: 4px;
                     border-radius: 2px;
                     transition: outline 0.2s, background 0.2s;
                     cursor: pointer;
@@ -656,15 +723,11 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                     min-width: 20px;
                     min-height: 20px;
                     z-index: 10;
-                }
-                .sizing-box:hover {
-                    outline: 2px dashed #10B981 !important;
-                    outline-offset: 3px;
-                    background: rgba(16, 185, 129, 0.10);
-                    box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.35);
+                    user-select: none;
+                    -webkit-user-select: none;
                 }
                 .sizing-box.selected {
-                    outline: 2px solid #3B82F6 !important;
+                    outline: 2px dotted #3B82F6 !important;
                     outline-offset: 4px;
                     background: rgba(59, 130, 246, 0.05);
                     cursor: move;
@@ -673,6 +736,8 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                 .sizing-box.editing {
                     cursor: text;
                     background: rgba(255, 255, 255, 0.9);
+                    user-select: text;
+                    -webkit-user-select: text;
                 }
 
                 /* Drag Handle (big, clear move affordance) */
@@ -693,7 +758,6 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                     touch-action: none;
                 }
                 .sizing-box.selected .drag-handle { display: flex; }
-                .sizing-box.editing .drag-handle { display: none; }
                 .drag-handle:hover { background: #D97706; transform: translateX(-50%) scale(1.1); }
                 
                 /* Custom Handles */
@@ -750,17 +814,20 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                            doc.querySelector('.invite-wrapper') || 
                            doc.body.firstElementChild;
             if (wrapper) {
-                const h = (wrapper as HTMLElement).offsetHeight;
-                if (h > 0) {
-                    if (h !== iframeHeight) {
-                        setIframeHeight(h);
-                        onLayoutMeasure?.({
-                            width: 500,
-                            height: h,
-                            aspectRatio: 500 / h
-                        });
+                // Wait a split second to measure height to prevent layout glitching before CSS is applied
+                setTimeout(() => {
+                    const h = (wrapper as HTMLElement).offsetHeight;
+                    if (h > 0) {
+                        if (h !== iframeHeight) {
+                            setIframeHeight(h);
+                            onLayoutMeasure?.({
+                                width: 500,
+                                height: h,
+                                aspectRatio: 500 / h
+                            });
+                        }
                     }
-                }
+                }, 100);
             } else {
                 if (iframeHeight !== 889) {
                     setIframeHeight(889);
@@ -968,7 +1035,7 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                         }
                         
                         function ensureHandles(box) {
-                            if (box.querySelector('.resize-handle') || box.querySelector('.drag-handle')) return;
+                            box.querySelectorAll('.resize-handle, .drag-handle, .delete-handle').forEach(el => el.remove());
                             ['tl', 'tr', 'bl', 'br'].forEach(pos => {
                                 const handle = document.createElement('div');
                                 handle.className = \`resize-handle \${pos}\`;
@@ -1037,10 +1104,14 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                             window.parent.postMessage({ type: 'SELECTION_CLEARED' }, '*');
                         }
 
+                        let hasMoved = false;
+
                         const handleStart = (e) => {
                             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
                             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
                             
+                            hasMoved = false; // Reset hasMoved
+
                             if (e.target.closest('.editor-toolbar')) return;
                             
                             const resizeHandle = e.target.closest('.resize-handle');
@@ -1050,13 +1121,15 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                                 selectedBox = resizeHandle.parentElement;
                                 startX = clientX; startY = clientY;
                                 initialW = selectedBox.offsetWidth;
+                                const st = window.getComputedStyle(selectedBox);
+                                selectedBox.dataset.dragStartFs = parseFloat(st.fontSize) || 16;
                                 return;
                             }
                             
                             const sizingBox = e.target.closest('.sizing-box');
                             if (sizingBox) {
                                 if (sizingBox.classList.contains('editing')) return;
-                                e.preventDefault();
+                                // e.preventDefault(); removed to fix single click selection blocking
                                 selectBox(sizingBox);
                                 draggingEl = sizingBox;
                                 startX = clientX; startY = clientY;
@@ -1073,6 +1146,7 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                             
                             if (resizingHandle && selectedBox) {
                                 e.preventDefault();
+                                hasMoved = true;
                                 const dx = clientX - startX;
                                 let newW = initialW;
                                 
@@ -1082,8 +1156,13 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                                     newW = initialW - dx;
                                 }
                                 
-                                if (newW > 50) {
+                                if (newW > 20) {
                                     selectedBox.style.width = newW + 'px';
+                                    const startFs = parseFloat(selectedBox.dataset.dragStartFs) || 16;
+                                    const ratio = newW / initialW;
+                                    selectedBox.style.fontSize = (startFs * ratio) + 'px';
+                                    selectedBox.style.lineHeight = '1.2';
+                                    
                                     if (selectedBox.id && selectedBox.id.startsWith('qr-code')) {
                                         selectedBox.style.height = Math.round(newW * 1.125) + 'px';
                                     }
@@ -1094,38 +1173,48 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                                 let dx = clientX - startX;
                                 let dy = clientY - startY;
                                 
-                                let newTx = initialTx + dx;
-                                let newTy = initialTy + dy;
-                                
-                                const rect = draggingEl.getBoundingClientRect();
-                                const centerX = rect.left + rect.width / 2;
-                                const centerY = rect.top + rect.height / 2;
-                                const bodyW = document.body.clientWidth;
-                                const bodyH = document.body.clientHeight;
-                                
-                                guideX.classList.remove('visible');
-                                guideY.classList.remove('visible');
-                                
-                                if (Math.abs(centerX - bodyW/2) < 10) {
-                                    newTx -= (centerX - bodyW/2);
-                                    guideX.classList.add('visible');
-                                }
-                                if (Math.abs(centerY - bodyH/2) < 10) {
-                                    newTy -= (centerY - bodyH/2);
-                                    guideY.classList.add('visible');
+                                if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+                                    hasMoved = true;
                                 }
                                 
-                                draggingEl.dataset.tx = newTx;
-                                draggingEl.dataset.ty = newTy;
-                                draggingEl.style.transform = \`translate(\${newTx}px, \${newTy}px)\`;
-                                updateToolbarPosition();
+                                if (hasMoved) {
+                                    let newTx = initialTx + dx;
+                                    let newTy = initialTy + dy;
+                                    
+                                    const rect = draggingEl.getBoundingClientRect();
+                                    const centerX = rect.left + rect.width / 2;
+                                    const centerY = rect.top + rect.height / 2;
+                                    const bodyW = document.body.clientWidth;
+                                    const bodyH = document.body.clientHeight;
+                                    
+                                    guideX.classList.remove('visible');
+                                    guideY.classList.remove('visible');
+                                    
+                                    if (Math.abs(centerX - bodyW/2) < 10) {
+                                        newTx -= (centerX - bodyW/2);
+                                        guideX.classList.add('visible');
+                                    }
+                                    if (Math.abs(centerY - bodyH/2) < 10) {
+                                        newTy -= (centerY - bodyH/2);
+                                        guideY.classList.add('visible');
+                                    }
+                                    
+                                    draggingEl.dataset.tx = newTx;
+                                    draggingEl.dataset.ty = newTy;
+                                    draggingEl.style.transform = \`translate(\${newTx}px, \${newTy}px)\`;
+                                    updateToolbarPosition();
+                                }
                             }
                         };
                         
                         const handleEnd = () => {
-                            let didChange = (draggingEl !== null || resizingHandle !== null);
+                            let didChange = hasMoved && (draggingEl !== null || resizingHandle !== null);
                             draggingEl = null;
                             resizingHandle = null;
+                            hasMoved = false;
+                            if (selectedBox) {
+                                delete selectedBox.dataset.dragStartFs;
+                            }
                             if (guideX) guideX.classList.remove('visible');
                             if (guideY) guideY.classList.remove('visible');
                             if (didChange) {
@@ -1149,9 +1238,6 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                                 sizingBox.classList.add('editing');
                                 sizingBox.setAttribute('contenteditable', 'true');
                                 sizingBox.focus();
-                                
-                                // Hide resize handles while editing
-                                sizingBox.querySelectorAll('.resize-handle').forEach(h => h.style.display = 'none');
                             }
                         });
                         
@@ -1162,33 +1248,34 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                                 window.parent.postMessage({ type: 'LAYOUT_CHANGED' }, '*');
                                 sizingBox.classList.remove('editing');
                                 sizingBox.removeAttribute('contenteditable');
-                                sizingBox.querySelectorAll('.resize-handle').forEach(h => h.style.display = '');
                             }
                         });
 
-                        // RESIZE OBSERVER FOR FONT SCALING
-                        window.textScaler = new ResizeObserver(entries => {
-                            for (const entry of entries) {
-                                const el = entry.target;
-                                if (!el.dataset.initW) {
-                                    const st = window.getComputedStyle(el);
-                                    el.dataset.initW = el.offsetWidth;
-                                    el.dataset.initFs = parseFloat(st.fontSize) || 16;
-                                } else {
-                                    const currentW = el.offsetWidth;
-                                    const initW = parseFloat(el.dataset.initW);
-                                    if (initW > 0) {
-                                        const ratio = currentW / initW;
-                                        el.style.fontSize = (parseFloat(el.dataset.initFs) * ratio) + 'px';
-                                        el.style.lineHeight = '1.2';
+                        // Prevent deleting the element itself when backspacing in contenteditable
+                        document.addEventListener('keydown', (e) => {
+                            const target = e.target.closest('[contenteditable="true"]');
+                            if (target) {
+                                if (e.key === 'Backspace' || e.key === 'Delete') {
+                                    const text = target.innerText.trim();
+                                    if (text.length <= 1) {
+                                        if (text.length === 0 || (text.length === 1 && window.getSelection().toString() === text)) {
+                                            target.innerHTML = '&nbsp;';
+                                            e.preventDefault();
+                                        }
                                     }
                                 }
                             }
                         });
+
+                        // DUMMY FONT SCALER OBJECT
+                        window.textScaler = {
+                            observe: () => {},
+                            unobserve: () => {},
+                            disconnect: () => {}
+                        };
                         
                         initEditor();
-                        document.querySelectorAll('.sizing-box').forEach(el => window.textScaler.observe(el));
-                    `;
+                     `;
                     doc.body.appendChild(scriptEl);
             } else {
                 Object.keys(fullMapping).forEach(id => {
@@ -1212,16 +1299,18 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
         const handleLoad = () => {
             // Try immediately
             updateContent();
-            // Wait before showing to prevent flashing raw {{variables}}
+            measureLayout();
             
             // And retry once after a short delay to ensure assets/fonts are settled
             setTimeout(() => {
                 updateContent();
+                measureLayout();
             }, 100);
             
             // Final pass and reveal
             setTimeout(() => {
                 updateContent();
+                measureLayout();
                 setIsReady(true);
             }, 400);
         };
@@ -1278,9 +1367,10 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                     transition: 'opacity 0.3s ease-in-out'
                 }}>
                     <iframe
-                        key={iframeSrc}
+                        key={srcDoc ? 'srcdoc-preview' : iframeSrc}
                         ref={iframeRef}
-                        src={iframeSrc}
+                        src={srcDoc ? undefined : iframeSrc}
+                        srcDoc={srcDoc}
                         style={{
                             width: '100%',
                             height: '100%',

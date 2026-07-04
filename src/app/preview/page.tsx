@@ -90,6 +90,13 @@ function PreviewContent() {
         });
     };
 
+    // Reset card layout to default vertical aspect ratio when selecting a new card to prevent layout jumping/glitching
+    useEffect(() => {
+        if (selectedPreviewIndex !== null) {
+            setCardLayout({ width: 500, height: 889, aspectRatio: 9/16 });
+        }
+    }, [selectedPreviewIndex]);
+
     const [isEditMode, setIsEditMode] = useState(false);
     const [activeSelection, setActiveSelection] = useState<any | null>(null);
     const [isButtonHovered, setIsButtonHovered] = useState(false);
@@ -1209,29 +1216,29 @@ function PreviewContent() {
                 }}>
                     <div style={{
                         background: 'var(--background)',
-                        borderRadius: '24px',
-                        padding: '36px',
+                        borderRadius: '20px',
+                        padding: '24px',
                         width: '90%',
-                        maxWidth: '520px',
+                        maxWidth: '400px',
                         boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.3)',
                         position: 'relative'
                     }} onClick={(e) => e.stopPropagation()}>
                         
                         {/* Text Area Dotted Field */}
-                        <div style={{ position: 'relative', marginBottom: '24px' }}>
+                        <div style={{ position: 'relative', marginBottom: '16px' }}>
                             <textarea
                                 value={qrLink}
                                 onChange={(e) => setQrLink(e.target.value)}
                                 placeholder="Paste your Google Maps link here..."
                                 style={{
                                     width: '100%',
-                                    minHeight: '120px',
-                                    padding: '20px',
-                                    fontSize: '16px',
+                                    minHeight: '90px',
+                                    padding: '12px',
+                                    fontSize: '14px',
                                     lineHeight: '1.5',
                                     textAlign: 'center',
                                     border: '1.5px dashed var(--primary)',
-                                    borderRadius: '16px',
+                                    borderRadius: '12px',
                                     outline: 'none',
                                     resize: 'none',
                                     color: 'var(--foreground)',
@@ -1250,14 +1257,14 @@ function PreviewContent() {
                         </div>
 
                         {/* Title input field */}
-                        <div style={{ marginBottom: '24px' }}>
+                        <div style={{ marginBottom: '16px' }}>
                             <label style={{
                                 display: 'block',
                                 color: 'var(--primary)',
-                                fontSize: '12px',
+                                fontSize: '11px',
                                 fontWeight: '600',
                                 textTransform: 'uppercase',
-                                marginBottom: '8px',
+                                marginBottom: '6px',
                                 letterSpacing: '0.05em'
                             }}>
                                 Title
@@ -1270,8 +1277,8 @@ function PreviewContent() {
                                 placeholder="e.g., SCAN FOR LOCATION"
                                 style={{
                                     width: '100%',
-                                    padding: '8px 0',
-                                    fontSize: '18px',
+                                    padding: '6px 0',
+                                    fontSize: '15px',
                                     fontWeight: '500',
                                     border: 'none',
                                     borderBottom: '1.5px solid var(--border)',
@@ -1286,9 +1293,9 @@ function PreviewContent() {
                             <div style={{
                                 display: 'flex',
                                 justifyContent: 'flex-end',
-                                fontSize: '12px',
+                                fontSize: '11px',
                                 color: 'var(--muted-foreground)',
-                                marginTop: '6px'
+                                marginTop: '4px'
                             }}>
                                 <span>Max character limit is 32</span>
                             </div>
@@ -1298,30 +1305,30 @@ function PreviewContent() {
                         <div style={{
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '8px',
+                            gap: '6px',
                             color: 'var(--foreground)',
-                            fontSize: '14px',
+                            fontSize: '13px',
                             fontWeight: '500',
                             cursor: 'pointer',
-                            marginBottom: '32px',
+                            marginBottom: '20px',
                             transition: 'color 0.2s'
                         }} 
                         onMouseOver={(e) => e.currentTarget.style.color = 'var(--primary)'}
                         onMouseOut={(e) => e.currentTarget.style.color = 'var(--foreground)'}
                         onClick={() => window.open('https://support.google.com/maps/answer/144154', '_blank')}>
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                 <circle cx="12" cy="12" r="10" />
                                 <line x1="12" y1="16" x2="12" y2="12" />
                                 <line x1="12" y1="8" x2="12.01" y2="8" />
                             </svg>
-                            <span>How to copy a Location Link from Google Maps</span>
+                            <span>How to copy location link from Google Maps</span>
                         </div>
 
                         {/* Action Buttons */}
                         <div style={{
                             display: 'flex',
                             justifyContent: 'flex-end',
-                            gap: '12px'
+                            gap: '10px'
                         }}>
                             <button
                                 onClick={() => {
@@ -1333,9 +1340,9 @@ function PreviewContent() {
                                     color: 'var(--foreground)',
                                     border: 'none',
                                     borderRadius: '9999px',
-                                    padding: '14px 28px',
+                                    padding: '10px 20px',
                                     fontWeight: '500',
-                                    fontSize: '15px',
+                                    fontSize: '14px',
                                     cursor: 'pointer',
                                     transition: 'background 0.2s'
                                 }}
@@ -1374,9 +1381,9 @@ function PreviewContent() {
                                     color: '#111111',
                                     border: 'none',
                                     borderRadius: '9999px',
-                                    padding: '14px 28px',
+                                    padding: '10px 20px',
                                     fontWeight: '600',
-                                    fontSize: '15px',
+                                    fontSize: '14px',
                                     cursor: qrLink.trim() ? 'pointer' : 'not-allowed',
                                     opacity: qrLink.trim() ? 1 : 0.5,
                                     boxShadow: qrLink.trim() ? '0 4px 12px rgba(212, 175, 55, 0.2)' : 'none',
@@ -1397,7 +1404,7 @@ function PreviewContent() {
                                     }
                                 }}
                             >
-                                Generate QR CODE
+                                Generate QR Code
                             </button>
                         </div>
                     </div>
@@ -1408,8 +1415,8 @@ function PreviewContent() {
                 <div style={{
                     position: 'fixed',
                     top: 0, left: 0, right: 0, bottom: 0,
-                    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-                    backdropFilter: 'blur(8px)',
+                    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+                    backdropFilter: 'blur(4px)',
                     zIndex: 2000,
                     display: 'flex',
                     alignItems: 'center',
@@ -1418,11 +1425,11 @@ function PreviewContent() {
                 }} onClick={() => setShowExitConfirm(false)}>
                     <div style={{
                         background: 'var(--background)',
-                        borderRadius: '24px',
-                        padding: '36px 32px',
+                        borderRadius: '16px',
+                        padding: '28px 24px',
                         width: '90%',
-                        maxWidth: '460px',
-                        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.3)',
+                        maxWidth: '380px',
+                        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
                         position: 'relative',
                         display: 'flex',
                         flexDirection: 'column',
@@ -1431,27 +1438,27 @@ function PreviewContent() {
                         
                         {/* Exclamation Circle */}
                         <div style={{
-                            border: '2px solid var(--primary)',
+                            border: '1.5px solid var(--primary)',
                             borderRadius: '50%',
-                            width: '64px',
-                            height: '64px',
+                            width: '48px',
+                            height: '48px',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            marginBottom: '24px',
+                            marginBottom: '16px',
                             backgroundColor: 'rgba(200, 169, 81, 0.05)'
                         }}>
-                            <span style={{ fontSize: '32px', color: 'var(--primary)', fontWeight: 400, lineHeight: 1 }}>!</span>
+                            <span style={{ fontSize: '24px', color: 'var(--primary)', fontWeight: 400, lineHeight: 1 }}>!</span>
                         </div>
 
                         {/* Title */}
                         <h3 style={{
                             fontFamily: 'var(--font-serif)',
-                            fontSize: '26px',
+                            fontSize: '21px',
                             fontWeight: '500',
                             textAlign: 'center',
                             color: 'var(--foreground)',
-                            margin: '0 0 12px',
+                            margin: '0 0 8px',
                             letterSpacing: '0.02em'
                         }}>
                             Do you want to exit?
@@ -1459,11 +1466,11 @@ function PreviewContent() {
 
                         {/* Description */}
                         <p style={{
-                            fontSize: '15px',
+                            fontSize: '14px',
                             color: 'var(--muted-foreground)',
                             textAlign: 'center',
-                            lineHeight: '1.6',
-                            margin: '0 0 32px',
+                            lineHeight: '1.5',
+                            margin: '0 0 24px',
                             padding: '0 10px'
                         }}>
                             If you exit now, any unsaved layout changes will be lost.
@@ -1473,7 +1480,7 @@ function PreviewContent() {
                         <div style={{
                             display: 'flex',
                             width: '100%',
-                            gap: '12px'
+                            gap: '10px'
                         }}>
                             <button
                                 onClick={() => setShowExitConfirm(false)}
@@ -1482,10 +1489,10 @@ function PreviewContent() {
                                     background: 'var(--muted)',
                                     color: 'var(--foreground)',
                                     border: 'none',
-                                    borderRadius: '9999px',
-                                    padding: '14px 0',
+                                    borderRadius: '8px',
+                                    padding: '11px 0',
                                     fontWeight: '500',
-                                    fontSize: '15px',
+                                    fontSize: '14px',
                                     cursor: 'pointer',
                                     transition: 'background 0.2s'
                                 }}
@@ -1509,10 +1516,10 @@ function PreviewContent() {
                                     background: 'var(--foreground)',
                                     color: '#FFFFFF',
                                     border: 'none',
-                                    borderRadius: '9999px',
-                                    padding: '14px 0',
+                                    borderRadius: '8px',
+                                    padding: '11px 0',
                                     fontWeight: '500',
-                                    fontSize: '15px',
+                                    fontSize: '14px',
                                     cursor: 'pointer',
                                     transition: 'all 0.2s'
                                 }}

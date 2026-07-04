@@ -161,17 +161,18 @@
 }
 
 .suiteThumbContainer {
-    width: 100px;
-    height: 100px;
+    width: 68px;
+    height: 120px;
     position: relative;
-    border-radius: 12px;
+    border-radius: 8px;
     overflow: hidden;
     cursor: pointer;
     flex-shrink: 0;
     background: #F9FAFB;
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: center;
+    border: 1px solid #E5E7EB;
 }
 
 .suitePreviewOverlay {
@@ -220,7 +221,7 @@
 
 .suiteThumbCard {
     width: 100% !important;
-    height: auto !important;
+    height: 100% !important;
     aspect-ratio: 9/16 !important;
     transform: none !important;
     box-shadow: none !important;

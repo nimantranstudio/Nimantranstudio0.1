@@ -1,9 +1,24 @@
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { adminAuth } from '@/lib/firebase-admin';
+import { getAdminPayload, ADMIN_COOKIE } from '@/lib/admin-session';
 
 export async function verifyAuth(request: NextRequest) {
     try {
+        // 1. Check signed admin session cookie first (for local OTP bypass session)
+        const cookieToken = request.cookies.get(ADMIN_COOKIE)?.value;
+        const adminPayload = await getAdminPayload(cookieToken);
+        if (adminPayload && adminPayload.m) {
+            const mobileNumber = adminPayload.m;
+            const user = await prisma.user.findUnique({
+                where: { mobileNumber }
+            });
+            if (user && user.status === 'active' && user.role === 'admin') {
+                return { user, error: null };
+            }
+        }
+
+        // 2. Fallback to Authorization Header (Firebase ID Token)
         const authHeader = request.headers.get('authorization');
         
         if (!authHeader || !authHeader.startsWith('Bearer ')) {

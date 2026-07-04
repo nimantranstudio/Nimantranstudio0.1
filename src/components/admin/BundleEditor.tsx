@@ -5,6 +5,9 @@ import { useRouter } from 'next/navigation';
 import { Package, Code, Save, ChevronLeft, Image as ImageIcon, CheckCircle, Upload, Plus, ChevronUp, ChevronDown, X, AlertCircle } from 'lucide-react';
 import { clsx } from 'clsx';
 import styles from './BundleEditor.module.css';
+import { InvitationCard, InvitationCardRef } from '@/components/preview/InvitationCard';
+import previewStyles from '@/components/preview/Preview.module.css';
+import { Bold, AlignLeft, AlignCenter, AlignRight, AlignJustify, Trash2, Palette, Square, Type, Sticker, MapPin, Maximize, Edit } from 'lucide-react';
 
 interface Theme { id: string; name: string; }
 interface PackageModel { id: string; name: string; level: number; price: number; allowedItems: string; }
@@ -55,6 +58,13 @@ export function BundleEditor({ bundleId, initialData, themes, packages, allEvent
     const [gap, setGap] = useState(0);
     const [bgImage, setBgImage] = useState('');
     const [textStyles, setTextStyles] = useState<Record<string, { fontSize: string, color: string, fontFamily: string }>>({});
+    const [activeSelection, setActiveSelection] = useState<any | null>(null);
+    const [srcDoc, setSrcDoc] = useState('');
+    const cardRef = useRef<InvitationCardRef>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [isQrPopoverOpen, setIsQrPopoverOpen] = useState(false);
+    const [qrLink, setQrLink] = useState('');
+    const [qrTitle, setQrTitle] = useState('SCAN FOR LOCATION');
 
     const [previewData, setPreviewData] = useState({
         event_name: 'Wedding Ceremony',
@@ -133,10 +143,27 @@ export function BundleEditor({ bundleId, initialData, themes, packages, allEvent
                     templatePath: item.templatePath
                 })));
             }
+        } else if (bundleId && bundleId.startsWith('new-')) {
+            const extractedThemeId = bundleId.replace('new-', '');
+            setThemeId(extractedThemeId);
+            const matchingTheme = themes.find(t => t.id === extractedThemeId);
+            if (matchingTheme) {
+                setName(matchingTheme.name);
+            }
         }
         if (allEvents.length > 0) setActiveEventType(allEvents[0].id);
-    }, [initialData, allEvents]);
-
+    }, [initialData, allEvents, bundleId, themes]);
+    useEffect(() => {
+        const handleMessage = (e: MessageEvent) => {
+            if (e.data?.type === 'SELECTION_CHANGED') {
+                setActiveSelection(e.data.payload);
+            } else if (e.data?.type === 'SELECTION_CLEARED') {
+                setActiveSelection(null);
+            }
+        };
+        window.addEventListener('message', handleMessage);
+        return () => window.removeEventListener('message', handleMessage);
+    }, []);
     useEffect(() => {
         if (activeTab === 'template' && bundleItemsList[activeTemplateIndex]) {
             const templateUrl = bundleItemsList[activeTemplateIndex]?.templatePath;
@@ -145,6 +172,7 @@ export function BundleEditor({ bundleId, initialData, themes, packages, allEvent
                     .then(res => res.text())
                     .then(html => {
                         setHtmlContent(html);
+                        setSrcDoc(html);
                         const styleBlockMatch = html.match(/<style[^>]*>([\s\S]*?)<\/style>/i);
                         if (styleBlockMatch) {
                             const styles = styleBlockMatch[1];
@@ -249,11 +277,19 @@ export function BundleEditor({ bundleId, initialData, themes, packages, allEvent
     const saveTemplate = async () => {
         setIsSaving(true);
         try {
+            let finalHtml = htmlContent;
+            if (cardRef.current && (cardRef.current as any).getSerializedHtml) {
+                const serialized = (cardRef.current as any).getSerializedHtml();
+                if (serialized) {
+                    finalHtml = serialized;
+                    setHtmlContent(finalHtml);
+                }
+            }
             const templateUrl = bundleItemsList[activeTemplateIndex]?.templatePath;
             const res = await fetch('/api/admin/bundles/template', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ templateUrl: templateUrl, htmlContent })
+                body: JSON.stringify({ templateUrl: templateUrl, htmlContent: finalHtml })
             });
             if (res.ok) alert('Template saved!');
             else alert('Failed to save template');
@@ -263,6 +299,31 @@ export function BundleEditor({ bundleId, initialData, themes, packages, allEvent
         } finally {
             setIsSaving(false);
         }
+    };
+
+    const handleFormat = (payload: any) => {
+        if (cardRef.current && cardRef.current.sendMessage) {
+            cardRef.current.sendMessage({ type: 'FORMAT_TEXT', payload });
+            
+            // Optimistically update local selection state
+            if (activeSelection) {
+                setActiveSelection((prev: any) => prev ? { ...prev, ...payload } : null);
+            }
+        }
+    };
+
+    const syncVisualToCode = () => {
+        if (cardRef.current && (cardRef.current as any).getSerializedHtml) {
+            const serialized = (cardRef.current as any).getSerializedHtml();
+            if (serialized) {
+                setHtmlContent(serialized);
+                alert('Synced visual edits back into the HTML code editor!');
+            }
+        }
+    };
+
+    const syncCodeToVisual = () => {
+        setSrcDoc(htmlContent);
     };
 
     const saveBundle = async () => {
@@ -295,7 +356,7 @@ export function BundleEditor({ bundleId, initialData, themes, packages, allEvent
                 if (item.file) formData.append(`newBundleItem_${item.id}`, item.file);
             });
 
-            const isNew = bundleId === 'new';
+            const isNew = bundleId === 'new' || bundleId.startsWith('new-');
             const url = isNew ? '/api/admin/bundles' : `/api/admin/bundles/${bundleId}`;
             const method = isNew ? 'POST' : 'PUT';
 
@@ -605,7 +666,25 @@ export function BundleEditor({ bundleId, initialData, themes, packages, allEvent
                                     </div>
 
                                     <div className={styles.editorSection}>
-                                        <h3 style={{ margin: 0, fontSize: '1.1rem' }}>Raw HTML / CSS</h3>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                                            <h3 style={{ margin: 0, fontSize: '1.1rem' }}>Raw HTML / CSS</h3>
+                                            <div style={{ display: 'flex', gap: '8px' }}>
+                                                <button 
+                                                    type="button" 
+                                                    onClick={syncCodeToVisual} 
+                                                    style={{ background: '#4F46E5', color: 'white', padding: '6px 12px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 600, border: 'none', cursor: 'pointer' }}
+                                                >
+                                                    Sync Code to Preview
+                                                </button>
+                                                <button 
+                                                    type="button" 
+                                                    onClick={syncVisualToCode} 
+                                                    style={{ background: '#10B981', color: 'white', padding: '6px 12px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 600, border: 'none', cursor: 'pointer' }}
+                                                >
+                                                    Sync Visual Edits to Code
+                                                </button>
+                                            </div>
+                                        </div>
                                         <textarea className={styles.htmlTextarea} value={htmlContent} onChange={e => handleHtmlChange(e.target.value)} />
                                     </div>
                                 </>
@@ -615,10 +694,256 @@ export function BundleEditor({ bundleId, initialData, themes, packages, allEvent
                 </div>
                 
                 {activeTab === 'template' && (
-                    <div className={styles.rightPane}>
-                        <div className={styles.previewFrame}>
-                            {htmlContent ? <iframe srcDoc={previewHtml} title="Template Preview" style={{ width: '100%', height: '100%', border: 'none' }} /> : <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: '#9ca3af' }}>Select a template to preview</div>}
+                    <div className={styles.rightPane} style={{ width: '500px', display: 'flex', flexDirection: 'column', gap: '1rem', padding: '1rem', alignItems: 'center', justifyContent: 'flex-start', overflowY: 'auto' }}>
+                        {isQrPopoverOpen && (
+                            <div style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.95)', zIndex: 100, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2rem', gap: '1rem' }}>
+                                <h3 style={{ margin: 0, fontFamily: 'var(--font-serif)' }}>Configure Location QR</h3>
+                                <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                    <label style={{ fontSize: '0.75rem', fontWeight: 600 }}>Google Maps Link</label>
+                                    <input type="text" className={styles.input} value={qrLink} onChange={e => setQrLink(e.target.value)} placeholder="https://maps.google.com/..." />
+                                </div>
+                                <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                    <label style={{ fontSize: '0.75rem', fontWeight: 600 }}>Label Text</label>
+                                    <input type="text" className={styles.input} value={qrTitle} onChange={e => setQrTitle(e.target.value)} placeholder="SCAN FOR LOCATION" />
+                                </div>
+                                <div style={{ display: 'flex', gap: '1rem', width: '100%', marginTop: '1rem' }}>
+                                    <button type="button" className={styles.btnBlack} style={{ flex: 1, height: '40px' }} onClick={() => {
+                                        cardRef.current?.sendMessage({ type: 'ADD_QR', payload: { link: qrLink, title: qrTitle } });
+                                        setIsQrPopoverOpen(false);
+                                    }}>Add QR Code</button>
+                                    <button type="button" style={{ flex: 1, border: '1px solid #d1d5db', borderRadius: '6px', height: '40px', background: 'transparent', cursor: 'pointer' }} onClick={() => setIsQrPopoverOpen(false)}>Cancel</button>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Top Toolbar (Edit Mode) */}
+                        {activeSelection && (
+                            <div className={previewStyles.topToolbar} style={{ position: 'relative', left: '0', transform: 'none', borderRadius: '8px', border: '1px solid #e5e7eb', width: '100%', display: 'flex', flexWrap: 'wrap', justifyContent: 'center', boxShadow: 'none', zIndex: 10 }}>
+                                <button type="button" className={previewStyles.toolbarBtn} onClick={() => handleFormat({ edit: true })}>
+                                    <Edit size={20} />
+                                    <span>Edit</span>
+                                </button>
+                                
+                                <div style={{ position: 'relative' }}>
+                                    <button type="button" className={previewStyles.toolbarBtn} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                                            <span style={{ fontSize: '16px', fontFamily: 'serif', fontStyle: 'italic', lineHeight: 1 }}>Style</span>
+                                        </div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                                            <span>Font</span>
+                                            <ChevronDown size={14} />
+                                        </div>
+                                    </button>
+                                    <select 
+                                        value={activeSelection?.fontFamily || 'inherit'}
+                                        onChange={(e) => handleFormat({ fontFamily: e.target.value })}
+                                        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }}
+                                    >
+                                        <option value="inherit">Default</option>
+                                        <option value="Arial, sans-serif">Arial</option>
+                                        <option value="'Times New Roman', serif">Times New Roman</option>
+                                        <option value="'Courier New', monospace">Courier</option>
+                                        <option value="Georgia, serif">Georgia</option>
+                                        <option value="'Trebuchet MS', sans-serif">Trebuchet</option>
+                                        <option value="Verdana, sans-serif">Verdana</option>
+                                    </select>
+                                </div>
+
+                                <div style={{ position: 'relative' }}>
+                                    <button type="button" className={previewStyles.toolbarBtn} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                        <span style={{ fontSize: '16px', fontWeight: 600, lineHeight: 1 }}>A+</span>
+                                        <span>Resize</span>
+                                    </button>
+                                    <select
+                                        value={activeSelection?.fontSize || ''}
+                                        onChange={(e) => handleFormat({ fontSize: e.target.value })}
+                                        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }}
+                                    >
+                                        <option value="">Default</option>
+                                        <option value="12px">12px</option>
+                                        <option value="14px">14px</option>
+                                        <option value="16px">16px</option>
+                                        <option value="18px">18px</option>
+                                        <option value="20px">20px</option>
+                                        <option value="24px">24px</option>
+                                        <option value="28px">28px</option>
+                                        <option value="32px">32px</option>
+                                        <option value="36px">36px</option>
+                                        <option value="48px">48px</option>
+                                        <option value="64px">64px</option>
+                                    </select>
+                                </div>
+
+                                <div style={{ position: 'relative' }}>
+                                    <button type="button" className={previewStyles.toolbarBtn} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                        <Maximize size={20} />
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                                            <span>Box Resize</span>
+                                            <ChevronDown size={14} />
+                                        </div>
+                                    </button>
+                                    <select
+                                        defaultValue=""
+                                        onChange={(e) => { if (e.target.value) handleFormat({ boxWidth: e.target.value }); }}
+                                        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }}
+                                    >
+                                        <option value="">Width…</option>
+                                        <option value="fit">Fit content</option>
+                                        <option value="40%">Narrow (40%)</option>
+                                        <option value="60%">Medium (60%)</option>
+                                        <option value="80%">Wide (80%)</option>
+                                        <option value="100%">Full (100%)</option>
+                                    </select>
+                                </div>
+
+                                <button
+                                    type="button"
+                                    className={previewStyles.toolbarBtn}
+                                    onClick={() => handleFormat({ delete: true })}
+                                    title={activeSelection?.isCustom ? 'Delete this element' : 'Only elements you added can be deleted'}
+                                    style={{ opacity: activeSelection?.isCustom ? 1 : 0.4, pointerEvents: activeSelection?.isCustom ? 'auto' : 'none' }}
+                                >
+                                    <Trash2 size={20} />
+                                    <span>Delete</span>
+                                </button>
+
+                                <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer' }} className={previewStyles.toolbarBtn}>
+                                    <Palette size={20} />
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                                        <span>Color</span>
+                                        <ChevronDown size={14} />
+                                    </div>
+                                    <input 
+                                        type="color" 
+                                        value={activeSelection?.color || '#000000'}
+                                        onChange={(e) => handleFormat({ color: e.target.value })}
+                                        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }}
+                                    />
+                                </div>
+
+                                <button 
+                                    type="button"
+                                    className={previewStyles.toolbarBtn} 
+                                    onClick={() => handleFormat({ fontWeight: activeSelection?.fontWeight === 'bold' ? 'normal' : 'bold' })} 
+                                    style={{ 
+                                        background: activeSelection?.fontWeight === 'bold' ? '#FEF3C7' : 'transparent',
+                                        color: activeSelection?.fontWeight === 'bold' ? '#D97706' : '#6B7280',
+                                    }}
+                                >
+                                    <Bold size={20} />
+                                    <span>Bold</span>
+                                </button>
+
+                                <div style={{ position: 'relative' }}>
+                                    <button type="button" className={previewStyles.toolbarBtn} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                        <AlignJustify size={20} />
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                                            <span>Format</span>
+                                            <ChevronDown size={14} />
+                                        </div>
+                                    </button>
+                                    <select
+                                        value={activeSelection?.align || 'center'}
+                                        onChange={(e) => handleFormat({ align: e.target.value })}
+                                        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }}
+                                    >
+                                        <option value="left">Left</option>
+                                        <option value="center">Center</option>
+                                        <option value="right">Right</option>
+                                        <option value="justify">Justify</option>
+                                    </select>
+                                </div>
+
+                                <div style={{ position: 'relative' }}>
+                                    <button type="button" className={previewStyles.toolbarBtn} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                        <Square size={20} />
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                                            <span>Border</span>
+                                            <ChevronDown size={14} />
+                                        </div>
+                                    </button>
+                                    <select
+                                        defaultValue=""
+                                        onChange={(e) => {
+                                            const v = e.target.value;
+                                            if (v === 'none') handleFormat({ border: 'none', borderRadius: '0px' });
+                                            else if (v === 'thin') handleFormat({ border: '1px solid currentColor' });
+                                            else if (v === 'medium') handleFormat({ border: '2px solid currentColor' });
+                                            else if (v === 'thick') handleFormat({ border: '4px solid currentColor' });
+                                            else if (v === 'rounded') handleFormat({ border: '2px solid currentColor', borderRadius: '12px' });
+                                        }}
+                                        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }}
+                                    >
+                                        <option value="">Border…</option>
+                                        <option value="none">None</option>
+                                        <option value="thin">Thin</option>
+                                        <option value="medium">Medium</option>
+                                        <option value="thick">Thick</option>
+                                        <option value="rounded">Rounded</option>
+                                    </select>
+                                </div>
+
+                                <button 
+                                    type="button"
+                                    className={previewStyles.toolbarBtn} 
+                                    onClick={() => handleFormat({ textTransform: activeSelection?.textTransform === 'uppercase' ? 'none' : 'uppercase' })} 
+                                    style={{ 
+                                        background: activeSelection?.textTransform === 'uppercase' ? '#F3F4F6' : 'transparent',
+                                    }}
+                                >
+                                    <span style={{ fontSize: '16px', fontWeight: 600, lineHeight: 1 }}>Aa</span>
+                                    <span>CAPITAL</span>
+                                </button>
+                            </div>
+                        )}
+
+                        <div className={styles.previewFrame} style={{ height: '580px', width: '320px', flexShrink: 0 }}>
+                            {htmlContent ? (
+                                <InvitationCard
+                                    ref={cardRef}
+                                    event={{
+                                        id: activeTemplateIndex.toString(),
+                                        name: bundleItemsList[activeTemplateIndex]?.eventType || 'Invitation',
+                                        date: previewData.event_date,
+                                        time: previewData.event_time,
+                                        venue: previewData.event_venue,
+                                        heading: previewData.heading,
+                                        tagline: previewData.subheading
+                                    } as any}
+                                    theme={{ id: themeId } as any}
+                                    groomName={previewData.groom_name}
+                                    brideName={previewData.bride_name}
+                                    groomParents={previewData.groom_parents}
+                                    brideParents={previewData.bride_parents}
+                                    welcomeMessage={previewData.heading}
+                                    isPlaceholder={true}
+                                    type="image"
+                                    customImage={bundleItemsList[activeTemplateIndex]?.templatePath}
+                                    srcDoc={srcDoc}
+                                    showSizingBoxes={true}
+                                />
+                            ) : (
+                                <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: '#9ca3af' }}>Select a template to preview</div>
+                            )}
                         </div>
+
+                        {/* Bottom Actions Toolbar */}
+                        {htmlContent && (
+                            <div className={previewStyles.bottomToolbar} style={{ position: 'relative', left: '0', transform: 'none', borderRadius: '8px', border: '1px solid #e5e7eb', width: '100%', display: 'flex', justifyContent: 'center', gap: '16px', boxShadow: 'none', zIndex: 10, padding: '4px' }}>
+                                <button type="button" className={previewStyles.toolbarBtn} onClick={() => cardRef.current?.sendMessage({ type: 'ADD_TEXT' })}>
+                                    <Type size={20} />
+                                    <span>Add Text</span>
+                                </button>
+                                <button type="button" className={previewStyles.toolbarBtn} onClick={() => cardRef.current?.sendMessage({ type: 'ADD_STICKER', payload: { emoji: '❤️' } })}>
+                                    <Sticker size={20} />
+                                    <span>Sticker</span>
+                                </button>
+                                <button type="button" className={previewStyles.toolbarBtn} onClick={() => setIsQrPopoverOpen(true)}>
+                                    <MapPin size={20} />
+                                    <span>QR Map</span>
+                                </button>
+                            </div>
+                        )}
                     </div>
                 )}
             </div>

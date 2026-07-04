@@ -63,3 +63,28 @@ export async function verifyAdminToken(token?: string | null): Promise<boolean> 
         return false;
     }
 }
+
+export async function getAdminPayload(token?: string | null): Promise<{ m: string; r: string } | null> {
+    if (!token) return null;
+    const parts = token.split('.');
+    if (parts.length !== 2) return null;
+    const [payloadB64, sigB64] = parts;
+    try {
+        const key = await getKey();
+        const valid = await crypto.subtle.verify(
+            'HMAC',
+            key,
+            b64urlToBytes(sigB64) as unknown as BufferSource,
+            encoder.encode(payloadB64) as unknown as BufferSource
+        );
+        if (!valid) return null;
+        const payload = JSON.parse(new TextDecoder().decode(b64urlToBytes(payloadB64)));
+        if (payload.r === 'admin' && typeof payload.exp === 'number' && payload.exp > Date.now()) {
+            return payload;
+        }
+        return null;
+    } catch {
+        return null;
+    }
+}
+

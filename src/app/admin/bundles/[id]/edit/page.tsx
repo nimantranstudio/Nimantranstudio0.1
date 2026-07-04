@@ -20,7 +20,7 @@ export default async function EditBundlePage({ params }: { params: Promise<{ id:
     packages = packagesData;
     events = eventsData;
 
-    if (id !== 'new') {
+    if (id !== 'new' && !id.startsWith('new-')) {
         bundle = await prisma.bundle.findUnique({
             where: { id },
             include: {

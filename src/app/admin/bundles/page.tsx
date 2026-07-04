@@ -8,6 +8,7 @@ import { BundleModal } from '@/components/admin/BundleModal';
 interface Bundle {
     id: string;
     name: string;
+    BundleName?: string;
     description: string;
     whatsappPrice: number;
     printablePrice: number;
@@ -146,6 +147,14 @@ export default function BundlesPage() {
                     <h1 style={{ fontSize: '1.8rem', fontFamily: 'var(--font-serif)', color: '#1A1A1A' }}>Bundles</h1>
                     <p style={{ color: '#6b7280' }}>Package themes into purchasable offerings.</p>
                 </div>
+                <button
+                    style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: '#E1A639', color: '#111827', padding: '0.6rem 1.2rem', borderRadius: '8px', fontWeight: '600', border: 'none', cursor: 'pointer', transition: 'background 0.2s' }}
+                    onClick={handleAddNew}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#d49b36'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#E1A639'}
+                >
+                    <Plus size={18} /> Add New Bundle
+                </button>
             </div>
 
             {isLoading ? (
@@ -157,8 +166,14 @@ export default function BundlesPage() {
                     <div style={{ width: '80px', height: '80px', background: '#f3f4f6', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.5rem', color: '#9ca3af' }}>
                         <Package size={40} />
                     </div>
-                    <h3 style={{ fontSize: '1.25rem', fontWeight: '600', color: '#1f2937', marginBottom: '0.5rem' }}>No themes created yet</h3>
-                    <p style={{ color: '#6b7280', marginBottom: '1.5rem', maxWidth: '300px' }}>To create a bundle, please create a Theme first in the Themes section.</p>
+                    <h3 style={{ fontSize: '1.25rem', fontWeight: '600', color: '#1f2937', marginBottom: '0.5rem' }}>No bundles created yet</h3>
+                    <p style={{ color: '#6b7280', marginBottom: '1.5rem', maxWidth: '300px' }}>Start by creating your first package theme bundle.</p>
+                    <button
+                        style={{ background: 'none', color: '#E1A639', border: 'none', padding: 0, fontWeight: '600', fontSize: '1rem', cursor: 'pointer' }}
+                        onClick={handleAddNew}
+                    >
+                        Create First Bundle
+                    </button>
                 </div>
             ) : (
                 <div style={{ listStyleType: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -205,7 +220,7 @@ export default function BundlesPage() {
                                         {images.length > 0 ? (
                                             <img
                                                 src={images[0]}
-                                                alt={bundle.name}
+                                                alt={bundle.BundleName || bundle.name}
                                                 style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' }}
                                             />
                                         ) : (
@@ -221,7 +236,7 @@ export default function BundlesPage() {
                                     </div>
                                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '0.25rem' }}>
-                                            <h3 style={{ fontSize: '1.2rem', fontFamily: 'var(--font-serif)', color: '#1C1917', margin: 0 }}>{bundle.name}</h3>
+                                            <h3 style={{ fontSize: '1.2rem', fontFamily: 'var(--font-serif)', color: '#1C1917', margin: 0 }}>{bundle.BundleName || bundle.name}</h3>
                                             <span style={{
                                                 fontSize: '0.65rem',
                                                 padding: '2px 8px',
