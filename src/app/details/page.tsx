@@ -375,26 +375,22 @@ function DetailsContent() {
                 />
                 
                 {/* Auto-Save Indicator */}
-                <div className={clsx(styles.saveStatus, saveStatus === 'saving' && styles.saving)}>
-                    {saveStatus === 'saving' && (
-                        <>
-                            <Loader2 size={14} className="animate-spin" />
-                            <span>Saving Changes...</span>
-                        </>
-                    )}
-                    {saveStatus === 'synced' && (
-                        <>
-                            <Check size={14} />
-                            <span>All Changes Synced</span>
-                        </>
-                    )}
-                    {saveStatus === 'error' && (
-                        <>
-                            <AlertCircle size={14} color="#EF4444" />
-                            <span style={{ color: '#EF4444' }}>Sync Offline</span>
-                        </>
-                    )}
-                </div>
+                {saveStatus !== 'error' && (
+                    <div className={clsx(styles.saveStatus, saveStatus === 'saving' && styles.saving)}>
+                        {saveStatus === 'saving' && (
+                            <>
+                                <Loader2 size={14} className="animate-spin" />
+                                <span>Saving Changes...</span>
+                            </>
+                        )}
+                        {saveStatus === 'synced' && (
+                            <>
+                                <Check size={14} />
+                                <span>All Changes Synced</span>
+                            </>
+                        )}
+                    </div>
+                )}
             </header>
 
             <main className={styles.studioContainer}>
