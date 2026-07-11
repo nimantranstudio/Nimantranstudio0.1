@@ -3,47 +3,169 @@
 export const dynamic = 'force-dynamic';
 
 import { useWeddingStore } from '@/store/wedding-store';
-import Image from 'next/image';
 import { Input } from '@/components/form/Input';
-import { EventRepeater } from '@/components/form/EventRepeater';
 import styles from './details.module.css';
-import formStyles from '@/components/form/Form.module.css';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useState, useEffect, Suspense } from 'react';
-import { clsx } from 'clsx';
-import { ChevronRight, ChevronDown, CheckCircle, Sun, Music, Leaf, Circle, Wine, MoreHorizontal, Clock, Info, ShieldCheck, MapPin, Calendar, Users, AlertCircle, Heart, Sparkles, ArrowRight, ChevronUp, Trash2, Plus, ChevronLeft, X } from 'lucide-react';
+import { useState, useEffect, Suspense, useRef, useMemo } from 'react';
+import clsx from 'clsx';
+import { 
+    ChevronDown, 
+    Check, 
+    Sparkles, 
+    Heart, 
+    MapPin, 
+    Calendar, 
+    Users, 
+    ArrowUp, 
+    ArrowDown, 
+    Trash2, 
+    Plus, 
+    Clock, 
+    CheckCircle2, 
+    Loader2, 
+    X,
+    ExternalLink,
+    AlertCircle,
+    ArrowRight,
+    ArrowDownUp,
+    Play
+} from 'lucide-react';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
+import { RSVPForm } from '@/app/rsvp/[id]/RSVPForm';
 import type { Theme } from '@/lib/constants/themes';
 import { DEFAULT_EVENTS, type WeddingEvent } from '@/lib/schemas/wedding-form';
-
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-
+import { InvitationCard, InvitationCardRef } from '@/components/preview/InvitationCard';
 
 function DetailsContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const { formData, updateFormData, saveWedding, selectedThemeId, bundleImages, selectedPlan } = useWeddingStore();
-    const [step, setStep] = useState(1); // 1: Couple, 2: Ceremony, 3: Events, 4: Summary
-    const progressPercentage = (step / 4) * 100;
-    const [expandedEventId, setExpandedEventId] = useState<string | null>(formData.events?.[0]?.id || null);
-    const [isSaving, setIsSaving] = useState(false);
-    const [saveError, setSaveError] = useState<string | null>(null);
-    const [errors, setErrors] = useState<Record<string, string>>({});
+    const { 
+        formData, 
+        updateFormData, 
+        saveWedding, 
+        selectedThemeId, 
+        bundleImages, 
+        bundleItems,
+        selectedPlan,
+        addEvent,
+        removeEvent,
+        updateEvent
+    } = useWeddingStore();
+
+    // Studio Active Chapter State (1: Your Story, 2: The Ceremony, 3: Celebrate Every Moment, 4: Ready to Invite)
+    const [activeChapter, setActiveChapter] = useState<number>(1);
     
+    // Focused field state for visual glows on preview
+    const [focusedField, setFocusedField] = useState<string | null>(null);
+
+    // Auto-save Status State: 'synced' | 'saving' | 'error'
+    const [saveStatus, setSaveStatus] = useState<'synced' | 'saving' | 'error'>('synced');
+    const [isMounted, setIsMounted] = useState(false);
+
+    // Timeline Preview State
+    const [activePreviewEventId, setActivePreviewEventId] = useState<string>('wedding');
+
     // Welcome Overlay State
     const [showWelcomeOverlay, setShowWelcomeOverlay] = useState(false);
     const [showConfetti, setShowConfetti] = useState(false);
+    const [activeTheme, setActiveTheme] = useState<Theme | null>(null);
+    const [isCrafting, setIsCrafting] = useState(false);
+    const cardRef = useRef<InvitationCardRef>(null);
+
+    const templateUrl = useMemo(() => {
+        const searchEventId = (activeChapter === 3 && activePreviewEventId) ? activePreviewEventId.toLowerCase() : 'wedding';
+
+        // 1. First, check bundleItems for an uploaded HTML file
+        if (bundleItems && bundleItems.length > 0) {
+            let targetItem;
+            
+            if (searchEventId === 'wedding') {
+                targetItem = bundleItems.find(item => 
+                    item.templatePath && 
+                    item.templatePath.toLowerCase().includes('.html') && 
+                    (item.eventId === 'evt_7' || item.eventId === 'wedding' || item.templatePath.includes('item-Wedding_Invitation') || (item.eventType || '').toUpperCase().includes('WEDDING'))
+                );
+            } else {
+                // Match by eventId, template path, or event name for things like Haldi, Mehendi
+                targetItem = bundleItems.find(item => {
+                    const match = item.templatePath && 
+                        item.templatePath.toLowerCase().includes('.html') && 
+                        (
+                            item.eventId?.toLowerCase() === searchEventId || 
+                            item.templatePath.toLowerCase().includes(searchEventId) ||
+                            item.event?.eventName?.toLowerCase().includes(searchEventId) ||
+                            item.eventType?.toLowerCase().includes(searchEventId) ||
+                            item.templateName?.toLowerCase().includes(searchEventId)
+                        );
+                    if (match) console.log('DEBUG: matched item', item, 'for searchEventId', searchEventId);
+                    return match;
+                });
+                
+                if (!targetItem) console.log('DEBUG: no target item found for', searchEventId, 'bundleItems:', bundleItems);
+                
+                // Fallback to wedding if specific event template not found
+                if (!targetItem) {
+                    targetItem = bundleItems.find(item => 
+                        item.templatePath && 
+                        item.templatePath.toLowerCase().includes('.html') && 
+                        (item.eventId === 'evt_7' || item.eventId === 'wedding' || item.templatePath.includes('item-Wedding_Invitation') || (item.eventType || '').toUpperCase().includes('WEDDING'))
+                    );
+                }
+            }
+
+            if (targetItem) return targetItem.templatePath;
+            
+            // Fallback to any HTML file in bundleItems
+            const anyHtmlItem = bundleItems.find(item => item.templatePath && item.templatePath.toLowerCase().includes('.html'));
+            if (anyHtmlItem) return anyHtmlItem.templatePath;
+        }
+
+        // 2. Check bundleImages (fallback for legacy themes without bundleItems)
+        if (bundleImages && bundleImages.length > 0) {
+            const htmlTemplate = bundleImages.find(img => img.toLowerCase().includes('.html') || img.includes('item-Wedding_Invitation'));
+            if (htmlTemplate) return htmlTemplate;
+            
+            // Fallback to the first image in the bundle if it's a static image theme
+            return bundleImages[0];
+        }
+        
+        return undefined;
+    }, [bundleItems, bundleImages, activeChapter, activePreviewEventId]);
+
+    const isHTMLDesign = !!templateUrl && templateUrl.toLowerCase().includes('.html');
+
+    const previewEvent = useMemo(() => {
+        if (activeChapter === 3 && activePreviewEventId && activePreviewEventId !== 'wedding') {
+            const foundEvent = formData.events?.find(e => e.id === activePreviewEventId);
+            if (foundEvent) return foundEvent;
+        }
+        return { 
+            id: 'default', 
+            date: formData.primaryDate, 
+            time: formData.primaryTime, 
+            venue: formData.defaultVenueName, 
+            name: 'Wedding' 
+        };
+    }, [activeChapter, activePreviewEventId, formData]);
+
+    const cameraY = isCrafting ? '-80%' :
+                    activeChapter === 1 ? '0%' :
+                    activeChapter === 2 ? (isHTMLDesign ? '0%' : '-15%') :
+                    activeChapter === 3 ? (isHTMLDesign ? '0%' : '-40%') : 
+                    activeChapter === 4 ? (isHTMLDesign ? '0%' : '-65%') : '0%';
 
     useEffect(() => {
+        setIsMounted(true);
         if (searchParams.get('welcome') === 'true') {
             setShowWelcomeOverlay(true);
             setShowConfetti(true);
             
-            // Auto dismiss after 3.5s
+            // Auto dismiss welcome overlay after 3.5s
             const timer = setTimeout(() => {
                 setShowWelcomeOverlay(false);
-                // Clean up URL
+                // Clean up URL parameters
                 const newUrl = window.location.pathname;
                 window.history.replaceState({}, '', newUrl);
             }, 3500);
@@ -51,21 +173,7 @@ function DetailsContent() {
         }
     }, [searchParams]);
 
-    const [activeTheme, setActiveTheme] = useState<Theme | null>(null);
-
-    // Warn user before leaving mid-form
-    useEffect(() => {
-        const hasStarted = !!(formData.brideName || formData.groomName || step > 1);
-        if (!hasStarted) return;
-
-        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-            e.preventDefault();
-            e.returnValue = '';
-        };
-        window.addEventListener('beforeunload', handleBeforeUnload);
-        return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-    }, [formData.brideName, formData.groomName, step]);
-
+    // Fetch theme config
     useEffect(() => {
         if (!selectedThemeId) return;
 
@@ -83,78 +191,43 @@ function DetailsContent() {
         fetchTheme();
     }, [selectedThemeId]);
 
+    // Auto-save useEffect with 1s debounce
+    useEffect(() => {
+        if (!isMounted) return;
+
+        setSaveStatus('saving');
+        const timer = setTimeout(async () => {
+            try {
+                const result = await saveWedding();
+                if (result.success) {
+                    setSaveStatus('synced');
+                } else {
+                    setSaveStatus('error');
+                }
+            } catch (err) {
+                setSaveStatus('error');
+            }
+        }, 1000);
+
+        return () => clearTimeout(timer);
+    }, [
+        formData.groomName,
+        formData.brideName,
+        formData.groomParents,
+        formData.brideParents,
+        formData.primaryDate,
+        formData.primaryTime,
+        formData.defaultVenueName,
+        formData.primaryMapLink,
+        formData.events,
+        formData.eventType,
+        formData.rsvpDeadline,
+        formData.invitationMessage,
+    ]);
+
     const themeName = activeTheme ? activeTheme.name : 'Choose Theme';
 
-    const [isGroomFirst, setIsGroomFirst] = useState(true);
-
-    const groomNameField = (
-        <Input
-            key="groom-name"
-            label="Groom's Name"
-            value={formData.groomName}
-            onChange={(e) => {
-                updateFormData({ groomName: e.target.value });
-                if (errors.groomName) setErrors(e => ({ ...e, groomName: '' }));
-            }}
-            placeholder="First Name"
-            error={errors.groomName}
-            maxLength={25}
-        />
-    );
-
-    const brideNameField = (
-        <Input
-            key="bride-name"
-            label="Bride's Name"
-            value={formData.brideName}
-            onChange={(e) => {
-                updateFormData({ brideName: e.target.value });
-                if (errors.brideName) setErrors(e => ({ ...e, brideName: '' }));
-            }}
-            placeholder="First Name"
-            error={errors.brideName}
-            maxLength={25}
-        />
-    );
-
-    const groomParentsField = (
-        <Input
-            key="groom-parents"
-            label="Groom's Parents"
-            value={formData.groomParents || ''}
-            onChange={(e) => updateFormData({ groomParents: e.target.value })}
-            placeholder="e.g. Mr. & Mrs. Sharma"
-            maxLength={100}
-        />
-    );
-
-    const brideParentsField = (
-        <Input
-            key="bride-parents"
-            label="Bride's Parents"
-            value={formData.brideParents || ''}
-            onChange={(e) => updateFormData({ brideParents: e.target.value })}
-            placeholder="e.g. Mr. & Mrs. Patel"
-            maxLength={100}
-        />
-    );
-
-    const finishDetailsAndPreview = async () => {
-        setIsSaving(true);
-        setSaveError(null);
-        try {
-            const result = await saveWedding();
-            if (!result.success) {
-                setSaveError("Background save failed, but you can still preview!");
-            }
-        } catch (err) {
-            setSaveError("Connection issue, but preview is ready.");
-        } finally {
-            setIsSaving(false);
-            router.push('/preview?processing=true');
-        }
-    };
-
+    // Formatting date helper for cover display
     const formatDate = (dateStr: string) => {
         if (!dateStr) return "DECEMBER 15, 2026";
         try {
@@ -169,65 +242,66 @@ function DetailsContent() {
         }
     };
 
-    const handleNext = async () => {
-        if (step === 1) {
-            const newErrors: Record<string, string> = {};
-            if (!formData.groomName?.trim()) newErrors.groomName = "Groom's name is required";
-            if (!formData.brideName?.trim()) newErrors.brideName = "Bride's name is required";
+    // Reorder Timeline events helper
+    const moveEvent = (index: number, direction: 'up' | 'down') => {
+        if (!formData.events) return;
+        const newEvents = [...formData.events];
+        const targetIndex = direction === 'up' ? index - 1 : index + 1;
+        
+        if (targetIndex < 0 || targetIndex >= newEvents.length) return;
+        
+        // Swap elements
+        const temp = newEvents[index];
+        newEvents[index] = newEvents[targetIndex];
+        newEvents[targetIndex] = temp;
 
-            if (Object.keys(newErrors).length > 0) {
-                setErrors(newErrors);
-                return;
-            }
-            setErrors({});
-            setStep(2);
-        } else if (step === 2) {
-            const newErrors: Record<string, string> = {};
-            if (!formData.primaryDate) newErrors.primaryDate = "Wedding date is required";
-            if (!formData.primaryTime) newErrors.primaryTime = "Wedding time is required";
-            if (!formData.defaultVenueName?.trim()) newErrors.defaultVenueName = "Venue address is required";
-
-            if (Object.keys(newErrors).length > 0) {
-                setErrors(newErrors);
-                return;
-            }
-            setErrors({});
-            setStep(3);
-        } else if (step === 3) {
-            if (formData.events) {
-                const newErrors: Record<string, string> = {};
-                for (const event of formData.events) {
-                    if (!event.date) {
-                        newErrors[`${event.id}-date`] = "Date is required";
-                    }
-                    if (!event.time) {
-                        newErrors[`${event.id}-time`] = "Time is required";
-                    }
-                }
-                if (Object.keys(newErrors).length > 0) {
-                    setErrors(newErrors);
-                    return;
-                }
-            }
-            setErrors({});
-            setStep(4);
-        } else if (step === 4) {
-            // Final step: Save and go to Preview
-            finishDetailsAndPreview();
-        }
+        updateFormData({ events: newEvents });
     };
 
-    const handleBack = () => {
-        if (step > 1) setStep(step - 1);
-        else router.back();
+    // Add new custom event helper
+    const handleAddCeremony = () => {
+        const id = `custom_${Date.now()}`;
+        const newEvent: WeddingEvent = {
+            id,
+            name: 'New Ceremony',
+            date: formData.primaryDate || '',
+            time: '18:30',
+            venue: '',
+        };
+        addEvent(newEvent);
     };
 
-    const STEPS = [
-        { id: 1, label: 'The Couple', icon: <Heart size={20} strokeWidth={2.5} /> },
-        { id: 2, label: 'Ceremony', icon: <MapPin size={20} strokeWidth={2.5} /> },
-        { id: 3, label: 'Timeline', icon: <Calendar size={20} strokeWidth={2.5} /> },
-        { id: 4, label: 'RSVP', icon: <Users size={20} strokeWidth={2.5} /> },
-    ];
+    // Focus state listeners
+    const handleFocus = (fieldName: string) => {
+        setFocusedField(fieldName);
+    };
+
+    const handleBlur = () => {
+        setFocusedField(null);
+    };
+
+    // Complete editing CTA
+    const handleFinish = async () => {
+        setSaveStatus('saving');
+        setIsCrafting(true); // Trigger 3.5s camera sequence
+        
+        saveWedding().then(result => {
+            if (result.success) setSaveStatus('synced');
+            else setSaveStatus('error');
+        }).catch(() => {
+            setSaveStatus('error');
+        });
+
+        await new Promise(resolve => setTimeout(resolve, 3500));
+        router.push('/preview?processing=true');
+    };
+
+    // Swap names logic
+    const isBrideFirst = formData.nameOrder === 'bride_first';
+    const displayGroomName = isBrideFirst ? formData.brideName : formData.groomName;
+    const displayBrideName = isBrideFirst ? formData.groomName : formData.brideName;
+    const displayGroomParents = isBrideFirst ? formData.brideParents : formData.groomParents;
+    const displayBrideParents = isBrideFirst ? formData.groomParents : formData.brideParents;
 
     return (
         <div className={styles.page}>
@@ -249,23 +323,6 @@ function DetailsContent() {
                             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
                             className={styles.transitionContent}
                         >
-                            {/* Glaze Effect */}
-                            <motion.div
-                                initial={{ left: '-150%' }}
-                                animate={{ left: '150%' }}
-                                transition={{ duration: 1.2, ease: "easeInOut", delay: 1.2 }}
-                                style={{
-                                    position: 'absolute',
-                                    top: 0,
-                                    bottom: 0,
-                                    width: '50%',
-                                    background: 'linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(212,175,55,0.15) 50%, rgba(255,255,255,0) 100%)',
-                                    transform: 'skewX(-25deg)',
-                                    zIndex: 0,
-                                    pointerEvents: 'none'
-                                }}
-                            />
-
                             <motion.div
                                 initial={{ scale: 0.8, opacity: 0 }}
                                 animate={{ scale: 1, opacity: 1 }}
@@ -293,8 +350,6 @@ function DetailsContent() {
                                 Now let’s personalise your wedding invitation suite.
                             </motion.p>
 
-
-
                             <motion.div
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
@@ -310,827 +365,597 @@ function DetailsContent() {
             </AnimatePresence>
 
             <header className={styles.header}>
-                <div className="container">
-                    <Breadcrumbs
-                        items={[
-                            { label: 'Home', href: '/' },
-                            { label: 'Themes', href: '/themes' },
-                            { label: `${themeName}${selectedPlan ? ` (${selectedPlan})` : ''}`, href: `/themes/${selectedThemeId}` },
-                            { label: 'wedding details', active: true },
-                        ]}
-                    />
+                <Breadcrumbs
+                    items={[
+                        { label: 'Home', href: '/' },
+                        { label: 'Themes', href: '/themes' },
+                        { label: `${themeName}${selectedPlan ? ` (${selectedPlan})` : ''}`, href: `/themes/${selectedThemeId}` },
+                        { label: 'wedding details', active: true },
+                    ]}
+                />
+                
+                {/* Auto-Save Indicator */}
+                <div className={clsx(styles.saveStatus, saveStatus === 'saving' && styles.saving)}>
+                    {saveStatus === 'saving' && (
+                        <>
+                            <Loader2 size={14} className="animate-spin" />
+                            <span>Saving Changes...</span>
+                        </>
+                    )}
+                    {saveStatus === 'synced' && (
+                        <>
+                            <Check size={14} />
+                            <span>All Changes Synced</span>
+                        </>
+                    )}
+                    {saveStatus === 'error' && (
+                        <>
+                            <AlertCircle size={14} color="#EF4444" />
+                            <span style={{ color: '#EF4444' }}>Sync Offline</span>
+                        </>
+                    )}
                 </div>
             </header>
 
-            <main className="container">
+            <main className={styles.studioContainer}>
+                {/* Sticky Left Preview Column (40%) */}
+                <section className={styles.previewCol}>
+                    <div className={styles.inviteFrame}>
+                        <div className={styles.paperSurface}>
+                            <div className={styles.goldFoilOrnament}>
+                                <Sparkles size={28} />
+                            </div>
 
+                            {/* Live Invitation Continuous Camera System */}
+                            <motion.div
+                                animate={{ y: activeChapter === 4 ? 0 : cameraY }}
+                                transition={isCrafting ? { ease: "linear", duration: 3.5 } : { type: "spring", bounce: 0, duration: 0.6 }}
+                                style={{ width: '100%' }}
+                            >
+                                <AnimatePresence mode="wait">
+                                    {activeChapter === 4 ? (
+                                        <motion.div
+                                            key="rsvp-preview"
+                                            initial={{ opacity: 0, scale: 0.95 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            exit={{ opacity: 0, scale: 0.95 }}
+                                            transition={{ type: "spring", bounce: 0, duration: 0.4 }}
+                                            style={{ height: '800px', width: '100%', overflowY: 'auto', background: '#FDFBF7' }}
+                                        >
+                                            <RSVPForm wedding={{
+                                                id: 'preview',
+                                                groomName: formData.groomName || 'Groom',
+                                                brideName: formData.brideName || 'Bride',
+                                                themeId: 'default',
+                                                invitationMessage: formData.invitationMessage || "Please join us for our special day!",
+                                                allowCompanions: formData.allowCompanions || false,
+                                                collectDietary: formData.collectDietary || false,
+                                                events: formData.events || []
+                                            }} />
+                                        </motion.div>
+                                    ) : (
+                                        <motion.div
+                                            key="invite-preview"
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            exit={{ opacity: 0 }}
+                                            transition={{ duration: 0.4 }}
+                                        >
+                                            <InvitationCard 
+                                                ref={cardRef}
+                                                event={previewEvent} 
+                                                theme={activeTheme || { id: 'default', name: 'Default', slug: 'default', category: 'traditional', thumbnailUrl: '', type: 'image' }} 
+                                                groomName={displayGroomName} 
+                                                brideName={displayBrideName} 
+                                                groomParents={displayGroomParents}
+                                                brideParents={displayBrideParents}
+                                                customImage={templateUrl} 
+                                                isRawPreview={false}
+                                            />
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </motion.div>
+                        </div>
+                    </div>
+                </section>
 
-                <div className={styles.wizardContainer}>
-                    <AnimatePresence mode="wait">
-                        {step === 1 && (
+                {/* Right Column Workspace (60%) */}
+                <section className={styles.workspaceCol} style={{ position: 'relative' }}>
+                    <AnimatePresence>
+                        {isCrafting && (
                             <motion.div 
-                                key="step1"
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
-                                transition={{ duration: 0.3 }}
-                                className={styles.splitLayout}
+                                transition={{ duration: 0.5 }}
+                                className={styles.craftingOverlay}
                             >
-                            <div className={styles.previewContainer}>
-                                <div className={styles.invitePreview}>
-                                    <div className={styles.previewInner}>
-                                        <div className={styles.previewOrnament}>
-                                            <Sparkles size={32} />
-                                        </div>
-                                        <div className={styles.previewIntro}>Together with their families</div>
-                                        <div className={styles.previewName}>{isGroomFirst ? (formData.groomName || 'Groom Name') : (formData.brideName || 'Bride Name')}</div>
-                                        <div className={styles.previewAmpersand}>&</div>
-                                        <div className={styles.previewName}>{isGroomFirst ? (formData.brideName || 'Bride Name') : (formData.groomName || 'Groom Name')}</div>
-                                        <div className={styles.previewDivider} />
-                                        <div className={styles.previewDate}>{formatDate(formData.primaryDate || '')}</div>
-                                        <div className={styles.previewVenue}>
-                                            <span className={styles.previewVenueName}>{formData.defaultVenueName?.split(',')[0] || 'THE GRAND HOTEL'}</span>
-                                            {formData.defaultVenueName?.split(',').slice(1).join(',') || 'JODHPUR, RAJASTHAN'}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className={styles.formSide}>
-                                <div className={styles.formContent}>
-                                    <div className={styles.sectionHeaderInner}>
-                                        <div className={styles.stepHeaderContainer}>
-                                            <div className={styles.stepHeaderInfo}>
-                                                <div className={styles.stepBadge}>{step}</div>
-                                                <span className={styles.stepStepText}>Step {step} of 4</span>
-                                            </div>
-                                            <div className={styles.stepTiming}>
-                                                <Clock size={14} />
-                                                <span>Takes 15 seconds</span>
-                                            </div>
-                                        </div>
-                                        <div className={styles.sectionHeaderMain}>
-                                            <h2 className={styles.sectionTitleMain}>About the Couple.</h2>
-                                            <p className={styles.sectionSubtitleMain}>
-                                                Introduce the beautiful couple. This will be the heart of your wedding identity.
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div className={styles.wizardCard}>
-                                        <div className={formStyles.grid}>
-                                            {isGroomFirst ? (
-                                                <>
-                                                    {groomNameField}
-                                                    {brideNameField}
-                                                    {groomParentsField}
-                                                    {brideParentsField}
-                                                </>
-                                            ) : (
-                                                <>
-                                                    {brideNameField}
-                                                    {groomNameField}
-                                                    {brideParentsField}
-                                                    {groomParentsField}
-                                                </>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className={styles.formFooter}>
-                                    <div className={styles.footerProgressBarContainer}>
-                                        <motion.div 
-                                            className={styles.footerProgressBar}
-                                            initial={{ width: 0 }}
-                                            animate={{ width: `${progressPercentage}%` }}
-                                        />
-                                    </div>
-                                    <AnimatePresence>
-                                        {!!formData.groomName?.trim() && !!formData.brideName?.trim() && (
-                                            <motion.div 
-                                                key="note1"
-                                                initial={{ opacity: 0 }}
-                                                animate={{ opacity: 1 }}
-                                                exit={{ opacity: 0 }}
-                                                className={clsx(styles.formSuccessMessage, styles.footerMessage)}
-                                            >
-                                                <motion.div
-                                                    initial={{ scale: 0, opacity: 0 }}
-                                                    animate={{ scale: 1, opacity: 1 }}
-                                                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                                                >
-                                                    <CheckCircle size={18} color="#D4AF37" />
-                                                </motion.div>
-                                                <motion.div
-                                                    initial={{ opacity: 0, clipPath: 'inset(0 100% 0 0)' }}
-                                                    animate={{ opacity: 1, clipPath: 'inset(0 0% 0 0)' }}
-                                                    transition={{ duration: 0.6, delay: 0.2, ease: "easeInOut" }}
-                                                    style={{ whiteSpace: 'nowrap' }}
-                                                >
-                                                    <span>Beautiful beginning made</span>
-                                                </motion.div>
-                                            </motion.div>
-                                        )}
-                                    </AnimatePresence>
-                                    <button className={styles.backBtn} onClick={handleBack}>
-                                        Back
-                                    </button>
-                                    <button className={styles.continueBtn} onClick={handleNext} disabled={isSaving}>
-                                        Continue Setup
-                                        <ArrowRight size={18} style={{ marginLeft: '12px' }} />
-                                    </button>
-                                </div>
-                            </div>
-                        </motion.div>
-                    )}
+                                <Loader2 className="animate-spin" size={32} color="#B39D73" style={{ marginBottom: '1rem' }} />
+                                <h3>Crafting Your Invitation</h3>
+                                <p>Adding the final touches...</p>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                    
+                    {/* CHAPTER 1: Your Story */}
+                    <div className={clsx(
+                        styles.chapter, 
+                        activeChapter === 1 ? styles.chapterActive : styles.chapterCollapsed
+                    )} onClick={() => activeChapter !== 1 && setActiveChapter(1)}>
                         
-                        {step === 2 && (
-                            <motion.div 
-                                key="step2"
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                transition={{ duration: 0.3 }}
-                                className={styles.splitLayout}
-                            >
-                            <div className={styles.previewContainer}>
-                                <div className={styles.invitePreview}>
-                                    <div className={styles.previewInner}>
-                                        <div className={styles.previewOrnament}>
-                                            <Sparkles size={32} />
-                                        </div>
-                                        <div className={styles.previewIntro}>Together with their families</div>
-                                        <div className={styles.previewName}>{isGroomFirst ? (formData.groomName || 'Groom Name') : (formData.brideName || 'Bride Name')}</div>
-                                        <div className={styles.previewAmpersand}>&</div>
-                                        <div className={styles.previewName}>{isGroomFirst ? (formData.brideName || 'Bride Name') : (formData.groomName || 'Groom Name')}</div>
-                                        <div className={styles.previewDivider} />
-                                        <div className={styles.previewDate}>{formatDate(formData.primaryDate || '')}</div>
-                                        <div className={styles.previewVenue}>
-                                            <span className={styles.previewVenueName}>{formData.defaultVenueName?.split(',')[0] || 'THE GRAND HOTEL'}</span>
-                                            {formData.defaultVenueName?.split(',').slice(1).join(',') || 'JODHPUR, RAJASTHAN'}
-                                        </div>
-                                    </div>
-                                </div>
+                        <div 
+                            className={styles.chapterHeader}
+                            onClick={(e) => {
+                                if (activeChapter === 1) {
+                                    e.stopPropagation();
+                                    setActiveChapter(0);
+                                }
+                            }}
+                        >
+                            <div className={styles.chapterHeaderLeft}>
+                                <div className={styles.chapterNumber}>1</div>
+                                <h3 className={styles.chapterTitle}>Your Story</h3>
                             </div>
+                            <ChevronDown size={18} className={styles.chapterToggleIcon} />
+                        </div>
 
-                            <div className={styles.formSide}>
-                                <div className={styles.formContent}>
-                                    <div className={styles.sectionHeaderInner}>
-                                        <div className={styles.stepHeaderContainer}>
-                                            <div className={styles.stepHeaderInfo}>
-                                                <div className={styles.stepBadge}>{step}</div>
-                                                <span className={styles.stepStepText}>Step {step} of 4</span>
-                                            </div>
-                                            <div className={styles.stepTiming}>
-                                                <Clock size={14} />
-                                                <span>Takes 20 seconds</span>
-                                            </div>
-                                        </div>
-                                        <div className={styles.sectionHeaderMain}>
-                                            <h2 className={styles.sectionTitleMain}>Ceremony Details.</h2>
-                                            <p className={styles.sectionSubtitleMain}>
-                                                Define the foundational venue and timing for your primary wedding ceremony.
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div className={styles.wizardCard}>
-                                        <div className={formStyles.grid}>
-                                            <Input
-                                                label="Primary Wedding Date"
-                                                type="date"
-                                                value={formData.primaryDate || ''}
-                                                onChange={(e) => {
-                                                    updateFormData({ primaryDate: e.target.value });
-                                                    if (errors.primaryDate) setErrors(errs => ({ ...errs, primaryDate: '' }));
-                                                }}
-                                                error={errors.primaryDate}
-                                            />
-                                            <Input
-                                                label="Time"
-                                                type="time"
-                                                value={formData.primaryTime || ''}
-                                                onChange={(e) => {
-                                                    updateFormData({ primaryTime: e.target.value });
-                                                    if (errors.primaryTime) setErrors(errs => ({ ...errs, primaryTime: '' }));
-                                                }}
-                                                error={errors.primaryTime}
-                                            />
-                                            <div style={{ gridColumn: 'span 2' }}>
-                                                <Input
-                                                    label="Venue Address"
-                                                    value={formData.defaultVenueName || ''}
-                                                    onChange={(e) => {
-                                                        updateFormData({ defaultVenueName: e.target.value });
-                                                        if (errors.defaultVenueName) setErrors(errs => ({ ...errs, defaultVenueName: '' }));
-                                                    }}
-                                                    placeholder="e.g. The Grand Palace, 123 Royal Road, Jaipur"
-                                                    type="textarea"
-                                                    className={styles.textareaInput}
-                                                    error={errors.defaultVenueName}
-                                                    maxLength={500}
-                                                />
-                                            </div>
-
-                                            <div style={{ gridColumn: 'span 2' }}>
-                                                <div className={styles.mapFieldHeader}>
-                                                    <label className={formStyles.label}>Venue Location (Google Maps)</label>
-                                                    <a 
-                                                        href="https://www.google.com/maps" 
-                                                        target="_blank" 
-                                                        className={styles.mapHelperLink}
-                                                    >
-                                                        Find Coordinates on Maps
-                                                    </a>
+                        <AnimatePresence initial={false}>
+                            {activeChapter === 1 && (
+                                <motion.div
+                                    key="body-1"
+                                    initial={{ height: 0, opacity: 0 }}
+                                    animate={{ height: 'auto', opacity: 1 }}
+                                    exit={{ height: 0, opacity: 0 }}
+                                    transition={{ type: "spring", bounce: 0, duration: 0.4 }}
+                                    style={{ overflow: 'hidden' }}
+                                >
+                                    <div className={styles.chapterBody}>
+                                        <div style={{ display: 'flex', flexDirection: isBrideFirst ? 'column-reverse' : 'column', gap: '1.5rem', position: 'relative' }}>
+                                            <button 
+                                                onClick={() => updateFormData({ nameOrder: isBrideFirst ? 'groom_first' : 'bride_first' })}
+                                                className={styles.swapButton}
+                                                style={{ position: 'absolute', top: '-1.5rem', right: '0', zIndex: 10 }}
+                                                type="button"
+                                                title="Swap Order"
+                                            >
+                                                <ArrowDownUp size={14} color="#6B7280" />
+                                            </button>
+                                            
+                                            <div className={clsx(styles.studioInputGroup, styles.split)}>
+                                                <div>
+                                                    <label className={styles.studioLabel}>Who is the Groom?</label>
+                                                    <Input
+                                                        label="Groom's First Name"
+                                                        hideLabel
+                                                        value={formData.groomName}
+                                                        onFocus={() => handleFocus('groomName')}
+                                                        onBlur={handleBlur}
+                                                        onChange={(e) => updateFormData({ groomName: e.target.value })}
+                                                        placeholder="Groom Name"
+                                                        maxLength={25}
+                                                    />
                                                 </div>
-                                                <Input
-                                                    label="Google Maps Link"
-                                                    hideLabel
-                                                    value={formData.primaryMapLink || ''}
-                                                    onChange={(e) => {
-                                                        const val = e.target.value;
-                                                        updateFormData({ primaryMapLink: val });
-                                                    }}
-                                                    placeholder="e.g. https://www.google.com/maps/search/?api=1&query=26.9124,75.7873"
-                                                    helperText="Guests will use this link for one-tap navigation from their invitation."
-                                                />
+                                                <div>
+                                                    <label className={styles.studioLabel}>Groom's Parents</label>
+                                                    <Input
+                                                        label="Groom's Parents"
+                                                        hideLabel
+                                                        value={formData.groomParents || ''}
+                                                        onFocus={() => handleFocus('groomParents')}
+                                                        onBlur={handleBlur}
+                                                        onChange={(e) => updateFormData({ groomParents: e.target.value })}
+                                                        placeholder="e.g. Mr. & Mrs. Sharma"
+                                                    />
+                                                </div>
+                                            </div>
+                                            
+                                            <div className={clsx(styles.studioInputGroup, styles.split)}>
+                                                <div>
+                                                    <label className={styles.studioLabel}>Who is the Bride?</label>
+                                                    <Input
+                                                        label="Bride's First Name"
+                                                        hideLabel
+                                                        value={formData.brideName}
+                                                        onFocus={() => handleFocus('brideName')}
+                                                        onBlur={handleBlur}
+                                                        onChange={(e) => updateFormData({ brideName: e.target.value })}
+                                                        placeholder="Bride Name"
+                                                        maxLength={25}
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className={styles.studioLabel}>Bride's Parents</label>
+                                                    <Input
+                                                        label="Bride's Parents"
+                                                        hideLabel
+                                                        value={formData.brideParents || ''}
+                                                        onFocus={() => handleFocus('brideParents')}
+                                                        onBlur={handleBlur}
+                                                        onChange={(e) => updateFormData({ brideParents: e.target.value })}
+                                                        placeholder="e.g. Mr. & Mrs. Patel"
+                                                    />
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div className={styles.formFooter}>
-                                    <div className={styles.footerProgressBarContainer}>
-                                        <motion.div 
-                                            className={styles.footerProgressBar}
-                                            initial={{ width: 0 }}
-                                            animate={{ width: `${progressPercentage}%` }}
-                                        />
-                                    </div>
-                                    <AnimatePresence>
-                                        {!!formData.primaryDate && !!formData.primaryTime && !!formData.defaultVenueName?.trim() && (
-                                            <motion.div 
-                                                key="note2"
-                                                initial={{ opacity: 0 }}
-                                                animate={{ opacity: 1 }}
-                                                exit={{ opacity: 0 }}
-                                                className={clsx(styles.formSuccessMessage, styles.footerMessage)}
-                                            >
-                                                <motion.div
-                                                    initial={{ scale: 0, opacity: 0 }}
-                                                    animate={{ scale: 1, opacity: 1 }}
-                                                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                                                >
-                                                    <CheckCircle size={18} color="#D4AF37" />
-                                                </motion.div>
-                                                <motion.div
-                                                    initial={{ opacity: 0, clipPath: 'inset(0 100% 0 0)' }}
-                                                    animate={{ opacity: 1, clipPath: 'inset(0 0% 0 0)' }}
-                                                    transition={{ duration: 0.6, delay: 0.2, ease: "easeInOut" }}
-                                                    style={{ whiteSpace: 'nowrap' }}
-                                                >
-                                                    <span>Your invite defined</span>
-                                                </motion.div>
-                                            </motion.div>
-                                        )}
-                                    </AnimatePresence>
-                                    <button className={styles.backBtn} onClick={handleBack}>
-                                        Back
-                                    </button>
-                                    <button className={styles.continueBtn} onClick={handleNext} disabled={isSaving}>
-                                        Continue Setup
-                                        <ArrowRight size={18} style={{ marginLeft: '12px' }} />
-                                    </button>
-                                </div>
-                            </div>
-                        </motion.div>
-                    )}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
+
+                    {/* CHAPTER 2: The Ceremony */}
+                    <div className={clsx(
+                        styles.chapter, 
+                        activeChapter === 2 ? styles.chapterActive : styles.chapterCollapsed
+                    )} onClick={() => activeChapter !== 2 && setActiveChapter(2)}>
                         
-                        {step === 3 && (
-                            <motion.div 
-                                key="step3"
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                transition={{ duration: 0.3 }}
-                                className={styles.splitLayout}
-                            >
-                            <div className={clsx(styles.previewContainer, styles.formSide)}>
-                                <div className={styles.formContent} style={{ padding: '2rem' }}>
-                                    <div className={styles.timelinePreviewArea}>
-                                        <div className={styles.timelineLineContainer}>
-                                            <div className={styles.timelineGoldLine} />
-                                            {(formData.events || []).map((event) => (
-                                                <div
-                                                    key={`preview-${event.id}`}
-                                                    className={clsx(
-                                                        styles.timelineNodeWrapper,
-                                                        expandedEventId === event.id && styles.timelineNodeEntryActive
-                                                    )}
+                        <div 
+                            className={styles.chapterHeader}
+                            onClick={(e) => {
+                                if (activeChapter === 2) {
+                                    e.stopPropagation();
+                                    setActiveChapter(0);
+                                }
+                            }}
+                        >
+                            <div className={styles.chapterHeaderLeft}>
+                                <div className={styles.chapterNumber}>2</div>
+                                <h3 className={styles.chapterTitle}>The Ceremony</h3>
+                            </div>
+                            <ChevronDown size={18} className={styles.chapterToggleIcon} />
+                        </div>
+
+                        <AnimatePresence initial={false}>
+                            {activeChapter === 2 && (
+                                <motion.div
+                                    key="body-2"
+                                    initial={{ height: 0, opacity: 0 }}
+                                    animate={{ height: 'auto', opacity: 1 }}
+                                    exit={{ height: 0, opacity: 0 }}
+                                    transition={{ type: "spring", bounce: 0, duration: 0.4 }}
+                                    style={{ overflow: 'hidden' }}
+                                >
+                                    <div className={styles.chapterBody}>
+                                        <div className={clsx(styles.studioInputGroup, styles.split)}>
+                                            <div>
+                                                <label className={styles.studioLabel}>When is the Ceremony?</label>
+                                                <Input
+                                                    label="Primary Date"
+                                                    hideLabel
+                                                    type="date"
+                                                    value={formData.primaryDate || ''}
+                                                    onFocus={() => handleFocus('primaryDate')}
+                                                    onBlur={handleBlur}
+                                                    onChange={(e) => updateFormData({ primaryDate: e.target.value })}
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className={styles.studioLabel}>At what time?</label>
+                                                <Input
+                                                    label="Primary Time"
+                                                    hideLabel
+                                                    type="time"
+                                                    value={formData.primaryTime || ''}
+                                                    onFocus={() => handleFocus('primaryTime')}
+                                                    onBlur={handleBlur}
+                                                    onChange={(e) => updateFormData({ primaryTime: e.target.value })}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className={styles.studioInputGroup}>
+                                            <label className={styles.studioLabel}>Where is everyone gathering?</label>
+                                            <Input
+                                                label="Venue Address"
+                                                hideLabel
+                                                type="textarea"
+                                                className={styles.studioTextarea}
+                                                value={formData.defaultVenueName || ''}
+                                                onFocus={() => handleFocus('defaultVenueName')}
+                                                onBlur={handleBlur}
+                                                onChange={(e) => updateFormData({ defaultVenueName: e.target.value })}
+                                                placeholder="e.g. The Grand Palace Hall, Palace Road, Jodhpur"
+                                            />
+                                        </div>
+
+                                        <div className={styles.mapsAutocompleteWrapper}>
+                                            <div className={styles.mapsHeaderRow}>
+                                                <label className={styles.studioLabel}>Google Maps Link</label>
+                                                <a 
+                                                    href="https://www.google.com/maps" 
+                                                    target="_blank" 
+                                                    className={styles.mapsLinkHelper}
+                                                    rel="noopener noreferrer"
                                                 >
-                                                    <div className={clsx(
-                                                        styles.timelineNode,
-                                                        (expandedEventId === event.id || !!event.date) && styles.timelineNodeActive,
-                                                        event.name?.toLowerCase().includes('wedding') && styles.weddingNode
-                                                    )}>
-                                                        {event.name?.toLowerCase().includes('wedding') && <div className={styles.shimmerEffect} />}
+                                                    Find on Maps <ExternalLink size={10} style={{ display: 'inline', marginLeft: '2px' }} />
+                                                </a>
+                                            </div>
+                                            <Input
+                                                label="Maps Link"
+                                                hideLabel
+                                                value={formData.primaryMapLink || ''}
+                                                onFocus={() => handleFocus('primaryMapLink')}
+                                                onBlur={handleBlur}
+                                                onChange={(e) => updateFormData({ primaryMapLink: e.target.value })}
+                                                placeholder="e.g. https://maps.google.com/..."
+                                                helperText="Guests can tap this on their phone to navigate directly to the venue."
+                                            />
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
+
+                    {/* CHAPTER 3: Celebrate Every Moment */}
+                    <div className={clsx(
+                        styles.chapter, 
+                        activeChapter === 3 ? styles.chapterActive : styles.chapterCollapsed
+                    )} onClick={() => activeChapter !== 3 && setActiveChapter(3)}>
+                        
+                        <div 
+                            className={styles.chapterHeader}
+                            onClick={(e) => {
+                                if (activeChapter === 3) {
+                                    e.stopPropagation();
+                                    setActiveChapter(0);
+                                }
+                            }}
+                        >
+                            <div className={styles.chapterHeaderLeft}>
+                                <div className={styles.chapterNumber}>3</div>
+                                <h3 className={styles.chapterTitle}>Celebrate Every Moment</h3>
+                            </div>
+                            <ChevronDown size={18} className={styles.chapterToggleIcon} />
+                        </div>
+
+                        <AnimatePresence initial={false}>
+                            {activeChapter === 3 && (
+                                <motion.div
+                                    key="body-3"
+                                    initial={{ height: 0, opacity: 0 }}
+                                    animate={{ height: 'auto', opacity: 1 }}
+                                    exit={{ height: 0, opacity: 0 }}
+                                    transition={{ type: "spring", bounce: 0, duration: 0.4 }}
+                                    style={{ overflow: 'hidden' }}
+                                >
+                                    <div className={styles.chapterBody}>
+                                        <div className={styles.timelineBuilder}>
+                                            {(formData.events || []).map((event, index) => (
+                                                <div 
+                                                    className={clsx(
+                                                        styles.timelineCard,
+                                                        (focusedField === event.id || activePreviewEventId === event.id) && styles.timelineCardActive
+                                                    )} 
+                                                    key={event.id}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setActivePreviewEventId(event.id);
+                                                    }}
+                                                >
+                                                    <div className={styles.timelineCardHeader}>
+                                                        <div className={styles.timelineCardTitle}>{event.name}</div>
+                                                        <div className={styles.timelineCardControls}>
+                                                            <button 
+                                                                className={styles.timelineBtn}
+                                                                onClick={() => moveEvent(index, 'up')}
+                                                                disabled={index === 0}
+                                                                title="Move Up"
+                                                            >
+                                                                <ArrowUp size={14} />
+                                                            </button>
+                                                            <button 
+                                                                className={styles.timelineBtn}
+                                                                onClick={() => moveEvent(index, 'down')}
+                                                                disabled={index === (formData.events || []).length - 1}
+                                                                title="Move Down"
+                                                            >
+                                                                <ArrowDown size={14} />
+                                                            </button>
+                                                            <button 
+                                                                className={styles.timelineDeleteBtn}
+                                                                onClick={() => removeEvent(event.id)}
+                                                                title="Delete Event"
+                                                            >
+                                                                <Trash2 size={14} />
+                                                            </button>
+                                                        </div>
                                                     </div>
-                                                    <div className={clsx(
-                                                        styles.miniEventCard,
-                                                        expandedEventId === event.id && styles.miniEventActive,
-                                                        (!event.date && !event.time) && styles.miniEventBlank,
-                                                        event.name?.toLowerCase().includes('wedding') && styles.weddingHighlight
-                                                    )}>
-                                                        <div className={styles.miniEventName}>{event.name}</div>
-                                                        <div className={styles.miniEventDetail}>
-                                                            <span>{event.date ? formatDateDisplay(event.date) : ''}</span>
-                                                            <span>{event.time || ''}</span>
+
+                                                    <div className={clsx(styles.studioInputGroup, styles.split)}>
+                                                        <div>
+                                                            <label className={styles.studioLabel}>Event Name</label>
+                                                            <Input
+                                                                label="Event Name"
+                                                                hideLabel
+                                                                value={event.name}
+                                                                onFocus={() => { handleFocus(event.id); setActivePreviewEventId(event.id); }}
+                                                                onBlur={handleBlur}
+                                                                onChange={(e) => updateEvent(event.id, { name: e.target.value })}
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <label className={styles.studioLabel}>Date</label>
+                                                            <Input
+                                                                label="Date"
+                                                                hideLabel
+                                                                type="date"
+                                                                value={event.date || ''}
+                                                                onFocus={() => { handleFocus(event.id); setActivePreviewEventId(event.id); }}
+                                                                onBlur={handleBlur}
+                                                                onChange={(e) => updateEvent(event.id, { date: e.target.value })}
+                                                            />
+                                                        </div>
+                                                    </div>
+
+                                                    <div className={clsx(styles.studioInputGroup, styles.split)}>
+                                                        <div>
+                                                            <label className={styles.studioLabel}>Time</label>
+                                                            <Input
+                                                                label="Time"
+                                                                hideLabel
+                                                                type="time"
+                                                                value={event.time || ''}
+                                                                onFocus={() => { handleFocus(event.id); setActivePreviewEventId(event.id); }}
+                                                                onBlur={handleBlur}
+                                                                onChange={(e) => updateEvent(event.id, { time: e.target.value })}
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <label className={styles.studioLabel}>Venue Name (Optional)</label>
+                                                            <Input
+                                                                label="Venue"
+                                                                hideLabel
+                                                                value={event.venue || ''}
+                                                                onFocus={() => { handleFocus(event.id); setActivePreviewEventId(event.id); }}
+                                                                onBlur={handleBlur}
+                                                                placeholder="Inherits global venue if left empty"
+                                                                onChange={(e) => updateEvent(event.id, { venue: e.target.value, isCustomVenue: !!e.target.value })}
+                                                            />
                                                         </div>
                                                     </div>
                                                 </div>
                                             ))}
                                         </div>
-                                        <div className={styles.completionMessage}>
-                                            “Your wedding celebration is beautifully coming together.”
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
 
-                            <div className={styles.formSide}>
-                                <div className={styles.formContent}>
-                                    <div className={styles.sectionHeaderInner}>
-                                        <div className={styles.stepHeaderContainer}>
-                                            <div className={styles.stepHeaderInfo}>
-                                                <div className={styles.stepBadge}>{step}</div>
-                                                <span className={styles.stepStepText}>Step {step} of 4</span>
-                                            </div>
-                                            <div className={styles.stepTiming}>
-                                                <Clock size={14} />
-                                                <span>Takes 30 seconds</span>
-                                            </div>
-                                        </div>
-                                        <div className={styles.sectionHeaderMain}>
-                                            <h2 className={styles.sectionTitleMain}>Celebration Timeline.</h2>
-                                            <p className={styles.sectionSubtitleMain}>
-                                                Define the key ceremonies and moments of your wedding celebration.
-                                            </p>
-                                        </div>
+                                        <button className={styles.addCeremonyBtn} onClick={handleAddCeremony}>
+                                            <Plus size={16} /> Add Ceremony Card
+                                        </button>
                                     </div>
-                                    <div className={styles.wizardCard}>
-                                        <CelebrationTimeline
-                                            errors={errors}
-                                            setErrors={setErrors}
-                                        />
-                                    </div>
-                                </div>
-                                <div className={styles.formFooter}>
-                                    <div className={styles.footerProgressBarContainer}>
-                                        <motion.div 
-                                            className={styles.footerProgressBar}
-                                            initial={{ width: 0 }}
-                                            animate={{ width: `${progressPercentage}%` }}
-                                        />
-                                    </div>
-                                    <AnimatePresence>
-                                        {(formData.events || []).every(e => !!e.date && !!e.time) && (
-                                            <motion.div 
-                                                key="note3"
-                                                initial={{ opacity: 0 }}
-                                                animate={{ opacity: 1 }}
-                                                exit={{ opacity: 0 }}
-                                                className={clsx(styles.formSuccessMessage, styles.footerMessage)}
-                                            >
-                                                <motion.div
-                                                    initial={{ scale: 0, opacity: 0 }}
-                                                    animate={{ scale: 1, opacity: 1 }}
-                                                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                                                >
-                                                    <CheckCircle size={18} color="#D4AF37" />
-                                                </motion.div>
-                                                <motion.div
-                                                    initial={{ opacity: 0, clipPath: 'inset(0 100% 0 0)' }}
-                                                    animate={{ opacity: 1, clipPath: 'inset(0 0% 0 0)' }}
-                                                    transition={{ duration: 0.6, delay: 0.2, ease: "easeInOut" }}
-                                                    style={{ whiteSpace: 'nowrap' }}
-                                                >
-                                                    <span>Guests respond effortlessly</span>
-                                                </motion.div>
-                                            </motion.div>
-                                        )}
-                                    </AnimatePresence>
-                                    <button className={styles.backBtn} onClick={handleBack}>
-                                        Back
-                                    </button>
-                                    <button className={styles.continueBtn} onClick={handleNext} disabled={isSaving}>
-                                        Continue Setup
-                                        <ArrowRight size={18} style={{ marginLeft: '12px' }} />
-                                    </button>
-                                </div>
-                            </div>
-                        </motion.div>
-                    )}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
+
+                    {/* CHAPTER 4: Ready to Invite */}
+                    <div className={clsx(
+                        styles.chapter, 
+                        activeChapter === 4 ? styles.chapterActive : styles.chapterCollapsed
+                    )} onClick={() => activeChapter !== 4 && setActiveChapter(4)}>
                         
-                        {step === 4 && (
-                            <motion.div 
-                                key="step4"
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                transition={{ duration: 0.3 }}
-                                className={styles.splitLayout}
-                            >
-                            <div className={styles.rsvpPreviewContainer}>
-                                <div className={styles.miniCard}>
-                                    <div className={styles.miniCardTopText}>
-                                        You are joyfully invited <br /> to the wedding of
-                                    </div>
-                                    <div className={styles.miniCardNames}>
-                                        {formData.groomName || 'Rahul'} 
-                                        <span className={styles.miniCardAmpersand}>&</span> 
-                                        {formData.brideName || 'Anjalee'}
-                                    </div>
-                                    
-                                    <div className={styles.miniCardMessageBox}>
-                                        <p className={styles.miniCardMessageText}>
-                                            {formData.invitationMessage || "We're so excited to celebrate our special day with our dearest friends and family! Please join us for an evening of love and laughter."}
-                                        </p>
-                                    </div>
-
-                                    <div className={styles.miniCardRSVPLabel}>RSVP</div>
-                                    
-                                    <div className={styles.miniCardEventTitle}>
-                                        THE {formData.eventType?.toUpperCase() || 'WEDDING'} CEREMONY
-                                    </div>
-                                    <div className={styles.miniCardDate}>
-                                        {formData.primaryDate ? new Date(formData.primaryDate).toLocaleDateString('en-GB', { 
-                                            weekday: 'long', 
-                                            day: 'numeric', 
-                                            month: 'long', 
-                                            year: 'numeric' 
-                                        }) : 'Sunday, 15th of March 2026'}
-                                        {' • '}
-                                        {formData.primaryTime || '19:00'} onwards
-                                    </div>
-
-                                    <div className={styles.miniCardButton}>
-                                        Respond to Invitation
-                                    </div>
-
-                                    <Link href="/" className={styles.miniCardFooter}>
-                                        POWERED BY NIMANTRANSTUDIO
-                                    </Link>
-                                </div>
+                        <div 
+                            className={styles.chapterHeader}
+                            onClick={(e) => {
+                                if (activeChapter === 4) {
+                                    e.stopPropagation();
+                                    setActiveChapter(0);
+                                }
+                            }}
+                        >
+                            <div className={styles.chapterHeaderLeft}>
+                                <div className={styles.chapterNumber}>4</div>
+                                <h3 className={styles.chapterTitle}>Ready to Invite</h3>
                             </div>
+                            <ChevronDown size={18} className={styles.chapterToggleIcon} />
+                        </div>
 
-                            <div className={styles.formSide}>
-                                <div className={styles.formContent}>
-                                    <div className={styles.sectionHeaderInner}>
-                                        <div className={styles.stepHeaderContainer}>
-                                            <div className={styles.stepHeaderInfo}>
-                                                <div className={styles.stepBadge}>4</div>
-                                                <span className={styles.stepStepText}>Step 4 of 4</span>
-                                            </div>
-                                            <div className={styles.stepTiming}>
-                                                <Clock size={14} />
-                                                <span>Takes 30 seconds</span>
-                                            </div>
-                                        </div>
-                                        <div className={styles.sectionHeaderMain}>
-                                            <h1 className={styles.rsvpTitle} style={{ marginTop: 0 }}>Host Your Event</h1>
-                                            <p className={styles.rsvpSubtitle}>
-                                                Create a beautiful, distraction-free RSVP link to share with your loved ones via WhatsApp
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <div className={styles.wizardCard}>
-                                        <div className={formStyles.grid}>
-                                            <div style={{ gridColumn: 'span 2' }}>
-                                                <Input
-                                                    label="EVENT NAME"
-                                                    value={`${formData.groomName || 'Rahul'} and ${formData.brideName || 'Anjalee'}'s Wedding`}
-                                                    readOnly
-                                                />
-                                            </div>
-                                            <div className={formStyles.field}>
-                                                <label className={formStyles.label}>EVENT TYPE</label>
+                        <AnimatePresence initial={false}>
+                            {activeChapter === 4 && (
+                                <motion.div
+                                    key="body-4"
+                                    initial={{ height: 0, opacity: 0 }}
+                                    animate={{ height: 'auto', opacity: 1 }}
+                                    exit={{ height: 0, opacity: 0 }}
+                                    transition={{ type: "spring", bounce: 0, duration: 0.4 }}
+                                    style={{ overflow: 'hidden' }}
+                                >
+                                    <div className={styles.chapterBody}>
+                                        <div className={clsx(styles.studioInputGroup, styles.split)}>
+                                            <div>
+                                                <label className={styles.studioLabel}>Invitation Type</label>
                                                 <select
-                                                    className={styles.selectInput}
+                                                    className={styles.studioSelect}
                                                     value={formData.eventType || 'Wedding'}
                                                     onChange={(e) => {
-                                                        const value = e.target.value;
-                                                        const matched = (formData.events || []).find(ev =>
-                                                            ev.id.toLowerCase() === value.toLowerCase() ||
-                                                            ev.name?.toLowerCase().includes(value.toLowerCase())
-                                                        );
-                                                        const updates: Record<string, string> = { eventType: value };
-                                                        if (matched?.date) updates.primaryDate = matched.date;
-                                                        if (matched?.time) updates.primaryTime = matched.time;
-                                                        updateFormData(updates);
+                                                        const val = e.target.value;
+                                                        updateFormData({ eventType: val });
                                                     }}
                                                 >
-                                                    <option value="Wedding">Wedding</option>
-                                                    <option value="Reception">Reception</option>
-                                                    <option value="Sangeet">Sangeet</option>
-                                                    <option value="Haldi">Haldi</option>
-                                                    <option value="Mehendi">Mehendi</option>
-                                                    <option value="Engagement">Engagement</option>
-                                                    <option value="Other">Other</option>
+                                                    <option value="Wedding">Wedding Ceremony</option>
+                                                    <option value="Reception">Reception Suite</option>
+                                                    <option value="Sangeet">Sangeet Party</option>
+                                                    <option value="Haldi">Haldi Ritual</option>
+                                                    <option value="Mehendi">Mehendi Night</option>
+                                                    <option value="Engagement">Engagement Ring Ceremony</option>
+                                                    <option value="Other">Special Event</option>
                                                 </select>
                                             </div>
-                                            <Input
-                                                label="RSVP DEADLINE (OPTIONAL)"
-                                                type="date"
-                                                value={formData.rsvpDeadline || ''}
-                                                onChange={(e) => updateFormData({ rsvpDeadline: e.target.value })}
-                                            />
-                                            <Input
-                                                label="DATE"
-                                                type="date"
-                                                value={formData.primaryDate || ''}
-                                                onChange={(e) => updateFormData({ primaryDate: e.target.value })}
-                                            />
-                                            <Input
-                                                label="TIME"
-                                                type="time"
-                                                value={formData.primaryTime || ''}
-                                                onChange={(e) => updateFormData({ primaryTime: e.target.value })}
-                                            />
-                                            <div style={{ gridColumn: 'span 2' }}>
+                                            <div>
+                                                <label className={styles.studioLabel}>RSVP Deadline Date</label>
                                                 <Input
-                                                    label="WELCOME MESSAGE"
-                                                    placeholder="Ex: We can't wait to celebrate with you!"
-                                                    type="textarea"
-                                                    value={formData.invitationMessage || ''}
-                                                    onChange={(e) => updateFormData({ invitationMessage: e.target.value })}
+                                                    label="RSVP Deadline"
+                                                    hideLabel
+                                                    type="date"
+                                                    value={formData.rsvpDeadline || ''}
+                                                    onFocus={() => handleFocus('rsvpDeadline')}
+                                                    onBlur={handleBlur}
+                                                    onChange={(e) => updateFormData({ rsvpDeadline: e.target.value })}
                                                 />
                                             </div>
                                         </div>
+
+                                        <div className={styles.studioInputGroup}>
+                                            <label className={styles.studioLabel}>Write a note guests will remember</label>
+                                            <Input
+                                                label="Welcome Message"
+                                                hideLabel
+                                                type="textarea"
+                                                className={styles.studioTextarea}
+                                                value={formData.invitationMessage || ''}
+                                                onFocus={() => handleFocus('invitationMessage')}
+                                                onBlur={handleBlur}
+                                                placeholder="Ex: We can't wait to celebrate our special day with our dearest friends and family!"
+                                                onChange={(e) => updateFormData({ invitationMessage: e.target.value })}
+                                            />
+                                        </div>
                                     </div>
-                                </div>
-                                <div className={styles.formFooter}>
-                                    <div className={styles.footerProgressBarContainer}>
-                                        <motion.div 
-                                            className={styles.footerProgressBar}
-                                            initial={{ width: 0 }}
-                                            animate={{ width: `${progressPercentage}%` }}
-                                        />
-                                    </div>
-                                    <AnimatePresence>
-                                        {!!formData.invitationMessage?.trim() && (
-                                            <motion.div 
-                                                key="note4"
-                                                initial={{ opacity: 0 }}
-                                                animate={{ opacity: 1 }}
-                                                exit={{ opacity: 0 }}
-                                                className={clsx(styles.formSuccessMessage, styles.footerMessage)}
-                                            >
-                                                <motion.div
-                                                    initial={{ scale: 0, opacity: 0 }}
-                                                    animate={{ scale: 1, opacity: 1 }}
-                                                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                                                >
-                                                    <CheckCircle size={18} color="#D4AF37" />
-                                                </motion.div>
-                                                <motion.div
-                                                    initial={{ opacity: 0, clipPath: 'inset(0 100% 0 0)' }}
-                                                    animate={{ opacity: 1, clipPath: 'inset(0 0% 0 0)' }}
-                                                    transition={{ duration: 0.6, delay: 0.2, ease: "easeInOut" }}
-                                                    style={{ whiteSpace: 'nowrap' }}
-                                                >
-                                                    <span>Ready to share</span>
-                                                </motion.div>
-                                            </motion.div>
-                                        )}
-                                    </AnimatePresence>
-                                    <button className={styles.backBtn} onClick={handleBack}>
-                                        Back
-                                    </button>
-                                    <button className={styles.continueBtn} onClick={handleNext} disabled={isSaving}>
-                                        {isSaving ? 'Finalizing...' : 'Finalize & Preview'}
-                                        <ArrowRight size={18} style={{ marginLeft: '12px' }} />
-                                    </button>
-                                </div>
-                            </div>
-                        </motion.div>
-                    )}
-                    </AnimatePresence>
-                </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
+
+                    {/* Final Unveiling Action Card */}
+                    <div className={styles.actionCard}>
+                        <h4 className={styles.actionHeadline}>Let's bring your invitation to life.</h4>
+                        <p className={styles.actionSubtext}>
+                            Everything you shared is in place. We'll now craft your invitation with care, just as your guests will experience it.
+                        </p>
+                        <div className={styles.actionButtonRow}>
+                            <button className={styles.actionBtnPrimary} onClick={handleFinish}>
+                                Preview Invitation <ArrowRight size={18} />
+                            </button>
+                        </div>
+                    </div>
+                </section>
             </main>
-        </div >
+        </div>
     );
 }
 
 export default function DetailsPage() {
     return (
-        <Suspense fallback={<div style={{ minHeight: '100vh' }} />}>
+        <Suspense fallback={<div style={{ minHeight: '100vh', backgroundColor: '#FDFBF7' }} />}>
             <DetailsContent />
         </Suspense>
     );
 }
 
-// --- Helpers ---
-function formatDateDisplay(dateStr?: string) {
-    if (!dateStr) return '';
-    const parts = dateStr.split('-');
-    if (parts.length !== 3) return dateStr;
-    const [year, month, day] = parts;
-    const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-    const monthStr = date.toLocaleString('default', { month: 'short' });
-    return `${day}-${monthStr}-${year}`;
-}
-
-function getDefaultWelcomeMessage(eventName: string): string {
-    const name = eventName.toLowerCase();
-    if (name.includes('haldi')) return "Bless the couple with showers of yellow health and happiness";
-    if (name.includes('mehendi')) return "Join at the mehendi event, with the \"Hands full of mehendi , hearts full of love\"";
-    if (name.includes('sangeet')) return "Join us to turn up the volume \"Naach. gaana aur full-on hungama!\"";
-    if (name.includes('wedding')) return "We are pleased to invite you to the wedding of";
-    if (name.includes('reception')) return "We are pleased to invite you to the reception of";
-    return "";
-}
-
-function getDefaultHeading(eventName: string): string {
-    const name = eventName.toLowerCase();
-    if (name.includes('save the date') || name.includes('savethedate')) return "Save the Date";
-    if (name.includes('haldi')) return "Haldi";
-    if (name.includes('mehendi') || name.includes('mehndi') || name.includes('mehendhi')) return "Mehendi";
-    if (name.includes('sangeet')) return "Sangeet";
-    if (name.includes('wedding')) return "Wedding";
-    if (name.includes('reception')) return "Reception";
-    return eventName || 'Wedding';
-}
-
-// --- Sub Components ---
-
-function CelebrationTimeline({ errors, setErrors }: { errors: Record<string, string>, setErrors: any }) {
-    const { formData, updateFormData, addEvent, removeEvent, updateEvent } = useWeddingStore();
-    const [showVenueFor, setShowVenueFor] = useState<Set<string>>(new Set(
-        (formData.events || []).filter(e => e.venue).map(e => e.id)
-    ));
-
-    const toggleVenue = (e: React.MouseEvent, id: string) => {
-        e.stopPropagation();
-        setShowVenueFor(prev => {
-            const next = new Set(prev);
-            if (next.has(id)) {
-                next.delete(id);
-                updateEvent(id, { venue: '', isCustomVenue: false });
-            } else {
-                next.add(id);
-            }
-            return next;
-        });
-    };
-
-    return (
-        <div className={styles.eventTimelineContainer}>
-            <div className={styles.eventTimelineSection}>
-                {(formData.events || []).map((event, index) => (
-                    <div
-                        key={event.id}
-                        className={clsx(
-                            styles.eventCard,
-                            styles.eventCardActive
-                        )}
-                    >
-                        <div
-                            className={styles.eventCardHeader}
-                        >
-                            <div className={styles.eventCardTitle}>{event.name}</div>
-                            <div className={styles.eventCardHeaderControls}>
-                                {!showVenueFor.has(event.id) && (
-                                    <button
-                                        className={styles.addVenueBtn}
-                                        onClick={(e) => toggleVenue(e, event.id)}
-                                    >
-                                        <Plus size={14} /> Add Venue
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-
-                        <div className={styles.eventCardBody}>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                                    <div className={styles.eventFieldRow}>
-                                        <Input
-                                            label="Date"
-                                            type="date"
-                                            value={event.date || ''}
-                                            onChange={(e) => {
-                                                updateEvent(event.id, { date: e.target.value });
-                                                setErrors((prev: any) => ({ ...prev, [`${event.id}-date`]: '' }));
-                                            }}
-                                            error={errors[`${event.id}-date`]}
-                                        />
-                                        <Input
-                                            label="Time"
-                                            type="time"
-                                            value={event.time || ''}
-                                            onChange={(e) => {
-                                                updateEvent(event.id, { time: e.target.value });
-                                                setErrors((prev: any) => ({ ...prev, [`${event.id}-time`]: '' }));
-                                            }}
-                                            error={errors[`${event.id}-time`]}
-                                        />
-                                    </div>
-
-                                    {showVenueFor.has(event.id) && (
-                                        <div className={styles.venueFieldWrapper}>
-                                            <div className={styles.venueFieldHeader}>
-                                                <button 
-                                                    className={styles.removeVenueBtn}
-                                                    onClick={(e) => toggleVenue(e, event.id)}
-                                                >
-                                                    <X size={14} /> Remove Venue
-                                                </button>
-                                            </div>
-                                            <Input
-                                                label="Venue"
-                                                value={event.venue || ''}
-                                                onChange={(e) => updateEvent(event.id, { venue: e.target.value, isCustomVenue: !!e.target.value })}
-                                                placeholder="Inherits from Global if empty"
-                                                type="textarea"
-                                            />
-                                        </div>
-                                    )}
-
-                                    <button
-                                        className={styles.removeEventBtn}
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            removeEvent(event.id);
-                                        }}
-                                    >
-                                        Remove Event
-                                    </button>
-                                </div>
-                            </div>
-                    </div>
-                ))}
-
-
-            </div>
-        </div>
-    );
-}
-
-function ArchitectureSummary() {
-    const { formData } = useWeddingStore();
-    return (
-        <div className={styles.summaryScroll}>
-            <div className={styles.summaryHeader}>
-                <ShieldCheck size={28} color="#059669" />
-                <h2 style={{ margin: 0 }}>Global Wedding Identity</h2>
-            </div>
-
-            <div className={styles.summaryList}>
-                <div className={styles.summaryItem}>
-                    <Users size={18} />
-                    <span>{formData.brideName} & {formData.groomName}</span>
-                </div>
-                <div className={styles.summaryItem}>
-                    <Calendar size={18} />
-                    <span>{formatDateDisplay(formData.primaryDate)} (Default Date)</span>
-                </div>
-                <div className={styles.summaryItem}>
-                    <MapPin size={18} />
-                    <span>{formData.defaultVenueName} (Default Venue)</span>
-                </div>
-            </div>
-
-            <div className={styles.eventsTimeline}>
-                {(formData.events || []).map((e, i) => (
-                    <div key={e.id} className={styles.summaryEventCard}>
-                        <div className={styles.eventTimeInfo}>
-                            <div style={{ fontWeight: 700 }}>{e.name}</div>
-                            <div style={{ fontSize: '0.875rem', color: '#666' }}>
-                                {formatDateDisplay(e.date || formData.primaryDate)} @ {e.time || 'TBD'}
-                            </div>
-                        </div>
-                        <div className={styles.inheritanceBadge}>
-                            {!e.date && !e.isCustomVenue ? 'INHERITED' : 'CUSTOMIZED'}
-                        </div>
-                    </div>
-                ))}
-            </div>
-        </div>
-    );
-}
-
-// --- Confetti Particles Component ---
+// --- Confetti Particles Subcomponent ---
 function WeddingCelebration() {
     const [particles] = useState(() => 
         Array.from({ length: 40 }).map((_, i) => {
             const angle = Math.random() * Math.PI * 2;
-            const distance = 15 + Math.random() * 35; // distance in vw/vh
+            const distance = 15 + Math.random() * 35;
             return {
                 id: i,
                 endX: 50 + Math.cos(angle) * distance,
-                endY: 50 + Math.sin(angle) * distance + 10, // slight downward bias
-                size: 6 + Math.random() * 8, // refined smaller size
+                endY: 50 + Math.sin(angle) * distance + 10,
+                size: 6 + Math.random() * 8,
                 type: ['heart', 'petal', 'sparkle'][Math.floor(Math.random() * 3)],
-                color: ['#D4AF37', '#FDFBF7', '#FDA4AF', '#EBCDC3'][Math.floor(Math.random() * 4)],
+                color: ['#B39D73', '#FDFBF7', '#FDA4AF', '#EBCDC3'][Math.floor(Math.random() * 4)],
                 duration: 2.0 + Math.random() * 1.5,
-                delay: Math.random() * 0.1, // immediate burst
+                delay: Math.random() * 0.1,
                 rotation: Math.random() * 360,
                 endRotation: Math.random() * 360 + 180
             };
@@ -1165,7 +990,7 @@ function WeddingCelebration() {
                     transition={{
                         duration: p.duration,
                         delay: p.delay,
-                        ease: [0.16, 1, 0.3, 1] // Custom snappy ease out
+                        ease: [0.16, 1, 0.3, 1]
                     }}
                     style={{
                         position: 'absolute',

@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { FloatingFlowers } from '@/components/ui/FloatingFlowers';
 import { MandalaBackground } from '@/components/ui/MandalaBackground';
 import { FlowerPetalDrift } from '@/components/ui/FlowerPetalDrift';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface RSVPFormProps {
     wedding: any;
@@ -333,19 +334,29 @@ export const RSVPForm = ({ wedding }: RSVPFormProps) => {
 
                     <div className={styles.field}>
                         <label>Will you be attending?</label>
-                        <div className={styles.statusGrid}>
+                        <div className={styles.segmentedControl}>
                             {(['attending', 'maybe', 'declined'] as const).map((opt) => (
                                 <button
                                     key={opt}
                                     type="button"
-                                    className={clsx(styles.statusBtn, status === opt && styles.statusBtnActive)}
+                                    className={styles.segmentedTab}
+                                    data-active={status === opt}
                                     onClick={() => setStatus(opt)}
                                 >
-                                    {opt === 'attending'
-                                        ? "I'll be there 🎉"
-                                        : opt === 'maybe'
-                                        ? 'Will try 🤞'
-                                        : 'Sending wishes 💛'}
+                                    {status === opt && (
+                                        <motion.div
+                                            layoutId="active-pill"
+                                            className={styles.segmentedPill}
+                                            transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
+                                        />
+                                    )}
+                                    <span style={{ position: 'relative', zIndex: 2 }}>
+                                        {opt === 'attending'
+                                            ? "I'll be there 🎉"
+                                            : opt === 'maybe'
+                                            ? 'Will try 🤞'
+                                            : 'Sending wishes 💛'}
+                                    </span>
                                 </button>
                             ))}
                         </div>

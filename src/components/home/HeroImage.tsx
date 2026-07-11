@@ -42,42 +42,42 @@ const HeroImage = () => {
                 <FloatingTag
                     icon={<Smartphone size={18} />}
                     text="Create Invites"
-                    delay={1.0}
+                    delay={0.2}
                     top="15%"
                     left="0%"
                 />
                 <FloatingTag
                     icon={<MessageCircle size={18} />}
                     text="WhatsApp Invite"
-                    delay={1.4}
+                    delay={0.25}
                     top="35%"
                     left="-8%"
                 />
                 <FloatingTag
                     icon={<Users size={18} />}
                     text="Guest Management"
-                    delay={1.8}
+                    delay={0.3}
                     top="60%"
                     left="-2%"
                 />
                 <FloatingTag
                     icon={<Calendar size={18} />}
                     text="Multi Event Control"
-                    delay={2.2}
+                    delay={0.35}
                     top="25%"
                     right="-5%"
                 />
                 <FloatingTag
                     icon={<ClipboardCheck size={18} />}
                     text="RSVP Tracking"
-                    delay={2.6}
+                    delay={0.4}
                     top="40%"
                     right="-10%"
                 />
                 <FloatingTag
                     icon={<BarChart size={18} />}
                     text="Analytics Dashboard"
-                    delay={3.0}
+                    delay={0.45}
                     top="65%"
                     right="2%"
                 />
@@ -95,20 +95,16 @@ const FloatingTag = ({ icon, text, delay, top, left, right, bottom }: { icon: Re
             animate={{
                 opacity: 1,
                 scale: 1,
-                y: [0, -6, 0] 
             }}
             transition={{
-                opacity: { duration: 0.8, delay: delay },
-                scale: { duration: 0.8, delay: delay },
-                y: { 
-                    duration: 3, 
-                    repeat: Infinity, 
-                    ease: "easeInOut",
-                    delay: delay
-                }
+                type: "spring",
+                bounce: 0.3,
+                duration: 0.8,
+                delay: delay
             }}
             style={{ top, left, right, bottom }}
-            whileHover={{ scale: 1.05, transition: { duration: 0.2, repeat: 0 } }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.96 }}
         >
             <span className={styles.tagIcon}>{icon}</span>
             <span>{text}</span>

@@ -316,11 +316,18 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
 
             const storageKey = `wedding-card-edits-${event.id}-${theme.id}`;
             
-            // Clone the body to avoid mutating the live DOM and clearing the active selection state
+            // Clone the body and strip ALL editor artifacts before saving
             const bodyClone = doc.body.cloneNode(true) as HTMLElement;
-            bodyClone.querySelectorAll('.resize-handle, .delete-handle, .drag-handle').forEach(el => el.remove());
+            // Remove all handle elements
+            bodyClone.querySelectorAll('.resize-handle, .delete-handle, .drag-handle, .snap-guide').forEach(el => el.remove());
+            // Remove editor state classes
             bodyClone.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
-            bodyClone.querySelectorAll('.snap-guide').forEach(el => el.classList.remove('visible'));
+            bodyClone.querySelectorAll('.editing').forEach(el => {
+                el.classList.remove('editing');
+                el.removeAttribute('contenteditable');
+            });
+            // Remove the sizing-box class so handles don't re-appear until edit mode re-enables them
+            bodyClone.querySelectorAll('.sizing-box').forEach(el => el.classList.remove('sizing-box'));
 
             localStorage.setItem(storageKey, bodyClone.innerHTML);
             console.log("Saved layout clone to localStorage under key:", storageKey);
@@ -442,19 +449,11 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
             const storageKey = `wedding-card-edits-${event.id}-${theme.id}`;
             const savedLayout = typeof window !== 'undefined' ? localStorage.getItem(storageKey) : null;
             if (savedLayout && !hasLoadedSavedLayout.current) {
-                // Validate that core elements originally present in the template are not deleted in the saved layout
-                const isSavedLayoutBroken = !savedLayout.includes('id="bride-name"') || 
-                                            !savedLayout.includes('id="groom-name"') || 
-                                            !savedLayout.includes('id="event-date"');
-
-                if (isSavedLayoutBroken) {
-                    console.warn("Saved layout is missing core elements. Discarding to restore defaults.");
+                if (savedLayout.trim().length < 50) {
+                    // Layout is suspiciously empty — discard it
+                    console.warn("Saved layout appears empty. Discarding.");
                     localStorage.removeItem(storageKey);
                     hasLoadedSavedLayout.current = true;
-                    // Reset iframe src to force reload clean template
-                    if (iframeRef.current) {
-                        iframeRef.current.src = iframeSrc;
-                    }
                 } else {
                     doc.body.innerHTML = savedLayout;
                     hasLoadedSavedLayout.current = true;
@@ -467,7 +466,16 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                             console.error("Error re-initializing editor:", e);
                         }
                     }
+                    // The saved layout already has finalized content — skip the mapping
+                    // loop below so user's visual edits (positions, styles, text) are preserved.
+                    return;
                 }
+            }
+
+            // If a saved layout was already applied in a previous call within this session,
+            // skip re-running the content mapping so user edits aren't overwritten.
+            if (hasLoadedSavedLayout.current && typeof window !== 'undefined' && localStorage.getItem(storageKey)) {
+                return;
             }
 
             const getDefaultHeading = (eName: string) => {
@@ -628,10 +636,21 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                     let formattedValue = displayValue.replace(/\n/g, '<br/>');
                     if (id === 'bride-name' && el.textContent?.trim() === 'Anjali ke haldi') {
                         formattedValue = formattedValue + ' ke haldi';
+                        displayValue = displayValue + ' ke haldi';
                     }
-                    if (el.innerHTML !== formattedValue) {
+                    
+                    // We compare textContent to avoid false positives with HTML tags
+                    const currentText = el.textContent?.replace(/[\n\r]+|[\s]{2,}/g, ' ').trim() || '';
+                    const newText = displayValue.replace(/[\n\r]+|[\s]{2,}/g, ' ').trim();
+                    
+                    if (currentText !== newText || (!el.querySelector('.name-animate') && (id === 'groom-name' || id === 'bride-name'))) {
                         // Preserve handles if they exist inside the element
                         const handles = Array.from(el.querySelectorAll('.resize-handle, .drag-handle, .delete-handle'));
+                        
+                        if (id === 'groom-name' || id === 'bride-name') {
+                            formattedValue = `<span class="name-animate" style="display:inline-block; position:relative; animation: fadeUpIn 220ms cubic-bezier(0.23, 1, 0.32, 1) forwards;">${formattedValue}<span class="gold-underline" style="position:absolute; bottom:0; left:0; height:1px; background:#D4AF37; width:0; opacity:0; animation: drawUnderline 350ms cubic-bezier(0.77, 0, 0.175, 1) 150ms forwards;"></span></span>`;
+                        }
+                        
                         el.innerHTML = formattedValue;
                         handles.forEach(h => el.appendChild(h));
                     }
@@ -711,6 +730,16 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                 }
                 * { hyphens: none !important; -webkit-hyphens: none !important; }
                 .text-overlay { padding-top: 15vh !important; }
+                
+                @keyframes fadeUpIn {
+                    from { opacity: 0; transform: translateY(4px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+                @keyframes drawUnderline {
+                    from { width: 0; opacity: 0; }
+                    to { width: 100%; opacity: 1; }
+                }
+                
                 ${showSizingBoxes ? `
                  .sizing-box {
                     position: relative;
@@ -1296,18 +1325,19 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
         };
 
         const currentIframe = iframeRef.current;
-        const handleLoad = () => {
-            // Try immediately
+        if (!currentIframe) return;
+        
+        let debounceTimer: NodeJS.Timeout;
+
+        const handleInitialLoad = () => {
             updateContent();
             measureLayout();
             
-            // And retry once after a short delay to ensure assets/fonts are settled
             setTimeout(() => {
                 updateContent();
                 measureLayout();
             }, 100);
             
-            // Final pass and reveal
             setTimeout(() => {
                 updateContent();
                 measureLayout();
@@ -1315,13 +1345,67 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
             }, 400);
         };
 
+        const handleUpdate = () => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                updateContent();
+                measureLayout();
+            }, 120);
+        };
+
         if (currentIframe.contentDocument?.readyState === 'complete') {
-            handleLoad();
+            if (!isReady) {
+                handleInitialLoad();
+            } else {
+                handleUpdate();
+            }
         } else {
-            currentIframe.addEventListener('load', handleLoad);
-            return () => currentIframe.removeEventListener('load', handleLoad);
+            currentIframe.addEventListener('load', handleInitialLoad);
         }
-    }, [isHTMLDesign, event, welcomeMessage, groomName, brideName, groomParents, brideParents, customImage, showSizingBoxes, isRawPreview, onLayoutMeasure]);
+
+        return () => {
+            currentIframe.removeEventListener('load', handleInitialLoad);
+            clearTimeout(debounceTimer);
+        };
+    }, [isHTMLDesign, event, welcomeMessage, groomName, brideName, groomParents, brideParents, customImage, isRawPreview, onLayoutMeasure]);
+
+    // Separate effect to apply/remove sizing-box class when edit mode toggles.
+    // This does NOT re-run the full content mapping, so saved edits are never overwritten.
+    useEffect(() => {
+        if (!isHTMLDesign || !iframeRef.current) return;
+        const doc = iframeRef.current.contentDocument || iframeRef.current.contentWindow?.document;
+        if (!doc || !doc.body) return;
+
+        const allIds = [
+            'event-name', 'heading', 'subheading', 'event-subheading',
+            'groom-name', 'bride-name', 'groom-parents', 'groom-parent-name',
+            'bride-parents', 'bride-parent-name', 'event-date', 'event-time',
+            'event-venue', 'venue'
+        ];
+
+        if (showSizingBoxes) {
+            allIds.forEach(id => {
+                const el = doc.getElementById(id);
+                if (el && !el.classList.contains('sizing-box')) {
+                    el.classList.add('sizing-box');
+                }
+            });
+            // Re-inject the drag script if not present
+            if (!doc.getElementById('drag-script')) {
+                const win = iframeRef.current.contentWindow as any;
+                if (win && typeof win.initEditor === 'function') {
+                    try { win.initEditor(); } catch(e) {}
+                }
+            }
+        } else {
+            // Remove sizing-box class and handles when exiting edit mode
+            doc.querySelectorAll('.sizing-box').forEach(el => {
+                el.classList.remove('sizing-box', 'selected', 'editing');
+                el.removeAttribute('contenteditable');
+            });
+            doc.querySelectorAll('.resize-handle, .delete-handle, .drag-handle, .snap-guide').forEach(el => el.remove());
+        }
+    }, [showSizingBoxes, isHTMLDesign]);
 
     const isHaldi = event.name?.toLowerCase().includes('haldi');
     const isContract = variant === 'contract';
@@ -1360,16 +1444,17 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                     left: 0,
                     width: '500px',
                     height: `${iframeHeight}px`,
-                    transform: `scale(${containerScale})`,
+                    opacity: isReady ? 1 : 0,
+                    filter: isReady ? 'blur(0px)' : 'blur(4px)',
+                    transform: `scale(${containerScale}) translateY(${isReady ? '0px' : '8px'})`,
                     transformOrigin: 'top left',
                     pointerEvents: (onClick && !showSizingBoxes) ? 'none' : 'auto',
-                    opacity: isReady ? 1 : 0,
-                    transition: 'opacity 0.3s ease-in-out'
+                    transition: 'opacity 500ms cubic-bezier(0.23, 1, 0.32, 1), filter 500ms cubic-bezier(0.23, 1, 0.32, 1), transform 500ms cubic-bezier(0.23, 1, 0.32, 1)'
                 }}>
                     <iframe
                         key={srcDoc ? 'srcdoc-preview' : iframeSrc}
                         ref={iframeRef}
-                        src={srcDoc ? undefined : iframeSrc}
+                        src={srcDoc ? undefined : encodeURI(iframeSrc || '')}
                         srcDoc={srcDoc}
                         style={{
                             width: '100%',

@@ -62,3 +62,7 @@ public/Image/bundle/item-*.html
 !public/Image/bundle/template-Mehendi Invitation-1781553435090-350530231.html
 !public/Image/bundle/template-Reception-1781554136473-676183667.html
 
+# Local uploads
+/public/uploads/
+
+

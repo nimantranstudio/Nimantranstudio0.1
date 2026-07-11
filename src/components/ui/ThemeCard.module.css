@@ -3,7 +3,7 @@
     border-radius: 1.25rem;
     overflow: hidden;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     cursor: pointer;
     border: 1px solid #f0f0f0;
     position: relative;
@@ -40,7 +40,12 @@
 
 .card:hover {
     transform: translateY(-8px);
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.1), 0 8px 16px -4px rgba(0, 0, 0, 0.04);
+}
+
+.card:active {
+    transform: scale(0.98);
+    transition: transform 0s;
 }
 
 .imageWrapper {
@@ -190,12 +195,17 @@
     font-size: 0.95rem;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     display: flex;
     align-items: center;
     justify-content: center;
     box-shadow: 0 4px 12px rgba(212, 175, 55, 0.2);
     margin-top: auto;
+}
+
+.cta:active {
+    transform: scale(0.96);
+    transition: transform 0s;
 }
 
 .cta:hover {

@@ -1,3 +1,9 @@
+/* ─── VARIABLES ──────────────────────────────────────────────────────────── */
+:root {
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+    --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+}
+
 /* ─── PAGE SHELL ─────────────────────────────────────────────────────────── */
 .page {
     min-height: 100vh;
@@ -28,8 +34,9 @@
     display: flex;
     flex-direction: column;
     box-shadow:
-        0 8px 40px rgba(0, 0, 0, 0.06),
-        0 2px 8px rgba(0, 0, 0, 0.03),
+        0 4px 24px rgba(0, 0, 0, 0.04),
+        0 1px 2px rgba(0, 0, 0, 0.04),
+        0 8px 64px rgba(197, 160, 89, 0.08),
         inset 0 0 0 1px rgba(197, 160, 89, 0.12);
     z-index: 10;
     overflow-y: auto;
@@ -217,16 +224,9 @@
     padding-top: 1.25rem;
 }
 
-/* ─── PRIMARY CTA — SHIMMER ─────────────────────────────────────────────── */
-@keyframes btnShimmer {
-    0%   { background-position: -200% center; }
-    100% { background-position: 200% center; }
-}
-
+/* ─── PRIMARY CTA ───────────────────────────────────────────────────────── */
 .respondBtn {
-    background: linear-gradient(120deg, #C5A059 0%, #D4AF37 35%, #E8C96D 50%, #D4AF37 65%, #C5A059 100%);
-    background-size: 200% auto;
-    animation: btnShimmer 4s linear infinite;
+    background: #C5A059;
     color: white;
     padding: 0.95rem 2.5rem;
     width: auto;
@@ -237,7 +237,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: transform 160ms var(--ease-out), box-shadow 200ms var(--ease-out), background-color 200ms var(--ease-out);
     border: none;
     cursor: pointer;
     box-shadow: 0 4px 18px rgba(197, 160, 89, 0.28);
@@ -245,8 +245,12 @@
 }
 
 .respondBtn:hover {
-    transform: translateY(-2px);
+    background: #B6924E;
     box-shadow: 0 8px 24px rgba(197, 160, 89, 0.38);
+}
+
+.respondBtn:active {
+    transform: scale(0.97);
 }
 
 /* ─── BACK BUTTON (ghost pill) ───────────────────────────────────────────── */
@@ -259,9 +263,18 @@
     font-size: 0.82rem;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 200ms var(--ease-out);
     text-decoration: none;
     letter-spacing: 0.01em;
+}
+
+.backButton:hover {
+    border-color: #C5A059;
+    color: #C5A059;
+}
+
+.backButton:active {
+    transform: scale(0.97);
 }
 
 .backButton:hover {
@@ -317,7 +330,7 @@
     border-radius: 12px;
     font-size: 1rem;
     outline: none;
-    transition: all 0.2s ease-in-out;
+    transition: border-color 200ms var(--ease-out), box-shadow 200ms var(--ease-out), background-color 200ms var(--ease-out);
     background-color: #FDFCFA;
     color: #1e293b;
     font-family: inherit;
@@ -325,7 +338,7 @@
 
 .input:focus {
     border-color: #C5A059;
-    box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.1);
+    box-shadow: 0 0 0 4px rgba(197, 160, 89, 0.15);
     background-color: #FFFFFF;
 }
 
@@ -352,21 +365,53 @@
 }
 
 /* ─── STATUS / DIETARY BUTTONS ───────────────────────────────────────────── */
-.statusGrid,
+.segmentedControl {
+    display: flex;
+    position: relative;
+    background: #F8F6F0;
+    border-radius: 14px;
+    padding: 4px;
+    border: 1px solid #EDE8E0;
+}
+
+.segmentedTab {
+    flex: 1;
+    position: relative;
+    padding: 0.6rem 0.4rem;
+    font-size: 0.82rem;
+    line-height: 1.4;
+    text-align: center;
+    color: #64748B;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    transition: color 200ms var(--ease-out);
+    z-index: 2;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.segmentedTab[data-active="true"] {
+    color: #1e293b;
+    font-weight: 600;
+}
+
+.segmentedPill {
+    position: absolute;
+    inset: 0;
+    background: #FFFFFF;
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+    z-index: 1;
+}
+
+/* Dietary Buttons (Legacy) */
 .dietaryGrid {
     display: grid;
     gap: 0.625rem;
-}
-
-.statusGrid {
-    grid-template-columns: repeat(3, 1fr);
-}
-
-.dietaryGrid {
     grid-template-columns: 1fr 1fr;
 }
 
-.statusBtn,
 .dietaryBtn {
     padding: 0.7rem 0.4rem;
     border: 1px solid #EDE8E0;
@@ -376,19 +421,21 @@
     line-height: 1.4;
     text-align: center;
     color: #475569;
-    transition: all 0.2s;
+    transition: all 200ms var(--ease-out);
     font-weight: 500;
     cursor: pointer;
     font-family: inherit;
 }
 
-.statusBtn:hover,
 .dietaryBtn:hover {
     border-color: #C5A059;
     background-color: #FEF9F0;
 }
 
-.statusBtnActive,
+.dietaryBtn:active {
+    transform: scale(0.97);
+}
+
 .dietaryBtnActive {
     background: linear-gradient(135deg, #C5A059, #D4AF37);
     color: white;
@@ -396,7 +443,6 @@
     box-shadow: 0 2px 10px rgba(197, 160, 89, 0.25);
 }
 
-.statusBtnActive:hover,
 .dietaryBtnActive:hover {
     background: linear-gradient(135deg, #C5A059, #D4AF37);
     border-color: transparent;
@@ -412,9 +458,7 @@
 
 /* ─── SUBMIT BUTTON ──────────────────────────────────────────────────────── */
 .submit {
-    background: linear-gradient(120deg, #C5A059 0%, #D4AF37 35%, #E8C96D 50%, #D4AF37 65%, #C5A059 100%);
-    background-size: 200% auto;
-    animation: btnShimmer 4s linear infinite;
+    background: #C5A059;
     color: white;
     padding: 0.9rem 2.5rem;
     width: auto;
@@ -422,7 +466,7 @@
     border-radius: 99px;
     font-size: 1rem;
     font-weight: 600;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: transform 160ms var(--ease-out), box-shadow 200ms var(--ease-out), background-color 200ms var(--ease-out);
     border: none;
     cursor: pointer;
     box-shadow: 0 4px 18px rgba(197, 160, 89, 0.28);
@@ -431,14 +475,17 @@
 }
 
 .submit:hover {
-    transform: translateY(-2px);
+    background: #B6924E;
     box-shadow: 0 8px 24px rgba(197, 160, 89, 0.38);
+}
+
+.submit:active {
+    transform: scale(0.97);
 }
 
 .submit:disabled {
     opacity: 0.65;
     cursor: not-allowed;
-    animation: none;
     background: #C5A059;
 }
 

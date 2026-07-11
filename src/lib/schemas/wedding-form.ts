@@ -32,6 +32,7 @@ export const WeddingFormSchema = z.object({
     brideName: z.string().max(25, "Maximum 25 characters").optional(),
     groomParents: z.string().max(100, "Maximum 100 characters").optional(),
     brideParents: z.string().max(100, "Maximum 100 characters").optional(),
+    nameOrder: z.enum(['groom_first', 'bride_first']).default('groom_first').optional(),
     // Step 2: Ceremony Details
     primaryDate: z.string().optional(),
     primaryTime: z.string().optional(),

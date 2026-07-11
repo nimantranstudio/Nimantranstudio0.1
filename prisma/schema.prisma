@@ -52,6 +52,8 @@ model Bundle {
   itemImages        String?
 
   themeRef          Theme?          @relation(fields: [themeId], references: [id])
+  videoTemplateId   String?
+  videoTemplate     VideoTemplate?  @relation(fields: [videoTemplateId], references: [id])
   bundleItems       BundleItem[]
   orders                Order[]
   bundleInvoices        BundleInvoice[]
@@ -86,17 +88,34 @@ model Event {
 }
 
 model Order {
-  id          String   @id @default(cuid())
-  userId      String
-  bundleId    String
-  totalAmount Float
-  status      String   @default("pending")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  bundle      Bundle   @relation(fields: [bundleId], references: [id])
-  user        User     @relation(fields: [userId], references: [id])
+  id             String          @id @default(cuid())
+  userId         String
+  bundleId       String
+  totalAmount    Float
+  status         String          @default("pending")
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  bundle         Bundle          @relation(fields: [bundleId], references: [id])
+  user           User            @relation(fields: [userId], references: [id])
+  videoRenderJob VideoRenderJob?
 
   @@map("Order")
+}
+
+model VideoRenderJob {
+  id            String   @id @default(cuid())
+  orderId       String   @unique
+  order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  compositionId String
+  inputProps    Json
+  status        String   @default("PENDING") // PENDING | RENDERING | DONE | FAILED
+  progress      Int      @default(0)
+  outputUrl     String?
+  error         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("VideoRenderJob")
 }
 
 model Theme {
@@ -113,6 +132,8 @@ model Theme {
   isPopular     Boolean   @default(false)
   bundles       Bundle[]
   weddings      Wedding[]
+  videoTemplateId String?
+  videoTemplate   VideoTemplate? @relation(fields: [videoTemplateId], references: [id])
 
   @@map("Theme")
 }
@@ -240,4 +261,17 @@ model Blog {
   updatedAt       DateTime @updatedAt
 
   @@map("Blog")
+}
+
+model VideoTemplate {
+  id          String   @id @default(cuid())
+  name        String
+  config      Json     // The JSON configuration containing layers, text styles, animations, audio
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  themes      Theme[]
+  bundles     Bundle[]
+
+  @@map("VideoTemplate")
 }

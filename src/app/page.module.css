@@ -77,6 +77,11 @@
   background: #c49b2e;
 }
 
+.stripCta:active {
+  transform: scale(0.96);
+  transition: transform 0s;
+}
+
 .stripClose {
   position: absolute;
   right: 1rem;
@@ -94,6 +99,11 @@
 
 .stripClose:hover {
   color: #111;
+}
+
+.stripClose:active {
+  transform: scale(0.92);
+  transition: transform 0s;
 }
 
 .hero {
@@ -216,7 +226,7 @@
   color: #000000;
   font-weight: 400;
   font-size: 1.1rem;
-  letter-spacing: 0;
+  letter-spacing: 0.05em;
 }
 
 .trustedBadge strong {
@@ -240,6 +250,7 @@
 .heroTitle {
   font-size: 2.5rem;
   margin-bottom: 2rem !important;
+  letter-spacing: -0.02em;
 }
 
 .subtitle {

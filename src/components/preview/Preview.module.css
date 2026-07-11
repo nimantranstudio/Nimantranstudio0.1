@@ -135,6 +135,7 @@
     color: #111827;
     margin-bottom: 2rem;
     font-weight: 500;
+    letter-spacing: -0.02em;
 }
 
 .suiteList {
@@ -150,14 +151,19 @@
     border-radius: 24px;
     gap: 2rem;
     margin-bottom: 1.5rem;
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     background: white;
 }
 
 .suiteItem:hover {
     border-color: #D1D5DB;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    box-shadow: 0 12px 32px -8px rgba(0,0,0,0.08), 0 4px 12px -4px rgba(0,0,0,0.04);
     transform: translateY(-1px);
+}
+
+.suiteItem:active {
+    transform: scale(0.98);
+    transition: transform 0s;
 }
 
 .suiteThumbContainer {
@@ -298,7 +304,7 @@
     border-radius: 6px;
     color: #1E293B;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .copyPill:hover {
@@ -390,7 +396,7 @@
     font-weight: 500;
     cursor: pointer;
     white-space: nowrap;
-    transition: all 0.2s;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .suiteActionButton:hover {
@@ -421,7 +427,7 @@
     border-radius: 6px;
     color: #6B7280;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .suiteQuickActionBtn:hover {
@@ -429,6 +435,11 @@
     color: #111827;
     border-color: #D1D5DB;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.suiteQuickActionBtn:active {
+    transform: scale(0.94);
+    transition: transform 0s;
 }
 
 /* Right Column: Summary & Info */
@@ -459,7 +470,7 @@
     color: #111827;
     padding: 2rem;
     border-radius: 24px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.1), 0 8px 16px -4px rgba(0, 0, 0, 0.04);
     border: 1px solid #F3F4F6;
 }
 
@@ -469,6 +480,7 @@
     font-weight: 500;
     color: #111827;
     margin-bottom: 1.5rem;
+    letter-spacing: -0.02em;
 }
 
 .breakdownBox {
@@ -698,7 +710,7 @@
 
 .unlockButton:hover {
     transform: translateY(-2px);
-    box-shadow: 0 15px 30px -5px rgba(179, 143, 61, 0.5); /* Warmer magnetic shadow */
+    box-shadow: 0 16px 32px -8px rgba(179, 143, 61, 0.5), 0 4px 12px -4px rgba(179, 143, 61, 0.3);
 }
 
 @keyframes shineSweep {
@@ -706,9 +718,9 @@
     100% { transform: translateX(300%) skewX(-25deg); }
 }
 
-.unlockButton:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(179, 143, 61, 0.5);
+.unlockButton:active {
+    transform: scale(0.97);
+    transition: transform 0s;
 }
 
 .featureList {

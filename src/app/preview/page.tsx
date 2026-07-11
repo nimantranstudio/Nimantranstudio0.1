@@ -167,9 +167,14 @@ function PreviewContent() {
     }, [searchParams]);
     const [copyStatus, setCopyStatus] = useState(false);
 
-    // Generate RSVP Link based on couple names
-    const rsvpSlug = `${formData.groomName?.toLowerCase().split(' ')[0] || 'wedding'}-${formData.brideName?.toLowerCase().split(' ')[0] || 'rsvp'}`;
-    const rsvpFullUrl = `https://nimantran.app/rsvp/${rsvpSlug}`;
+    // Generate RSVP Link based on actual saved wedding ID and current origin
+    const weddingId = searchParams.get('id');
+    const rsvpSlug = weddingId || `${formData.groomName?.toLowerCase().split(' ')[0] || 'wedding'}-${formData.brideName?.toLowerCase().split(' ')[0] || 'rsvp'}`;
+    const [origin, setOrigin] = useState('');
+    useEffect(() => {
+        setOrigin(window.location.origin);
+    }, []);
+    const rsvpFullUrl = origin ? `${origin}/rsvp/${rsvpSlug}` : `https://nimantran.app/rsvp/${rsvpSlug}`;
 
     const handleCopyRsvpLink = async () => {
         try {

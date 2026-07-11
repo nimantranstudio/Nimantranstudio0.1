@@ -42,6 +42,11 @@ const nextConfig: NextConfig = {
   // Common compression and power-user optimizations
   compress: true,
   poweredByHeader: false,
+  serverExternalPackages: [
+    '@remotion/renderer',
+    '@remotion/bundler',
+    '@ffmpeg-installer/ffmpeg'
+  ],
 };
 
 export default nextConfig;

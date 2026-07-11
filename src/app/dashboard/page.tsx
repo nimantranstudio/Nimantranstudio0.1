@@ -9,6 +9,7 @@ import type { Theme } from '@/lib/constants/themes';
 import styles from './dashboard.module.css';
 import redesignStyles from './dashboard-redesign.module.css';
 import { motion } from 'framer-motion';
+import { VideoInviteCard } from './VideoInviteCard';
 import { 
     Users, 
     FileText, 
@@ -257,6 +258,27 @@ export default function DashboardPage() {
         } catch (err) {
             console.error('Copy failed:', err);
         }
+    };
+
+    const getSlideImage = (typeKey: string, fallback: string) => {
+        const item = bundleItems?.find(bi => {
+            const biType = (bi.eventType || bi.event?.eventName || '').toUpperCase().replace(/_/g, '');
+            return biType.includes(typeKey.toUpperCase());
+        });
+        if (item?.templatePath) return item.templatePath;
+        
+        const displayImages = (bundleImages && bundleImages.length > 0) ? bundleImages : (theme?.previewImages || []);
+        const indexMap: Record<string, number> = {
+            'SAVE_THE_DATE': 0,
+            'HALDI': 1,
+            'MEHENDI': 2,
+            'SANGEET': 3,
+            'WEDDING': 4,
+        };
+        const idx = indexMap[typeKey];
+        if (idx !== undefined && displayImages[idx]) return displayImages[idx];
+        
+        return fallback;
     };
 
     if (!isMounted || !isAuthenticated) return null;
@@ -594,6 +616,25 @@ export default function DashboardPage() {
                                 </div>
                             </div>
                         </div>
+
+                        {/* Video Invitation Card */}
+                        {lastSavedWeddingId && (
+                            <VideoInviteCard
+                                orderId={lastSavedWeddingId} // Use wedding ID/order ID identifier
+                                groomName={formData.groomName || 'Groom'}
+                                brideName={formData.brideName || 'Bride'}
+                                eventDate={formData.primaryDate || (formData.events?.[0]?.date) || '14th Feb 2026'}
+                                eventTime={formData.events?.[0]?.time || '6:30 PM'}
+                                venue={formData.events?.[0]?.venue || 'Hotel Grand Resort'}
+                                eventType={formData.events?.[0]?.name || 'Wedding'}
+                                themeColor={theme?.name?.toLowerCase().includes('haldi') ? '#D97706' : '#b38b40'}
+                                slide1Bg={getSlideImage('SAVE_THE_DATE', '/assets/themes/rajputana/save-the-date.png')}
+                                slide2Bg={getSlideImage('HALDI', '/assets/themes/rajputana/haldi-invite.png')}
+                                slide3Bg={getSlideImage('MEHENDI', '/assets/themes/rajputana/mehendi-invite.png')}
+                                slide4Bg={getSlideImage('SANGEET', '/assets/themes/rajputana/sangeet-invite.png')}
+                                slide5Bg={getSlideImage('WEDDING', '/assets/themes/rajputana/wedding-invite.png')}
+                            />
+                        )}
 
                         {/* Status Card */}
                         <div className={styles.card} style={{ margin: 0 }}>

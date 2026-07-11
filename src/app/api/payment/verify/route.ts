@@ -21,6 +21,34 @@ export async function POST(req: NextRequest) {
         if (generated_signature === razorpay_signature) {
             // Payment is successful and verified
             // TODO: Update database (mark bundle as paid, etc.)
+
+            // Find the order that corresponds to this payment
+            // We use the Razorpay order ID to match or find the order
+            try {
+                const { prisma } = await import('@/lib/prisma');
+                const order = await prisma.order.findFirst({
+                    where: { id: razorpay_order_id }
+                });
+                
+                if (order) {
+                    await prisma.order.update({
+                        where: { id: order.id },
+                        data: { status: 'paid' }
+                    });
+
+                    // Trigger the video render generation asynchronously
+                    const renderUrl = `${req.nextUrl.origin}/api/videos/render`;
+                    fetch(renderUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ orderId: order.id })
+                    }).catch(err => {
+                        console.error('Failed to trigger video render in background:', err);
+                    });
+                }
+            } catch (dbErr) {
+                console.error('Error updating order state or triggering render:', dbErr);
+            }
             
             return NextResponse.json({ success: true, message: 'Payment verified successfully' });
         } else {

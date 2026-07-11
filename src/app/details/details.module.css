@@ -1,1384 +1,772 @@
+/* Quiet Luxury Design Tokens & Invitation Studio Layout */
+
+:root {
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+    --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+    --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
 .page {
     min-height: 100vh;
-    padding-bottom: 60px;
-    background-color: #FDFBF7;
-    /* Match Landing Page warm off-white */
+    background-color: #FDFBF7; /* Warm off-white / ivory cream */
+    color: #1B3B2B; /* Deep forest green */
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    padding-bottom: 5rem;
 }
 
 .header {
-    padding: 1.5rem 0;
-    background-color: #FDFBF7;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 2rem;
-    text-align: left;
-}
-
-.title {
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
-}
-
-.subtitle {
-    color: var(--muted-foreground);
-}
-
-/* Layout */
-.layout {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 3rem;
-    padding-bottom: 6rem;
-}
-
-@media (min-width: 1024px) {
-    .layout {
-        grid-template-columns: 450px 1fr;
-        /* Fixed width for image preview, rest for form */
-        align-items: start;
-    }
-}
-
-/* Image Grid Column */
-.imageCol {
-    position: sticky;
-    top: 2rem;
-}
-
-.imageGrid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.75rem;
-}
-
-.imageCard {
-    aspect-ratio: 3/4;
-    border-radius: 8px;
-    overflow: hidden;
-    position: relative;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    transition: transform 0.2s;
-    background-color: #f0f0f0;
-    /* Fallback */
-}
-
-.imageCard:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-/* Form Column */
-.formColumn {
-    width: 100%;
-    max-width: 800px;
-}
-
-.swapSection {
-    position: relative;
-}
-
-.sectionHeader {
+    padding: 1.5rem 2rem;
+    background-color: transparent;
+    border-bottom: 1px solid rgba(27, 59, 43, 0.06);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid var(--border);
 }
 
-.sectionTitle {
-    font-size: 1.5rem;
-    color: var(--foreground);
-    margin-bottom: 0;
-    padding-bottom: 0;
-    border-bottom: none;
-}
-
-.sectionSwapBtn {
+/* Save Status Indicator */
+.saveStatus {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    background: none;
-    border: 1px solid var(--border);
-    padding: 0.5rem 1rem;
-    border-radius: 100px;
     font-size: 0.8125rem;
     font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
+    color: #B39D73; /* Muted gold */
+    background: rgba(179, 157, 115, 0.08);
+    padding: 0.35rem 0.85rem;
+    border-radius: 100px;
+    border: 1px solid rgba(179, 157, 115, 0.15);
+    transition: opacity 200ms var(--ease-out);
 }
 
-.sectionSwapBtn span {
-    display: none;
+.saveStatus.saving {
+    animation: statusPulse 1.5s infinite ease-in-out;
 }
 
-@media (min-width: 640px) {
-    .sectionSwapBtn span {
-        display: inline;
+@keyframes statusPulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+}
+
+/* Main Split Studio Container */
+.studioContainer {
+    max-width: 1400px;
+    margin: 2rem auto;
+    padding: 0 1.5rem;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 3rem;
+    align-items: start;
+}
+
+@media (min-width: 1024px) {
+    .studioContainer {
+        grid-template-columns: 4.5fr 7.5fr; /* 38% / 62% ratio */
     }
 }
 
-.primarySwap {
-    color: var(--secondary);
-    border-color: var(--secondary);
-}
-
-.primarySwap:hover {
-    background-color: var(--secondary);
-    color: white;
-}
-
-.formInlineActions {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 3rem;
-    margin-top: 2.5rem;
-    padding-top: 2rem;
-    border-top: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-.footerRight {
-    display: flex;
-    align-items: center;
-    gap: 3rem;
-}
-
-.formSuccessMessage {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin-top: 1.5rem;
-    color: #6B7280;
-    font-size: 0.9375rem;
-    padding: 0.5rem 0;
-    margin-right: auto; /* Pushes sibling buttons to the right */
-}
-
-.footerMessage {
-    margin-top: 0;
-}
-
-.backBtn {
-    background: none;
-    border: none;
-    color: #4B5563;
-    font-size: 0.9375rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: color 0.2s;
-}
-
-.backBtn:hover {
-    color: #111827;
-}
-
-.continueBtn {
-    display: flex;
-    align-items: center;
-    background: #1A1A1A;
-    color: white;
-    padding: 0.875rem 2.5rem;
-    border-radius: 100px;
-    font-size: 1rem;
-    font-weight: 500;
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.continueBtn:hover:not(:disabled) {
-    background: #262626;
-    transform: translateY(-1px);
-    box-shadow: 0 8px 24px rgba(212, 175, 55, 0.15);
-}
-
-.continueBtn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-/* Wizard Styles */
-.wizardHeader {
-    margin: 2rem 0 3rem;
-    display: flex;
-    justify-content: center;
-}
-
-.stepIndicator {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    width: 100%;
-    max-width: 800px;
-}
-
-.stepItem {
+/* Sticky Preview Container */
+.previewCol {
+    position: sticky;
+    top: 2.5rem;
     display: flex;
     flex-direction: column;
     align-items: center;
+    width: 100%;
+}
+
+/* Living Invitation Card Frame */
+.inviteFrame {
+    width: 100%;
+    max-width: 350px;
+    aspect-ratio: 9/16;
+    border-radius: 20px;
+    background: #FFFFFF;
+    box-shadow: 0 25px 60px -15px rgba(27, 59, 43, 0.08);
+    border: 1px solid rgba(27, 59, 43, 0.04);
     position: relative;
-    flex: 1;
-    color: #111827; /* Rich black */
-}
-
-.stepIcon {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    background: white; /* Pure white interior */
+    overflow: hidden;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.25rem;
-    margin-bottom: 0.5rem;
-    border: 1px solid rgba(212, 175, 55, 0.4); /* Fine golden border */
-    transition: all 0.3s ease;
-    z-index: 1;
+    flex-direction: column;
+    animation: floatingInvite 5s infinite ease-in-out;
+    transition: box-shadow 250ms var(--ease-out);
 }
 
-.stepLabel {
-    font-size: 0.75rem;
+.inviteFrame:hover {
+    box-shadow: 0 35px 80px -10px rgba(27, 59, 43, 0.14);
+}
+
+@keyframes floatingInvite {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+
+/* Luxurious Off-white Paper Surface */
+.paperSurface {
+    margin: 16px;
+    flex: 1;
+    border: 1px solid rgba(179, 157, 115, 0.25); /* Gold outline */
+    border-radius: 12px;
+    background: #FCFAF7;
+    position: relative;
+    overflow: hidden;
+    box-shadow: inset 0 0 40px rgba(179, 157, 115, 0.03);
+}
+
+/* Watermark / Mandala Background */
+.paperSurface::before {
+    display: none;
+}
+
+/* Floating Particle Layers inside Invitation Preview */
+.goldFoilOrnament {
+    display: none;
+}
+
+.previewTextGlow {
+    transition: text-shadow 200ms var(--ease-out), color 200ms var(--ease-out), transform 200ms var(--ease-out);
+}
+
+/* Dynamic Glow States */
+.glowing {
+    color: #1B3B2B !important;
+    text-shadow: 0 0 12px rgba(179, 157, 115, 0.7) !important;
+    transform: scale(1.02);
+}
+
+.previewSubtitle {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.25em;
+    color: #B39D73;
+    margin-bottom: 2.5rem;
+    font-weight: 500;
+}
+
+.coupleNamesContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.previewGroomName, .previewBrideName {
+    font-family: Georgia, serif;
+    font-size: 2.75rem;
+    font-weight: 300;
+    color: #1B3B2B;
+    line-height: 1.2;
+}
+
+.previewAmpersand {
+    font-family: Georgia, serif;
+    font-style: italic;
+    font-size: 1.5rem;
+    color: #B39D73;
+    margin: 0.25rem 0;
+}
+
+.previewLineDivider {
+    width: 35px;
+    height: 1px;
+    background: rgba(179, 157, 115, 0.3);
+    margin: 2.5rem 0;
+}
+
+.previewDate {
+    font-family: -apple-system, sans-serif;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.2em;
     font-weight: 600;
+    color: #1B3B2B;
+    margin-bottom: 1.25rem;
+}
+
+.previewVenueAddress {
+    font-size: 0.75rem;
+    line-height: 1.6;
+    color: #6B7280;
+    max-width: 250px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.previewVenueTitle {
+    font-weight: 700;
+    color: #1B3B2B;
+    display: block;
+    margin-bottom: 0.2rem;
+}
+
+/* Timeline Preview Node */
+.previewTimelineList {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    position: relative;
+    padding-left: 2rem;
+    text-align: left;
+    margin-top: 1.5rem;
+}
+
+.previewTimelineLine {
+    position: absolute;
+    left: 7.5px;
+    top: 5px;
+    bottom: 5px;
+    width: 1px;
+    background: rgba(179, 157, 115, 0.35);
+}
+
+.previewTimelineNode {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.25rem;
+    position: relative;
+}
+
+.previewTimelineBullet {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background: #FCFAF7;
+    border: 1.5px solid #B39D73;
+    z-index: 2;
+    margin-top: 2px;
+    transition: background-color 200ms var(--ease-out), border-color 200ms var(--ease-out), transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.previewTimelineBullet.active {
+    background: #B39D73;
+    box-shadow: 0 0 8px rgba(179, 157, 115, 0.4);
+    transform: scale(1.25);
+}
+
+.previewTimelineNodeContent {
+    display: flex;
+    flex-direction: column;
+}
+
+.previewTimelineNodeName {
+    font-family: Georgia, serif;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1B3B2B;
+}
+
+.previewTimelineNodeMeta {
+    font-size: 0.7rem;
+    color: #8C8F8E;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+    margin-top: 0.15rem;
 }
 
-.stepLine {
-    position: absolute;
-    top: 24px;
-    left: calc(50% + 24px);
-    width: calc(100% - 48px);
-    height: 1px;
-    background: rgba(212, 175, 55, 0.3); /* Fine golden line */
-    z-index: 0;
-}
-
-.stepActive {
-    color: #111827;
-}
-
-.stepActive .stepIcon {
-    background: #D4AF37;
-    border-color: #D4AF37;
-    color: white;
-    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
-}
-
-.stepDone {
-    color: #111827;
-}
-
-.stepDone .stepIcon {
-    background: white;
-    color: #D4AF37;
-    border-color: #D4AF37; /* Also make the border golden when done */
-}
-
-.stepDone .stepLine {
-    background: #D4AF37;
-}
-
-.formSide {
-    background: white;
-    border-radius: 24px;
-    box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.05);
-    height: 600px; /* Adjusted height for better balance */
+/* RSVP Preview Card */
+.previewRSVPBox {
     display: flex;
     flex-direction: column;
-    overflow: hidden; /* Prevent formSide itself from scrolling */
-}
-
-.formContent {
-    flex: 1;
-    overflow-y: auto;
-    overflow-x: hidden;
-    padding: 4rem 3.5rem 4.5rem;
-    scrollbar-width: thin;
-    scrollbar-color: #D4AF37 transparent;
-}
-
-.formFooter {
-    padding: 1.5rem 3.5rem 3rem;
-    background: white;
-    border-top: 1px solid rgba(0, 0, 0, 0.05);
-    display: flex;
-    justify-content: flex-end;
     align-items: center;
-    gap: 3rem;
-    border-bottom-left-radius: 24px;
-    border-bottom-right-radius: 24px;
-    position: relative;
+    width: 100%;
+    margin-top: 1rem;
 }
 
-.footerProgressBarContainer {
-    position: absolute;
-    top: -1px;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: transparent;
-    z-index: 10;
-    overflow: hidden;
+.previewRSVPMessage {
+    font-family: Georgia, serif;
+    font-style: italic;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #6B7280;
+    max-width: 260px;
+    margin-bottom: 2rem;
 }
 
-.footerProgressBar {
-    height: 100%;
-    background: #D4AF37;
-    box-shadow: 0 0 8px rgba(212, 175, 55, 0.3);
-    transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+.previewRSVPButton {
+    background: #1B3B2B;
+    color: #FCFAF7;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 0.85rem 1.75rem;
+    border-radius: 100px;
+    box-shadow: 0 8px 20px rgba(27, 59, 43, 0.15);
+    width: 85%;
+    margin-bottom: 1.5rem;
 }
 
-.formContent::-webkit-scrollbar {
-    width: 6px;
+.previewRSVPDeadline {
+    font-size: 0.725rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #B39D73;
+    font-weight: 600;
 }
 
-.formContent::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.formContent::-webkit-scrollbar-thumb {
-    background: rgba(212, 175, 55, 0.3);
-    border-radius: 10px;
-}
-
-.formContent::-webkit-scrollbar-thumb:hover {
-    background: rgba(212, 175, 55, 0.6);
-}
-
-.wizardContainer {
-    max-width: 1300px;
-    margin: 0 auto 5rem;
-}
-
-.sectionHeaderInner {
-    margin-bottom: 3.5rem;
-    text-align: left;
+/* Workspace Editing Panel */
+.workspaceCol {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    gap: 1.5rem;
+    gap: 1.75rem;
+    width: 100%;
 }
 
-.sectionHeaderMain {
-    flex: 1;
+/* Chapter Card Structure */
+.chapter {
+    background: #FFFFFF;
+    border-radius: 20px;
+    border: none;
+    box-shadow: 0 4px 20px rgba(27, 59, 43, 0.04), 0 1px 3px rgba(27, 59, 43, 0.02);
+    overflow: hidden;
+    transition: box-shadow 250ms var(--ease-out), background-color 250ms var(--ease-out);
 }
 
-.sectionTitleMain {
-    font-family: var(--font-playfair), serif;
-    font-size: 3rem;
-    font-weight: 400;
-    color: #111827;
-    margin-bottom: 1rem;
-    letter-spacing: -0.02em;
+.chapterActive {
+    box-shadow: 0 24px 48px -12px rgba(27, 59, 43, 0.1), 0 8px 16px -4px rgba(27, 59, 43, 0.04);
 }
 
-.sectionSubtitleMain {
-    font-size: 1.125rem;
-    color: #6B7280;
-    line-height: 1.6;
-    max-width: 600px;
+.chapterCollapsed:hover {
+    opacity: 1;
+    background: #FFFFFF;
+    cursor: pointer;
 }
 
-.stepHeaderContainer {
+.chapterCollapsed:active {
+    transform: scale(0.98);
+    transition: transform 0s;
+}
+
+/* Chapter Header Click Bar */
+.chapterHeader {
+    padding: 1.75rem 2.25rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+    cursor: pointer;
+}
+
+.chapterHeaderLeft {
     display: flex;
     align-items: center;
     gap: 1.25rem;
 }
 
-.stepHeaderInfo {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    background: #F9FAFB;
-    padding: 0.5rem 1rem;
-    border-radius: 100px;
-    font-size: 0.8125rem;
-    color: #4B5563;
-    font-weight: 500;
-}
-
-.stepTextGroup {
-    display: flex;
-    flex-direction: column;
-}
-
-.stepBadge {
-    width: 24px;
-    height: 24px;
-    background: #F3E8D2;
-    color: #D4AF37;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.75rem;
-    font-weight: 700;
-}
-
-.stepStepText {
-    color: #111827;
-    font-weight: 600;
-}
-
-.stepDot {
-    display: none;
-}
-
-.stepTiming {
-    display: flex;
-    align-items: center;
-    gap: 0.35rem;
-    color: #9CA3AF;
-    font-size: 0.75rem;
-    font-weight: 500;
-}
-
-.splitLayout {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 2.5rem;
-}
-
-@media (min-width: 1024px) {
-    .splitLayout {
-        grid-template-columns: 460px 1fr;
-        gap: 2.5rem;
-        align-items: flex-start;
-    }
-}
-
-.previewContainer {
-    position: sticky;
-    top: 2rem;
-}
-
-@media (min-width: 1024px) {
-    .previewContainer {
-        padding-right: 3.5rem;
-    }
-}
-
-.invitePreview {
-    background: white;
-    width: 100%;
-    max-width: 330px; /* Refined for elegant smartphone proportion */
-    margin: 0 auto;
-    aspect-ratio: 9/16;
-    border-radius: 12px;
-    box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.05);
-    position: relative;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    color: #111827;
-}
-
-.previewInner {
-    margin: 20px;
-    flex: 1;
-    border: 1px solid #EBE2D5;
-    position: relative;
-    padding: 3.5rem 1.5rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.previewOrnament {
-    color: #D4AF37;
-    margin-bottom: 2rem;
-    opacity: 0.8;
-}
-
-.previewIntro {
-    text-transform: uppercase;
-    font-size: 0.65rem;
-    letter-spacing: 0.2em;
-    color: #6B7280;
-    margin-bottom: 2.5rem;
-    font-weight: 500;
-}
-
-.previewName {
-    font-family: 'Playfair Display', serif;
-    font-size: 2.5rem;
-    font-weight: 400;
-}
-
-.previewAmpersand {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.5rem;
-    color: #D4AF37;
-    margin: 0.5rem 0;
-    font-style: italic;
-}
-
-.previewDivider {
-    width: 40px;
-    height: 1px;
-    background: #EBE2D5;
-    margin: 2rem 0;
-}
-
-.previewDate {
-    text-transform: uppercase;
-    font-size: 0.8125rem;
-    letter-spacing: 0.15em;
-    font-weight: 600;
-    margin-bottom: 1rem;
-}
-
-.previewVenue {
-    font-size: 0.75rem;
-    line-height: 1.6;
-    color: #4B5563;
-    max-width: 280px;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-.previewVenueName {
-    font-weight: 600;
-    color: #111827;
-    display: block;
-    margin-bottom: 0.25rem;
-}
-
-.wizardCard {
-    background: transparent;
-    border-radius: 0;
-    padding: 0;
-    box-shadow: none;
-}
-
-.venueSection {
-    grid-column: span 2;
-    margin-top: 0.5rem;
-}
-
-.venueHeading {
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: #6B7280;
-    margin-bottom: 1.5rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-}
-
-/* Pick Events Step */
-.eventGrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 1.5rem;
-    margin-top: 2rem;
-}
-
-.eventOption {
-    background: #F9FAFB;
-    border: 2px solid #F3F4F6;
-    border-radius: 16px;
-    padding: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.75rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.eventOption:hover {
-    border-color: #FDA4AF;
-    background: #FFF5F7;
-}
-
-.eventOptionActive {
-    border-color: #E11D48;
-    background: #FFF1F2;
-    box-shadow: 0 4px 12px rgba(225, 29, 72, 0.1);
-}
-
-.eventLabel {
-    font-weight: 600;
+.chapterNumber {
     font-size: 0.875rem;
-    text-transform: uppercase;
-}
-
-/* Timeline Step */
-.timelineLayout {
-    display: grid;
-    grid-template-columns: 250px 1fr;
-    gap: 2rem;
-}
-
-.timelineSidebar {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-}
-
-.timelineItem {
-    padding: 1rem;
-    border-radius: 12px;
-    background: #F9FAFB;
-    border: 1px solid #E5E7EB;
-    cursor: pointer;
-}
-
-.timelineItemActive {
-    background: #E11D48;
-    color: white;
-    border-color: #E11D48;
-}
-
-.timelineContent {
-    background: #F9FAFB;
-    padding: 2rem;
-    border-radius: 16px;
-}
-
-.wizardTitle {
-    font-size: 1.5rem;
     font-weight: 700;
-    margin-bottom: 2rem;
-    font-family: 'Playfair Display', serif;
-}
-
-.smartInfo {
-    margin-top: 3rem;
-    padding: 1.25rem;
-    background: #EFF6FF;
-    border-radius: 12px;
-    border: 1px solid #BFDBFE;
-    display: flex;
-    gap: 1rem;
-    align-items: flex-start;
-}
-
-.summaryScroll {
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-}
-
-.summaryHeader {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding-bottom: 1.5rem;
-    border-bottom: 2px solid #F3F4F6;
-}
-
-.summaryList {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.5rem;
-}
-
-.summaryItem {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 1rem;
-    background: #ECFDF5;
-    color: #065F46;
-    border-radius: 12px;
-    font-size: 0.875rem;
-    font-weight: 600;
-}
-
-.summaryItem svg {
-    color: #10B981;
-}
-
-.eventsTimeline {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    position: relative;
-    padding-left: 2rem;
-}
-
-.eventsTimeline::before {
-    content: '';
-    position: absolute;
-    left: 8px;
-    top: 0;
-    bottom: 0;
-    width: 2px;
-    background: #FDA4AF;
-    border-style: dashed;
-}
-
-.summaryEventCard {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1.25rem 1.5rem;
-    background: white;
-    border: 1px solid #F3F4F6;
-    border-radius: 16px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-    position: relative;
-}
-
-.summaryEventCard::before {
-    content: '';
-    position: absolute;
-    left: -28px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: #E11D48;
-    border: 3px solid white;
-    box-shadow: 0 0 0 2px #E11D48;
-}
-
-.eventTimeInfo {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-}
-
-.inheritanceBadge {
-    padding: 4px 12px;
-    border-radius: 100px;
-    background: #D1FAE5;
-    color: #065F46;
-    font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: 0.025em;
-}
-
-.eventTimelineSection {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    margin-top: 1.5rem;
-}
-
-.eventCard {
-    background: white;
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    border-radius: 12px;
-    overflow: visible;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.eventCardHeader {
-    padding: 1.25rem 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    cursor: pointer;
-    background: white;
-    user-select: none;
-}
-
-.eventCardNumber {
+    color: #B39D73;
+    background: rgba(179, 157, 115, 0.1);
     width: 28px;
     height: 28px;
-    background: #FDFBF7;
-    border: 1px solid #F3E8D2;
-    color: #D4AF37;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.8125rem;
-    font-weight: 700;
 }
 
-.eventCardTitle {
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: #111827;
-    flex: 1;
+.chapterTitle {
+    font-family: Georgia, serif;
+    font-size: 1.35rem;
+    font-weight: 400;
+    color: #000000;
+    letter-spacing: -0.01em;
 }
 
-.eventCardToggle {
-    color: #9CA3AF;
-    transition: transform 0.3s ease;
+.chapterToggleIcon {
+    color: #B39D73;
+    transition: transform 200ms var(--ease-out);
 }
 
-.eventCardActive .eventCardToggle {
+.chapterActive .chapterToggleIcon {
     transform: rotate(180deg);
 }
 
-.eventCardBody {
-    padding: 0 1.5rem 1.5rem;
-    border-top: 1px solid rgba(0, 0, 0, 0.03);
-    padding-top: 1.5rem;
-}
-
-.eventCardHeaderControls {
+/* Chapter Form Body */
+.chapterBody {
+    padding: 0 2.25rem 2.5rem 2.25rem;
+    border-top: 1px solid rgba(27, 59, 43, 0.03);
+    padding-top: 2rem;
     display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin-left: auto;
+    flex-direction: column;
+    gap: 2rem;
 }
 
-.addVenueBtn {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    color: #4B5563;
-    background: #F3F4F6;
-    border: 1px solid #E5E7EB;
-    font-size: 0.75rem;
-    font-weight: 500;
-    cursor: pointer;
-    padding: 0.35rem 0.75rem;
-    border-radius: 6px;
-    transition: all 0.2s;
-}
-
-.addVenueBtn:hover {
-    background: #E5E7EB;
-    color: #111827;
-}
-
-.removeEventBtn {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+/* Chapter Summary (Collapsed State) */
+.chapterSummary {
+    padding: 0 2.25rem 1.75rem 2.25rem;
+    font-size: 0.875rem;
     color: #6B7280;
-    background: none;
-    border: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    align-items: center;
+    border-top: 1px solid rgba(27, 59, 43, 0.02);
+    padding-top: 1rem;
+}
+
+.summaryPill {
+    background: rgba(27, 59, 43, 0.04);
+    color: #1B3B2B;
+    padding: 0.25rem 0.75rem;
+    border-radius: 100px;
+    font-weight: 500;
+}
+
+/* Tactile Input Fields styling */
+.studioInputGroup {
+    display: block;
+}
+
+.studioInputGroup.split {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+
+@media (min-width: 640px) {
+    .studioInputGroup.split {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.studioLabel {
+    display: block;
     font-size: 0.875rem;
     font-weight: 500;
-    cursor: pointer;
-    margin-left: auto;
-    margin-top: 0;
-    padding: 0.5rem;
-    border-radius: 6px;
-    transition: all 0.2s;
+    letter-spacing: 0.02em;
+    color: #1B3B2B;
+    margin-bottom: 0.5rem;
 }
 
-.removeEventBtn:hover {
-    color: #EF4444;
-    background: #FEF2F2;
+/* Custom styling override for base Input inputs */
+.studioTextarea {
+    resize: none !important;
+    min-height: 90px;
 }
 
-.venueFieldWrapper {
+/* Maps Helper Widget */
+.mapsAutocompleteWrapper {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
 }
 
-.venueFieldHeader {
-    display: flex;
-    justify-content: flex-end;
-}
-
-.removeVenueBtn {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    color: #EF4444;
-    background: none;
-    border: none;
-    font-size: 0.75rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-    opacity: 0.8;
-}
-
-.removeVenueBtn:hover {
-    opacity: 1;
-}
-
-.addEventBtn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.75rem;
-    width: 100%;
-    padding: 1.25rem;
-    background: white;
-    border: 1px dashed #D1D5DB;
-    border-radius: 12px;
-    color: #4B5563;
-    font-size: 0.9375rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-    margin-top: 1rem;
-}
-
-.addEventBtn:hover {
-    border-color: #D4AF37;
-    color: #D4AF37;
-    background: #FDFBF7;
-}
-
-.eventTimelineHeader {
-    margin-bottom: 2rem;
-}
-
-.eventTimelineTitle {
-    font-family: var(--font-playfair), serif;
-    font-size: 1.75rem;
-    font-weight: 400;
-    color: #111827;
-    margin-bottom: 0.25rem;
-}
-
-.eventTimelineSubtitle {
-    font-size: 0.9375rem;
-    color: #6B7280;
-}
-
-.eventFieldRow {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-}
-
-.eventInputLabel {
-    display: block;
-    font-size: 0.8125rem;
-    font-weight: 600;
-    color: #D4AF37;
-    margin-bottom: 0.5rem;
-    text-transform: uppercase;
-    letter-spacing: 0.025em;
-}
-
-/* Timeline Preview Styles */
-.timelinePreviewArea {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: relative;
-}
-
-.timelineLineContainer {
-    position: relative;
-    width: fit-content;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    gap: 3.5rem;
-}
-
-.timelineGoldLine {
-    position: absolute;
-    left: 11.5px; /* Center of 24px node minus half-pixel width */
-    top: 0;
-    width: 1px;
-    background: linear-gradient(to bottom, #C8A75A 0%, rgba(200, 167, 90, 0.1) 100%);
-    height: 100%;
-    z-index: 1;
-}
-
-.timelineNodeWrapper {
-    display: flex;
-    align-items: flex-start;
-    gap: 2rem;
-    position: relative;
-    z-index: 2;
-    opacity: 0;
-    transform: translateY(12px) scale(0.92);
-    animation: timelineNodeEntry 420ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
-
-@keyframes timelineNodeEntry {
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-.timelineNode {
-    width: 24px;
-    height: 24px;
-    background: white;
-    border: 1.5px solid #C8A75A;
-    border-radius: 50%;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 0 10px rgba(200, 167, 90, 0.1);
-}
-
-.timelineNodeActive {
-    background: #C8A75A;
-}
-
-.miniEventCard {
-    background: white;
-    padding: 1rem 1.5rem;
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
-    width: 240px;
-    border: 1px solid #F3F4F6;
-    position: relative;
-    overflow: hidden;
-    backdrop-filter: blur(8px);
-}
-
-.miniEventActive {
-    transform: scale(1.06);
-    box-shadow: 0 10px 25px rgba(200, 167, 90, 0.15);
-    border-color: rgba(200, 167, 90, 0.2);
-}
-
-.miniEventBlank {
-    opacity: 0.7;
-    background: rgba(255, 255, 255, 0.6);
-    border: 1px solid rgba(0, 0, 0, 0.08); /* Thin solid border */
-}
-
-.miniEventActive::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    height: 2px;
-    background: #C8A75A;
-    width: 0;
-    animation: goldUnderline 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.3s forwards;
-}
-
-@keyframes goldUnderline {
-    to {
-        width: 100%;
-    }
-}
-
-.miniEventName {
-    font-family: var(--font-playfair), serif;
-    font-size: 1.125rem;
-    color: #111827;
-    margin-bottom: 0.25rem;
-}
-
-.miniEventDetail {
-    font-size: 0.75rem;
-    color: #6B7280;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    display: flex;
-    gap: 0.75rem;
-}
-
-.weddingHighlight {
-    animation: weddingPulse 0.9s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-@keyframes weddingPulse {
-    0% {
-        box-shadow: 0 0 0 0 rgba(200, 167, 90, 0.4);
-    }
-    70% {
-        box-shadow: 0 0 0 15px rgba(200, 167, 90, 0);
-    }
-    100% {
-        box-shadow: 0 0 0 0 rgba(200, 167, 90, 0);
-    }
-}
-
-.completionMessage {
-    margin-top: 4rem;
-    font-size: 0.9375rem;
-    color: #6B7280;
-    font-style: italic;
-    opacity: 0;
-    animation: fadeIn 0.8s ease forwards 1s;
-    text-align: center;
-}
-
-@keyframes fadeIn {
-    to {
-        opacity: 1;
-    }
-}
-
-.shimmerEffect {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(
-        90deg,
-        rgba(255, 255, 255, 0) 0%,
-        rgba(255, 255, 255, 0.6) 50%,
-        rgba(255, 255, 255, 0) 100%
-    );
-    transform: translateX(-100%);
-    animation: shimmerTravel 1.2s ease-in-out;
-}
-
-@keyframes shimmerTravel {
-    to {
-        transform: translateX(100%);
-    }
-}
-
-/* RSVP Step Styles */
-.rsvpContainer {
-    max-width: 800px;
-    margin: 0 auto;
-}
-
-.rsvpHeader {
-    text-align: left;
-    margin-bottom: 3.5rem;
-}
-
-.rsvpTitle {
-    font-family: var(--font-playfair), serif;
-    font-size: 2.5rem;
-    color: #111827;
-    margin-top: 0;
-    margin-bottom: 0.5rem;
-}
-
-.rsvpSubtitle {
-    color: #6B7280;
-    font-size: 1.125rem;
-    max-width: 540px;
-    line-height: 1.5;
-}
-
-.toggleField {
+.mapsHeaderRow {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1.5rem 0;
-    border-bottom: 1px solid #F3F4F6;
 }
 
-.toggleInfo {
+.mapsLinkHelper {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #B39D73;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid rgba(179, 157, 115, 0.3);
+    transition: color 200ms var(--ease-out), border-color 200ms var(--ease-out);
+    cursor: pointer;
+}
+
+.mapsLinkHelper:hover {
+    color: #1B3B2B;
+    border-color: #1B3B2B;
+}
+
+/* Chapter 3 Timeline Controls */
+.timelineBuilder {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: 1rem;
 }
 
-.toggleLabel {
+.timelineCard {
+    background: transparent;
+    border: 1px solid rgba(179, 157, 115, 0.2);
+    border-radius: 14px;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    background: #FCFAF7;
+    border: 1px solid rgba(27, 59, 43, 0.04);
+    border-radius: 12px;
+    padding: 1.25rem;
+    box-shadow: 0 2px 8px rgba(27, 59, 43, 0.02);
+    cursor: pointer;
+    transition: border-color 250ms var(--ease-out), box-shadow 250ms var(--ease-out), transform 250ms var(--ease-out);
+    position: relative;
+    z-index: 10;
+}
+
+.timelineCardActive {
+    border-color: #B39D73;
+    box-shadow: 0 12px 24px -6px rgba(179, 157, 115, 0.15), 0 4px 12px -2px rgba(179, 157, 115, 0.08);
+    transform: translateY(-2px);
+    z-index: 20;
+}
+
+.timelineCardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.timelineCardTitle {
+    font-family: Georgia, serif;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #1B3B2B;
+}
+
+.timelineCardControls {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    font-weight: 600;
-    color: #111827;
 }
 
-.toggleDescription {
-    font-size: 0.875rem;
-    color: #6B7280;
-}
-
-.switch {
-    position: relative;
-    display: inline-block;
-    width: 44px;
-    height: 24px;
-}
-
-.switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-
-.slider {
-    position: absolute;
+.timelineBtn {
+    background: none;
+    border: none;
+    color: #8C8F8E;
     cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: #E5E7EB;
-    transition: .4s;
-    border-radius: 24px;
+    padding: 0.25rem;
+    border-radius: 6px;
+    transition: color 150ms var(--ease-out), background-color 150ms var(--ease-out), transform 300ms var(--ease-out);
 }
 
-.slider:before {
-    position: absolute;
-    content: "";
-    height: 18px;
-    width: 18px;
-    left: 3px;
-    bottom: 3px;
-    background-color: white;
-    transition: .4s;
-    border-radius: 50%;
+.timelineBtn:hover {
+    color: #1B3B2B;
+    background: rgba(27, 59, 43, 0.05);
 }
 
-input:checked + .slider {
-    background-color: #0F172A;
+.timelineBtn:active {
+    transform: scale(0.94);
+    transition: transform 0s;
 }
 
-input:checked + .slider:before {
-    transform: translateX(20px);
+.timelineDeleteBtn {
+    background: none;
+    border: none;
+    color: #EF4444;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 6px;
+    transition: opacity 150ms var(--ease-out), background-color 150ms var(--ease-out), transform 300ms var(--ease-out);
+    opacity: 0.8;
 }
 
-.selectInput {
+.timelineDeleteBtn:hover {
+    opacity: 1;
+    background: rgba(239, 68, 68, 0.05);
+}
+
+.timelineDeleteBtn:active {
+    transform: scale(0.94);
+    transition: transform 0s;
+}
+
+.addCeremonyBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 1rem;
+    background: transparent;
+    border: 1px dashed rgba(179, 157, 115, 0.4);
+    border-radius: 12px;
+    color: #B39D73;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: border-color 200ms var(--ease-out), color 200ms var(--ease-out), background-color 200ms var(--ease-out), transform 100ms var(--ease-out);
+    margin-top: 0.5rem;
+}
+
+.addCeremonyBtn:hover {
+    border-color: #1B3B2B;
+    color: #1B3B2B;
+    background: rgba(27, 59, 43, 0.02);
+}
+
+.addCeremonyBtn:active {
+    transform: scale(0.98);
+}
+
+/* Select inputs */
+.studioSelect {
     padding: 0.875rem 1rem;
     border-radius: 12px;
-    border: 1px solid #E5E7EB;
+    border: 1px solid rgba(27, 59, 43, 0.12);
     font-family: inherit;
     font-size: 1rem;
     width: 100%;
     background-color: white;
     appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239CA3AF' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23B39D73' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 1rem center;
-    background-size: 1.25rem;
+    background-size: 1.1rem;
+    transition: border-color 200ms var(--ease-out), box-shadow 200ms var(--ease-out);
 }
 
-/* RSVP Preview Mini Card */
-.rsvpPreviewContainer {
-    position: sticky;
-    top: 2rem;
-    display: flex;
-    justify-content: center;
+.studioSelect:focus {
+    outline: none;
+    border-color: #B39D73;
+    box-shadow: 0 0 0 3px rgba(179, 157, 115, 0.15);
 }
 
-.miniCard {
-    background: white;
-    width: 100%;
-    max-width: 380px;
-    border-radius: 32px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
-    padding: 3rem 2rem;
+/* Studio Final CTA / Action Screen */
+.actionCard {
+    background: #FFFFFF;
+    border-radius: 20px;
+    border: 1px solid rgba(179, 157, 115, 0.25);
+    padding: 2.5rem;
     text-align: center;
-    border: 1px solid #F3F4F6;
     display: flex;
     flex-direction: column;
     align-items: center;
-    animation: slideInLeft 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    gap: 1.5rem;
+    box-shadow: 0 15px 40px rgba(179, 157, 115, 0.05);
 }
 
-@keyframes slideInLeft {
-    from { opacity: 0; transform: translateX(-30px); }
-    to { opacity: 1; transform: translateX(0); }
-}
-
-.miniCardTopText {
-    text-transform: uppercase;
-    font-size: 0.7rem;
-    letter-spacing: 0.25em;
-    color: #6B7280;
-    margin-bottom: 2rem;
-    font-weight: 600;
-}
-
-.miniCardNames {
-    font-family: var(--font-playfair), serif;
-    font-size: 2.75rem;
-    color: #111827; /* Classic Black */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.75rem;
-}
-
-.miniCardAmpersand {
-    color: #D4AF37;
-    font-style: italic;
+.actionHeadline {
+    font-family: Georgia, serif;
     font-size: 1.75rem;
+    color: #000000;
+    margin: 0;
 }
 
-.miniCardMessageBox {
-    margin: 1.5rem 0;
-    width: 100%;
-}
-
-.miniCardMessageText {
-    font-family: var(--font-playfair), serif;
-    font-size: 1rem;
-    line-height: 1.6;
-    color: #4B5563;
-    font-style: italic;
-}
-
-.miniCardRSVPLabel {
-    text-transform: uppercase;
-    font-size: 1rem;
-    font-weight: 700;
-    color: #9CA3AF;
-    letter-spacing: 0.15em;
-    margin: 2rem 0 1rem 0;
-}
-
-.miniCardEventTitle {
-    text-transform: uppercase;
-    font-weight: 700;
-    font-size: 0.85rem;
-    color: #374151;
-    letter-spacing: 0.1em;
-    margin-bottom: 0.5rem;
-}
-
-.miniCardDate {
+.actionSubtext {
     font-size: 0.95rem;
     color: #6B7280;
-    margin-bottom: 2rem;
+    max-width: 420px;
+    line-height: 1.6;
+    margin: 0 0 0.5rem;
 }
 
-.miniCardVenue {
+.actionButtonRow {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    color: #4B5563;
-    font-size: 0.95rem;
-    margin-top: 0.5rem;
-    margin-bottom: 2rem;
-}
-
-.miniCardVenueIcon {
-    color: #9CA3AF;
-}
-
-.miniCardButton {
-    background: #C5A352; /* Elegant Gold */
-    color: white;
+    flex-direction: column;
+    gap: 1rem;
     width: 100%;
-    padding: 1.125rem;
-    border-radius: 99px; /* More rounded as per screenshot */
-    font-weight: 600;
+    max-width: 380px;
+}
+
+@media (min-width: 640px) {
+    .actionButtonRow {
+        flex-direction: row;
+    }
+}
+
+.actionBtnPrimary {
+    flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.75rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    opacity: 0.7; /* Appear disabled */
-    cursor: not-allowed;
-    filter: saturate(0.8);
-}
-
-.miniCardFooter {
-    margin-top: 2.5rem;
-    font-size: 0.65rem;
-    font-weight: 700;
-    letter-spacing: 0.15em;
-    color: #C5A059;
-    text-transform: uppercase;
-    text-decoration: none;
-    display: inline-block;
-    transition: opacity 0.2s;
+    background: #000000;
+    color: #FCFAF7;
+    padding: 1rem 2rem;
+    border-radius: 100px;
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
     cursor: pointer;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    transition: background-color 200ms var(--ease-out), transform 150ms var(--ease-out), box-shadow 200ms var(--ease-out);
 }
 
-.miniCardFooter:hover {
-    opacity: 0.7;
+.actionBtnPrimary:hover {
+    background: #222222;
+    transform: translateY(-1px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
 }
 
-/* Premium Transition Screen Styles */
+.actionBtnPrimary:active {
+    transform: translateY(0) scale(0.97);
+}
+
+.actionBtnSecondary {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    background: #FCFAF7;
+    color: #B39D73;
+    border: 1px solid rgba(179, 157, 115, 0.5);
+    padding: 1rem 2rem;
+    border-radius: 100px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 200ms var(--ease-out), color 200ms var(--ease-out), background-color 200ms var(--ease-out), transform 150ms var(--ease-out);
+}
+
+.actionBtnSecondary:hover {
+    border-color: #1B3B2B;
+    color: #1B3B2B;
+    background: #FFFFFF;
+}
+
+.actionBtnSecondary:active {
+    transform: scale(0.97);
+}
+
+/* Mobile Pull-tab Invitation Drawer Overlay */
+.mobilePreviewOverlay {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #FFFFFF;
+    border-top-left-radius: 24px;
+    border-top-right-radius: 24px;
+    box-shadow: 0 -15px 40px rgba(0,0,0,0.08);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: transform 350ms var(--ease-drawer);
+}
+
+.mobilePreviewHeader {
+    width: 100%;
+    padding: 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-bottom: 1px solid rgba(0,0,0,0.04);
+    cursor: pointer;
+    position: relative;
+}
+
+.mobilePullTab {
+    width: 40px;
+    height: 4px;
+    background: #E5E7EB;
+    border-radius: 2px;
+}
+
+.mobilePreviewContent {
+    width: 100%;
+    padding: 2rem 1.5rem;
+    display: flex;
+    justify-content: center;
+    overflow-y: auto;
+    max-height: 75vh;
+}
+
+/* Confettiburts styling */
 .transitionOverlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.65);
-    backdrop-filter: blur(8px);
+    background: rgba(27, 59, 43, 0.85); /* Transparent forest green background */
+    backdrop-filter: blur(12px);
     z-index: 9999;
     display: flex;
     flex-direction: column;
@@ -1395,17 +783,18 @@ input:checked + .slider:before {
     text-align: center;
     max-width: 500px;
     width: 100%;
-    background: #FFFFFF;
+    background: #FCFAF7; /* Ivory background */
     padding: 4.5rem 3.5rem;
     border-radius: 32px;
-    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 40px 100px rgba(27, 59, 43, 0.35);
     position: relative;
     overflow: hidden;
+    border: 1px solid rgba(179, 157, 115, 0.2);
 }
 
 .transitionIconWrapper {
     margin-bottom: 2.5rem;
-    color: #D4AF37;
+    color: #B39D73;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1417,33 +806,43 @@ input:checked + .slider:before {
 }
 
 .transitionHeadline {
-    font-family: var(--font-playfair), serif;
-    font-size: 3rem;
+    font-family: Georgia, serif;
+    font-size: 2.75rem;
     font-weight: 400;
-    color: #111827;
+    color: #1B3B2B;
     margin-bottom: 1rem;
 }
 
+.swapButton {
+    background: #FDFBF7;
+    border: 1px solid rgba(27, 59, 43, 0.1);
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: background-color 200ms var(--ease-out), transform 300ms var(--ease-out), box-shadow 200ms var(--ease-out);
+}
+
+.swapButton:hover {
+    background: #F4EAD1;
+    transform: scale(1.05);
+}
+
+.swapButton:active {
+    transform: scale(0.94);
+    transition: transform 0s;
+}
+
 .transitionSupportingText {
-    font-size: 1.125rem;
+    font-size: 1.1rem;
     color: #6B7280;
     line-height: 1.6;
     margin-bottom: 3rem;
     max-width: 340px;
-}
-
-.progressTrack {
-    width: 240px;
-    height: 3px;
-    background: #F3E8D2;
-    border-radius: 100px;
-    overflow: hidden;
-    margin-bottom: 2.5rem;
-}
-
-.progressFill {
-    height: 100%;
-    background: #D4AF37;
 }
 
 .reassuranceContainer {
@@ -1455,41 +854,12 @@ input:checked + .slider:before {
 .reassurancePrimary {
     font-size: 0.8125rem;
     font-weight: 600;
-    color: #4B5563;
+    color: #1B3B2B;
     text-transform: uppercase;
     letter-spacing: 0.1em;
 }
 
 .reassuranceSecondary {
     font-size: 0.75rem;
-    color: #9CA3AF;
-}
-
-.mapFieldHeader {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin: 2.5rem 0 0.75rem;
-}
-
-.mapHelperLink {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: #C5A352;
-    text-decoration: none;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    padding-bottom: 2px;
-    border-bottom: 1px solid rgba(197, 163, 82, 0.3);
-    transition: all 0.2s;
-    cursor: pointer;
-}
-
-.mapHelperLink:hover {
-    color: #A6873D;
-    border-color: #A6873D;
-}
-
-.textareaInput {
-    resize: none !important;
+    color: #B39D73;
 }
