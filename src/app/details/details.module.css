@@ -765,8 +765,8 @@
 .transitionOverlay {
     position: fixed;
     inset: 0;
-    background: rgba(27, 59, 43, 0.85); /* Transparent forest green background */
-    backdrop-filter: blur(12px);
+    background: #000000; /* Black and opaque background */
+    backdrop-filter: blur(16px);
     z-index: 9999;
     display: flex;
     flex-direction: column;
@@ -786,10 +786,10 @@
     background: #FCFAF7; /* Ivory background */
     padding: 4.5rem 3.5rem;
     border-radius: 32px;
-    box-shadow: 0 40px 100px rgba(27, 59, 43, 0.35);
+    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.8);
     position: relative;
     overflow: hidden;
-    border: 1px solid rgba(179, 157, 115, 0.2);
+    border: 1px solid rgba(179, 157, 115, 0.3);
 }
 
 .transitionIconWrapper {
@@ -811,6 +811,8 @@
     font-weight: 400;
     color: #1B3B2B;
     margin-bottom: 1rem;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
 }
 
 .swapButton {

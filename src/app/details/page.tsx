@@ -38,6 +38,48 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { InvitationCard, InvitationCardRef } from '@/components/preview/InvitationCard';
 
+// Motion variants for welcome popup transitions (animation-vocabulary / apple-design / emil-design-eng)
+const overlayVariants = {
+    hidden: { opacity: 0 },
+    visible: { 
+        opacity: 1, 
+        transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } 
+    },
+    exit: { 
+        opacity: 0, 
+        transition: { duration: 0.3, ease: [0.16, 1, 0.3, 1] } 
+    }
+};
+
+const cardVariants = {
+    hidden: { scale: 0.95, opacity: 0 },
+    visible: { 
+        scale: 1, 
+        opacity: 1,
+        transition: { 
+            type: "spring", 
+            bounce: 0.12, 
+            duration: 0.6,
+            staggerChildren: 0.08,
+            delayChildren: 0.15
+        }
+    },
+    exit: { 
+        scale: 0.95, 
+        opacity: 0,
+        transition: { duration: 0.25, ease: "easeIn" } 
+    }
+};
+
+const itemVariants = {
+    hidden: { y: 12, opacity: 0 },
+    visible: { 
+        y: 0, 
+        opacity: 1,
+        transition: { type: "spring", stiffness: 120, damping: 14 }
+    }
+};
+
 function DetailsContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -308,52 +350,47 @@ function DetailsContent() {
             <AnimatePresence>
                 {showWelcomeOverlay && (
                     <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
+                        variants={overlayVariants}
+                        initial="hidden"
+                        animate="visible"
+                        exit="exit"
                         className={styles.transitionOverlay}
                         style={{ zIndex: 10000 }}
                     >
                         {showConfetti && <WeddingCelebration />}
 
                         <motion.div
-                            initial={{ scale: 0.9, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 1.05, opacity: 0 }}
-                            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
+                            variants={cardVariants}
                             className={styles.transitionContent}
                         >
                             <motion.div
-                                initial={{ scale: 0.8, opacity: 0 }}
-                                animate={{ scale: 1, opacity: 1 }}
-                                transition={{ duration: 1.2, ease: "easeOut", delay: 0.4 }}
+                                variants={itemVariants}
                                 className={styles.transitionIconWrapper}
                             >
-                                <Heart className={styles.transitionHeartOutline} size={48} strokeWidth={0.75} />
+                                <motion.div
+                                    animate={{ y: [0, -6, 0], scale: [1, 1.03, 1] }}
+                                    transition={{ repeat: Infinity, repeatType: "reverse", duration: 3, ease: "easeInOut" }}
+                                >
+                                    <Heart className={styles.transitionHeartOutline} size={48} strokeWidth={0.75} />
+                                </motion.div>
                             </motion.div>
 
                             <motion.h2
-                                initial={{ y: 10, opacity: 0 }}
-                                animate={{ y: 0, opacity: 1 }}
-                                transition={{ delay: 0.8, duration: 1 }}
+                                variants={itemVariants}
                                 className={styles.transitionHeadline}
                             >
                                 Great choice.
                             </motion.h2>
 
                             <motion.p
-                                initial={{ y: 10, opacity: 0 }}
-                                animate={{ y: 0, opacity: 1 }}
-                                transition={{ delay: 1.2, duration: 1 }}
+                                variants={itemVariants}
                                 className={styles.transitionSupportingText}
                             >
                                 Now let’s personalise your wedding invitation suite.
                             </motion.p>
 
                             <motion.div
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 1.5, duration: 0.8 }}
+                                variants={itemVariants}
                                 className={styles.reassuranceContainer}
                             >
                                 <span className={styles.reassurancePrimary}>Setting up your wedding workspace…</span>
