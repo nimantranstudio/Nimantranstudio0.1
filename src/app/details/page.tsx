@@ -43,31 +43,32 @@ const overlayVariants = {
     hidden: { opacity: 0 },
     visible: { 
         opacity: 1, 
-        transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } 
+        transition: { duration: 0.5, ease: [0.32, 0.72, 0, 1] } 
     },
     exit: { 
         opacity: 0, 
-        transition: { duration: 0.3, ease: [0.16, 1, 0.3, 1] } 
+        transition: { duration: 0.4, ease: [0.32, 0.72, 0, 1] } 
     }
 };
 
 const cardVariants = {
-    hidden: { scale: 0.95, opacity: 0 },
+    hidden: { scale: 0.9, opacity: 0, y: 20 },
     visible: { 
         scale: 1, 
         opacity: 1,
+        y: 0,
         transition: { 
             type: "spring", 
-            bounce: 0.12, 
-            duration: 0.6,
-            staggerChildren: 0.08,
+            stiffness: 260,
+            damping: 24,
+            staggerChildren: 0.1,
             delayChildren: 0.15
         }
     },
     exit: { 
         scale: 0.95, 
         opacity: 0,
-        transition: { duration: 0.25, ease: "easeIn" } 
+        transition: { duration: 0.3, ease: "easeIn" } 
     }
 };
 
@@ -76,7 +77,7 @@ const itemVariants = {
     visible: { 
         y: 0, 
         opacity: 1,
-        transition: { type: "spring", stiffness: 120, damping: 14 }
+        transition: { type: "spring", stiffness: 300, damping: 24 }
     }
 };
 
@@ -412,20 +413,10 @@ function DetailsContent() {
                 />
                 
                 {/* Auto-Save Indicator */}
-                {saveStatus !== 'error' && (
-                    <div className={clsx(styles.saveStatus, saveStatus === 'saving' && styles.saving)}>
-                        {saveStatus === 'saving' && (
-                            <>
-                                <Loader2 size={14} className="animate-spin" />
-                                <span>Saving Changes...</span>
-                            </>
-                        )}
-                        {saveStatus === 'synced' && (
-                            <>
-                                <Check size={14} />
-                                <span>All Changes Synced</span>
-                            </>
-                        )}
+                {saveStatus === 'saving' && (
+                    <div className={clsx(styles.saveStatus, styles.saving)}>
+                        <Loader2 size={14} className="animate-spin" />
+                        <span>Saving Changes...</span>
                     </div>
                 )}
             </header>

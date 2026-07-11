@@ -765,8 +765,9 @@
 .transitionOverlay {
     position: fixed;
     inset: 0;
-    background: #000000; /* Black and opaque background */
-    backdrop-filter: blur(16px);
+    background: rgba(0, 0, 0, 0.4); /* Opaque and translucent black background */
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
     z-index: 9999;
     display: flex;
     flex-direction: column;
@@ -809,7 +810,7 @@
     font-family: Georgia, serif;
     font-size: 2.75rem;
     font-weight: 400;
-    color: #1B3B2B;
+    color: #111827;
     margin-bottom: 1rem;
     letter-spacing: -0.03em;
     line-height: 1.15;
@@ -817,7 +818,7 @@
 
 .swapButton {
     background: #FDFBF7;
-    border: 1px solid rgba(27, 59, 43, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.08);
     border-radius: 50%;
     width: 32px;
     height: 32px;
@@ -825,13 +826,14 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
     transition: background-color 200ms var(--ease-out), transform 300ms var(--ease-out), box-shadow 200ms var(--ease-out);
 }
 
 .swapButton:hover {
-    background: #F4EAD1;
+    background: #FFFFFF;
     transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
 .swapButton:active {
