@@ -326,7 +326,6 @@ function DetailsContent() {
     // Complete editing CTA
     const handleFinish = async () => {
         setSaveStatus('saving');
-        setIsCrafting(true); // Trigger 3.5s camera sequence
         
         saveWedding().then(result => {
             if (result.success) setSaveStatus('synced');
@@ -335,7 +334,6 @@ function DetailsContent() {
             setSaveStatus('error');
         });
 
-        await new Promise(resolve => setTimeout(resolve, 3500));
         router.push('/preview?processing=true');
     };
 
