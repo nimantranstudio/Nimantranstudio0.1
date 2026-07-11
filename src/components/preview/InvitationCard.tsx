@@ -1363,11 +1363,14 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
             currentIframe.addEventListener('load', handleInitialLoad);
         }
 
+        (currentIframe as any)._onLoadCallback = handleInitialLoad;
+
         return () => {
             currentIframe.removeEventListener('load', handleInitialLoad);
             clearTimeout(debounceTimer);
+            (currentIframe as any)._onLoadCallback = null;
         };
-    }, [isHTMLDesign, event, welcomeMessage, groomName, brideName, groomParents, brideParents, customImage, isRawPreview, onLayoutMeasure]);
+    }, [isHTMLDesign, event, welcomeMessage, groomName, brideName, groomParents, brideParents, customImage, isRawPreview, onLayoutMeasure, isReady]);
 
     // Separate effect to apply/remove sizing-box class when edit mode toggles.
     // This does NOT re-run the full content mapping, so saved edits are never overwritten.
@@ -1456,6 +1459,14 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                         ref={iframeRef}
                         src={srcDoc ? undefined : encodeURI(iframeSrc || '')}
                         srcDoc={srcDoc}
+                        onLoad={(e) => {
+                            const target = e.target as any;
+                            if (target._onLoadCallback) {
+                                target._onLoadCallback();
+                            } else {
+                                setIsReady(true);
+                            }
+                        }}
                         style={{
                             width: '100%',
                             height: '100%',

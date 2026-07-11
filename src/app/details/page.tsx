@@ -459,11 +459,12 @@ function DetailsContent() {
                                         </motion.div>
                                     ) : (
                                         <motion.div
-                                            key="invite-preview"
-                                            initial={{ opacity: 0 }}
-                                            animate={{ opacity: 1 }}
-                                            exit={{ opacity: 0 }}
-                                            transition={{ duration: 0.4 }}
+                                            key={`invite-preview-${previewEvent?.id || 'wedding'}-${templateUrl}`}
+                                            initial={{ opacity: 0, filter: 'blur(8px)', scale: 0.96 }}
+                                            animate={{ opacity: 1, filter: 'blur(0px)', scale: 1 }}
+                                            exit={{ opacity: 0, filter: 'blur(8px)', scale: 0.96 }}
+                                            transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
+                                            style={{ width: '100%', height: '100%' }}
                                         >
                                             <InvitationCard 
                                                 ref={cardRef}
@@ -716,7 +717,17 @@ function DetailsContent() {
                     <div className={clsx(
                         styles.chapter, 
                         activeChapter === 3 ? styles.chapterActive : styles.chapterCollapsed
-                    )} onClick={() => activeChapter !== 3 && setActiveChapter(3)}>
+                    )} onClick={() => {
+                        if (activeChapter !== 3) {
+                            setActiveChapter(3);
+                            if (formData.events && formData.events.length > 0) {
+                                const eventExists = formData.events.some(e => e.id === activePreviewEventId);
+                                if (!eventExists) {
+                                    setActivePreviewEventId(formData.events[0].id);
+                                }
+                            }
+                        }
+                    }}>
                         
                         <div 
                             className={styles.chapterHeader}
