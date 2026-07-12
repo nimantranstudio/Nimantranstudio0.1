@@ -118,13 +118,21 @@ function DetailsContent() {
     const cardRef = useRef<InvitationCardRef>(null);
 
     const templateUrl = useMemo(() => {
-        const searchEventId = (activeChapter === 3 && activePreviewEventId) ? activePreviewEventId.toLowerCase() : 'wedding';
+        let searchEventTerm = 'wedding';
+        if (activeChapter === 3 && activePreviewEventId && activePreviewEventId !== 'wedding') {
+            const foundEvent = formData.events?.find(e => e.id === activePreviewEventId);
+            if (foundEvent && foundEvent.name) {
+                searchEventTerm = foundEvent.name.toLowerCase();
+            } else {
+                searchEventTerm = activePreviewEventId.toLowerCase();
+            }
+        }
 
         // 1. First, check bundleItems
         if (bundleItems && bundleItems.length > 0) {
             let targetItem;
             
-            if (searchEventId === 'wedding') {
+            if (searchEventTerm === 'wedding') {
                 targetItem = bundleItems.find(item => 
                     item.templatePath && 
                     (item.eventId === 'evt_7' || item.eventId === 'wedding' || item.templatePath.includes('item-Wedding_Invitation') || (item.eventType || '').toUpperCase().includes('WEDDING') || item.templatePath.toLowerCase().includes('wedding'))
@@ -134,11 +142,11 @@ function DetailsContent() {
                 targetItem = bundleItems.find(item => {
                     const match = item.templatePath && 
                         (
-                            item.eventId?.toLowerCase() === searchEventId || 
-                            item.templatePath.toLowerCase().includes(searchEventId) ||
-                            item.event?.eventName?.toLowerCase().includes(searchEventId) ||
-                            item.eventType?.toLowerCase().includes(searchEventId) ||
-                            item.templateName?.toLowerCase().includes(searchEventId)
+                            item.eventId?.toLowerCase() === searchEventTerm || 
+                            item.templatePath.toLowerCase().includes(searchEventTerm) ||
+                            item.event?.eventName?.toLowerCase().includes(searchEventTerm) ||
+                            item.eventType?.toLowerCase().includes(searchEventTerm) ||
+                            item.templateName?.toLowerCase().includes(searchEventTerm)
                         );
                     return match;
                 });
@@ -165,8 +173,8 @@ function DetailsContent() {
         if (bundleImages && bundleImages.length > 0) {
             let targetImage;
             
-            if (searchEventId !== 'wedding') {
-                targetImage = bundleImages.find(img => img.toLowerCase().includes(searchEventId));
+            if (searchEventTerm !== 'wedding') {
+                targetImage = bundleImages.find(img => img.toLowerCase().includes(searchEventTerm));
             }
             
             if (!targetImage) {
