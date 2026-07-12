@@ -120,21 +120,19 @@ function DetailsContent() {
     const templateUrl = useMemo(() => {
         const searchEventId = (activeChapter === 3 && activePreviewEventId) ? activePreviewEventId.toLowerCase() : 'wedding';
 
-        // 1. First, check bundleItems for an uploaded HTML file
+        // 1. First, check bundleItems
         if (bundleItems && bundleItems.length > 0) {
             let targetItem;
             
             if (searchEventId === 'wedding') {
                 targetItem = bundleItems.find(item => 
                     item.templatePath && 
-                    item.templatePath.toLowerCase().includes('.html') && 
-                    (item.eventId === 'evt_7' || item.eventId === 'wedding' || item.templatePath.includes('item-Wedding_Invitation') || (item.eventType || '').toUpperCase().includes('WEDDING'))
+                    (item.eventId === 'evt_7' || item.eventId === 'wedding' || item.templatePath.includes('item-Wedding_Invitation') || (item.eventType || '').toUpperCase().includes('WEDDING') || item.templatePath.toLowerCase().includes('wedding'))
                 );
             } else {
                 // Match by eventId, template path, or event name for things like Haldi, Mehendi
                 targetItem = bundleItems.find(item => {
                     const match = item.templatePath && 
-                        item.templatePath.toLowerCase().includes('.html') && 
                         (
                             item.eventId?.toLowerCase() === searchEventId || 
                             item.templatePath.toLowerCase().includes(searchEventId) ||
@@ -142,35 +140,42 @@ function DetailsContent() {
                             item.eventType?.toLowerCase().includes(searchEventId) ||
                             item.templateName?.toLowerCase().includes(searchEventId)
                         );
-                    if (match) console.log('DEBUG: matched item', item, 'for searchEventId', searchEventId);
                     return match;
                 });
-                
-                if (!targetItem) console.log('DEBUG: no target item found for', searchEventId, 'bundleItems:', bundleItems);
                 
                 // Fallback to wedding if specific event template not found
                 if (!targetItem) {
                     targetItem = bundleItems.find(item => 
                         item.templatePath && 
-                        item.templatePath.toLowerCase().includes('.html') && 
-                        (item.eventId === 'evt_7' || item.eventId === 'wedding' || item.templatePath.includes('item-Wedding_Invitation') || (item.eventType || '').toUpperCase().includes('WEDDING'))
+                        (item.eventId === 'evt_7' || item.eventId === 'wedding' || item.templatePath.includes('item-Wedding_Invitation') || (item.eventType || '').toUpperCase().includes('WEDDING') || item.templatePath.toLowerCase().includes('wedding'))
                     );
                 }
             }
 
             if (targetItem) return targetItem.templatePath;
             
-            // Fallback to any HTML file in bundleItems
+            // Fallback to any HTML file in bundleItems, then any file
             const anyHtmlItem = bundleItems.find(item => item.templatePath && item.templatePath.toLowerCase().includes('.html'));
             if (anyHtmlItem) return anyHtmlItem.templatePath;
+            
+            if (bundleItems[0]?.templatePath) return bundleItems[0].templatePath;
         }
 
         // 2. Check bundleImages (fallback for legacy themes without bundleItems)
         if (bundleImages && bundleImages.length > 0) {
-            const htmlTemplate = bundleImages.find(img => img.toLowerCase().includes('.html') || img.includes('item-Wedding_Invitation'));
-            if (htmlTemplate) return htmlTemplate;
+            let targetImage;
             
-            // Fallback to the first image in the bundle if it's a static image theme
+            if (searchEventId !== 'wedding') {
+                targetImage = bundleImages.find(img => img.toLowerCase().includes(searchEventId));
+            }
+            
+            if (!targetImage) {
+                targetImage = bundleImages.find(img => img.toLowerCase().includes('wedding') || img.toLowerCase().includes('reception') || img.includes('item-Wedding_Invitation'));
+            }
+
+            if (targetImage) return targetImage;
+            
+            // Fallback to the first image in the bundle if no match found
             return bundleImages[0];
         }
         
