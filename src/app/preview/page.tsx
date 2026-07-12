@@ -6,8 +6,9 @@ import { useWeddingStore } from '@/store/wedding-store';
 import type { Theme } from '@/lib/constants/themes';
 import { InvitationCard, InvitationCardRef } from '@/components/preview/InvitationCard';
 import styles from '@/components/preview/Preview.module.css';
-import { ChevronLeft, ChevronRight, X, Headphones, Play, Edit, Download, Share2, Check, Lock, Link as LinkIcon, Copy, Sparkles, MessageCircle, Activity, ShieldCheck, Type, Image as ImageIcon, MapPin, Bold, AlignLeft, AlignCenter, AlignRight, Type as FormatIcon, Maximize, Sticker, Trash2, Palette, Square, AlignJustify, ChevronDown, Users, Star } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, Headphones, Play, Edit, Download, Share2, Check, Lock, Link as LinkIcon, Copy, Sparkles, MessageCircle, Activity, ShieldCheck, Type, Image as ImageIcon, MapPin, Bold, AlignLeft, AlignCenter, AlignRight, Type as FormatIcon, Maximize, Sticker, Trash2, Palette, Square, AlignJustify, ChevronDown, Users, Star, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import Script from 'next/script';
 import modalStyles from '@/app/themes/[themeId]/theme-detail.module.css';
 import { clsx } from 'clsx';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
@@ -44,7 +45,7 @@ export default function PreviewPage() {
 import { ProcessingOverlay } from '@/components/processing/ProcessingOverlay';
 
 function PreviewContent() {
-    const { formData, selectedThemeId, isAuthenticated, login, bundleImages, bundleItems, selectedPlan } = useWeddingStore();
+    const { formData, selectedThemeId, isAuthenticated, login, bundleImages, bundleItems, selectedPlan, userPhone } = useWeddingStore();
     const [packages, setPackages] = useState<any[]>([]);
     const [theme, setTheme] = useState<any | null>(null);
 
@@ -76,6 +77,8 @@ function PreviewContent() {
     const [showLoginModal, setShowLoginModal] = useState(false);
     const [selectedPreviewIndex, setSelectedPreviewIndex] = useState<number | null>(null);
     const [activeSliderIndex, setActiveSliderIndex] = useState<number>(0);
+    const [isProcessing, setIsProcessing] = useState(false);
+    const [paymentStatus, setPaymentStatus] = useState<'idle' | 'success' | 'failed'>('idle');
     const [cardLayout, setCardLayout] = useState<{ width: number; height: number; aspectRatio: number }>({
         width: 500,
         height: 889,
@@ -253,13 +256,129 @@ function PreviewContent() {
 
 
 
+    const handlePay = async () => {
+        setIsProcessing(true);
+        try {
+            // Create Order
+            const res = await fetch('/api/payment/create-order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    bundleId: bundleItems?.[0]?.id || 'demo_bundle',
+                    amount: 1000, // Hardcoded to ₹10 (1000 paise) for testing
+                    currency: 'INR'
+                })
+            });
+
+            const data = await res.json();
+
+            if (!data.orderId || !data.key) {
+                throw new Error(data.error || 'Failed to create order - missing orderId or key');
+            }
+
+            console.log('Order created:', data);
+
+            // Open Razorpay Modal
+            if (typeof (window as any).Razorpay === 'undefined') {
+                console.log('Razorpay script not found, loading manually...');
+                await new Promise<void>((resolve, reject) => {
+                    const existing = document.getElementById('razorpay-checkout-js');
+                    if (existing) {
+                        resolve();
+                        return;
+                    }
+                    const script = document.createElement('script');
+                    script.id = 'razorpay-checkout-js';
+                    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+                    script.onload = () => resolve();
+                    script.onerror = () => reject(new Error('Failed to load Razorpay'));
+                    document.head.appendChild(script);
+                });
+            }
+
+            const options = {
+                key: data.key,
+                amount: data.amount,
+                currency: data.currency,
+                name: "Nimantran Studio",
+                description: "Wedding Essentials Bundle",
+                order_id: data.orderId,
+                handler: async function (response: any) {
+                    try {
+                        console.log('Payment successful:', response);
+                        const verifyRes = await fetch('/api/payment/verify', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                razorpay_payment_id: response.razorpay_payment_id,
+                                razorpay_order_id: response.razorpay_order_id,
+                                razorpay_signature: response.razorpay_signature
+                            })
+                        });
+
+                        const verifyData = await verifyRes.json();
+                        if (verifyData.success) {
+                            setPaymentStatus('success');
+
+                            // Generate Bundle
+                            await fetch('/api/generate-bundle', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ bundleId: bundleItems?.[0]?.id })
+                            });
+
+                            router.push('/dashboard');
+                        } else {
+                            throw new Error('Payment verification failed');
+                        }
+                    } catch (err) {
+                        console.error('Payment verification error:', err);
+                        setPaymentStatus('failed');
+                        setIsProcessing(false);
+                        alert("Payment failed or verification issue. Please try again.");
+                    }
+                },
+                prefill: {
+                    name: formData.groomName || formData.brideName ? `${formData.groomName || ''} ${formData.brideName || ''}`.trim() : '',
+                    email: auth.currentUser?.email || '',
+                    contact: userPhone || formData.rsvpContact || ''
+                },
+                theme: {
+                    color: "#C8A951"
+                },
+                modal: {
+                    ondismiss: function() {
+                        console.log('Payment modal closed');
+                        setIsProcessing(false);
+                    }
+                }
+            };
+
+            const rzp = new (window as any).Razorpay(options);
+            rzp.on('payment.failed', function (response: any) {
+                console.error('Payment failed:', response);
+                setPaymentStatus('failed');
+                setIsProcessing(false);
+                alert("Payment failed. Nothing has been charged.");
+            });
+
+            rzp.open();
+
+        } catch (error: any) {
+            console.error('Error initiating payment:', error);
+            setIsProcessing(false);
+            const errorMessage = error?.message || 'Unknown error';
+            alert(`Payment Error: ${errorMessage}`);
+        }
+    };
+
     const handleCheckout = () => {
         // Direct read to ensure we have the latest persisted state
         const state = useWeddingStore.getState();
         const currentAuth = state.isAuthenticated;
 
         if (currentAuth) {
-            router.push('/payment');
+            handlePay();
             return;
         }
 
@@ -269,7 +388,9 @@ function PreviewContent() {
     const handleLoginSuccess = (phone: string) => {
         setShowLoginModal(false);
         login(phone);
-        router.push('/payment');
+        setTimeout(() => {
+            handlePay();
+        }, 100);
     };
 
     if (!theme) {
@@ -436,6 +557,31 @@ function PreviewContent() {
 
     return (
         <div className={styles.previewPage}>
+            <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="afterInteractive" onLoad={() => console.log('Razorpay script loaded')} />
+            
+            {/* Success Overlay */}
+            {paymentStatus === 'success' && (
+                <div style={{
+                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                    background: '#FDFBF7', zIndex: 9999, display: 'flex',
+                    flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                    fontFamily: 'var(--font-sans)', color: '#1F1F1F'
+                }}>
+                    <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '32px', marginBottom: '16px' }}>🎉 Payment Successful</h1>
+                    <p style={{ fontSize: '18px', color: 'var(--muted-foreground)', marginBottom: '32px' }}>Your Wedding Bundle has been unlocked successfully.</p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '16px' }}>
+                        <div className="spinner" style={{
+                            width: '24px', height: '24px', border: '3px solid var(--muted)',
+                            borderTopColor: 'var(--primary)', borderRadius: '50%', animation: 'spin 1s linear infinite'
+                        }} />
+                        Preparing your wedding assets...
+                    </div>
+                    <style dangerouslySetInnerHTML={{__html: `
+                        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+                    `}} />
+                </div>
+            )}
+
             {/* Hidden File Input for Photo Upload */}
             <input 
                 type="file" 
@@ -1236,8 +1382,16 @@ function PreviewContent() {
                                     onClick={handleCheckout}
                                     onMouseEnter={() => setIsButtonHovered(true)}
                                     onMouseLeave={() => setIsButtonHovered(false)}
+                                    disabled={isProcessing}
                                 >
-                                    Unlock My Wedding Suite
+                                    {isProcessing ? (
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
+                                            <Loader2 className="animate-spin" size={18} />
+                                            Processing...
+                                        </div>
+                                    ) : (
+                                        "Unlock My Wedding Suite"
+                                    )}
                                 </button>
 
                                 <div className={styles.featureList}>
