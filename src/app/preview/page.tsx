@@ -6,7 +6,7 @@ import { useWeddingStore } from '@/store/wedding-store';
 import type { Theme } from '@/lib/constants/themes';
 import { InvitationCard, InvitationCardRef } from '@/components/preview/InvitationCard';
 import styles from '@/components/preview/Preview.module.css';
-import { ChevronLeft, ChevronRight, X, Headphones, Play, Edit, Download, Share2, Check, Lock, Link as LinkIcon, Copy, Sparkles, MessageCircle, Activity, ShieldCheck, Type, Image as ImageIcon, MapPin, Bold, AlignLeft, AlignCenter, AlignRight, Type as FormatIcon, Maximize, Sticker, Trash2, Palette, Square, AlignJustify, ChevronDown } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, Headphones, Play, Edit, Download, Share2, Check, Lock, Link as LinkIcon, Copy, Sparkles, MessageCircle, Activity, ShieldCheck, Type, Image as ImageIcon, MapPin, Bold, AlignLeft, AlignCenter, AlignRight, Type as FormatIcon, Maximize, Sticker, Trash2, Palette, Square, AlignJustify, ChevronDown, Users, Star } from 'lucide-react';
 import Link from 'next/link';
 import modalStyles from '@/app/themes/[themeId]/theme-detail.module.css';
 import { clsx } from 'clsx';
@@ -75,6 +75,7 @@ function PreviewContent() {
     const amountSaved = pricing.discountedPrice;
     const [showLoginModal, setShowLoginModal] = useState(false);
     const [selectedPreviewIndex, setSelectedPreviewIndex] = useState<number | null>(null);
+    const [activeSliderIndex, setActiveSliderIndex] = useState<number>(0);
     const [cardLayout, setCardLayout] = useState<{ width: number; height: number; aspectRatio: number }>({
         width: 500,
         height: 889,
@@ -922,159 +923,250 @@ function PreviewContent() {
 
             <main className="container">
                 <div className={styles.mainLayout}>
-                    {/* Left Column: Suite List */}
+                    {/* Left Column: Premium Carousel Slider */}
                     <div className={styles.leftColumn}>
-                        <div className={styles.suiteCard}>
-                            <h2 className={styles.suiteHeaderTitle}>Your Wedding Invite Suite is Ready!</h2>
-                            <div className={styles.suiteList}>
-                                {(previewItems.length > 0) ? (
-                                    previewItems.map((item, index) => (
-                                        <div 
-                                            key={item.id} 
-                                            className={styles.suiteItem}
-                                            onClick={() => setSelectedPreviewIndex(index)}
-                                            style={{ cursor: 'pointer' }}
-                                        >
-                                            <div className={styles.suiteThumbContainer}>
-                                                <InvitationCard
-                                                    ref={el => { suiteRefs.current[item.id] = el; }}
-                                                    event={item.event}
-                                                    theme={theme}
-                                                    groomName={formData.groomName || ''}
-                                                    brideName={formData.brideName || ''}
-                                                    groomParents={formData.groomParents}
-                                                    brideParents={formData.brideParents}
-                                                    welcomeMessage={formData.invitationMessage}
-                                                    isPlaceholder={true}
-                                                    isRawPreview={false}
-                                                    customImage={item.image}
-                                                    className={styles.suiteThumbCard}
-                                                    isSecured={true}
-                                                />
-                                                <div className={styles.suitePreviewOverlay}>Preview</div>
-                                            </div>
-                                            <div className={styles.suiteInfo}>
-                                                <h3 className={styles.suiteItemTitle}>{item.name.includes('Invite') ? item.name : `${item.name} Invite`}</h3>
-                                                <p className={styles.suiteItemDesc}>{getItemDescription(item.name)}</p>
-                                                <p className={styles.suiteItemActionHint}>Share instantly after unlock</p>
-                                            </div>
-                                            <div className={styles.suiteActions}>
-                                                <div className={styles.suiteQuickActions}>
-                                                    <button 
-                                                        className={styles.suiteQuickActionBtn}
-                                                        onClick={(e) => { e.stopPropagation(); setSelectedPreviewIndex(index); setIsEditMode(true); }}
-                                                        title="Edit"
-                                                    >
-                                                        <Edit size={16} />
-                                                    </button>
-                                                    <button 
-                                                        className={styles.suiteQuickActionBtn}
-                                                        onClick={(e) => { 
-                                                            e.stopPropagation();
-                                                            const ref = suiteRefs.current[item.id];
-                                                            if (ref) ref.downloadImage();
-                                                        }}
-                                                        title="Download"
-                                                    >
-                                                        <Download size={16} />
-                                                    </button>
-                                                    <button 
-                                                        className={styles.suiteQuickActionBtn}
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            const text = encodeURIComponent(`Check out our ${item.name}!\n\n${window.location.href}`);
-                                                            window.open(`https://wa.me/?text=${text}`, '_blank');
-                                                        }}
-                                                        title="Share"
-                                                    >
-                                                        <Share2 size={16} />
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))
-                                ) : (
-                                    <div className={styles.noPreviews} style={{ textAlign: 'center', padding: '2rem', color: '#666' }}>
-                                        No preview images available for this theme.
-                                    </div>
-                                )}
+                        <h2 className={styles.suiteCarouselTitle}>
+                            Your complete wedding communication suite is ready.
+                        </h2>
+                        <p className={styles.suiteCarouselDesc}>
+                            Beautiful invites, smart RSVP tracking and seamless sharing — everything you need to host stress-free.
+                        </p>
 
-                                {/* RSVP Link Card */}
-                                <div 
-                                    className={styles.suiteItem} 
-                                    style={{ alignItems: 'flex-start', cursor: 'pointer' }}
-                                    onClick={() => window.open(`/rsvp/${rsvpSlug}?preview=true`, '_blank')}
-                                >
-                                    <div 
-                                        className={styles.suiteThumbContainer}
-                                        style={{ 
-                                            position: 'relative', 
-                                            flexDirection: 'column', 
-                                            alignItems: 'center', 
-                                            justifyContent: 'center',
-                                            border: '1px solid #E5E7EB',
-                                            background: '#FFFFFF',
-                                            padding: '8px'
+                        {(previewItems.length > 0) ? (
+                            <div className={styles.carouselWrapper}>
+                                <div className={styles.carouselContainer}>
+                                    <button 
+                                        className={clsx(styles.arrowBtn, styles.arrowLeft)}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setActiveSliderIndex((prev) => (prev > 0 ? prev - 1 : previewItems.length - 1));
                                         }}
+                                        aria-label="Previous card"
                                     >
-                                        <div style={{ textAlign: 'center', marginBottom: '0.5rem', width: '100%' }}>
-                                            <div style={{ fontSize: '0.7rem', fontFamily: 'var(--font-playfair)', fontWeight: 'bold', color: '#1F2937' }}>
-                                                {formData.groomName?.split(' ')[0]} & {formData.brideName?.split(' ')[0]}
-                                            </div>
-                                        </div>
-                                        <div className={styles.rsvpPreviewForm}>
-                                            <div className={styles.rsvpPreviewLine}></div>
-                                            <div className={styles.rsvpPreviewLine} style={{ width: '80%' }}></div>
-                                            <div style={{ display: 'flex', gap: '4px', marginTop: '4px' }}>
-                                                <div style={{ height: '12px', width: '12px', background: '#F3F4F6', borderRadius: '2px' }}></div>
-                                                <div style={{ height: '12px', width: '12px', background: '#F3F4F6', borderRadius: '2px' }}></div>
-                                            </div>
-                                            <div className={styles.rsvpPreviewBtn}></div>
-                                        </div>
-                                        <div className={styles.suitePreviewOverlay}>Preview</div>
+                                        <ChevronLeft size={24} />
+                                    </button>
+
+                                    <div className={styles.carouselTrack}>
+                                        {/* Far Left Card (-2) */}
+                                        {previewItems.length >= 5 && (() => {
+                                            const idx = (activeSliderIndex - 2 + previewItems.length) % previewItems.length;
+                                            const item = previewItems[idx];
+                                            return (
+                                                <div key={`farleft-${item.id}`} className={clsx(styles.carouselCard, styles.cardFarLeft)}>
+                                                    <InvitationCard
+                                                        event={item.event}
+                                                        theme={theme}
+                                                        groomName={formData.groomName || ''}
+                                                        brideName={formData.brideName || ''}
+                                                        groomParents={formData.groomParents}
+                                                        brideParents={formData.brideParents}
+                                                        welcomeMessage={formData.invitationMessage}
+                                                        isPlaceholder={true}
+                                                        isRawPreview={false}
+                                                        customImage={item.image}
+                                                        className={styles.suiteThumbCard}
+                                                        isSecured={true}
+                                                    />
+                                                </div>
+                                            );
+                                        })()}
+
+                                        {/* Left Card (-1) */}
+                                        {previewItems.length >= 3 && (() => {
+                                            const idx = (activeSliderIndex - 1 + previewItems.length) % previewItems.length;
+                                            const item = previewItems[idx];
+                                            return (
+                                                <div key={`left-${item.id}`} className={clsx(styles.carouselCard, styles.cardLeft)}>
+                                                    <InvitationCard
+                                                        event={item.event}
+                                                        theme={theme}
+                                                        groomName={formData.groomName || ''}
+                                                        brideName={formData.brideName || ''}
+                                                        groomParents={formData.groomParents}
+                                                        brideParents={formData.brideParents}
+                                                        welcomeMessage={formData.invitationMessage}
+                                                        isPlaceholder={true}
+                                                        isRawPreview={false}
+                                                        customImage={item.image}
+                                                        className={styles.suiteThumbCard}
+                                                        isSecured={true}
+                                                    />
+                                                </div>
+                                            );
+                                        })()}
+
+                                        {/* Center Active iPhone Mockup Card */}
+                                        {(() => {
+                                            const item = previewItems[activeSliderIndex];
+                                            return (
+                                                <div 
+                                                    key={`center-${item.id}`} 
+                                                    className={styles.iphoneMockup}
+                                                    onClick={() => setSelectedPreviewIndex(activeSliderIndex)}
+                                                    style={{ cursor: 'pointer' }}
+                                                >
+                                                    <div className={styles.iphoneScreen}>
+                                                        <div className={styles.iphoneCamera}></div>
+                                                        <div className={styles.iphoneScreenCard}>
+                                                            <InvitationCard
+                                                                ref={el => { suiteRefs.current[item.id] = el; }}
+                                                                event={item.event}
+                                                                theme={theme}
+                                                                groomName={formData.groomName || ''}
+                                                                brideName={formData.brideName || ''}
+                                                                groomParents={formData.groomParents}
+                                                                brideParents={formData.brideParents}
+                                                                welcomeMessage={formData.invitationMessage}
+                                                                isPlaceholder={true}
+                                                                isRawPreview={false}
+                                                                customImage={item.image}
+                                                                className={styles.suiteThumbCard}
+                                                                isSecured={true}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })()}
+
+                                        {/* Right Card (+1) */}
+                                        {previewItems.length >= 3 && (() => {
+                                            const idx = (activeSliderIndex + 1) % previewItems.length;
+                                            const item = previewItems[idx];
+                                            return (
+                                                <div key={`right-${item.id}`} className={clsx(styles.carouselCard, styles.cardRight)}>
+                                                    <InvitationCard
+                                                        event={item.event}
+                                                        theme={theme}
+                                                        groomName={formData.groomName || ''}
+                                                        brideName={formData.brideName || ''}
+                                                        groomParents={formData.groomParents}
+                                                        brideParents={formData.brideParents}
+                                                        welcomeMessage={formData.invitationMessage}
+                                                        isPlaceholder={true}
+                                                        isRawPreview={false}
+                                                        customImage={item.image}
+                                                        className={styles.suiteThumbCard}
+                                                        isSecured={true}
+                                                    />
+                                                </div>
+                                            );
+                                        })()}
+
+                                        {/* Far Right Card (+2) */}
+                                        {previewItems.length >= 5 && (() => {
+                                            const idx = (activeSliderIndex + 2) % previewItems.length;
+                                            const item = previewItems[idx];
+                                            return (
+                                                <div key={`farright-${item.id}`} className={clsx(styles.carouselCard, styles.cardFarRight)}>
+                                                    <InvitationCard
+                                                        event={item.event}
+                                                        theme={theme}
+                                                        groomName={formData.groomName || ''}
+                                                        brideName={formData.brideName || ''}
+                                                        groomParents={formData.groomParents}
+                                                        brideParents={formData.brideParents}
+                                                        welcomeMessage={formData.invitationMessage}
+                                                        isPlaceholder={true}
+                                                        isRawPreview={false}
+                                                        customImage={item.image}
+                                                        className={styles.suiteThumbCard}
+                                                        isSecured={true}
+                                                    />
+                                                </div>
+                                            );
+                                        })()}
                                     </div>
 
-                                    <div className={styles.suiteInfo}>
-                                        <h3 className={styles.suiteItemTitle}>RSVP Link</h3>
-                                        <p className={styles.suiteItemDesc}>Smart guest response collection page</p>
-                                        
-
-
-                                    </div>
-
-                                    <div className={styles.suiteActions}>
-                                        <div className={styles.suiteQuickActions} style={{ marginTop: '0.5rem' }}>
-                                            <button 
-                                                className={styles.suiteQuickActionBtn} 
-                                                title="Edit RSVP Template"
-                                                onClick={(e) => e.stopPropagation()}
-                                            >
-                                                <Edit size={16} />
-                                            </button>
-                                            <button 
-                                                className={styles.suiteQuickActionBtn} 
-                                                title={copyStatus ? "Copied!" : "Copy RSVP Link"}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleCopyRsvpLink();
-                                                }}
-                                            >
-                                                {copyStatus ? <Check size={16} color="#10B981" /> : <Copy size={16} />}
-                                            </button>
-                                            <button 
-                                                className={styles.suiteQuickActionBtn} 
-                                                title="Share RSVP Link"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    const text = encodeURIComponent(`We would love to have you at our wedding! \n\nPlease RSVP here: ${rsvpFullUrl}`);
-                                                    window.open(`https://wa.me/?text=${text}`, '_blank');
-                                                }}
-                                            >
-                                                <Share2 size={16} />
-                                            </button>
-                                        </div>
-                                    </div>
+                                    <button 
+                                        className={clsx(styles.arrowBtn, styles.arrowRight)}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setActiveSliderIndex((prev) => (prev < previewItems.length - 1 ? prev + 1 : 0));
+                                        }}
+                                        aria-label="Next card"
+                                    >
+                                        <ChevronRight size={24} />
+                                    </button>
                                 </div>
+                                
+                                <div className={styles.cardLabel}>
+                                    {previewItems[activeSliderIndex]?.name.includes('Invite') 
+                                        ? previewItems[activeSliderIndex]?.name 
+                                        : `${previewItems[activeSliderIndex]?.name} Invite`
+                                    }
+                                </div>
+                            </div>
+                        ) : (
+                            <div className={styles.noPreviews} style={{ textAlign: 'center', padding: '2rem', color: '#666' }}>
+                                No preview cards available for this theme.
+                            </div>
+                        )}
+
+                        {/* Bento Grid of Features */}
+                        <div className={styles.featuresGrid}>
+                            <div className={styles.featureCard}>
+                                <div className={styles.featureIconWrapper}>
+                                    <Sparkles size={22} />
+                                </div>
+                                <div className={styles.featureInfo}>
+                                    <h4 className={styles.featureTitle}>12 Premium Assets</h4>
+                                    <p className={styles.featureDesc}>Invitations tailored for every single wedding event</p>
+                                </div>
+                            </div>
+
+                            <div className={styles.featureCard}>
+                                <div className={styles.featureIconWrapper}>
+                                    <LinkIcon size={22} />
+                                </div>
+                                <div className={styles.featureInfo}>
+                                    <h4 className={styles.featureTitle}>RSVP Website</h4>
+                                    <p className={styles.featureDesc}>Track responses and attendance in real time</p>
+                                </div>
+                            </div>
+
+                            <div className={styles.featureCard}>
+                                <div className={styles.featureIconWrapper}>
+                                    <Users size={22} />
+                                </div>
+                                <div className={styles.featureInfo}>
+                                    <h4 className={styles.featureTitle}>Guest Dashboard</h4>
+                                    <p className={styles.featureDesc}>Manage your guest list, dietary choices, and companions easily</p>
+                                </div>
+                            </div>
+
+                            <div className={styles.featureCard}>
+                                <div className={styles.featureIconWrapper}>
+                                    <MessageCircle size={22} />
+                                </div>
+                                <div className={styles.featureInfo}>
+                                    <h4 className={styles.featureTitle}>WhatsApp Sharing</h4>
+                                    <p className={styles.featureDesc}>One click sharing for all guests directly from WhatsApp</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Trust Badges Section */}
+                        <div className={styles.trustSection}>
+                            <div className={styles.avatarGroup}>
+                                <img src="https://picsum.photos/seed/user1/100/100" alt="Couple" className={styles.avatarImg} />
+                                <img src="https://picsum.photos/seed/user2/100/100" alt="Couple" className={styles.avatarImg} />
+                                <img src="https://picsum.photos/seed/user3/100/100" alt="Couple" className={styles.avatarImg} />
+                                <img src="https://picsum.photos/seed/user4/100/100" alt="Couple" className={styles.avatarImg} />
+                                <img src="https://picsum.photos/seed/user5/100/100" alt="Couple" className={styles.avatarImg} />
+                                <div className={styles.avatarPlus}>+</div>
+                            </div>
+                            <div className={styles.trustText}>
+                                Trusted by <span>1000+ families</span> across India
+                                <div className={styles.starsRow}>
+                                    <Star size={16} fill="currentColor" />
+                                    <Star size={16} fill="currentColor" />
+                                    <Star size={16} fill="currentColor" />
+                                    <Star size={16} fill="currentColor" />
+                                    <Star size={16} fill="currentColor" />
+                                    <span style={{ marginLeft: '6px', fontSize: '0.875rem', fontWeight: 600, color: '#4B5563' }}>4.9/5</span>
+                                </div>
+                                <span style={{ fontSize: '0.8125rem', color: '#6B7280', display: 'block', marginTop: '4px' }}>Loved for simplicity & design</span>
                             </div>
                         </div>
                     </div>
