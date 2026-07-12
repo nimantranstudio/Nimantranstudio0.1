@@ -531,7 +531,7 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                     const valStr = value.toString();
                     
                     const flexibleKey = key.split('-').join('[-_]+');
-                    const regexFlexible = new RegExp(`\\\\{\\\\s*\\\\{\\\\s*${flexibleKey}\\\\s*\\\\}\\\\s*\\\\}`, 'gi');
+                    const regexFlexible = new RegExp(`\\{\\s*\\{\\s*${flexibleKey}\\s*\\}\\s*\\}`, 'gi');
                     
                     if (regexFlexible.test(text)) {
                         text = text.replace(regexFlexible, valStr);

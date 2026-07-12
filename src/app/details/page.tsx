@@ -969,7 +969,7 @@ function DetailsContent() {
                         </p>
                         <div className={styles.actionButtonRow}>
                             <button className={styles.actionBtnPrimary} onClick={handleFinish}>
-                                Preview Invitation <ArrowRight size={18} />
+                                Review Your Wedding Suite <ArrowRight size={18} />
                             </button>
                         </div>
                     </div>
