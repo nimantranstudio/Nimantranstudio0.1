@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
-        const secret = 'veoV7kslZmD9h74Bvih6ummX';
+        const secret = process.env.RAZORPAY_KEY_SECRET || '';
         
         // Create signature string
         const generated_signature = crypto

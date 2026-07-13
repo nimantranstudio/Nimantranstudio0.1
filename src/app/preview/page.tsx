@@ -273,6 +273,22 @@ function PreviewContent() {
             const data = await res.json();
 
             if (!data.orderId || !data.key) {
+                if (process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                    console.warn('Razorpay order creation failed. Falling back to Mock Payment in development.');
+                    const confirmMock = window.confirm(
+                        `Razorpay Order Creation Failed: ${data.error || 'Check server logs'}\n\nDo you want to simulate a successful payment to unlock your wedding suite on localhost?`
+                    );
+                    if (confirmMock) {
+                        setPaymentStatus('success');
+                        await fetch('/api/generate-bundle', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ bundleId: bundleItems?.[0]?.id })
+                        });
+                        router.push('/dashboard');
+                        return;
+                    }
+                }
                 throw new Error(data.error || 'Failed to create order - missing orderId or key');
             }
 

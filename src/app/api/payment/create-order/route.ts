@@ -15,8 +15,8 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: msg }, { status: 400 });
         }
 
-        const keyId = 'rzp_live_T6bubMaJtpSjSM';
-        const keySecret = 'veoV7kslZmD9h74Bvih6ummX';
+        const keyId = process.env.RAZORPAY_KEY_ID;
+        const keySecret = process.env.RAZORPAY_KEY_SECRET;
 
         if (!keyId || !keySecret) {
             const msg = 'Razorpay credentials not configured';
