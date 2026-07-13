@@ -1,129 +1,101 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { createAdminToken, ADMIN_COOKIE } from '@/lib/admin-session';
+import { verifyOtp } from '@/lib/otp';
+import { toTenDigits } from '@/lib/messaging/types';
+import { createSessionToken, SESSION_COOKIE, sessionCookieOptions } from '@/lib/session';
 
-// Only this number gets admin access. Configurable via env; defaults to the owner's number.
-const ADMIN_MOBILE = process.env.ADMIN_MOBILE || '8884678194';
+const ADMIN_MOBILE = process.env.ADMIN_MOBILE || '';
+// Dev-only bypass so the flow is testable without SMS. Never active in production.
+const BYPASS_CODE = process.env.OTP_BYPASS_CODE || '';
 
-// Build a success response and attach a signed admin cookie for admins only.
-async function successResponse(user: { id: string; mobileNumber: string; role: string }) {
-    const response = NextResponse.json({
+const MAX_ATTEMPTS = 5;
+
+async function issueSession(user: { id: string; mobileNumber: string; role: string }) {
+    const res = NextResponse.json({
         success: true,
         user: { id: user.id, mobileNumber: user.mobileNumber, role: user.role },
+        isAdmin: user.role === 'admin',
     });
-    if (user.role === 'admin') {
-        const token = await createAdminToken(user.mobileNumber);
-        response.cookies.set(ADMIN_COOKIE, token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
-            path: '/',
-            maxAge: 7 * 86400,
+    const token = await createSessionToken(user);
+    res.cookies.set(SESSION_COOKIE, token, sessionCookieOptions());
+    return res;
+}
+
+async function findOrCreateUser(mobileNumber: string) {
+    const isAdmin = ADMIN_MOBILE && mobileNumber === ADMIN_MOBILE;
+    let user = await prisma.user.findUnique({ where: { mobileNumber } });
+    if (!user) {
+        user = await prisma.user.create({
+            data: {
+                mobileNumber,
+                isMobileVerified: true,
+                role: isAdmin ? 'admin' : 'user',
+                status: 'active',
+            },
+        });
+    } else {
+        user = await prisma.user.update({
+            where: { mobileNumber },
+            data: {
+                isMobileVerified: true,
+                role: isAdmin ? 'admin' : user.role,
+            },
         });
     }
-    return response;
+    return user;
 }
 
 export async function POST(request: Request) {
     try {
-        const { mobileNumber, otp } = await request.json();
+        const body = await request.json();
+        const mobileNumber = toTenDigits(body.mobileNumber || '');
+        const otp = String(body.otp || '').trim();
 
-        if (!mobileNumber || !otp) {
+        if (!mobileNumber || mobileNumber.length !== 10 || !otp) {
             return NextResponse.json({ error: 'Mobile number and OTP are required' }, { status: 400 });
         }
 
-        // Hardcoded bypass for the guest account and admin account
+        // Dev-only bypass (never in production, only when explicitly configured).
         if (
-            (mobileNumber === '8087084358' && otp === '422101') ||
-            (mobileNumber === ADMIN_MOBILE && otp === '422101')
+            process.env.NODE_ENV !== 'production' &&
+            BYPASS_CODE &&
+            otp === BYPASS_CODE
         ) {
-            let user = await prisma.user.findUnique({
-                where: { mobileNumber }
-            });
-
-            const isUserAdmin = mobileNumber === ADMIN_MOBILE;
-
-            if (!user) {
-                user = await prisma.user.create({
-                    data: {
-                        mobileNumber,
-                        isMobileVerified: true,
-                        role: isUserAdmin ? 'admin' : 'guest',
-                        status: 'active'
-                    }
-                });
-            } else {
-                user = await prisma.user.update({
-                    where: { mobileNumber },
-                    data: {
-                        isMobileVerified: true,
-                        role: isUserAdmin ? 'admin' : user.role // keep guest or existing role
-                    }
-                });
-            }
-
-            return await successResponse(user);
+            const user = await findOrCreateUser(mobileNumber);
+            return issueSession(user);
         }
 
-        // Find the latest valid OTP request
         const otpRequest = await prisma.oTPRequest.findFirst({
-            where: {
-                mobileNumber,
-                isUsed: false,
-                expiresAt: { gt: new Date() }
-            },
-            orderBy: { createdAt: 'desc' }
+            where: { mobileNumber, isUsed: false, expiresAt: { gt: new Date() } },
+            orderBy: { createdAt: 'desc' },
         });
 
         if (!otpRequest) {
             return NextResponse.json({ error: 'Invalid or expired OTP' }, { status: 400 });
         }
 
-        // Verify OTP (Check against hash if using hashing, here we check directly for simplicity)
-        if (otpRequest.otpHash !== otp) {
-            // Increment attempt count
+        if (otpRequest.attemptCount >= MAX_ATTEMPTS) {
+            return NextResponse.json(
+                { error: 'Too many incorrect attempts. Please request a new code.' },
+                { status: 429 }
+            );
+        }
+
+        if (!verifyOtp(otp, otpRequest.otpHash)) {
             await prisma.oTPRequest.update({
                 where: { id: otpRequest.id },
-                data: { attemptCount: { increment: 1 } }
+                data: { attemptCount: { increment: 1 } },
             });
             return NextResponse.json({ error: 'Incorrect OTP' }, { status: 400 });
         }
 
-        // Mark OTP as used
         await prisma.oTPRequest.update({
             where: { id: otpRequest.id },
-            data: { isUsed: true }
+            data: { isUsed: true },
         });
 
-        // Find or Create User
-        let user = await prisma.user.findUnique({
-            where: { mobileNumber }
-        });
-
-        const isUserAdmin = mobileNumber === ADMIN_MOBILE;
-
-        if (!user) {
-            user = await prisma.user.create({
-                data: {
-                    mobileNumber,
-                    isMobileVerified: true,
-                    role: isUserAdmin ? 'admin' : 'user',
-                    status: 'active'
-                }
-            });
-        } else {
-            // Update verified status and role if it's the admin number
-            user = await prisma.user.update({
-                where: { mobileNumber },
-                data: {
-                    isMobileVerified: true,
-                    role: isUserAdmin ? 'admin' : user.role // Keep existing role unless it's the designated admin number
-                }
-            });
-        }
-
-        return await successResponse(user);
-
+        const user = await findOrCreateUser(mobileNumber);
+        return issueSession(user);
     } catch (error: any) {
         console.error('OTP Verification Error:', error);
         return NextResponse.json({ error: 'Verification failed' }, { status: 500 });

@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { verifyAdminToken, ADMIN_COOKIE } from '@/lib/admin-session';
+import { verifySessionToken, SESSION_COOKIE } from '@/lib/session';
 
 export async function middleware(req: NextRequest) {
     const { pathname } = req.nextUrl;
@@ -9,19 +10,31 @@ export async function middleware(req: NextRequest) {
         return NextResponse.next();
     }
 
-    const token = req.cookies.get(ADMIN_COOKIE)?.value;
-    const isAdmin = await verifyAdminToken(token);
+    const sessionToken = req.cookies.get(SESSION_COOKIE)?.value;
+    const session = await verifySessionToken(sessionToken);
 
-    if (isAdmin) {
+    const isAdminArea =
+        pathname.startsWith('/admin') || pathname.startsWith('/api/admin');
+
+    if (isAdminArea) {
+        // Admin: accept a session with role=admin, or the legacy admin cookie.
+        const legacyAdmin = await verifyAdminToken(req.cookies.get(ADMIN_COOKIE)?.value);
+        if (session?.role === 'admin' || legacyAdmin) {
+            return NextResponse.next();
+        }
+        if (pathname.startsWith('/api/admin')) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+        const url = req.nextUrl.clone();
+        url.pathname = '/login';
+        url.searchParams.set('redirect', pathname);
+        return NextResponse.redirect(url);
+    }
+
+    // Dashboard: any valid session is enough.
+    if (session?.uid) {
         return NextResponse.next();
     }
-
-    // Admin API calls get a hard 401 — cannot be hit without a valid session.
-    if (pathname.startsWith('/api/admin')) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    // Admin pages redirect to the login screen.
     const url = req.nextUrl.clone();
     url.pathname = '/login';
     url.searchParams.set('redirect', pathname);
@@ -29,5 +42,11 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-    matcher: ['/admin', '/admin/:path*', '/api/admin/:path*'],
+    matcher: [
+        '/admin',
+        '/admin/:path*',
+        '/api/admin/:path*',
+        '/dashboard',
+        '/dashboard/:path*',
+    ],
 };

@@ -8,7 +8,7 @@ import { InvitationCard, InvitationCardRef } from '@/components/preview/Invitati
 import type { Theme } from '@/lib/constants/themes';
 import styles from './dashboard.module.css';
 import redesignStyles from './dashboard-redesign.module.css';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { VideoInviteCard } from './VideoInviteCard';
 import { 
     Users, 
@@ -357,7 +357,7 @@ export default function DashboardPage() {
                 <motion.div 
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, ease: "easeOut" }}
+                    transition={{ type: "spring", duration: 0.6, bounce: 0 }}
                     className={`${redesignStyles.glassHero}`}
                     style={{ marginTop: '2rem' }}
                 >
@@ -435,14 +435,28 @@ export default function DashboardPage() {
 
                 {/* 3. Grid Layout: Events (Main) + Actions (Side) */}
                 <motion.div 
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
+                    variants={{
+                        hidden: { opacity: 0 },
+                        show: {
+                            opacity: 1,
+                            transition: {
+                                staggerChildren: 0.08
+                            }
+                        }
+                    }}
+                    initial="hidden"
+                    animate="show"
                     className={redesignStyles.bentoGrid} 
                     style={{ marginTop: '2.5rem' }}
                 >
                     {/* Main Column */}
-                    <div className={redesignStyles.mainColumn}>
+                    <motion.div 
+                        variants={{
+                            hidden: { opacity: 0, y: 20 },
+                            show: { opacity: 1, y: 0, transition: { type: "spring", duration: 0.6, bounce: 0 } }
+                        }}
+                        className={redesignStyles.mainColumn}
+                    >
                         
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                             <div className={redesignStyles.eventHeader} style={{ marginBottom: 0 }}>
@@ -576,10 +590,16 @@ export default function DashboardPage() {
                                 );
                             })}
                         </div>
-                    </div>
+                    </motion.div>
 
                     {/* Side Column */}
-                    <div className={redesignStyles.sideColumn}>
+                    <motion.div 
+                        variants={{
+                            hidden: { opacity: 0, y: 20 },
+                            show: { opacity: 1, y: 0, transition: { type: "spring", duration: 0.6, bounce: 0 } }
+                        }}
+                        className={redesignStyles.sideColumn}
+                    >
                         
                         {/* RSVP Pie Chart Card */}
                         <div className={styles.card}>
@@ -681,7 +701,7 @@ export default function DashboardPage() {
                             <p>Our premium support is here for your special day.</p>
                             <button className={redesignStyles.supportBtn}>Contact Studio</button>
                         </div>
-                    </div>
+                    </motion.div>
                 </motion.div>
             </main>
         </div>

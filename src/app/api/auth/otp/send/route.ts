@@ -1,94 +1,57 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { sendOTP } from '@/lib/sms';
-import { sendWhatsAppOTP } from '@/lib/whatsapp';
+import { messaging, messagingConfigured } from '@/lib/messaging';
+import { generateOtp, hashOtp } from '@/lib/otp';
+import { toTenDigits } from '@/lib/messaging/types';
 
 export async function POST(request: Request) {
     try {
-        const { mobileNumber } = await request.json();
+        const body = await request.json();
+        const mobileNumber = toTenDigits(body.mobileNumber || '');
 
-        if (!mobileNumber || mobileNumber.length < 10) {
-            return NextResponse.json({ error: 'Invalid mobile number' }, { status: 400 });
+        if (!mobileNumber || mobileNumber.length !== 10) {
+            return NextResponse.json({ error: 'Enter a valid 10-digit mobile number' }, { status: 400 });
         }
 
-        // Rate limiting: max 3 requests per hour per number
+        // Rate limit: max 3 requests per hour per number.
         const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
         const recentRequests = await prisma.oTPRequest.count({
-            where: {
-                mobileNumber,
-                createdAt: { gt: oneHourAgo }
-            }
+            where: { mobileNumber, createdAt: { gt: oneHourAgo } },
         });
-
         if (recentRequests >= 3) {
             return NextResponse.json(
-                { error: 'Too many OTP requests. Please try again after 1 hour.' },
+                { error: 'Too many OTP requests. Please try again after an hour.' },
                 { status: 429 }
             );
         }
 
-        // Generate 6-digit OTP
-        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        const otp = generateOtp();
+        const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
-        // Store OTP hash (in production use bcrypt)
-        const otpHash = otp;
-
-        // Set expiration (10 minutes from now)
-        const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
-
-        // Delete old unused OTPs for this number to keep DB clean
-        await prisma.oTPRequest.deleteMany({
-            where: {
-                mobileNumber,
-                isUsed: false
-            }
+        // Invalidate older unused codes for this number, then store the hash.
+        await prisma.oTPRequest.deleteMany({ where: { mobileNumber, isUsed: false } });
+        await prisma.oTPRequest.create({
+            data: { mobileNumber, otpHash: hashOtp(otp), expiresAt },
         });
 
-        // Create new OTP request
-        const otpRequest = await prisma.oTPRequest.create({
-            data: {
-                mobileNumber,
-                otpHash,
-                expiresAt,
-            }
-        });
+        // Deliver via the vendor-neutral adapter (SMS). In dev without a vendor
+        // configured, the adapter logs the code to the server console.
+        const text = `${otp} is your Nimantran Studio verification code. Valid for 10 minutes. Do not share it with anyone.`;
+        const result = await messaging.sendSms(mobileNumber, text);
 
-        console.log(`[AUTH] Generated OTP ${otp} for ${mobileNumber}`);
-
-        // Try WhatsApp first (primary method)
-        const whatsappResult = await sendWhatsAppOTP(mobileNumber, otp);
-
-        if (whatsappResult.success) {
-            // Store WhatsApp message ID if available
-            if (whatsappResult.messageId) {
-                await prisma.oTPRequest.update({
-                    where: { id: otpRequest.id },
-                    data: { messageId: whatsappResult.messageId }
-                });
-            }
-            return NextResponse.json({
-                success: true,
-                message: 'OTP sent to your WhatsApp',
-                method: 'whatsapp'
-            });
-        }
-
-        // Fallback to SMS if WhatsApp fails
-        console.warn('WhatsApp OTP failed, falling back to SMS:', whatsappResult.error);
-        const smsResult = await sendOTP(mobileNumber, otp);
-
-        if (!smsResult.success) {
-            console.error('Both WhatsApp and SMS OTP delivery failed');
+        if (!result.success && messagingConfigured) {
+            console.error('OTP SMS delivery failed:', result.error);
             return NextResponse.json(
-                { error: 'Failed to send OTP. Please try again.' },
-                { status: 500 }
+                { error: 'Could not send the code right now. Please try again.' },
+                { status: 502 }
             );
         }
 
         return NextResponse.json({
             success: true,
-            message: 'OTP sent via SMS',
-            method: 'sms'
+            message: 'OTP sent',
+            // In dev (no vendor configured) surface a hint so the flow is testable.
+            devHint: !messagingConfigured ? 'Vendor not configured — OTP printed to server console' : undefined,
         });
     } catch (error: any) {
         console.error('OTP Send Error:', error);

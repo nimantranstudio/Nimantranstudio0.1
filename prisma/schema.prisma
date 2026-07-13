@@ -88,16 +88,22 @@ model Event {
 }
 
 model Order {
-  id             String          @id @default(cuid())
-  userId         String
-  bundleId       String
-  totalAmount    Float
-  status         String          @default("pending")
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
-  bundle         Bundle          @relation(fields: [bundleId], references: [id])
-  user           User            @relation(fields: [userId], references: [id])
-  videoRenderJob VideoRenderJob?
+  id                String          @id @default(cuid())
+  userId            String
+  bundleId          String
+  packageId         String?
+  totalAmount       Float
+  status            String          @default("pending") // pending | created | paid | ready | failed
+  razorpayOrderId   String?         @unique
+  razorpayPaymentId String?
+  contactEmail      String?
+  contactPhone      String?
+  weddingId         String?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  bundle            Bundle          @relation(fields: [bundleId], references: [id])
+  user              User            @relation(fields: [userId], references: [id])
+  videoRenderJob    VideoRenderJob?
 
   @@map("Order")
 }

@@ -9,10 +9,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { FloatingHearts } from '@/components/ui/FloatingHearts';
 
-// Firebase Imports
-import { auth } from '@/lib/firebase';
-import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult } from 'firebase/auth';
-
 export default function LoginFormContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -25,20 +21,6 @@ export default function LoginFormContent() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // Firebase state
-    const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
-
-    // Initialize Recaptcha
-    useEffect(() => {
-        if (!window.recaptchaVerifier) {
-            window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-                'size': 'invisible',
-                'callback': (response: any) => {},
-                'expired-callback': () => {}
-            });
-        }
-    }, []);
-
     const handleGetOTP = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!identifier || identifier.length < 10) {
@@ -49,22 +31,20 @@ export default function LoginFormContent() {
         setError(null);
         setIsLoading(true);
 
-        const formattedNumber = `+91${identifier.replace(/\D/g, '').slice(-10)}`;
-
-        if (identifier === '8087084358' || identifier === '8010581916' || identifier === '8884678194') {
-            setStep('otp');
-            setIsLoading(false);
-            return;
-        }
-
         try {
-            const appVerifier = window.recaptchaVerifier;
-            const result = await signInWithPhoneNumber(auth, formattedNumber, appVerifier);
-            setConfirmationResult(result);
-            setStep('otp');
+            const res = await fetch('/api/auth/otp/send', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ mobileNumber: identifier }),
+            });
+            const data = await res.json();
+            if (res.ok && data.success) {
+                setStep('otp');
+            } else {
+                setError(data.error || 'Failed to send OTP. Please try again.');
+            }
         } catch (err: any) {
-            console.error(err);
-            setError(err.message || 'Failed to send OTP. Try again.');
+            setError(err?.message || 'Network error. Please try again.');
         } finally {
             setIsLoading(false);
         }
@@ -76,53 +56,24 @@ export default function LoginFormContent() {
 
         setError(null);
         setIsLoading(true);
-        
-        if ((identifier === '8087084358' || identifier === '8010581916' || identifier === '8884678194') && otp === '422101') {
-            try {
-                const res = await fetch('/api/auth/otp/verify', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ mobileNumber: identifier, otp })
-                });
-                const data = await res.json();
-                if (data.success) {
-                    const isAdmin = data.user.role === 'admin';
-                    login(identifier, isAdmin);
-                    router.push(isAdmin ? '/admin' : redirectPath);
-                } else {
-                    setError('Invalid Bypass OTP');
-                }
-            } catch (err) {
-                setError('Network error');
-            } finally {
-                setIsLoading(false);
-            }
-            return;
-        }
 
         try {
-            if (!confirmationResult) throw new Error("No verification session found.");
-            const result = await confirmationResult.confirm(otp);
-            const user = result.user;
-            const idToken = await user.getIdToken();
-
-            const res = await fetch('/api/auth/sync', {
+            const res = await fetch('/api/auth/otp/verify', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ idToken })
+                body: JSON.stringify({ mobileNumber: identifier, otp }),
             });
-
             const data = await res.json();
 
             if (res.ok && data.success) {
-                const isAdmin = data.user.role === 'admin';
+                const isAdmin = data.isAdmin === true;
                 login(identifier, isAdmin);
                 router.push(isAdmin ? '/admin' : redirectPath);
             } else {
-                setError(data.error || 'Login Sync Failed');
+                setError(data.error || 'Invalid OTP');
             }
         } catch (err: any) {
-            setError(err.message || 'Invalid OTP');
+            setError(err?.message || 'Network error. Please try again.');
         } finally {
             setIsLoading(false);
         }
@@ -171,8 +122,6 @@ export default function LoginFormContent() {
                                 {error}
                             </div>
                         )}
-
-                        <div id="recaptcha-container"></div>
 
                         {step === 'phone' ? (
                             <>

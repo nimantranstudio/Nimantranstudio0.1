@@ -1,0 +1,145 @@
+.overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: radial-gradient(circle at 50% 30%, #FFFDF8 0%, var(--background, #F8F7F5) 70%);
+    animation: fadeIn 320ms ease both;
+}
+
+.card {
+    width: 100%;
+    max-width: 420px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.iconBadge {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary, #C8A951);
+    background: color-mix(in srgb, var(--primary, #C8A951) 14%, transparent);
+    margin-bottom: 20px;
+    animation: pulse 2.4s ease-in-out infinite;
+}
+
+.title {
+    font-family: var(--font-serif, Georgia, serif);
+    font-size: clamp(24px, 5vw, 30px);
+    font-weight: 600;
+    color: var(--foreground, #1F1F1F);
+    line-height: 1.2;
+    margin: 0;
+}
+
+.subtitle {
+    font-size: 15px;
+    color: var(--muted-foreground, #6b675f);
+    margin: 8px 0 0;
+}
+
+.stageList {
+    list-style: none;
+    padding: 0;
+    margin: 32px 0 0;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    text-align: left;
+}
+
+.stage {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    opacity: 0.4;
+    transition: opacity 300ms ease, transform 300ms ease;
+}
+
+.stage.done {
+    opacity: 1;
+}
+
+.stage.active {
+    opacity: 1;
+}
+
+.stageIcon {
+    flex: 0 0 22px;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: var(--primary, #C8A951);
+}
+
+.stage.done .stageIcon {
+    color: #fff;
+    background: var(--primary, #C8A951);
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--border, #d8d5cc);
+}
+
+.stageLabel {
+    font-size: 15px;
+    color: var(--foreground, #1F1F1F);
+}
+
+.spin {
+    animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes pulse {
+    0%,
+    100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.06);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .overlay,
+    .iconBadge {
+        animation: none;
+    }
+    .spin {
+        animation-duration: 2s;
+    }
+    .stage {
+        transition: none;
+    }
+}

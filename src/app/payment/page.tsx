@@ -3,13 +3,12 @@
 import { useWeddingStore } from '@/store/wedding-store';
 import styles from './payment.module.css';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, ChevronRight, Lock, Check, Mail, Phone, ShieldCheck, Zap } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Lock, Check, ShieldCheck, Zap } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import Script from 'next/script';
-import { auth } from '@/lib/firebase';
 import { InvitationCard } from '@/components/preview/InvitationCard';
+import { ProvisioningOverlay } from '@/components/payment/ProvisioningOverlay';
 import clsx from 'clsx';
 
 export default function PaymentPage() {
@@ -24,13 +23,14 @@ export default function PaymentPage() {
     const handlePay = async () => {
         setIsProcessing(true);
         try {
-            // Step 2: Create Order
+            // Step 2: Create Order — the server derives the price from the
+            // theme + package; no client-supplied amount is trusted.
             const res = await fetch('/api/payment/create-order', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    bundleId: storeBundleItems?.[0]?.id || 'demo_bundle',
-                    amount: 1000, // Hardcoded to ₹10 (1000 paise) for testing
+                    themeId: selectedThemeId,
+                    packageName: selectedPlan,
                     currency: 'INR'
                 })
             });
@@ -80,45 +80,40 @@ export default function PaymentPage() {
                 description: "Wedding Essentials Bundle",
                 order_id: data.orderId,
                 handler: async function (response: any) {
+                    // Show the provisioning overlay immediately; the backend work
+                    // (verify → account → session → provision) runs behind it.
+                    setPaymentStatus('success');
                     try {
-                        console.log('Payment successful:', response);
-                        // Step 5: Verify Payment
                         const verifyRes = await fetch('/api/payment/verify', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
                                 razorpay_payment_id: response.razorpay_payment_id,
                                 razorpay_order_id: response.razorpay_order_id,
-                                razorpay_signature: response.razorpay_signature
+                                razorpay_signature: response.razorpay_signature,
+                                formData
                             })
                         });
 
                         const verifyData = await verifyRes.json();
-                        if (verifyData.success) {
-                            setPaymentStatus('success');
-
-                            // Step 7/8: Generate Bundle
-                            await fetch('/api/generate-bundle', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ bundleId: storeBundleItems?.[0]?.id })
-                            });
-
-                            // Redirect
-                            router.push('/dashboard');
-                        } else {
-                            throw new Error('Payment verification failed');
+                        if (!verifyRes.ok || !verifyData.success) {
+                            throw new Error(verifyData.error || 'Payment verification failed');
                         }
-                    } catch (err) {
+
+                        // The session cookie is set server-side; head straight to
+                        // the dashboard. A small floor keeps the overlay legible.
+                        await new Promise((r) => setTimeout(r, 900));
+                        router.push('/dashboard');
+                    } catch (err: any) {
                         console.error('Payment verification error:', err);
                         setPaymentStatus('failed');
                         setIsProcessing(false);
-                        alert("Payment failed or verification issue. Please try again.");
+                        alert(err?.message || 'We received your payment but hit a snag setting things up. Please contact support with your payment reference.');
                     }
                 },
                 prefill: {
                     name: formData.groomName || formData.brideName ? `${formData.groomName || ''} ${formData.brideName || ''}`.trim() : '',
-                    email: auth.currentUser?.email || '',
+                    email: '',
                     contact: userPhone || formData.rsvpContact || ''
                 },
                 theme: {
@@ -269,43 +264,19 @@ export default function PaymentPage() {
     const bride = formData.brideName || 'Priyanka';
     const coupleNames = `${groom} & ${bride}`;
 
-    // Safe fallback email
-    const userEmail = auth.currentUser?.email || 'vivek@example.com';
-    const rawPhone = userPhone || formData.rsvpContact || '9876543210';
-    const userPhoneFormatted = rawPhone.length === 10 
-        ? `+91 ${rawPhone.substring(0, 5)} ${rawPhone.substring(5)}` 
-        : rawPhone;
-
-    // Pricing calculation (hardcoded to ₹10 for testing)
-    const totalAmount = 10;
-    const basePrice = 8.47;
-    const gstAmount = 1.53;
+    // Pricing — derived from the configured invoice (server re-derives and is
+    // the source of truth at checkout; this is the display value).
+    const totalAmount = invoiceData?.finalSellingPrice ?? invoiceData?.discountedPrice ?? 0;
+    const basePrice = totalAmount > 0 ? +(totalAmount / 1.18).toFixed(2) : 0;
+    const gstAmount = +(totalAmount - basePrice).toFixed(2);
 
     return (
         <div className={styles.paymentPage}>
             <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="afterInteractive" onLoad={() => console.log('Razorpay script loaded')} />
             
-            {/* Success Overlay */}
+            {/* Fullscreen provisioning overlay while the backend sets everything up */}
             {paymentStatus === 'success' && (
-                <div style={{
-                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-                    background: '#FDFBF7', zIndex: 9999, display: 'flex',
-                    flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                    fontFamily: 'var(--font-sans)', color: '#1F1F1F'
-                }}>
-                    <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '32px', marginBottom: '16px' }}>🎉 Payment Successful</h1>
-                    <p style={{ fontSize: '18px', color: 'var(--muted-foreground)', marginBottom: '32px' }}>Your Wedding Bundle has been unlocked successfully.</p>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '16px' }}>
-                        <div className="spinner" style={{
-                            width: '24px', height: '24px', border: '3px solid var(--muted)',
-                            borderTopColor: 'var(--primary)', borderRadius: '50%', animation: 'spin 1s linear infinite'
-                        }} />
-                        Preparing your wedding assets...
-                    </div>
-                    <style dangerouslySetInnerHTML={{__html: `
-                        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-                    `}} />
-                </div>
+                <ProvisioningOverlay coupleNames={coupleNames} />
             )}
 
             <div className={styles.breadcrumbBar}>
@@ -415,20 +386,24 @@ export default function PaymentPage() {
                     <div className={styles.paymentActionSection}>
                         
                         <div className={styles.orderSummaryHeader}>
-                            <h1 className={styles.pageTitle}>Review Your Order</h1>
-                            <p className={styles.pageSubtitle}>Complete your purchase to unlock the digital suite for {coupleNames}.</p>
+                            <h1 className={styles.pageTitle}>Review Your Wedding Suite</h1>
+                            <p className={styles.pageSubtitle}>Everything below is unlocked for {coupleNames} the moment you pay — no account setup, no passwords.</p>
                         </div>
 
                         <div className={styles.actionCard}>
                             <div className={styles.productSummaryHeader}>
-                                <h3 className={styles.productName}>Digital Wedding Suite</h3>
-                                <p className={styles.productDesc}>Everything you need to invite with elegance and ease.</p>
-                                
+                                <h3 className={styles.productName}>Your Complete Wedding Suite</h3>
+                                <p className={styles.productDesc}>One payment. Your entire celebration, ready to share.</p>
+
                                 <ul className={styles.premiumChecklist}>
-                                    <li><Check size={14} /> High-Resolution Images</li>
-                                    <li><Check size={14} /> RSVP Tracking Dashboard</li>
+                                    <li><Check size={14} /> Save the Date</li>
+                                    <li><Check size={14} /> Wedding Invitation</li>
+                                    <li><Check size={14} /> Haldi Invitation</li>
+                                    <li><Check size={14} /> Mehendi Invitation</li>
+                                    <li><Check size={14} /> Reception Invitation</li>
+                                    <li><Check size={14} /> RSVP Website</li>
+                                    <li><Check size={14} /> Guest Dashboard</li>
                                     <li><Check size={14} /> Unlimited WhatsApp Sharing</li>
-                                    <li><Check size={14} /> Free Edits (15 Days)</li>
                                 </ul>
                             </div>
                             
@@ -471,7 +446,7 @@ export default function PaymentPage() {
                                 ) : (
                                     <>
                                         <Lock size={16} />
-                                        Pay Securely ₹{totalAmount.toFixed(2)}
+                                        Unlock My Wedding Suite · ₹{totalAmount.toFixed(2)}
                                     </>
                                 )}
                             </button>
