@@ -13,7 +13,7 @@ import clsx from 'clsx';
 
 export default function PaymentPage() {
     const router = useRouter();
-    const { formData, selectedThemeId, selectedPlan, userPhone, bundleItems: storeBundleItems } = useWeddingStore();
+    const { formData, selectedThemeId, selectedPlan, userPhone, bundleItems: storeBundleItems, setCheckoutComplete } = useWeddingStore();
     const [invoiceData, setInvoiceData] = useState<any>(null);
     const [theme, setTheme] = useState<any>(null);
     const [selectedPreviewIndex, setSelectedPreviewIndex] = useState(0);
@@ -99,6 +99,10 @@ export default function PaymentPage() {
                         if (!verifyRes.ok || !verifyData.success) {
                             throw new Error(verifyData.error || 'Payment verification failed');
                         }
+
+                        // Record the provisioned wedding + auth state client-side so
+                        // the dashboard's server-linked features (RSVP links) resolve.
+                        setCheckoutComplete(verifyData.weddingId, userPhone);
 
                         // The session cookie is set server-side; head straight to
                         // the dashboard. A small floor keeps the overlay legible.

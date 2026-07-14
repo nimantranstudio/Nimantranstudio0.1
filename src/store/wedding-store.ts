@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { WeddingFormData, DEFAULT_EVENTS } from '@/lib/schemas/wedding-form';
-import { auth } from '@/lib/firebase';
 
 interface BundleItemInfo {
     id: string;
@@ -34,6 +33,8 @@ interface WeddingState {
     login: (phone: string, isAdmin?: boolean) => void;
     logout: () => void;
     resetForm: () => void;
+    /** Called after a successful payment: marks the user in and records the provisioned wedding. */
+    setCheckoutComplete: (weddingId?: string | null, phone?: string | null) => void;
 }
 
 const INITIAL_FORM_DATA: WeddingFormData = {
@@ -73,6 +74,13 @@ export const useWeddingStore = create<WeddingState>()(
             login: (phone, isAdmin = false) => set({ isAuthenticated: true, userPhone: phone, isAdmin }),
             logout: () => set({ isAuthenticated: false, userPhone: null, isAdmin: false }),
             resetForm: () => set({ formData: INITIAL_FORM_DATA }),
+
+            setCheckoutComplete: (weddingId, phone) =>
+                set((state) => ({
+                    isAuthenticated: true,
+                    userPhone: phone ?? state.userPhone,
+                    lastSavedWeddingId: weddingId ?? state.lastSavedWeddingId,
+                })),
 
             updateFormData: (data) => set((state) => ({
                 formData: { ...state.formData, ...data },
@@ -118,18 +126,24 @@ export const useWeddingStore = create<WeddingState>()(
                 const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout
 
                 try {
-                    const token = auth.currentUser ? await auth.currentUser.getIdToken() : '';
+                    // Auth is via the HttpOnly session cookie, sent automatically
+                    // on this same-origin request — no bearer token needed.
                     const response = await fetch('/api/wedding', {
                         method: 'POST',
-                        headers: { 
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${token}`
-                        },
+                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ formData, selectedThemeId }),
                         signal: controller.signal,
                     });
 
                     clearTimeout(timeoutId);
+
+                    // Before payment there is no session yet. A 401 is expected and
+                    // not an error: the form is already persisted locally, and the
+                    // wedding is provisioned server-side at payment. Treat as a
+                    // successful local save so the UI stays calm.
+                    if (response.status === 401) {
+                        return { success: true };
+                    }
 
                     if (!response.ok) {
                         const errorData = await response.json();
