@@ -40,44 +40,50 @@ import { InvitationCard, InvitationCardRef } from '@/components/preview/Invitati
 
 // Motion variants for welcome popup transitions (animation-vocabulary / apple-design / emil-design-eng)
 const overlayVariants = {
-    hidden: { opacity: 0 },
+    hidden: { opacity: 0, backdropFilter: "blur(0px)" },
     visible: { 
         opacity: 1, 
-        transition: { duration: 0.5, ease: [0.32, 0.72, 0, 1] } 
+        backdropFilter: "blur(8px)",
+        transition: { duration: 0.4, ease: [0.23, 1, 0.32, 1] } 
     },
     exit: { 
         opacity: 0, 
-        transition: { duration: 0.4, ease: [0.32, 0.72, 0, 1] } 
+        backdropFilter: "blur(0px)",
+        transition: { duration: 0.2, ease: [0.23, 1, 0.32, 1] } 
     }
 };
 
 const cardVariants = {
-    hidden: { scale: 0.9, opacity: 0, y: 20 },
+    hidden: { scale: 0.95, opacity: 0, y: 16, filter: "blur(12px)" },
     visible: { 
         scale: 1, 
         opacity: 1,
         y: 0,
+        filter: "blur(0px)",
         transition: { 
             type: "spring", 
-            stiffness: 260,
-            damping: 24,
-            staggerChildren: 0.1,
-            delayChildren: 0.15
+            bounce: 0.15,
+            duration: 0.5,
+            staggerChildren: 0.05,
+            delayChildren: 0.1
         }
     },
     exit: { 
         scale: 0.95, 
         opacity: 0,
-        transition: { duration: 0.3, ease: "easeIn" } 
+        y: 8,
+        filter: "blur(8px)",
+        transition: { duration: 0.2, ease: [0.23, 1, 0.32, 1] } 
     }
 };
 
 const itemVariants = {
-    hidden: { y: 12, opacity: 0 },
+    hidden: { y: 12, opacity: 0, filter: "blur(8px)" },
     visible: { 
         y: 0, 
         opacity: 1,
-        transition: { type: "spring", stiffness: 300, damping: 24 }
+        filter: "blur(0px)",
+        transition: { type: "spring", bounce: 0.2, duration: 0.4 }
     }
 };
 
@@ -380,8 +386,8 @@ function DetailsContent() {
                                 className={styles.transitionIconWrapper}
                             >
                                 <motion.div
-                                    animate={{ y: [0, -6, 0], scale: [1, 1.03, 1] }}
-                                    transition={{ repeat: Infinity, repeatType: "reverse", duration: 3, ease: "easeInOut" }}
+                                    animate={{ y: [0, -8, 0], scale: [1, 1.05, 1] }}
+                                    transition={{ repeat: Infinity, repeatType: "reverse", duration: 2.5, ease: [0.77, 0, 0.175, 1] }}
                                 >
                                     <Heart className={styles.transitionHeartOutline} size={48} strokeWidth={0.75} />
                                 </motion.div>
