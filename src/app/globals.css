@@ -29,6 +29,16 @@
   --border: #E0DED7;
   /* Calm border */
 
+  /* shadcn/ui tokens (added for 21st.dev Magic components) — mapped to the brand palette */
+  --card: #FFFFFF;
+  --card-foreground: #1F1F1F;
+  --popover: #FFFFFF;
+  --popover-foreground: #1F1F1F;
+  --input: #E0DED7;
+  --ring: #C8A951;
+  --destructive: #DC2626;
+  --destructive-foreground: #FFFFFF;
+
   /* Font Families */
   --font-serif: 'Playfair Display', 'Merriweather', serif;
   --font-sans: 'Inter', system-ui, sans-serif;
