@@ -45,7 +45,7 @@ export default function PreviewPage() {
 import { ProcessingOverlay } from '@/components/processing/ProcessingOverlay';
 
 function PreviewContent() {
-    const { formData, selectedThemeId, isAuthenticated, login, bundleImages, bundleItems, selectedPlan, userPhone } = useWeddingStore();
+    const { formData, selectedThemeId, isAuthenticated, login, bundleImages, bundleItems, selectedPlan, userPhone, setCheckoutComplete } = useWeddingStore();
     const [packages, setPackages] = useState<any[]>([]);
     const [theme, setTheme] = useState<any | null>(null);
 
@@ -259,13 +259,13 @@ function PreviewContent() {
     const handlePay = async () => {
         setIsProcessing(true);
         try {
-            // Create Order
+            // Create Order — server derives the price from theme + package.
             const res = await fetch('/api/payment/create-order', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    bundleId: bundleItems?.[0]?.id || 'demo_bundle',
-                    amount: 1000, // Hardcoded to ₹10 (1000 paise) for testing
+                    themeId: selectedThemeId,
+                    packageName: pricing.packageName,
                     currency: 'INR'
                 })
             });
@@ -322,19 +322,31 @@ function PreviewContent() {
                 handler: async function (response: any) {
                     try {
                         console.log('Payment successful:', response);
+                        // Hero image for the WhatsApp welcome: first real (non-.html) bundle image.
+                        const isImg = (u: any) => typeof u === 'string' && /\.(png|jpe?g|webp)(\?|$)/i.test(u);
+                        const heroImageUrl =
+                            (bundleImages || []).find(isImg) ||
+                            (bundleItems || []).map((i: any) => i?.image).find(isImg) ||
+                            undefined;
+
                         const verifyRes = await fetch('/api/payment/verify', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
                                 razorpay_payment_id: response.razorpay_payment_id,
                                 razorpay_order_id: response.razorpay_order_id,
-                                razorpay_signature: response.razorpay_signature
+                                razorpay_signature: response.razorpay_signature,
+                                formData,
+                                heroImageUrl
                             })
                         });
 
                         const verifyData = await verifyRes.json();
-                        if (verifyData.success) {
+                        if (verifyRes.ok && verifyData.success) {
                             setPaymentStatus('success');
+
+                            // Record the provisioned wedding + auth so the dashboard resolves.
+                            setCheckoutComplete(verifyData.weddingId, userPhone);
 
                             // Generate Bundle
                             await fetch('/api/generate-bundle', {
@@ -345,7 +357,7 @@ function PreviewContent() {
 
                             router.push('/dashboard');
                         } else {
-                            throw new Error('Payment verification failed');
+                            throw new Error(verifyData.error || 'Payment verification failed');
                         }
                     } catch (err) {
                         console.error('Payment verification error:', err);

@@ -44,9 +44,24 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        const pkg = await prisma.package.findFirst({
+        // Accept either the package's real name ("WhatsApp Essentials") or the
+        // plan key ("essentials") that some client flows send.
+        const PLAN_KEY_TO_NAME: Record<string, string> = {
+            essentials: 'WhatsApp Essentials',
+            posters: 'WhatsApp + Posters',
+            complete: 'Complete Wedding Suite',
+        };
+        let pkg = await prisma.package.findFirst({
             where: { name: packageName, isActive: true },
         });
+        if (!pkg) {
+            const mapped = PLAN_KEY_TO_NAME[String(packageName).toLowerCase()];
+            if (mapped) {
+                pkg = await prisma.package.findFirst({
+                    where: { name: mapped, isActive: true },
+                });
+            }
+        }
         if (!pkg) {
             return NextResponse.json(
                 { error: 'Unknown package' },
