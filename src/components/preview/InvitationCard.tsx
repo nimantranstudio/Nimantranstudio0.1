@@ -12,6 +12,8 @@ import { clsx } from 'clsx';
 export interface InvitationCardRef {
     saveEdits: () => Record<string, string>;
     downloadImage: () => void;
+    /** Capture the rendered card to a PNG data URL (null on failure). Never throws. */
+    captureDataUrl: () => Promise<string | null>;
     sendMessage: (payload: any) => void;
     getSerializedHtml?: () => string;
 }
@@ -344,6 +346,106 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
             clone.querySelector('#html2canvas-script')?.remove();
             clone.querySelector('#html2canvas-capture-style')?.remove();
             return "<!DOCTYPE html>\n" + clone.outerHTML;
+        },
+        captureDataUrl: (): Promise<string | null> => {
+            // Mirrors downloadImage's html2canvas capture, but resolves the PNG
+            // data URL instead of triggering a download. Never throws; resolves
+            // null on any failure so callers can fall back gracefully.
+            return new Promise((resolve) => {
+                let settled = false;
+                const finish = (val: string | null) => {
+                    if (settled) return;
+                    settled = true;
+                    clearTimeout(timer);
+                    resolve(val);
+                };
+                const timer = setTimeout(() => finish(null), 12000);
+
+                const captureStyle = `
+                    .sizing-box { outline: none !important; cursor: default !important; }
+                    body { overflow: visible !important; width: 500px !important; min-height: 100% !important; }
+                    .invitation-wrapper, .invite-wrapper {
+                        max-height: none !important; height: auto !important; aspect-ratio: auto !important;
+                        overflow: visible !important; background-size: 100% 100% !important;
+                        transform: none !important; margin: 0 !important; width: 100% !important;
+                    }
+                `;
+
+                const execute = () => {
+                    try {
+                        if (isHTMLDesign) {
+                            const doc = iframeRef.current?.contentDocument || iframeRef.current?.contentWindow?.document;
+                            const win = iframeRef.current?.contentWindow as any;
+                            if (!doc || !win?.html2canvas) return finish(null);
+                            const wrapper = (doc.querySelector('.invitation-wrapper') ||
+                                doc.querySelector('.invite-wrapper') ||
+                                doc.body.firstElementChild) as HTMLElement | null;
+                            if (!wrapper) return finish(null);
+
+                            const originalWrapperStyle = wrapper.getAttribute('style') || '';
+                            const originalBodyStyle = doc.body.getAttribute('style') || '';
+                            const style = doc.createElement('style');
+                            style.id = 'html2canvas-capture-style';
+                            style.innerHTML = captureStyle;
+                            doc.head.appendChild(style);
+
+                            wrapper.style.setProperty('max-width', 'none', 'important');
+                            wrapper.style.setProperty('max-height', 'none', 'important');
+                            wrapper.style.setProperty('width', '500px', 'important');
+                            wrapper.style.setProperty('height', 'auto', 'important');
+                            const targetHeight = Math.max(wrapper.scrollHeight, wrapper.offsetHeight, Math.round(500 * 16 / 9));
+                            wrapper.style.setProperty('height', `${targetHeight}px`, 'important');
+                            doc.body.style.setProperty('display', 'block', 'important');
+                            doc.body.style.setProperty('margin', '0', 'important');
+                            doc.body.style.setProperty('padding', '0', 'important');
+                            doc.body.style.setProperty('width', '500px', 'important');
+                            doc.body.style.setProperty('height', `${targetHeight}px`, 'important');
+
+                            const cleanup = () => {
+                                doc.body.setAttribute('style', originalBodyStyle);
+                                wrapper.setAttribute('style', originalWrapperStyle);
+                                if (style.parentNode) style.parentNode.removeChild(style);
+                            };
+
+                            win.html2canvas(wrapper, { useCORS: true, scale: 2, width: 500, height: targetHeight, backgroundColor: null })
+                                .then((canvas: HTMLCanvasElement) => { cleanup(); finish(canvas.toDataURL('image/png')); })
+                                .catch(() => { cleanup(); finish(null); });
+                        } else {
+                            const mainWin = window as any;
+                            const run = () => {
+                                if (!mainWin.html2canvas || !containerRef.current) return finish(null);
+                                mainWin.html2canvas(containerRef.current, { useCORS: true, scale: 2, backgroundColor: null })
+                                    .then((canvas: HTMLCanvasElement) => finish(canvas.toDataURL('image/png')))
+                                    .catch(() => finish(null));
+                            };
+                            if (!mainWin.html2canvas) {
+                                const s = document.createElement('script');
+                                s.src = 'https://html2canvas.hertzen.com/dist/html2canvas.min.js';
+                                s.onload = run;
+                                s.onerror = () => finish(null);
+                                document.head.appendChild(s);
+                            } else { run(); }
+                        }
+                    } catch { finish(null); }
+                };
+
+                if (isHTMLDesign) {
+                    const doc = iframeRef.current?.contentDocument || iframeRef.current?.contentWindow?.document;
+                    const win = iframeRef.current?.contentWindow as any;
+                    if (!doc) return finish(null);
+                    if (win?.html2canvas) { execute(); }
+                    else if (!doc.getElementById('html2canvas-script')) {
+                        const s = doc.createElement('script');
+                        s.id = 'html2canvas-script';
+                        s.src = 'https://html2canvas.hertzen.com/dist/html2canvas.min.js';
+                        s.onload = execute;
+                        s.onerror = () => finish(null);
+                        doc.head.appendChild(s);
+                    } else { execute(); }
+                } else {
+                    execute();
+                }
+            });
         }
     }));
 

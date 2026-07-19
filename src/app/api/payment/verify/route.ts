@@ -41,6 +41,7 @@ export async function POST(req: NextRequest) {
             razorpay_payment_id,
             razorpay_signature,
             formData,
+            heroImageUrl,
         } = await req.json();
 
         if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
@@ -208,6 +209,7 @@ export async function POST(req: NextRequest) {
             coupleNames: `${sanitize(formData?.groomName) || ''} ${sanitize(formData?.brideName) || ''}`.trim(),
             amountRupees,
             orderId: order.id,
+            heroImageUrl: typeof heroImageUrl === 'string' ? heroImageUrl : undefined,
         }).catch((e) => console.error('Notification dispatch failed:', e));
 
         // 7. Issue the session and return.

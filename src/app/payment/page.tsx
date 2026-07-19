@@ -4,16 +4,16 @@ import { useWeddingStore } from '@/store/wedding-store';
 import styles from './payment.module.css';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft, ChevronRight, Lock, Check, ShieldCheck, Zap } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Script from 'next/script';
-import { InvitationCard } from '@/components/preview/InvitationCard';
+import { InvitationCard, InvitationCardRef } from '@/components/preview/InvitationCard';
 import { ProvisioningOverlay } from '@/components/payment/ProvisioningOverlay';
 import clsx from 'clsx';
 
 export default function PaymentPage() {
     const router = useRouter();
-    const { formData, selectedThemeId, selectedPlan, userPhone, bundleItems: storeBundleItems, setCheckoutComplete } = useWeddingStore();
+    const { formData, selectedThemeId, selectedPlan, userPhone, bundleItems: storeBundleItems, bundleImages, setCheckoutComplete } = useWeddingStore();
     const [invoiceData, setInvoiceData] = useState<any>(null);
     const [theme, setTheme] = useState<any>(null);
     const [selectedPreviewIndex, setSelectedPreviewIndex] = useState(0);
@@ -83,6 +83,33 @@ export default function PaymentPage() {
                     // Show the provisioning overlay immediately; the backend work
                     // (verify → account → session → provision) runs behind it.
                     setPaymentStatus('success');
+
+                    // Hero image for the WhatsApp welcome. First try to capture the
+                    // couple's REAL personalized card and host it; if capture/upload
+                    // fails for any reason, fall back to a hosted bundle image.
+                    const isImg = (u: any) => typeof u === 'string' && /\.(png|jpe?g|webp)(\?|$)/i.test(u);
+                    let heroImageUrl: string | undefined =
+                        (bundleImages || []).find(isImg) ||
+                        (storeBundleItems || []).map((i: any) => i?.image).find(isImg) ||
+                        undefined;
+                    try {
+                        const dataUrl = await heroCardRef.current?.captureDataUrl();
+                        if (dataUrl) {
+                            const up = await fetch('/api/cards/upload', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    dataUrl,
+                                    name: `${formData.groomName || 'wedding'}-${formData.brideName || 'invite'}`,
+                                }),
+                            });
+                            const upData = await up.json().catch(() => ({}));
+                            if (up.ok && upData?.success && upData?.url) heroImageUrl = upData.url;
+                        }
+                    } catch {
+                        /* keep the fallback bundle image */
+                    }
+
                     try {
                         const verifyRes = await fetch('/api/payment/verify', {
                             method: 'POST',
@@ -91,7 +118,8 @@ export default function PaymentPage() {
                                 razorpay_payment_id: response.razorpay_payment_id,
                                 razorpay_order_id: response.razorpay_order_id,
                                 razorpay_signature: response.razorpay_signature,
-                                formData
+                                formData,
+                                heroImageUrl
                             })
                         });
 
@@ -251,6 +279,13 @@ export default function PaymentPage() {
 
     const previewItems = buildPreviewItems();
 
+    // Hidden hero card used to capture the couple's real Wedding Invitation as a
+    // PNG for the WhatsApp welcome. Prefer the wedding item; fall back to first.
+    const heroCardRef = useRef<InvitationCardRef>(null);
+    const heroItem =
+        previewItems.find((it: any) => /wedding/i.test(`${it?.name || ''} ${it?.id || ''}`)) ||
+        previewItems[0];
+
     // Auto-slide effect
     useEffect(() => {
         if (previewItems.length <= 1) return;
@@ -277,7 +312,28 @@ export default function PaymentPage() {
     return (
         <div className={styles.paymentPage}>
             <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="afterInteractive" onLoad={() => console.log('Razorpay script loaded')} />
-            
+
+            {/* Hidden, full-size Wedding Invitation card — kept in layout (off-screen)
+                so it's fully rendered/loaded and can be captured to a PNG at payment
+                success for the WhatsApp welcome hero image. */}
+            {heroItem && theme && (
+                <div aria-hidden style={{ position: 'fixed', left: '-99999px', top: 0, width: '500px', zIndex: -1, pointerEvents: 'none', opacity: 0 }}>
+                    <InvitationCard
+                        ref={heroCardRef}
+                        event={heroItem.event}
+                        theme={theme}
+                        groomName={groom}
+                        brideName={bride}
+                        groomParents={formData.groomParents}
+                        brideParents={formData.brideParents}
+                        customImage={heroItem.image}
+                        isPlaceholder={false}
+                        isRawPreview={false}
+                        type='image'
+                    />
+                </div>
+            )}
+
             {/* Fullscreen provisioning overlay while the backend sets everything up */}
             {paymentStatus === 'success' && (
                 <ProvisioningOverlay coupleNames={coupleNames} />

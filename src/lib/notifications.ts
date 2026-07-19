@@ -6,28 +6,47 @@ import { messaging } from '@/lib/messaging';
  * outage never affects the user who is already inside their dashboard.
  */
 
-const DASHBOARD_URL =
-    process.env.NEXT_PUBLIC_APP_URL || 'https://www.nimantranstudio.in';
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://www.nimantranstudio.in';
 
-// WhatsApp templates configured on the vendor dashboard. Kept in one place so a
-// template rename is a one-line change.
-const WELCOME_TEMPLATE = process.env.MSG91_WELCOME_TEMPLATE || 'wedding_welcome';
+// WhatsApp template configured on the vendor dashboard. Kept in one place so a
+// template rename is a one-line change. Matches the MSG91 "welcome_nimantran"
+// utility template: an IMAGE header (the couple's hero invitation card), one
+// body variable ({{1}} = customer/couple name), and a static "Download My Suite"
+// URL button (→ /dashboard/assets) baked into the approved template.
+const WELCOME_TEMPLATE = process.env.MSG91_WELCOME_TEMPLATE || 'welcome_nimantran';
+
+/** WhatsApp media headers accept real raster images only — not .html templates. */
+function isSendableImage(url?: string): boolean {
+    return !!url && /\.(png|jpe?g|webp)(\?|$)/i.test(url);
+}
+
+/** Make a relative asset path absolute so WhatsApp's servers can fetch it. */
+function absolutize(url?: string): string | undefined {
+    if (!url) return undefined;
+    if (/^https?:\/\//i.test(url)) return url;
+    return `${APP_URL}${url.startsWith('/') ? '' : '/'}${url}`;
+}
 
 export async function sendWelcomeAndReceipt(opts: {
     mobile: string;
     coupleNames: string;
     amountRupees: number;
     orderId: string;
+    heroImageUrl?: string;
 }): Promise<void> {
-    const { mobile, coupleNames, amountRupees, orderId } = opts;
-    const couple = coupleNames || 'your celebration';
+    const { mobile, coupleNames, orderId, heroImageUrl } = opts;
+    const couple = coupleNames || 'there';
+    // Attach the hero card only if it's a real, fetchable image; otherwise the
+    // template still sends text-only (the vendor adapter omits the header).
+    const hero = isSendableImage(heroImageUrl) ? absolutize(heroImageUrl) : undefined;
 
     try {
-        const result = await messaging.sendWhatsAppTemplate(mobile, WELCOME_TEMPLATE, [
-            couple,
-            `₹${amountRupees.toFixed(2)}`,
-            `${DASHBOARD_URL}/dashboard`,
-        ]);
+        const result = await messaging.sendWhatsAppTemplate(
+            mobile,
+            WELCOME_TEMPLATE,
+            [couple],
+            hero
+        );
         if (!result.success) {
             console.warn(`Welcome WhatsApp not delivered (order ${orderId}): ${result.error}`);
         }
