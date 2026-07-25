@@ -79,7 +79,13 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        const amountPaise = Math.round(invoice.finalSellingPrice * 100);
+        // Test mode: charge a flat ₹10 regardless of the real price, so the full
+        // checkout flow can be exercised for real without collecting real money.
+        // Server-side only — never trust a client-sent amount. Flip
+        // PAYMENT_TEST_MODE off (or unset it) to restore real pricing; no code
+        // change needed.
+        const testMode = process.env.PAYMENT_TEST_MODE === 'true';
+        const amountPaise = testMode ? 1000 : Math.round(invoice.finalSellingPrice * 100);
         if (amountPaise < 100) {
             return NextResponse.json(
                 { error: 'Amount below minimum' },
