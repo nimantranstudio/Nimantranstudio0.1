@@ -1,0 +1,34 @@
+.canvas {
+    position: relative;
+    width: 100%;
+    /* Establish a container so layer font sizes can use cqw (≈ % of canvas width),
+       making the whole card resolution-independent. */
+    container-type: size;
+    overflow: hidden;
+    background: #f5f5f4;
+}
+
+.background {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    user-select: none;
+    pointer-events: none;
+}
+
+/* Edit mode: show zone bounds + selection (Phase 2). */
+.layerEdit {
+    outline: 1px dashed rgba(0, 0, 0, 0.25);
+    cursor: move;
+}
+
+.layerSelected {
+    outline: 2px solid var(--primary, #c8a951);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .canvas {
+        scroll-behavior: auto;
+    }
+}
