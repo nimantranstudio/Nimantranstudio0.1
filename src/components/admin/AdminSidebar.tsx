@@ -3,12 +3,13 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { clsx } from 'clsx';
-import { LayoutDashboard, Palette, Package, ShoppingCart, Settings, FileText, Film } from 'lucide-react';
+import { LayoutDashboard, Palette, Package, ShoppingCart, Settings, FileText, Film, LayoutTemplate } from 'lucide-react';
 import styles from './AdminSidebar.module.css';
 
 const MENU_ITEMS = [
     { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
     { name: 'Themes', href: '/admin/themes', icon: Palette },
+    { name: 'Templates', href: '/admin/templates', icon: LayoutTemplate },
     { name: 'Bundles', href: '/admin/bundles', icon: Package },
     { name: 'Video Templates', href: '/admin/video-templates', icon: Film },
     { name: 'Blogs', href: '/admin/blogs', icon: FileText },
