@@ -281,3 +281,19 @@ model VideoTemplate {
 
   @@map("VideoTemplate")
 }
+
+// Structured invitation template (the CardDocument model). Replaces hand-authored
+// HTML: `layout` holds the CardDocument (background + positioned data-bound text
+// layers), rendered by <CardRenderer> for card, video, and the admin editor.
+model Template {
+  id        String   @id @default(cuid())
+  name      String
+  eventType String?
+  themeId   String?
+  layout    Json     // the CardDocument
+  status    String   @default("draft") // draft | ready
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("Template")
+}
