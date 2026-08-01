@@ -7,7 +7,8 @@ import { ChevronLeft, ChevronRight, Lock, Check, ShieldCheck, Zap } from 'lucide
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Script from 'next/script';
-import { InvitationCard, InvitationCardRef } from '@/components/preview/InvitationCard';
+import { InvitationCardRef } from '@/components/preview/InvitationCard';
+import { PreviewCard } from '@/components/preview/PreviewCard';
 import { ProvisioningOverlay } from '@/components/payment/ProvisioningOverlay';
 import clsx from 'clsx';
 
@@ -222,7 +223,7 @@ export default function PaymentPage() {
         };
 
         const weddingEvents = formData.events || [];
-        const items: Array<{ id: string; name: string; image: string; event: any }> = [];
+        const items: Array<{ id: string; name: string; image: string; event: any; layout?: any }> = [];
 
         for (const bi of storeBundleItems) {
             if (!bi.templatePath) continue; 
@@ -256,6 +257,7 @@ export default function PaymentPage() {
                 id: bi.id,
                 name: displayName,
                 image: bi.templatePath,
+                layout: (bi as any).layout, // present only for designed (structured) items
                 event: matchedEvent ? {
                     id: matchedEvent.id,
                     name: matchedEvent.heading || matchedEvent.name,
@@ -318,7 +320,7 @@ export default function PaymentPage() {
                 success for the WhatsApp welcome hero image. */}
             {heroItem && theme && (
                 <div aria-hidden style={{ position: 'fixed', left: '-99999px', top: 0, width: '500px', zIndex: -1, pointerEvents: 'none', opacity: 0 }}>
-                    <InvitationCard
+                    <PreviewCard
                         ref={heroCardRef}
                         event={heroItem.event}
                         theme={theme}
@@ -327,6 +329,8 @@ export default function PaymentPage() {
                         groomParents={formData.groomParents}
                         brideParents={formData.brideParents}
                         customImage={heroItem.image}
+                        structuredLayout={(heroItem as any).layout}
+                        structuredCouple={formData}
                         isPlaceholder={false}
                         isRawPreview={false}
                         type='image'
@@ -364,7 +368,7 @@ export default function PaymentPage() {
                                     onClick={() => setSelectedPreviewIndex(idx)}
                                 >
                                     <div className={styles.thumbnailInner}>
-                                        <InvitationCard
+                                        <PreviewCard
                                             event={item.event}
                                             theme={theme}
                                             groomName={groom}
@@ -372,6 +376,8 @@ export default function PaymentPage() {
                                             groomParents={formData.groomParents}
                                             brideParents={formData.brideParents}
                                             customImage={item.image}
+                                            structuredLayout={(item as any).layout}
+                                            structuredCouple={formData}
                                             isPlaceholder={true}
                                             isRawPreview={false}
                                             type='image'
@@ -414,7 +420,7 @@ export default function PaymentPage() {
                                                     zIndex: idx === selectedPreviewIndex ? 1 : 0
                                                 }}
                                             >
-                                                <InvitationCard
+                                                <PreviewCard
                                                     event={item.event}
                                                     theme={theme}
                                                     groomName={groom}
@@ -422,6 +428,8 @@ export default function PaymentPage() {
                                                     groomParents={formData.groomParents}
                                                     brideParents={formData.brideParents}
                                                     customImage={item.image}
+                                                    structuredLayout={(item as any).layout}
+                                                    structuredCouple={formData}
                                                     isPlaceholder={true}
                                                     isRawPreview={false}
                                                     type='image'
