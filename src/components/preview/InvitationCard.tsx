@@ -2,6 +2,7 @@
 
 import { WeddingEvent } from '@/lib/schemas/wedding-form';
 import { Theme } from '@/lib/constants/themes';
+import { formatDisplayDate, formatDisplayTime } from '@/lib/format-date';
 import styles from './Preview.module.css';
 import { Play } from 'lucide-react';
 import Image from 'next/image';
@@ -449,49 +450,9 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
         }
     }));
 
-    const getOrdinal = (n: number) => {
-        const s = ["th", "st", "nd", "rd"];
-        const v = n % 100;
-        return n + (s[(v - 20) % 10] || s[v] || s[0]);
-    };
-
-    const formatDate = (dateStr?: string) => {
-        if (!dateStr) return dateStr;
-        // If it already looks formatted (contains month name), return as is
-        if (/[a-zA-Z]/.test(dateStr)) return dateStr;
-        
-        try {
-            const date = new Date(dateStr);
-            if (isNaN(date.getTime())) return dateStr;
-            
-            const day = getOrdinal(date.getDate());
-            const month = date.toLocaleString('en-US', { month: 'long' });
-            const year = date.getFullYear();
-            
-            return `${day} ${month} ${year}`;
-        } catch (e) {
-            return dateStr;
-        }
-    };
-
-    const formatTime = (timeStr?: string) => {
-        if (!timeStr) return timeStr;
-        if (timeStr.toLowerCase().includes('am') || timeStr.toLowerCase().includes('pm')) return timeStr;
-        
-        try {
-            const [h, m] = timeStr.split(':');
-            if (h === undefined || m === undefined) return timeStr;
-            
-            let hours = parseInt(h);
-            const minutes = m.substring(0, 2); // Handle case like "10:30:00"
-            const ampm = hours >= 12 ? 'PM' : 'AM';
-            hours = hours % 12;
-            hours = hours ? hours : 12;
-            return `${hours}:${minutes} ${ampm}`;
-        } catch (e) {
-            return timeStr;
-        }
-    };
+    // Site-wide date/time formatting (DD-MM-YYYY, 12-hour) — shared with every surface.
+    const formatDate = (dateStr?: string) => formatDisplayDate(dateStr);
+    const formatTime = (timeStr?: string) => formatDisplayTime(timeStr);
 
     // Handle scaling based on container width
     useEffect(() => {

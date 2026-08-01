@@ -2,6 +2,7 @@
 
 import { useRouter, useParams } from 'next/navigation';
 import { useWeddingStore } from '@/store/wedding-store';
+import { formatDisplayDate } from '@/lib/format-date';
 import { ArrowLeft, Calendar, MapPin, Download, Share2, Search } from 'lucide-react';
 import styles from './guest-list.module.css';
 import { DashboardSidebar } from '@/components/layout/DashboardSidebar';
@@ -117,7 +118,7 @@ export default function GuestListPage() {
                     <div className={styles.eventMeta}>
                         <div className={styles.metaItem}>
                             <Calendar size={16} />
-                            <span>{event.date || 'Date TBD'}</span>
+                            <span>{formatDisplayDate(event.date) || 'Date TBD'}</span>
                         </div>
                         <div className={styles.metaItem}>
                             <MapPin size={16} />

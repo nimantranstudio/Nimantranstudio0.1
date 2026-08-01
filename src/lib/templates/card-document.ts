@@ -8,6 +8,8 @@
  * any output size (card preview, high-res download, 1080×1440 video frame).
  */
 
+import { formatDisplayDate, formatDisplayTime } from '@/lib/format-date';
+
 /** Fields a text layer can bind to. `static` renders the layer's own `text`. */
 export type Binding =
     // couple-level (from WeddingFormData)
@@ -111,26 +113,9 @@ export function aspectRatioValue(aspectRatio: string): number {
     return w > 0 && h > 0 ? w / h : 3 / 4;
 }
 
-/** ISO date from a date input (YYYY-MM-DD) → DD-MM-YYYY. Non-ISO strings pass through. */
-export function formatEventDate(v?: string): string {
-    if (!v) return '';
-    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v.trim());
-    return m ? `${m[3]}-${m[2]}-${m[1]}` : v;
-}
-
-/** 24h time from a time input (HH:MM) → 12-hour with AM/PM. Anything already
- *  carrying am/pm, or not a bare HH:MM, passes through untouched. */
-export function formatEventTime(v?: string): string {
-    if (!v) return '';
-    const s = v.trim();
-    if (/[ap]\.?m\.?/i.test(s)) return s; // already 12-hour
-    const m = /^(\d{1,2}):(\d{2})$/.exec(s);
-    if (!m) return s;
-    let h = parseInt(m[1], 10);
-    const ampm = h >= 12 ? 'PM' : 'AM';
-    h = h % 12 || 12;
-    return `${h}:${m[2]} ${ampm}`;
-}
+// Designed cards use the same site-wide DD-MM-YYYY / 12-hour formatting.
+export const formatEventDate = formatDisplayDate;
+export const formatEventTime = formatDisplayTime;
 
 /** Build the flat CardData the renderer needs from couple form data + one event. */
 export function buildCardData(couple: any, event: any): CardData {

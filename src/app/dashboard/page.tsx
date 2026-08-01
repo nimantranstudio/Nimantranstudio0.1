@@ -1,6 +1,7 @@
 'use client';
 
 import { useWeddingStore } from '@/store/wedding-store';
+import { formatDisplayDate, formatDisplayTime } from '@/lib/format-date';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import { DashboardSidebar } from '@/components/layout/DashboardSidebar';
@@ -370,25 +371,7 @@ export default function DashboardPage() {
                         <div className={redesignStyles.heroMeta}>
                             <Calendar size={16} />
                             <span>
-                                {(() => {
-                                    let dStr = formData.primaryDate;
-                                    if (!dStr && formData.events && formData.events.length > 0) {
-                                        dStr = formData.events[0].date;
-                                    }
-                                    if (dStr && !isNaN(Date.parse(dStr))) {
-                                        const d = new Date(dStr);
-                                        const day = d.getDate();
-                                        const month = d.toLocaleString('en-US', { month: 'long' });
-                                        const year = d.getFullYear();
-                                        const getOrdinal = (n: number) => {
-                                            const s = ["th", "st", "nd", "rd"];
-                                            const v = n % 100;
-                                            return n + (s[(v - 20) % 10] || s[v] || s[0]);
-                                        };
-                                        return `${getOrdinal(day)} ${month} ${year}`;
-                                    }
-                                    return dStr || '20th December 2025';
-                                })()}
+                                {formatDisplayDate(formData.primaryDate || formData.events?.[0]?.date) || '20-12-2025'}
                             </span>
                             <span>•</span>
                             <MapPin size={16} />
@@ -544,12 +527,12 @@ export default function DashboardPage() {
                                                 <div className={styles.eventCardMetaRow} style={{ marginTop: 0, marginBottom: '1.5rem' }}>
                                                     <div className={styles.metaItem}>
                                                         <Calendar size={16} />
-                                                        <span>{event.date || 'TBD'}</span>
+                                                        <span>{formatDisplayDate(event.date) || 'TBD'}</span>
                                                     </div>
                                                     <span className={styles.metaDivider}>•</span>
                                                     <div className={styles.metaItem}>
                                                         <Clock size={16} />
-                                                        <span>{event.time || 'TBD'}</span>
+                                                        <span>{formatDisplayTime(event.time) || 'TBD'}</span>
                                                     </div>
                                                 </div>
 
