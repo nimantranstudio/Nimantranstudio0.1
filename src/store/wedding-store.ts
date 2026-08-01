@@ -154,35 +154,15 @@ export const useWeddingStore = create<WeddingState>()(
 
                     const result = await response.json();
                     if (result.success && result.wedding) {
-                        const backendWedding = result.wedding;
-                        set({ lastSavedWeddingId: backendWedding.id });
-
-                        // Sync backend events (with real DB IDs) back to local store
-                        // ensuring the Dashboard links match the Database records
-                        if (backendWedding.events && Array.isArray(backendWedding.events)) {
-                            const syncedEvents = backendWedding.events.map((evt: any) => ({
-                                id: evt.id, // THE CRITICAL DB ID
-                                name: evt.name,
-                                date: evt.date,
-                                time: evt.time,
-                                venue: evt.venue,
-                                mapLink: evt.mapLink,
-                                description: evt.description,
-                                eventType: evt.eventType,
-                                rsvpDeadline: evt.rsvpDeadline,
-                                allowCompanions: evt.allowCompanions,
-                                collectDietary: evt.collectDietary,
-                                maxGuests: evt.maxGuests,
-                                guests: [] // Guests are separate in DB, for now reset or keep empty as this is 'creating' phase
-                            }));
-
-                            set((state) => ({
-                                formData: {
-                                    ...state.formData,
-                                    events: syncedEvents
-                                }
-                            }));
-                        }
+                        // Record the saved wedding id (used for dashboard / RSVP links).
+                        // We intentionally do NOT sync the server's events back into
+                        // formData: this endpoint creates fresh event rows (new ids) on
+                        // every debounced auto-save, and overwriting local events mid-edit
+                        // changed their ids out from under the form. That dropped the
+                        // just-typed date (updateEvent no longer matched the id) and
+                        // remounted the event list + preview (the flicker). Local formData
+                        // stays the single source of truth while the user is editing.
+                        set({ lastSavedWeddingId: result.wedding.id });
                     }
                     return result;
                 } catch (error: any) {
