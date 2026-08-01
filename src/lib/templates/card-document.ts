@@ -111,6 +111,27 @@ export function aspectRatioValue(aspectRatio: string): number {
     return w > 0 && h > 0 ? w / h : 3 / 4;
 }
 
+/** ISO date from a date input (YYYY-MM-DD) → DD-MM-YYYY. Non-ISO strings pass through. */
+export function formatEventDate(v?: string): string {
+    if (!v) return '';
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v.trim());
+    return m ? `${m[3]}-${m[2]}-${m[1]}` : v;
+}
+
+/** 24h time from a time input (HH:MM) → 12-hour with AM/PM. Anything already
+ *  carrying am/pm, or not a bare HH:MM, passes through untouched. */
+export function formatEventTime(v?: string): string {
+    if (!v) return '';
+    const s = v.trim();
+    if (/[ap]\.?m\.?/i.test(s)) return s; // already 12-hour
+    const m = /^(\d{1,2}):(\d{2})$/.exec(s);
+    if (!m) return s;
+    let h = parseInt(m[1], 10);
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12;
+    return `${h}:${m[2]} ${ampm}`;
+}
+
 /** Build the flat CardData the renderer needs from couple form data + one event. */
 export function buildCardData(couple: any, event: any): CardData {
     return {
@@ -119,8 +140,8 @@ export function buildCardData(couple: any, event: any): CardData {
         groomParents: couple?.groomParents || '',
         brideParents: couple?.brideParents || '',
         eventName: event?.name || '',
-        eventDate: event?.date || couple?.primaryDate || '',
-        eventTime: event?.time || couple?.primaryTime || '',
+        eventDate: formatEventDate(event?.date || couple?.primaryDate || ''),
+        eventTime: formatEventTime(event?.time || couple?.primaryTime || ''),
         venue: event?.venue || couple?.defaultVenueName || '',
         mapLink: event?.mapLink || couple?.primaryMapLink || '',
         heading: event?.heading || '',
