@@ -47,6 +47,7 @@ export default function DashboardPage() {
     const { formData, selectedThemeId, isAuthenticated, bundleImages, bundleItems, lastSavedWeddingId, updateEvent } = useWeddingStore();
     const [isMounted, setIsMounted] = useState(false);
     const [showWelcome, setShowWelcome] = useState(false);
+    const [rsvpStats, setRsvpStats] = useState({ total: 0, attending: 0, notAttending: 0 });
     const [theme, setTheme] = useState<Theme | null>(null);
     const [selectedPreviewIndex, setSelectedPreviewIndex] = useState<number | null>(null);
     const cardRef = useRef<InvitationCardRef>(null);
@@ -121,6 +122,25 @@ export default function DashboardPage() {
         setShowWelcome(false);
         window.history.replaceState({}, '', window.location.pathname);
     };
+
+    // Load real RSVP responses for the summary card (same definitions as the RSVP
+    // Manager: attending = headcount of accepted guests, not-attending = declines).
+    useEffect(() => {
+        if (!lastSavedWeddingId) return;
+        let alive = true;
+        fetch(`/api/rsvp/${lastSavedWeddingId}`)
+            .then((r) => (r.ok ? r.json() : null))
+            .then((d) => {
+                if (!alive || !d?.success || !Array.isArray(d.rsvps)) return;
+                const attending = d.rsvps
+                    .filter((r: any) => r.status === 'attending')
+                    .reduce((sum: number, r: any) => sum + (r.adultCount || 1), 0);
+                const notAttending = d.rsvps.filter((r: any) => r.status === 'declined').length;
+                setRsvpStats({ total: attending + notAttending, attending, notAttending });
+            })
+            .catch(() => {});
+        return () => { alive = false; };
+    }, [lastSavedWeddingId]);
 
     useEffect(() => {
         fetch('/api/bundle-assets')
@@ -610,11 +630,11 @@ export default function DashboardPage() {
                                     <div style={{ position: 'relative', width: '110px', height: '110px', flexShrink: 0 }}>
                                         <svg viewBox="0 0 36 36" style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }}>
                                             <circle stroke="#F3F4F6" strokeWidth="4" fill="transparent" r="16" cx="18" cy="18" />
-                                            <circle stroke="#22c55e" strokeWidth="4" fill="transparent" r="16" cx="18" cy="18" 
-                                                pathLength="100" strokeDasharray="83 100" strokeDashoffset="0" strokeLinecap="round" />
+                                            <circle stroke="#22c55e" strokeWidth="4" fill="transparent" r="16" cx="18" cy="18"
+                                                pathLength="100" strokeDasharray={`${rsvpStats.total > 0 ? Math.round((rsvpStats.attending / rsvpStats.total) * 100) : 0} 100`} strokeDashoffset="0" strokeLinecap="round" />
                                         </svg>
                                         <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                                            <span style={{ fontSize: '1.2rem', fontWeight: 700, color: '#333' }}>174</span>
+                                            <span style={{ fontSize: '1.2rem', fontWeight: 700, color: '#333' }}>{rsvpStats.total}</span>
                                             <span style={{ fontSize: '0.65rem', color: '#666', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total</span>
                                         </div>
                                     </div>
@@ -624,14 +644,14 @@ export default function DashboardPage() {
                                                 <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#22c55e' }}></div>
                                                 <span style={{ fontSize: '0.8rem', color: '#4B5563', fontWeight: 600 }}>Attending</span>
                                             </div>
-                                            <span style={{ fontSize: '1.1rem', fontWeight: 700, color: '#111827', marginLeft: '1rem' }}>145</span>
+                                            <span style={{ fontSize: '1.1rem', fontWeight: 700, color: '#111827', marginLeft: '1rem' }}>{rsvpStats.attending}</span>
                                         </div>
                                         <div>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
                                                 <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#D1D5DB' }}></div>
                                                 <span style={{ fontSize: '0.8rem', color: '#4B5563', fontWeight: 600 }}>Not Attending</span>
                                             </div>
-                                            <span style={{ fontSize: '1.1rem', fontWeight: 700, color: '#111827', marginLeft: '1rem' }}>29</span>
+                                            <span style={{ fontSize: '1.1rem', fontWeight: 700, color: '#111827', marginLeft: '1rem' }}>{rsvpStats.notAttending}</span>
                                         </div>
                                     </div>
                                 </div>
