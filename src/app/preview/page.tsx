@@ -402,16 +402,10 @@ function PreviewContent() {
     };
 
     const handleCheckout = () => {
-        // Direct read to ensure we have the latest persisted state
-        const state = useWeddingStore.getState();
-        const currentAuth = state.isAuthenticated;
-
-        if (currentAuth) {
-            handlePay();
-            return;
-        }
-
-        setShowLoginModal(true);
+        // Payment IS the onboarding — no login gate. /api/payment/verify reads the
+        // customer's phone from the Razorpay payment contact and creates/attaches
+        // the account + session on success. Go straight to Razorpay.
+        handlePay();
     };
 
     const handleLoginSuccess = (phone: string) => {

@@ -1,10 +1,11 @@
 'use client';
 
-import { forwardRef, useRef, useImperativeHandle } from 'react';
+import { forwardRef, useRef, useImperativeHandle, useState, useEffect } from 'react';
 import { InvitationCard, InvitationCardRef } from './InvitationCard';
 import { CardRenderer } from '@/components/card/CardRenderer';
 import { TemplateFonts } from '@/components/card/TemplateFonts';
 import { CardDocument, CardData, buildCardData } from '@/lib/templates/card-document';
+import { isStructuredMarker, structuredIdOf, fetchTemplateLayout } from '@/lib/templates/client-layout';
 import { captureElementToDataUrl } from '@/lib/capture';
 
 type InvitationCardProps = React.ComponentProps<typeof InvitationCard>;
@@ -54,21 +55,44 @@ const StructuredPreviewCard = forwardRef<
 });
 
 /**
- * One card surface for the customer flow. If the bundle item is a designed
- * (structured) template it renders CardRenderer with the couple's data bound;
- * otherwise it forwards untouched to the existing HTML InvitationCard. The switch
- * lives here so callers never have to know which kind they're showing.
+ * One card surface for the customer flow. Renders a designed (structured) card via
+ * CardRenderer, otherwise forwards untouched to the HTML InvitationCard.
+ *
+ * The layout is taken from the `structuredLayout` prop when available, but if a
+ * caller only has a `structured:<id>` marker (in customImage) the layout is fetched
+ * on the client — so a designed card renders even when the store/theme cache
+ * doesn't carry the layout. The switch lives here so callers stay agnostic.
  */
 export const PreviewCard = forwardRef<InvitationCardRef, PreviewCardProps>(function PreviewCard(
     { structuredLayout, structuredCouple, ...rest },
     ref
 ) {
-    if (structuredLayout) {
+    const customImage = (rest as any).customImage as string | undefined;
+    const markerId = !structuredLayout && isStructuredMarker(customImage) ? structuredIdOf(customImage!) : null;
+
+    const [resolvedLayout, setResolvedLayout] = useState<CardDocument | null>(structuredLayout ?? null);
+    useEffect(() => {
+        if (structuredLayout) { setResolvedLayout(structuredLayout); return; }
+        if (markerId) {
+            let alive = true;
+            fetchTemplateLayout(markerId).then((l) => { if (alive) setResolvedLayout(l); });
+            return () => { alive = false; };
+        }
+        setResolvedLayout(null);
+    }, [structuredLayout, markerId]);
+
+    const isStructured = !!structuredLayout || !!markerId;
+
+    if (isStructured) {
+        if (!resolvedLayout) {
+            // Layout still loading — hold the card's box so layout doesn't jump.
+            return <div style={{ width: '100%', height: '100%', minHeight: 120, background: '#f3f2ef' }} />;
+        }
         const data = buildCardData(structuredCouple, (rest as any).event);
         return (
             <StructuredPreviewCard
                 ref={ref}
-                layout={structuredLayout}
+                layout={resolvedLayout}
                 data={data}
                 className={(rest as any).className}
             />
