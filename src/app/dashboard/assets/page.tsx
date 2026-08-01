@@ -26,7 +26,8 @@ import {
 } from 'lucide-react';
 import { useEffect, useState, useRef } from 'react';
 import { DashboardSidebar } from '@/components/layout/DashboardSidebar';
-import { InvitationCard, InvitationCardRef } from '@/components/preview/InvitationCard';
+import { InvitationCardRef } from '@/components/preview/InvitationCard';
+import { PreviewCard } from '@/components/preview/PreviewCard';
 import type { Theme } from '@/lib/constants/themes';
 import confetti from 'canvas-confetti';
 
@@ -114,10 +115,14 @@ export default function DashboardPage() {
                     venue: formData.defaultVenueName
                 };
                 
+                const structured = String(bi.templatePath || '').startsWith('structured:');
                 return {
                     id: bi.id,
                     name: bi.templateName || bi.eventType || 'Wedding',
-                    image: ensureLeadingSlash(bi.templatePath), // Renamed
+                    // Designed items render via CardRenderer (layout), so keep their
+                    // marker out of any <img src> — don't run it through ensureLeadingSlash.
+                    image: structured ? '' : ensureLeadingSlash(bi.templatePath),
+                    layout: (bi as any).layout,
                     event: matchedEvent
                 };
             });
@@ -174,7 +179,7 @@ export default function DashboardPage() {
                         style={{ height: 'min(80vh, 711px)', aspectRatio: '9/16', maxWidth: '90vw', position: 'relative', margin: '0 auto' }}
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <InvitationCard
+                        <PreviewCard
                             ref={cardRef}
                             key={`preview-${selectedPreviewIndex}-${resetKey}`}
                             event={previewItems[selectedPreviewIndex]?.event}
@@ -187,6 +192,8 @@ export default function DashboardPage() {
                             isPlaceholder={true}
                             type={selectedPreviewIndex === 1 ? 'video' : 'image'}
                             customImage={previewItems[selectedPreviewIndex]?.image}
+                            structuredLayout={(previewItems[selectedPreviewIndex] as any)?.layout}
+                            structuredCouple={formData}
                             isSecured={true}
                             showSizingBoxes={isEditMode}
                         />
@@ -317,13 +324,15 @@ export default function DashboardPage() {
                                     onClick={() => setSelectedPreviewIndex(0)}
                                 >
                                     {theme ? (
-                                        <InvitationCard 
+                                        <PreviewCard
                                             event={previewItems[0].event}
                                             theme={theme}
                                             groomName={formData.groomName || ''}
                                             brideName={formData.brideName || ''}
                                             isPlaceholder={true}
                                             customImage={previewItems[0].image}
+                                            structuredLayout={(previewItems[0] as any).layout}
+                                            structuredCouple={formData}
                                             isSecured={true}
                                             className={styles.dashboardThumbCard}
                                         />
