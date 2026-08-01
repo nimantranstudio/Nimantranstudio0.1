@@ -136,7 +136,7 @@ export default function PaymentPage() {
                         // The session cookie is set server-side; head straight to
                         // the dashboard. A small floor keeps the overlay legible.
                         await new Promise((r) => setTimeout(r, 900));
-                        router.push('/dashboard');
+                        router.push('/dashboard?welcome=true');
                     } catch (err: any) {
                         console.error('Payment verification error:', err);
                         setPaymentStatus('failed');

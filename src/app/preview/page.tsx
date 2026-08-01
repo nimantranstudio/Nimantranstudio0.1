@@ -286,7 +286,7 @@ function PreviewContent() {
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ bundleId: bundleItems?.[0]?.id })
                         });
-                        router.push('/dashboard');
+                        router.push('/dashboard?welcome=true');
                         return;
                     }
                 }
@@ -356,7 +356,7 @@ function PreviewContent() {
                                 body: JSON.stringify({ bundleId: bundleItems?.[0]?.id })
                             });
 
-                            router.push('/dashboard');
+                            router.push('/dashboard?welcome=true');
                         } else {
                             throw new Error(verifyData.error || 'Payment verification failed');
                         }

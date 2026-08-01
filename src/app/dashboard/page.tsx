@@ -5,6 +5,7 @@ import { formatDisplayDate, formatDisplayTime } from '@/lib/format-date';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import { DashboardSidebar } from '@/components/layout/DashboardSidebar';
+import { WelcomeDialog } from '@/components/dashboard/WelcomeDialog';
 import { InvitationCard, InvitationCardRef } from '@/components/preview/InvitationCard';
 import type { Theme } from '@/lib/constants/themes';
 import styles from './dashboard.module.css';
@@ -45,6 +46,7 @@ export default function DashboardPage() {
     const router = useRouter();
     const { formData, selectedThemeId, isAuthenticated, bundleImages, bundleItems, lastSavedWeddingId, updateEvent } = useWeddingStore();
     const [isMounted, setIsMounted] = useState(false);
+    const [showWelcome, setShowWelcome] = useState(false);
     const [theme, setTheme] = useState<Theme | null>(null);
     const [selectedPreviewIndex, setSelectedPreviewIndex] = useState<number | null>(null);
     const cardRef = useRef<InvitationCardRef>(null);
@@ -108,7 +110,17 @@ export default function DashboardPage() {
 
     useEffect(() => {
         setIsMounted(true);
+        // Arriving from a successful payment shows the welcome celebration over the
+        // dashboard, then cleans the query param so a refresh won't replay it.
+        if (new URLSearchParams(window.location.search).get('welcome') === 'true') {
+            setShowWelcome(true);
+        }
     }, []);
+
+    const closeWelcome = () => {
+        setShowWelcome(false);
+        window.history.replaceState({}, '', window.location.pathname);
+    };
 
     useEffect(() => {
         fetch('/api/bundle-assets')
@@ -287,6 +299,12 @@ export default function DashboardPage() {
     return (
         <>
         <div className={styles.dashboardContainer}>
+            <WelcomeDialog
+                open={showWelcome}
+                onClose={closeWelcome}
+                coupleNames={[formData.groomName, formData.brideName].filter(Boolean).join(' & ') || undefined}
+            />
+
             {/* Fullscreen Preview Modal */}
             {selectedPreviewIndex !== null && theme && (
                 <div
