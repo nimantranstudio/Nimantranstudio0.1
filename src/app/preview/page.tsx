@@ -280,6 +280,54 @@ function PreviewContent() {
                         `Razorpay Order Creation Failed: ${data.error || 'Check server logs'}\n\nDo you want to simulate a successful payment to unlock your wedding suite on localhost?`
                     );
                     if (confirmMock) {
+                        // DEV: real payment (and thus /api/payment/verify, which sends the
+                        // WhatsApp welcome) is skipped in the mock flow. Fire the welcome
+                        // here so it can be tested on localhost. Ask for a test number
+                        // since there is no Razorpay payment contact to read.
+                        const testPhone = window.prompt(
+                            'DEV TEST — enter a WhatsApp number (10 digits) to receive the welcome message (blank to skip):'
+                        );
+                        if (testPhone && testPhone.replace(/\D/g, '').length >= 10) {
+                            const isImg = (u: any) => typeof u === 'string' && /\.(png|jpe?g|webp)(\?|$)/i.test(u);
+                            // Prefer the couple's real card (capture + host); fall back to a bundle image.
+                            let heroImageUrl: string | undefined =
+                                (bundleImages || []).find(isImg) ||
+                                (bundleItems || []).map((i: any) => i?.image).find(isImg) ||
+                                undefined;
+                            try {
+                                const dataUrl = await cardRef.current?.captureDataUrl();
+                                if (dataUrl) {
+                                    const up = await fetch('/api/cards/upload', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ dataUrl, name: `${formData.groomName || 'wedding'}-${formData.brideName || 'invite'}` }),
+                                    });
+                                    const upData = await up.json().catch(() => ({}));
+                                    if (up.ok && upData?.success && upData?.url) heroImageUrl = upData.url;
+                                }
+                            } catch { /* keep the fallback image */ }
+
+                            try {
+                                const wRes = await fetch('/api/dev/mock-welcome', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        mobile: testPhone,
+                                        coupleNames: `${formData.groomName || ''} ${formData.brideName || ''}`.trim(),
+                                        heroImageUrl,
+                                    }),
+                                });
+                                const wData = await wRes.json().catch(() => ({}));
+                                if (wData?.success) {
+                                    alert(`✅ Welcome WhatsApp dispatched to ${testPhone}${wData.heroSent ? ' (with hero image)' : ' (text-only — no image URL)'}. Check the phone.`);
+                                } else {
+                                    alert(`⚠️ WhatsApp not sent: ${wData?.error || 'unknown error'}`);
+                                }
+                            } catch (e: any) {
+                                alert(`⚠️ WhatsApp request failed: ${e?.message || 'network error'}`);
+                            }
+                        }
+
                         setPaymentStatus('success');
                         await fetch('/api/generate-bundle', {
                             method: 'POST',

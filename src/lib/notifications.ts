@@ -1,4 +1,4 @@
-import { messaging } from '@/lib/messaging';
+import { messaging, type SendResult } from '@/lib/messaging';
 
 /**
  * Post-payment notifications. These are DELIGHT, not part of the critical path:
@@ -33,7 +33,7 @@ export async function sendWelcomeAndReceipt(opts: {
     amountRupees: number;
     orderId: string;
     heroImageUrl?: string;
-}): Promise<void> {
+}): Promise<SendResult> {
     const { mobile, coupleNames, orderId, heroImageUrl } = opts;
     const couple = coupleNames || 'there';
     // Attach the hero card only if it's a real, fetchable image; otherwise the
@@ -50,8 +50,10 @@ export async function sendWelcomeAndReceipt(opts: {
         if (!result.success) {
             console.warn(`Welcome WhatsApp not delivered (order ${orderId}): ${result.error}`);
         }
+        return result;
     } catch (err: any) {
         console.warn(`Welcome WhatsApp threw (order ${orderId}): ${err?.message}`);
+        return { success: false, error: err?.message || 'send threw' };
     }
 
     // Email receipt is intentionally deferred until an email provider is chosen.
