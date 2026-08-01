@@ -9,6 +9,8 @@ interface BundleItemInfo {
     event?: { eventName: string };
     templateName: string;
     templatePath: string;
+    kind?: 'html' | 'structured'; // structured = designed (CardDocument) template
+    layout?: any; // CardDocument, present only for structured items
 }
 
 interface WeddingState {

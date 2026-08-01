@@ -2,12 +2,20 @@
 
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { Package, Code, Save, ChevronLeft, Image as ImageIcon, CheckCircle, Upload, Plus, ChevronUp, ChevronDown, X, AlertCircle } from 'lucide-react';
+import { Package, Code, Save, ChevronLeft, Image as ImageIcon, CheckCircle, Upload, Plus, ChevronUp, ChevronDown, X, AlertCircle, Sparkles } from 'lucide-react';
 import { clsx } from 'clsx';
 import styles from './BundleEditor.module.css';
 import { InvitationCard, InvitationCardRef } from '@/components/preview/InvitationCard';
 import previewStyles from '@/components/preview/Preview.module.css';
 import { Bold, AlignLeft, AlignCenter, AlignRight, AlignJustify, Trash2, Palette, Square, Type, Sticker, MapPin, Maximize, Edit } from 'lucide-react';
+import { TemplateDesigner, SavedTemplate } from '@/components/admin/TemplateDesigner';
+
+/** Bundle items whose templatePath uses this marker are structured (CardDocument) templates, not HTML files. */
+const STRUCTURED_PREFIX = 'structured:';
+const isStructuredPath = (p?: string | null): boolean => typeof p === 'string' && p.startsWith(STRUCTURED_PREFIX);
+const structuredIdOf = (p?: string | null): string => (p || '').slice(STRUCTURED_PREFIX.length);
+
+interface StructuredTemplate { id: string; name: string; eventType?: string; status: string; }
 
 interface Theme { id: string; name: string; }
 interface PackageModel { id: string; name: string; level: number; price: number; allowedItems: string; }
@@ -49,6 +57,22 @@ export function BundleEditor({ bundleId, initialData, themes, packages, allEvent
     const [activeTemplateFile, setActiveTemplateFile] = useState<File | null>(null);
     const [bundleItemsList, setBundleItemsList] = useState<any[]>([]);
     const templateFileRef = useRef<HTMLInputElement>(null);
+
+    // Structured (image + zones) templates that can be attached to a bundle item.
+    const [structuredTemplates, setStructuredTemplates] = useState<StructuredTemplate[]>([]);
+    const [designerOpen, setDesignerOpen] = useState(false);
+    const [designerTemplateId, setDesignerTemplateId] = useState<string | null>(null); // template being edited (null = brand new)
+    const [designerItemId, setDesignerItemId] = useState<string | null>(null); // bundle-item row being edited (null = will attach a new row)
+    const [designerEventId, setDesignerEventId] = useState<string>(''); // event to attach a freshly-designed template to
+
+    const loadStructuredTemplates = async () => {
+        try {
+            const r = await fetch('/api/admin/templates');
+            const d = await r.json();
+            setStructuredTemplates(d.templates || []);
+        } catch { /* non-fatal: attach dropdown just stays empty */ }
+    };
+    useEffect(() => { loadStructuredTemplates(); }, []);
 
     const [activeTemplateIndex, setActiveTemplateIndex] = useState(0);
     const [htmlContent, setHtmlContent] = useState('');
@@ -167,7 +191,7 @@ export function BundleEditor({ bundleId, initialData, themes, packages, allEvent
     useEffect(() => {
         if (activeTab === 'template' && bundleItemsList[activeTemplateIndex]) {
             const templateUrl = bundleItemsList[activeTemplateIndex]?.templatePath;
-            if (templateUrl) {
+            if (templateUrl && !isStructuredPath(templateUrl)) {
                 fetch(templateUrl + '?t=' + Date.now())
                     .then(res => res.text())
                     .then(html => {
@@ -273,6 +297,72 @@ export function BundleEditor({ bundleId, initialData, themes, packages, allEvent
     const handlePackageDisplayChange = (packageId: string, isDisplay: boolean) => setPackageDisplayConfig(prev => ({ ...prev, [packageId]: isDisplay }));
 
     const removeBundleItem = (id: string) => setBundleItemsList(prev => prev.filter(item => item.id !== id));
+
+    // ---- structured template attach / design ----
+    const eventNameOf = (eventId: string) => allEvents.find(ev => ev.id === eventId)?.eventName || 'Unknown';
+
+    // Attach an already-built structured template to the currently selected event type.
+    const attachStructuredTemplate = (templateId: string) => {
+        const tpl = structuredTemplates.find(t => t.id === templateId);
+        if (!tpl) return;
+        const marker = STRUCTURED_PREFIX + tpl.id;
+        setBundleItemsList(prev => [...prev, {
+            id: Math.random().toString(),
+            eventType: eventNameOf(activeEventType),
+            eventId: activeEventType,
+            templateName: tpl.name,
+            file: null,
+            previewUrl: marker,
+            templatePath: marker,
+        }]);
+    };
+
+    // Open the designer to build a brand-new template, then attach it to the selected event type on save.
+    const openDesignerForNew = () => {
+        setDesignerTemplateId(null);
+        setDesignerItemId(null);
+        setDesignerEventId(activeEventType);
+        setDesignerOpen(true);
+    };
+
+    // Open the designer to edit the structured template behind an existing bundle-item row.
+    const openDesignerForItem = (item: any) => {
+        setDesignerTemplateId(structuredIdOf(item.templatePath || item.previewUrl));
+        setDesignerItemId(item.id);
+        setDesignerEventId(item.eventId);
+        setDesignerOpen(true);
+    };
+
+    const closeDesigner = () => setDesignerOpen(false);
+
+    const handleDesignerSaved = (tpl: SavedTemplate) => {
+        loadStructuredTemplates();
+        const marker = STRUCTURED_PREFIX + tpl.id;
+        setBundleItemsList(prev => {
+            if (designerItemId) {
+                // Editing an existing row: refresh its name/marker in place.
+                return prev.map(it => it.id === designerItemId
+                    ? { ...it, templateName: tpl.name, previewUrl: marker, templatePath: marker }
+                    : it);
+            }
+            // Brand-new template: attach it as a new row for the captured event type.
+            return [...prev, {
+                id: Math.random().toString(),
+                eventType: eventNameOf(designerEventId),
+                eventId: designerEventId,
+                templateName: tpl.name,
+                file: null,
+                previewUrl: marker,
+                templatePath: marker,
+            }];
+        });
+        setDesignerOpen(false);
+    };
+
+    // HTML-only items, paired with their real index in bundleItemsList (for the HTML Template Editor tab).
+    const htmlItemsIndexed = bundleItemsList
+        .map((it, idx) => ({ it, idx }))
+        .filter(({ it }) => !isStructuredPath(it.templatePath || it.previewUrl));
 
     const saveTemplate = async () => {
         setIsSaving(true);
@@ -553,25 +643,72 @@ export function BundleEditor({ bundleId, initialData, themes, packages, allEvent
                                         </button>
                                     </div>
                                 </div>
+
+                                {/* Structured (image + zones) template: attach an existing one, or design a fresh one inline. */}
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '1rem', alignItems: 'end', marginBottom: '1.5rem', background: '#fbf7ec', border: '1px solid #f0e6c8', padding: '1rem', borderRadius: '8px' }}>
+                                    <div>
+                                        <label style={{ fontSize: '0.75rem', fontWeight: 600, display: 'block', marginBottom: '0.25rem' }}>
+                                            Or attach a designed template <span style={{ color: '#9a8033', fontWeight: 500 }}>(image + text zones)</span>
+                                        </label>
+                                        <select
+                                            className={styles.select}
+                                            value=""
+                                            onChange={e => { if (e.target.value) attachStructuredTemplate(e.target.value); }}
+                                        >
+                                            <option value="">
+                                                {structuredTemplates.length ? 'Select a designed template…' : 'No designed templates yet — use Design new →'}
+                                            </option>
+                                            {structuredTemplates.map(t => (
+                                                <option key={t.id} value={t.id}>{t.name}{t.eventType ? ` · ${t.eventType}` : ''}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={openDesignerForNew}
+                                        style={{ height: '42px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: 'var(--primary,#c8a951)', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 600, padding: '0 1.25rem', cursor: 'pointer', whiteSpace: 'nowrap' }}
+                                    >
+                                        <Sparkles size={18} /> Design new
+                                    </button>
+                                </div>
+
                                 {bundleItemsList.length > 0 && (
                                     <table style={{ width: '100%', fontSize: '0.875rem', borderCollapse: 'collapse', border: '1px solid #eee' }}>
                                         <thead style={{ background: '#f9fafb', textAlign: 'left' }}>
                                             <tr>
                                                 <th style={{ padding: '0.75rem', borderBottom: '1px solid #eee' }}>Event Type</th>
-                                                <th style={{ padding: '0.75rem', borderBottom: '1px solid #eee' }}>Template File</th>
-                                                <th style={{ padding: '0.75rem', borderBottom: '1px solid #eee', width: '50px' }}></th>
+                                                <th style={{ padding: '0.75rem', borderBottom: '1px solid #eee', width: '90px' }}>Type</th>
+                                                <th style={{ padding: '0.75rem', borderBottom: '1px solid #eee' }}>Template</th>
+                                                <th style={{ padding: '0.75rem', borderBottom: '1px solid #eee', width: '90px' }}></th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {bundleItemsList.map(item => (
-                                                <tr key={item.id} style={{ borderBottom: '1px solid #eee' }}>
-                                                    <td style={{ padding: '0.75rem' }}>{item.eventType}</td>
-                                                    <td style={{ padding: '0.75rem', color: '#4b5563', fontStyle: 'italic', fontSize: '0.8rem' }}>{item.file ? item.file.name : (item.previewUrl ? item.previewUrl.split('/').pop() : 'Uploaded')}</td>
-                                                    <td style={{ padding: '0.75rem', textAlign: 'center' }}>
-                                                        <button type="button" onClick={() => removeBundleItem(item.id)} style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', display: 'flex' }}><X size={16} /></button>
-                                                    </td>
-                                                </tr>
-                                            ))}
+                                            {bundleItemsList.map(item => {
+                                                const structured = isStructuredPath(item.templatePath || item.previewUrl);
+                                                return (
+                                                    <tr key={item.id} style={{ borderBottom: '1px solid #eee' }}>
+                                                        <td style={{ padding: '0.75rem' }}>{item.eventType}</td>
+                                                        <td style={{ padding: '0.75rem' }}>
+                                                            <span style={{ display: 'inline-block', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.02em', padding: '2px 8px', borderRadius: '999px', background: structured ? '#f3eeda' : '#eef2ff', color: structured ? '#8a6d1f' : '#4338ca' }}>
+                                                                {structured ? 'Designed' : 'HTML'}
+                                                            </span>
+                                                        </td>
+                                                        <td style={{ padding: '0.75rem', color: '#4b5563', fontStyle: structured ? 'normal' : 'italic', fontSize: '0.8rem' }}>
+                                                            {structured
+                                                                ? (item.templateName || 'Designed template')
+                                                                : (item.file ? item.file.name : (item.previewUrl ? item.previewUrl.split('/').pop() : 'Uploaded'))}
+                                                        </td>
+                                                        <td style={{ padding: '0.75rem', textAlign: 'right' }}>
+                                                            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', alignItems: 'center' }}>
+                                                                {structured && (
+                                                                    <button type="button" onClick={() => openDesignerForItem(item)} title="Edit designed template" style={{ color: '#8a6d1f', background: 'none', border: 'none', cursor: 'pointer', display: 'flex' }}><Edit size={16} /></button>
+                                                                )}
+                                                                <button type="button" onClick={() => removeBundleItem(item.id)} title="Remove from bundle" style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', display: 'flex' }}><X size={16} /></button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
                                         </tbody>
                                     </table>
                                 )}
@@ -587,13 +724,16 @@ export function BundleEditor({ bundleId, initialData, themes, packages, allEvent
                             <div style={{ padding: '1rem', borderBottom: '1px solid #e5e7eb', background: '#f9fafb', flexShrink: 0 }}>
                                 <label style={{ fontSize: '0.875rem', fontWeight: 600, display: 'block', marginBottom: '0.5rem' }}>Select Event Template to Edit</label>
                                 <select className={styles.select} value={activeTemplateIndex} onChange={e => setActiveTemplateIndex(Number(e.target.value))}>
-                                    {bundleItemsList.length === 0 && <option value={-1}>No templates uploaded</option>}
-                                    {bundleItemsList.map((item, idx) => (
-                                        <option key={item.id || idx} value={idx}>
-                                            {item.event?.eventName || item.eventType} - {item.templateName}
+                                    {htmlItemsIndexed.length === 0 && <option value={-1}>No HTML templates uploaded</option>}
+                                    {htmlItemsIndexed.map(({ it, idx }) => (
+                                        <option key={it.id || idx} value={idx}>
+                                            {it.event?.eventName || it.eventType} - {it.templateName}
                                         </option>
                                     ))}
                                 </select>
+                                <p style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.5rem', marginBottom: 0 }}>
+                                    Designed (image + zones) templates are edited from the <strong>Bundle Details</strong> tab.
+                                </p>
                             </div>
 
                             {bundleItemsList.length > 0 && htmlContent && (
@@ -947,6 +1087,20 @@ export function BundleEditor({ bundleId, initialData, themes, packages, allEvent
                     </div>
                 )}
             </div>
+
+            {designerOpen && (
+                <div style={{ position: 'fixed', inset: 0, zIndex: 10000, background: 'rgba(20,18,14,0.55)', display: 'flex' }}>
+                    <div style={{ margin: 'auto', width: '96vw', height: '94vh', maxWidth: 1400, background: '#fff', borderRadius: 12, overflow: 'hidden', boxShadow: '0 24px 80px rgba(0,0,0,0.4)' }}>
+                        <TemplateDesigner
+                            templateId={designerTemplateId}
+                            defaultEventType={eventNameOf(designerEventId)}
+                            onSaved={handleDesignerSaved}
+                            onClose={closeDesigner}
+                            embedded
+                        />
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

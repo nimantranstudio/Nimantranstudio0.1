@@ -46,12 +46,15 @@ export async function GET(
                 ...b,
                 name: b.BundleName,
                 description: b.bundleDescription || '',
-                bundleItems: (b.bundleItems || []).map((item: any) => {
-                    let p = item.templatePath || '';
-                    if (p.startsWith('public/')) p = '/' + p.substring(7);
-                    if (p && !p.startsWith('/')) p = '/' + p;
-                    return { ...item, templatePath: p };
-                })
+                bundleItems: (b.bundleItems || [])
+                    // Skip designed (image + zones) items until customer-side rendering ships (Phase 5).
+                    .filter((item: any) => !String(item.templatePath || '').startsWith('structured:'))
+                    .map((item: any) => {
+                        let p = item.templatePath || '';
+                        if (p.startsWith('public/')) p = '/' + p.substring(7);
+                        if (p && !p.startsWith('/')) p = '/' + p;
+                        return { ...item, templatePath: p };
+                    })
             })) || [],
             tag: undefined
         };

@@ -37,6 +37,7 @@ import { DEFAULT_EVENTS, type WeddingEvent } from '@/lib/schemas/wedding-form';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { InvitationCard, InvitationCardRef } from '@/components/preview/InvitationCard';
+import { PreviewCard } from '@/components/preview/PreviewCard';
 
 // Motion variants for welcome popup transitions (animation-vocabulary / apple-design / emil-design-eng)
 const overlayVariants = {
@@ -195,6 +196,14 @@ function DetailsContent() {
         
         return undefined;
     }, [bundleItems, bundleImages, activeChapter, activePreviewEventId]);
+
+    // When the active card is a designed (structured) template, resolve its CardDocument
+    // layout so we render it via CardRenderer instead of loading the marker as an image.
+    const activeStructuredLayout = useMemo(() => {
+        if (!templateUrl || !templateUrl.startsWith('structured:')) return null;
+        const it = (bundleItems || []).find((i: any) => i.templatePath === templateUrl);
+        return (it as any)?.layout || null;
+    }, [templateUrl, bundleItems]);
 
     const isHTMLDesign = !!templateUrl && templateUrl.toLowerCase().includes('.html');
 
@@ -483,15 +492,25 @@ function DetailsContent() {
                                             transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
                                             style={{ width: '100%', height: '100%' }}
                                         >
-                                            <InvitationCard 
+                                            <PreviewCard
                                                 ref={cardRef}
-                                                event={previewEvent} 
-                                                theme={activeTheme || { id: 'default', name: 'Default', slug: 'default', category: 'traditional', thumbnailUrl: '', type: 'image' }} 
-                                                groomName={displayGroomName} 
-                                                brideName={displayBrideName} 
+                                                event={previewEvent}
+                                                theme={activeTheme || { id: 'default', name: 'Default', slug: 'default', category: 'traditional', thumbnailUrl: '', type: 'image' }}
+                                                groomName={displayGroomName}
+                                                brideName={displayBrideName}
                                                 groomParents={displayGroomParents}
                                                 brideParents={displayBrideParents}
-                                                customImage={templateUrl} 
+                                                customImage={templateUrl}
+                                                structuredLayout={activeStructuredLayout}
+                                                structuredCouple={{
+                                                    groomName: displayGroomName,
+                                                    brideName: displayBrideName,
+                                                    groomParents: displayGroomParents,
+                                                    brideParents: displayBrideParents,
+                                                    primaryDate: formData.primaryDate,
+                                                    primaryTime: formData.primaryTime,
+                                                    defaultVenueName: formData.defaultVenueName,
+                                                }}
                                                 isRawPreview={false}
                                             />
                                         </motion.div>

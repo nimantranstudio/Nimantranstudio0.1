@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic';
 import { useWeddingStore } from '@/store/wedding-store';
 import type { Theme } from '@/lib/constants/themes';
 import { InvitationCard, InvitationCardRef } from '@/components/preview/InvitationCard';
+import { PreviewCard } from '@/components/preview/PreviewCard';
 import styles from '@/components/preview/Preview.module.css';
 import { ChevronLeft, ChevronRight, X, Headphones, Play, Edit, Download, Share2, Check, Lock, Link as LinkIcon, Copy, Sparkles, MessageCircle, Activity, ShieldCheck, Type, Image as ImageIcon, MapPin, Bold, AlignLeft, AlignCenter, AlignRight, Type as FormatIcon, Maximize, Sticker, Trash2, Palette, Square, AlignJustify, ChevronDown, Users, Star, Loader2 } from 'lucide-react';
 import Link from 'next/link';
@@ -460,7 +461,7 @@ function PreviewContent() {
 
         // Match bundleItems to wedding events by eventType or ID mapping
         const weddingEvents = formData.events || [];
-        const items: Array<{ id: string; name: string; image: string; event: any }> = [];
+        const items: Array<{ id: string; name: string; image: string; event: any; layout?: any }> = [];
 
         for (const bi of bundleItems) {
             if (!bi.templatePath) continue; 
@@ -506,6 +507,7 @@ function PreviewContent() {
                 id: bi.id,
                 name: displayName,
                 image: bi.templatePath,
+                layout: (bi as any).layout, // present only for designed (structured) items
                 event: matchedEvent ? {
                     id: matchedEvent.id,
                     name: matchedEvent.heading || matchedEvent.name,
@@ -843,7 +845,7 @@ function PreviewContent() {
                             aspectRatio: cardLayout.aspectRatio,
                             transition: 'width 0.3s ease, height 0.3s ease, aspect-ratio 0.3s ease'
                         }}>
-                            <InvitationCard
+                            <PreviewCard
                                 ref={cardRef}
                                 key={`preview-${selectedPreviewIndex}-${resetKey}`}
                                 event={previewItems[selectedPreviewIndex]?.event || {
@@ -863,6 +865,8 @@ function PreviewContent() {
                                 isRawPreview={false}
                                 type='image'
                                 customImage={uploadedPhotos[selectedPreviewIndex] || previewItems[selectedPreviewIndex]?.image}
+                                structuredLayout={previewItems[selectedPreviewIndex]?.layout}
+                                structuredCouple={formData}
                                 isSecured={true}
                                 showSizingBoxes={isEditMode}
                                 onLayoutMeasure={handleLayoutMeasure}
@@ -1127,7 +1131,7 @@ function PreviewContent() {
                                             const item = previewItems[idx];
                                             return (
                                                 <div key={`farleft-${item.id}`} className={clsx(styles.carouselCard, styles.cardFarLeft)}>
-                                                    <InvitationCard
+                                                    <PreviewCard
                                                         event={item.event}
                                                         theme={theme}
                                                         groomName={formData.groomName || ''}
@@ -1138,6 +1142,8 @@ function PreviewContent() {
                                                         isPlaceholder={true}
                                                         isRawPreview={false}
                                                         customImage={item.image}
+                                                        structuredLayout={item.layout}
+                                                        structuredCouple={formData}
                                                         className={styles.suiteThumbCard}
                                                         isSecured={true}
                                                     />
@@ -1151,7 +1157,7 @@ function PreviewContent() {
                                             const item = previewItems[idx];
                                             return (
                                                 <div key={`left-${item.id}`} className={clsx(styles.carouselCard, styles.cardLeft)}>
-                                                    <InvitationCard
+                                                    <PreviewCard
                                                         event={item.event}
                                                         theme={theme}
                                                         groomName={formData.groomName || ''}
@@ -1162,6 +1168,8 @@ function PreviewContent() {
                                                         isPlaceholder={true}
                                                         isRawPreview={false}
                                                         customImage={item.image}
+                                                        structuredLayout={item.layout}
+                                                        structuredCouple={formData}
                                                         className={styles.suiteThumbCard}
                                                         isSecured={true}
                                                     />
@@ -1182,7 +1190,7 @@ function PreviewContent() {
                                                     <div className={styles.iphoneScreen}>
                                                         <div className={styles.iphoneCamera}></div>
                                                         <div className={styles.iphoneScreenCard}>
-                                                            <InvitationCard
+                                                            <PreviewCard
                                                                 ref={el => { suiteRefs.current[item.id] = el; }}
                                                                 event={item.event}
                                                                 theme={theme}
@@ -1194,6 +1202,8 @@ function PreviewContent() {
                                                                 isPlaceholder={true}
                                                                 isRawPreview={false}
                                                                 customImage={item.image}
+                                                                structuredLayout={item.layout}
+                                                                structuredCouple={formData}
                                                                 className={styles.suiteThumbCard}
                                                                 isSecured={true}
                                                             />
@@ -1209,7 +1219,7 @@ function PreviewContent() {
                                             const item = previewItems[idx];
                                             return (
                                                 <div key={`right-${item.id}`} className={clsx(styles.carouselCard, styles.cardRight)}>
-                                                    <InvitationCard
+                                                    <PreviewCard
                                                         event={item.event}
                                                         theme={theme}
                                                         groomName={formData.groomName || ''}
@@ -1220,6 +1230,8 @@ function PreviewContent() {
                                                         isPlaceholder={true}
                                                         isRawPreview={false}
                                                         customImage={item.image}
+                                                        structuredLayout={item.layout}
+                                                        structuredCouple={formData}
                                                         className={styles.suiteThumbCard}
                                                         isSecured={true}
                                                     />
@@ -1233,7 +1245,7 @@ function PreviewContent() {
                                             const item = previewItems[idx];
                                             return (
                                                 <div key={`farright-${item.id}`} className={clsx(styles.carouselCard, styles.cardFarRight)}>
-                                                    <InvitationCard
+                                                    <PreviewCard
                                                         event={item.event}
                                                         theme={theme}
                                                         groomName={formData.groomName || ''}
@@ -1244,6 +1256,8 @@ function PreviewContent() {
                                                         isPlaceholder={true}
                                                         isRawPreview={false}
                                                         customImage={item.image}
+                                                        structuredLayout={item.layout}
+                                                        structuredCouple={formData}
                                                         className={styles.suiteThumbCard}
                                                         isSecured={true}
                                                     />

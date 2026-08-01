@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
 import { CardRenderer } from '@/components/card/CardRenderer';
 import { TemplateFonts } from '@/components/card/TemplateFonts';
 import { TEMPLATE_FONTS } from '@/lib/templates/fonts';
@@ -13,10 +12,31 @@ import {
     SAMPLE_DATA,
 } from '@/lib/templates/card-document';
 
-function blankDocument(): CardDocument {
+export interface SavedTemplate {
+    id: string;
+    name: string;
+    eventType?: string;
+    layout: CardDocument;
+    status: string;
+}
+
+interface TemplateDesignerProps {
+    /** Existing template id to load & edit. Omit to start a blank template. */
+    templateId?: string | null;
+    /** Prefill the event type on a fresh template. */
+    defaultEventType?: string;
+    /** Called after a successful save with the created/updated template. */
+    onSaved?: (template: SavedTemplate) => void;
+    /** If provided, a Close button is shown (modal usage). */
+    onClose?: () => void;
+    /** Embedded (modal) mode: fills its container instead of the viewport, suppresses alerts. */
+    embedded?: boolean;
+}
+
+function blankDocument(eventType = ''): CardDocument {
     return {
         name: 'Untitled template',
-        eventType: '',
+        eventType,
         canvas: { aspectRatio: '3:4' },
         background: { imageUrl: '', fit: 'cover' },
         layers: [],
@@ -36,25 +56,23 @@ function newLayer(binding: Binding): Layer {
 
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
 
-export default function TemplateEditorPage() {
-    const router = useRouter();
-    const [doc, setDoc] = useState<CardDocument>(blankDocument());
+export function TemplateDesigner({ templateId: propTemplateId, defaultEventType, onSaved, onClose, embedded }: TemplateDesignerProps) {
+    const [doc, setDoc] = useState<CardDocument>(() => blankDocument(defaultEventType));
     const [selectedId, setSelectedId] = useState<string | null>(null);
-    const [templateId, setTemplateId] = useState<string | null>(null);
+    const [templateId, setTemplateId] = useState<string | null>(propTemplateId ?? null);
     const [saving, setSaving] = useState(false);
     const canvasRef = useRef<HTMLDivElement>(null);
     const drag = useRef<{ mode: 'move' | 'resize'; sx: number; sy: number; box: Layer['box']; rect: DOMRect } | null>(null);
 
-    // Load existing template if ?id=
+    // Load existing template when an id is provided.
     useEffect(() => {
-        const id = new URLSearchParams(window.location.search).get('id');
-        if (!id) return;
-        setTemplateId(id);
-        fetch(`/api/admin/templates/${id}`)
+        if (!propTemplateId) return;
+        setTemplateId(propTemplateId);
+        fetch(`/api/admin/templates/${propTemplateId}`)
             .then((r) => r.json())
             .then((d) => { if (d.template?.layout) setDoc(d.template.layout as CardDocument); })
             .catch(() => {});
-    }, []);
+    }, [propTemplateId]);
 
     const selected = doc.layers.find((l) => l.id === selectedId) || null;
 
@@ -119,14 +137,19 @@ export default function TemplateEditorPage() {
             const r = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
             const d = await r.json();
             if (d.template) {
-                if (!templateId) { setTemplateId(d.template.id); router.replace(`/admin/templates/editor?id=${d.template.id}`); }
-                alert('Saved ✓');
-            } else alert('Save failed: ' + (d.error || 'unknown'));
-        } finally { setSaving(false); }
+                if (!templateId) setTemplateId(d.template.id);
+                onSaved?.(d.template as SavedTemplate);
+                if (!embedded) alert('Saved ✓');
+            } else {
+                alert('Save failed: ' + (d.error || 'unknown'));
+            }
+        } finally {
+            setSaving(false);
+        }
     };
 
     return (
-        <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr 260px', height: '100vh', fontFamily: 'var(--font-sans)', fontSize: 13 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr 260px', height: embedded ? '100%' : '100vh', fontFamily: 'var(--font-sans)', fontSize: 13, background: '#fff' }}>
             <TemplateFonts />
 
             {/* Left: layers */}
@@ -172,6 +195,12 @@ export default function TemplateEditorPage() {
                         style={{ background: 'var(--primary,#c8a951)', color: '#fff', border: 'none', padding: '7px 18px', borderRadius: 6, fontWeight: 600, cursor: 'pointer' }}>
                         {saving ? 'Saving…' : 'Save'}
                     </button>
+                    {onClose && (
+                        <button onClick={onClose}
+                            style={{ background: '#fff', color: '#444', border: '1px solid #ddd', padding: '7px 14px', borderRadius: 6, fontWeight: 600, cursor: 'pointer' }}>
+                            Close
+                        </button>
+                    )}
                 </div>
 
                 <div ref={canvasRef} style={{ position: 'relative', width: 380, maxWidth: '90%', boxShadow: '0 8px 30px rgba(0,0,0,0.15)' }}
