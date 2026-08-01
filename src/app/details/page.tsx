@@ -206,6 +206,10 @@ function DetailsContent() {
     }, [templateUrl, bundleItems]);
 
     const isHTMLDesign = !!templateUrl && templateUrl.toLowerCase().includes('.html');
+    // A designed (structured) card is a single self-contained story card — like the
+    // HTML cards, it should sit still in the frame, not be panned by the camera.
+    const isDesignedCard = !!templateUrl && templateUrl.startsWith('structured:');
+    const noCameraPan = isHTMLDesign || isDesignedCard;
 
     const previewEvent = useMemo(() => {
         if (activeChapter === 3 && activePreviewEventId && activePreviewEventId !== 'wedding') {
@@ -223,9 +227,9 @@ function DetailsContent() {
 
     const cameraY = isCrafting ? '-80%' :
                     activeChapter === 1 ? '0%' :
-                    activeChapter === 2 ? (isHTMLDesign ? '0%' : '-15%') :
-                    activeChapter === 3 ? (isHTMLDesign ? '0%' : '-40%') : 
-                    activeChapter === 4 ? (isHTMLDesign ? '0%' : '-65%') : '0%';
+                    activeChapter === 2 ? (noCameraPan ? '0%' : '-15%') :
+                    activeChapter === 3 ? (noCameraPan ? '0%' : '-40%') :
+                    activeChapter === 4 ? (noCameraPan ? '0%' : '-65%') : '0%';
 
     useEffect(() => {
         setIsMounted(true);
