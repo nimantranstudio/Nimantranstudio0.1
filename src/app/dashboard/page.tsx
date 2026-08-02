@@ -7,6 +7,7 @@ import { useEffect, useState, useRef } from 'react';
 import { DashboardSidebar } from '@/components/layout/DashboardSidebar';
 import { WelcomeDialog } from '@/components/dashboard/WelcomeDialog';
 import { InvitationCard, InvitationCardRef } from '@/components/preview/InvitationCard';
+import { PreviewCard } from '@/components/preview/PreviewCard';
 import type { Theme } from '@/lib/constants/themes';
 import styles from './dashboard.module.css';
 import redesignStyles from './dashboard-redesign.module.css';
@@ -47,15 +48,62 @@ export default function DashboardPage() {
     const { formData, selectedThemeId, isAuthenticated, bundleImages, bundleItems, lastSavedWeddingId, updateEvent } = useWeddingStore();
     const [isMounted, setIsMounted] = useState(false);
     const [showWelcome, setShowWelcome] = useState(false);
-    const [rsvpStats, setRsvpStats] = useState({ total: 0, attending: 0, notAttending: 0 });
+    const [rsvpStats, setRsvpStats] = useState({ total: 0, attending: 0, notAttending: 0, maybe: 0 });
+    const [copiedRsvp, setCopiedRsvp] = useState(false);
     const [theme, setTheme] = useState<Theme | null>(null);
     const [selectedPreviewIndex, setSelectedPreviewIndex] = useState<number | null>(null);
     const cardRef = useRef<InvitationCardRef>(null);
+    const carouselTrackRef = useRef<HTMLDivElement>(null);
+    const [isCarouselHovered, setIsCarouselHovered] = useState(false);
     const [lightbox, setLightbox] = useState<{ image: string | null; title: string } | null>(null);
     const [suitePreview, setSuitePreview] = useState(false);
     const [suitePreviewIndex, setSuitePreviewIndex] = useState(0);
     const [bundleAssets, setBundleAssets] = useState<Record<string, string>>({});
     const [activeEventId, setActiveEventId] = useState<string>('save_the_date');
+
+    const handleShareWhatsApp = () => {
+        const groom = formData.groomName || 'Vivek';
+        const bride = formData.brideName || 'Priyanka';
+        const origin = typeof window !== 'undefined' ? window.location.origin : 'https://nimantranstudio.in';
+        const text = encodeURIComponent(`We'd love for you to celebrate with us! View our digital wedding invitation suite for ${bride} & ${groom}: ${origin}`);
+        window.open(`https://wa.me/?text=${text}`, '_blank');
+    };
+
+    const handleOpenRsvp = () => {
+        const rsvpUrl = `/rsvp/${lastSavedWeddingId || 'demo'}`;
+        window.open(rsvpUrl, '_blank');
+    };
+
+    const scrollCarousel = (direction: 'left' | 'right') => {
+        if (!carouselTrackRef.current) return;
+        const scrollAmount = 240;
+        carouselTrackRef.current.scrollBy({
+            left: direction === 'left' ? -scrollAmount : scrollAmount,
+            behavior: 'smooth'
+        });
+    };
+
+    // Continuous smooth auto-scroll ticker (requestAnimationFrame) with pause on hover
+    useEffect(() => {
+        let animationFrameId: number;
+        const speed = 0.75; // Smooth continuous pixel movement
+
+        const step = () => {
+            if (!isCarouselHovered && carouselTrackRef.current) {
+                const track = carouselTrackRef.current;
+                track.scrollLeft += speed;
+
+                const halfWidth = track.scrollWidth / 2;
+                if (halfWidth > 0 && track.scrollLeft >= halfWidth) {
+                    track.scrollLeft -= halfWidth;
+                }
+            }
+            animationFrameId = requestAnimationFrame(step);
+        };
+
+        animationFrameId = requestAnimationFrame(step);
+        return () => cancelAnimationFrame(animationFrameId);
+    }, [isCarouselHovered]);
     const [timeLeft, setTimeLeft] = useState({
         days: '00',
         hours: '00',
@@ -136,7 +184,8 @@ export default function DashboardPage() {
                     .filter((r: any) => r.status === 'attending')
                     .reduce((sum: number, r: any) => sum + (r.adultCount || 1), 0);
                 const notAttending = d.rsvps.filter((r: any) => r.status === 'declined').length;
-                setRsvpStats({ total: attending + notAttending, attending, notAttending });
+                const maybe = d.rsvps.filter((r: any) => r.status === 'maybe').length;
+                setRsvpStats({ total: attending + notAttending + maybe, attending, notAttending, maybe });
             })
             .catch(() => {});
         return () => { alive = false; };
@@ -239,7 +288,9 @@ export default function DashboardPage() {
             items.push({
                 id: bi.id,
                 name: displayName,
-                image: ensureLeadingSlash(bi.templatePath),
+                // Keep the structured:<id> marker intact so PreviewCard can render it;
+                // only normalise real file paths.
+                image: String(bi.templatePath).startsWith('structured:') ? bi.templatePath : ensureLeadingSlash(bi.templatePath),
                 event: matchedEvent ? {
                     id: matchedEvent.id,
                     name: matchedEvent.heading || matchedEvent.name,
@@ -283,11 +334,15 @@ export default function DashboardPage() {
     const [copyStatus, setCopyStatus] = useState(false);
 
     const handleCopyRsvpLink = async () => {
-        if (!rsvpFullUrl) return;
+        const targetUrl = rsvpFullUrl || `${typeof window !== 'undefined' ? window.location.origin : ''}/rsvp/${lastSavedWeddingId || 'demo'}`;
         try {
-            await navigator.clipboard.writeText(rsvpFullUrl);
+            await navigator.clipboard.writeText(targetUrl);
             setCopyStatus(true);
-            setTimeout(() => setCopyStatus(false), 2000);
+            setCopiedRsvp(true);
+            setTimeout(() => {
+                setCopyStatus(false);
+                setCopiedRsvp(false);
+            }, 2000);
         } catch (err) {
             console.error('Copy failed:', err);
         }
@@ -358,7 +413,7 @@ export default function DashboardPage() {
                         style={{ height: 'min(80vh, 711px)', aspectRatio: '9/16', maxWidth: '90vw', position: 'relative', margin: '0 auto' }}
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <InvitationCard
+                        <PreviewCard
                             ref={cardRef}
                             event={previewItems[selectedPreviewIndex]?.event || {
                                 id: `preview-${selectedPreviewIndex}`,
@@ -377,7 +432,7 @@ export default function DashboardPage() {
                             isRawPreview={false}
                             type='image'
                             customImage={previewItems[selectedPreviewIndex]?.image}
-                            isSecured={true}
+                            isSecured={false}
                             showSizingBoxes={false}
                         />
                     </div>
@@ -387,342 +442,452 @@ export default function DashboardPage() {
             <DashboardSidebar />
             
             <main className={styles.mainContent}>
-                {/* 1. Header & Glassmorphism Hero */}
                 <div className={styles.dashboardHeader}>
-                    <h1 className={styles.title}>Welcome back, {formData.groomName?.split(' ')[0] || 'Vivek'}</h1>
-                    <p className={styles.subtitle}>Your wedding preparation is on track. Everything looks perfect.</p>
+                    <h1 className={styles.title}>Welcome! Your wedding assets are ready.</h1>
+                    <p className={styles.subtitle}>Everything you need to announce, celebrate, and share your special moments is organized in one place ready to download instantly and share with confidence.</p>
                 </div>
 
+                {/* 2. Full-Width Carousel Section */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ type: "spring", duration: 0.6, bounce: 0, delay: 0.1 }}
+                    className={redesignStyles.carouselSection}
+                    style={{ position: 'relative' }}
+                >
+                    {/* Floating Left Overlay Navigation Arrow */}
+                    <button 
+                        className={redesignStyles.carouselOverlayNavBtn}
+                        style={{ left: '-18px', top: '42%' }}
+                        onClick={() => scrollCarousel('left')}
+                        aria-label="Scroll left"
+                    >
+                        <ArrowRight size={20} style={{ transform: 'rotate(180deg)' }} />
+                    </button>
+
+                    {/* Floating Right Overlay Navigation Arrow */}
+                    <button 
+                        className={redesignStyles.carouselOverlayNavBtn}
+                        style={{ right: '-18px', top: '42%' }}
+                        onClick={() => scrollCarousel('right')}
+                        aria-label="Scroll right"
+                    >
+                        <ArrowRight size={20} />
+                    </button>
+
+                    <div 
+                        ref={carouselTrackRef} 
+                        className={redesignStyles.carouselTrack}
+                        onMouseEnter={() => setIsCarouselHovered(true)}
+                        onMouseLeave={() => setIsCarouselHovered(false)}
+                    >
+                        {[...previewItems, ...previewItems].map((item, itemIdx) => {
+                            const dateDisplay = formatDisplayDate(item.event?.date) || '06-08-2026';
+                            const timeDisplay = formatDisplayTime(item.event?.time) || '2:00 PM';
+                            const originalIdx = itemIdx % (previewItems.length || 1);
+
+                            return (
+                                <div key={`${item.id || itemIdx}-${itemIdx}`} className={redesignStyles.suiteCard}>
+                                    {/* Poster Image Preview */}
+                                    <div 
+                                        className={redesignStyles.suiteCardPosterWrapper}
+                                        onClick={() => {
+                                            setSuitePreviewIndex(originalIdx);
+                                            setSuitePreview(true);
+                                        }}
+                                    >
+                                        {item.image ? (
+                                            <PreviewCard
+                                                event={item.event}
+                                                theme={theme}
+                                                groomName={formData.groomName || ''}
+                                                brideName={formData.brideName || ''}
+                                                groomParents={formData.groomParents}
+                                                brideParents={formData.brideParents}
+                                                welcomeMessage={formData.invitationMessage}
+                                                isPlaceholder={true}
+                                                isRawPreview={false}
+                                                customImage={item.image}
+                                                className={styles.dashboardThumbCard}
+                                                isSecured={false}
+                                            />
+                                        ) : (
+                                            <div style={{ width: '100%', height: '100%', background: '#F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9CA3AF' }}>
+                                                <FileText size={32} />
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Info & Meta */}
+                                    <div className={redesignStyles.suiteCardInfo}>
+                                        <h4 className={redesignStyles.suiteCardTitle}>
+                                            {item.name || 'Invitation Card'}
+                                        </h4>
+                                        <div className={redesignStyles.suiteCardMetaRow}>
+                                            <Calendar size={13} />
+                                            <span>{dateDisplay}</span>
+                                            <span className={redesignStyles.suiteCardMetaDivider}>•</span>
+                                            <Clock size={13} />
+                                            <span>{timeDisplay}</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Download Button */}
+                                    <button 
+                                        className={redesignStyles.suiteDownloadBtn}
+                                        onClick={() => {
+                                            if (item.image) {
+                                                const a = document.createElement('a');
+                                                a.href = item.image;
+                                                a.download = `${(item.name || 'invitation').toLowerCase().replace(/\s+/g, '_')}_invitation.png`;
+                                                a.click();
+                                            } else {
+                                                setSuitePreviewIndex(itemIdx);
+                                                setSuitePreview(true);
+                                            }
+                                        }}
+                                    >
+                                        <Download size={16} />
+                                        <span>Download (8.4MB)</span>
+                                    </button>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </motion.div>
+
+                {/* 3. Bento Grid for RSVP Chart & Hero Countdown Cards */}
+                <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ type: "spring", duration: 0.6, bounce: 0, delay: 0.2 }}
+                    className={redesignStyles.bentoGrid} 
+                    style={{ marginTop: '2.5rem' }}
+                >
+                    {/* Left Side: RSVP Responses Card */}
+                    <div>
+                        <div className={styles.card} style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '1.5rem', borderRadius: '24px' }}>
+                            <div>
+                                {/* Header Row */}
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                                    <h2 className={styles.cardTitle} style={{ margin: 0, fontSize: '1.25rem' }}>RSVP Responses</h2>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: '#F0FDF4', color: '#16A34A', padding: '0.3rem 0.65rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600, border: '1px solid #DCFCE7' }}>
+                                        <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#16A34A' }}></div>
+                                        <span>RSVP Live</span>
+                                    </div>
+                                </div>
+
+                                {/* Chart & Horizontal Stats Row */}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', flexWrap: 'wrap' }}>
+                                    {/* Donut Chart */}
+                                    <div style={{ position: 'relative', width: '95px', height: '95px', flexShrink: 0 }}>
+                                        <svg viewBox="0 0 36 36" style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }}>
+                                            <circle stroke="#F3F4F6" strokeWidth="4" fill="transparent" r="16" cx="18" cy="18" />
+                                            <circle 
+                                                stroke="#22c55e" 
+                                                strokeWidth="4" 
+                                                fill="transparent" 
+                                                r="16" 
+                                                cx="18" 
+                                                cy="18"
+                                                pathLength="100" 
+                                                strokeDasharray={`${rsvpStats.total > 0 ? Math.round((rsvpStats.attending / rsvpStats.total) * 100) : 0} 100`} 
+                                                strokeDashoffset="0" 
+                                                strokeLinecap="round" 
+                                            />
+                                        </svg>
+                                        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                                            <span style={{ fontSize: '1.2rem', fontWeight: 700, color: '#111827', lineHeight: 1 }}>{rsvpStats.total}</span>
+                                            <span style={{ fontSize: '0.6rem', color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: '2px', fontWeight: 600 }}>Total</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Horizontal Stats Blocks: Attending, Not Attending, Maybe */}
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(80px, 1fr))', gap: '0.6rem', flex: 1 }}>
+                                        <div style={{ background: '#FAFAFA', padding: '0.75rem 0.85rem', borderRadius: '12px', border: '1px solid #F3F4F6' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginBottom: '0.25rem' }}>
+                                                <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#22C55E' }}></div>
+                                                <span style={{ fontSize: '0.725rem', color: '#4B5563', fontWeight: 600 }}>Attending</span>
+                                            </div>
+                                            <span style={{ fontSize: '1.2rem', fontWeight: 700, color: '#111827' }}>{rsvpStats.attending}</span>
+                                        </div>
+
+                                        <div style={{ background: '#FAFAFA', padding: '0.75rem 0.85rem', borderRadius: '12px', border: '1px solid #F3F4F6' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginBottom: '0.25rem' }}>
+                                                <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#9CA3AF' }}></div>
+                                                <span style={{ fontSize: '0.725rem', color: '#4B5563', fontWeight: 600 }}>Not Attending</span>
+                                            </div>
+                                            <span style={{ fontSize: '1.2rem', fontWeight: 700, color: '#111827' }}>{rsvpStats.notAttending}</span>
+                                        </div>
+
+                                        <div style={{ background: '#FAFAFA', padding: '0.75rem 0.85rem', borderRadius: '12px', border: '1px solid #F3F4F6' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginBottom: '0.25rem' }}>
+                                                <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#F59E0B' }}></div>
+                                                <span style={{ fontSize: '0.725rem', color: '#4B5563', fontWeight: 600 }}>Maybe</span>
+                                            </div>
+                                            <span style={{ fontSize: '1.2rem', fontWeight: 700, color: '#111827' }}>{rsvpStats.maybe || 0}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Action Buttons: Copy RSVP Link & Open RSVP */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid #F3F4F6', flexWrap: 'wrap' }}>
+                                <motion.button 
+                                    whileTap={{ scale: 0.96 }}
+                                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                                    onClick={handleCopyRsvpLink}
+                                    style={{ 
+                                        flex: 1, 
+                                        padding: '0.6rem 0.85rem', 
+                                        borderRadius: '10px', 
+                                        background: copiedRsvp ? '#ECFDF5' : '#FFFFFF', 
+                                        border: copiedRsvp ? '1px solid #10B981' : '1px solid #E5E7EB', 
+                                        color: copiedRsvp ? '#059669' : '#374151', 
+                                        fontSize: '0.8rem', 
+                                        fontWeight: 600, 
+                                        cursor: 'pointer', 
+                                        display: 'flex', 
+                                        alignItems: 'center', 
+                                        justifyContent: 'center', 
+                                        gap: '0.4rem',
+                                        transition: 'background 0.2s ease, border 0.2s ease, color 0.2s ease'
+                                    }}
+                                >
+                                    {copiedRsvp ? <Check size={14} /> : <Copy size={14} />}
+                                    <span>{copiedRsvp ? 'Copied Link!' : 'Copy RSVP Link'}</span>
+                                </motion.button>
+
+                                <motion.button 
+                                    whileTap={{ scale: 0.96 }}
+                                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                                    onClick={handleOpenRsvp}
+                                    style={{ 
+                                        flex: 1, 
+                                        padding: '0.6rem 0.85rem', 
+                                        borderRadius: '10px', 
+                                        background: '#1A1A1A', 
+                                        color: '#FFFFFF', 
+                                        border: 'none', 
+                                        fontSize: '0.8rem', 
+                                        fontWeight: 600, 
+                                        cursor: 'pointer', 
+                                        display: 'flex', 
+                                        alignItems: 'center', 
+                                        justifyContent: 'center', 
+                                        gap: '0.4rem',
+                                        boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+                                    }}
+                                >
+                                    <ExternalLink size={14} />
+                                    <span>Open RSVP</span>
+                                </motion.button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Right Side: Hero Countdown Card */}
+                    <div>
+                        <div className={redesignStyles.glassHero}>
+                            <div className={redesignStyles.heroLeft}>
+                                <h2 className={redesignStyles.heroCouple}>
+                                    {formData.brideName || formData.groomName ? 
+                                        [formData.brideName, formData.groomName].filter(Boolean).join(' & ') 
+                                        : 'Ananya & Rohan'}
+                                </h2>
+                                <div className={redesignStyles.heroMeta}>
+                                    <Calendar size={15} />
+                                    <span>
+                                        {formatDisplayDate(formData.primaryDate || formData.events?.[0]?.date) || '20-12-2025'}
+                                    </span>
+                                    <span>•</span>
+                                    <MapPin size={15} />
+                                    <span>{formData.defaultVenueName || formData.defaultVenueAddress || 'Udaipur, Rajasthan'}</span>
+                                </div>
+                            </div>
+
+                            <div className={redesignStyles.heroRight}>
+                                {timeLeft.isPast ? (
+                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+                                        <span style={{ fontFamily: 'var(--font-serif)', fontSize: '1.5rem', color: '#C8A951', fontWeight: 500, margin: 0, lineHeight: 1 }}>Congratulations!</span>
+                                        <span style={{ color: '#666', fontSize: '0.8rem', marginTop: '0.35rem', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Your big day has arrived</span>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <span className={redesignStyles.countdownLabel}>Your Big Day is in</span>
+                                        <div className={redesignStyles.countdownBox}>
+                                            <div className={redesignStyles.timeBlock}>
+                                                <span className={redesignStyles.timeValue}>{timeLeft.days}</span>
+                                                <span className={redesignStyles.timeUnit}>Days</span>
+                                            </div>
+                                            <span className={redesignStyles.timerDivider}>:</span>
+                                            <div className={redesignStyles.timeBlock}>
+                                                <span className={redesignStyles.timeValue}>{timeLeft.hours}</span>
+                                                <span className={redesignStyles.timeUnit}>Hrs</span>
+                                            </div>
+                                            <span className={redesignStyles.timerDivider}>:</span>
+                                            <div className={redesignStyles.timeBlock}>
+                                                <span className={redesignStyles.timeValue}>{timeLeft.minutes}</span>
+                                                <span className={redesignStyles.timeUnit}>Mins</span>
+                                            </div>
+                                            <span className={redesignStyles.timerDivider}>:</span>
+                                            <div className={redesignStyles.timeBlock}>
+                                                <span className={redesignStyles.timeValue}>{timeLeft.seconds}</span>
+                                                <span className={redesignStyles.timeUnit}>Secs</span>
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </motion.div>
+
+                {/* Merged Full-Width Complete Wedding Communication Suite Card */}
                 <motion.div 
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ type: "spring", duration: 0.6, bounce: 0 }}
-                    className={`${redesignStyles.glassHero}`}
                     style={{ marginTop: '2rem' }}
                 >
-                    <div className={redesignStyles.heroLeft}>
-                        <h2 className={redesignStyles.heroCouple}>
-                            {formData.brideName || formData.groomName ? 
-                                [formData.brideName, formData.groomName].filter(Boolean).join(' & ') 
-                                : 'Ananya & Rohan'}
-                        </h2>
-                        <div className={redesignStyles.heroMeta}>
-                            <Calendar size={16} />
-                            <span>
-                                {formatDisplayDate(formData.primaryDate || formData.events?.[0]?.date) || '20-12-2025'}
-                            </span>
-                            <span>•</span>
-                            <MapPin size={16} />
-                            <span>{formData.defaultVenueName || formData.defaultVenueAddress || 'Udaipur, Rajasthan'}</span>
-                        </div>
-                    </div>
-
-                    <div className={redesignStyles.heroRight}>
-                        {timeLeft.isPast ? (
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                                <span style={{ fontFamily: 'var(--font-serif)', fontSize: '2rem', color: '#C8A951', fontWeight: 500, margin: 0, lineHeight: 1 }}>Congratulations!</span>
-                                <span style={{ color: '#666', fontSize: '0.9rem', marginTop: '0.5rem', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Your big day has arrived</span>
-                            </div>
-                        ) : (
-                            <>
-                                <span className={redesignStyles.countdownLabel}>Your Big Day is in</span>
-                                <div className={redesignStyles.countdownBox}>
-                                    <div className={redesignStyles.timeBlock}>
-                                        <span className={redesignStyles.timeValue}>{timeLeft.days}</span>
-                                        <span className={redesignStyles.timeUnit}>Days</span>
+                    <div className={styles.card} style={{ borderRadius: '24px', border: '1px solid rgba(0, 0, 0, 0.08)', background: '#FFFFFF', padding: '2rem', boxShadow: '0 4px 24px rgba(0,0,0,0.03)' }}>
+                        {/* Header Row */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.75rem' }}>
+                            <div>
+                                <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.5rem', fontWeight: 600, color: '#1A1A1A', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                    Complete Wedding Communication Suite ✨
+                                </h2>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '0.4rem' }}>
+                                    <div style={{ width: '18px', height: '18px', borderRadius: '50%', background: '#2E5B38', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFF' }}>
+                                        <Check size={11} strokeWidth={3} />
                                     </div>
-                                    <span className={redesignStyles.timerDivider}>:</span>
-                                    <div className={redesignStyles.timeBlock}>
-                                        <span className={redesignStyles.timeValue}>{timeLeft.hours}</span>
-                                        <span className={redesignStyles.timeUnit}>Hrs</span>
-                                    </div>
-                                    <span className={redesignStyles.timerDivider}>:</span>
-                                    <div className={redesignStyles.timeBlock}>
-                                        <span className={redesignStyles.timeValue}>{timeLeft.minutes}</span>
-                                        <span className={redesignStyles.timeUnit}>Mins</span>
-                                    </div>
-                                    <span className={redesignStyles.timerDivider}>:</span>
-                                    <div className={redesignStyles.timeBlock}>
-                                        <span className={redesignStyles.timeValue}>{timeLeft.seconds}</span>
-                                        <span className={redesignStyles.timeUnit}>Secs</span>
-                                    </div>
+                                    <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#4B5563' }}>Payment Completed • All Assets Ready</span>
                                 </div>
-                            </>
-                        )}
+                            </div>
+                        </div>
+
+                        {/* Middle Content: 2 Columns */}
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.75rem', marginBottom: '1.75rem' }}>
+                            {/* Left Column: Events breakdown */}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', background: '#FAFAFA', padding: '1.25rem 1.5rem', borderRadius: '16px', border: '1px solid #F3F4F6' }}>
+                                <div>
+                                    <p style={{ fontSize: '0.78rem', fontWeight: 700, color: '#1A1A1A', margin: 0, marginBottom: '0.2rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Wedding Invitations</p>
+                                    <p style={{ fontSize: '0.875rem', color: '#4B5563', margin: 0 }}>Save the Date · Wedding Invitation</p>
+                                </div>
+                                <div>
+                                    <p style={{ fontSize: '0.78rem', fontWeight: 700, color: '#1A1A1A', margin: 0, marginBottom: '0.2rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Wedding Events</p>
+                                    <p style={{ fontSize: '0.875rem', color: '#4B5563', margin: 0 }}>Haldi · Mehendi · Sangeet · Reception</p>
+                                </div>
+                                <div>
+                                    <p style={{ fontSize: '0.78rem', fontWeight: 700, color: '#1A1A1A', margin: 0, marginBottom: '0.2rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Closing & Gratitude</p>
+                                    <p style={{ fontSize: '0.875rem', color: '#4B5563', margin: 0 }}>Thank You Card</p>
+                                </div>
+                            </div>
+
+                            {/* Right Column: Capabilities checklist */}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', justifyContent: 'center', background: '#FAFAFA', padding: '1.25rem 1.5rem', borderRadius: '16px', border: '1px solid #F3F4F6' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: '1.5px solid #C8A951', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#C8A951', flexShrink: 0 }}>
+                                        <Check size={11} strokeWidth={3} />
+                                    </div>
+                                    <span style={{ fontSize: '0.875rem', color: '#374151', fontWeight: 500 }}>Covers up to 7 wedding events</span>
+                                </div>
+
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: '1.5px solid #C8A951', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#C8A951', flexShrink: 0 }}>
+                                        <Check size={11} strokeWidth={3} />
+                                    </div>
+                                    <span style={{ fontSize: '0.875rem', color: '#374151', fontWeight: 500 }}>Mobile-optimized image invites</span>
+                                </div>
+
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: '1.5px solid #C8A951', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#C8A951', flexShrink: 0 }}>
+                                        <Check size={11} strokeWidth={3} />
+                                    </div>
+                                    <span style={{ fontSize: '0.875rem', color: '#374151', fontWeight: 500 }}>RSVP link with live guest count</span>
+                                </div>
+
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: '1.5px solid #C8A951', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#C8A951', flexShrink: 0 }}>
+                                        <Check size={11} strokeWidth={3} />
+                                    </div>
+                                    <span style={{ fontSize: '0.875rem', color: '#374151', fontWeight: 500 }}>Guest management RSVP</span>
+                                </div>
+
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: '1.5px solid #C8A951', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#C8A951', flexShrink: 0 }}>
+                                        <Check size={11} strokeWidth={3} />
+                                    </div>
+                                    <span style={{ fontSize: '0.875rem', color: '#374151', fontWeight: 500 }}>One-click WhatsApp sharing</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Footer Action Row */}
+                        <div style={{ paddingTop: '1.25rem', borderTop: '1px solid #F3F4F6', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+                            {/* Left Meta Info */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', fontSize: '0.8rem', color: '#6B7280', flexWrap: 'wrap' }}>
+                                <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                    <Lock size={14} style={{ color: '#9CA3AF' }} /> Securely generated
+                                </span>
+                                <span>•</span>
+                                <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                    <Zap size={14} style={{ color: '#9CA3AF' }} /> Instant sharing ready
+                                </span>
+                                <span>•</span>
+                                <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                    <MessageCircle size={14} style={{ color: '#9CA3AF' }} /> Editable for 15 days
+                                </span>
+                            </div>
+
+                            {/* Right Action Buttons */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                                <motion.button 
+                                    whileTap={{ scale: 0.96 }}
+                                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                                    className={styles.btnActionOutline} 
+                                    style={{ padding: '0.65rem 1.25rem', borderRadius: '12px', background: '#FFF', border: '1px solid #E5E7EB', fontWeight: 600, color: '#374151', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                                >
+                                    <Download size={16} />
+                                    <span>Complete Assets</span>
+                                </motion.button>
+
+                                <motion.a 
+                                    whileTap={{ scale: 0.96 }}
+                                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                                    onClick={(e) => { e.preventDefault(); setSuitePreviewIndex(0); setSuitePreview(true); }} 
+                                    className={styles.btnActionOutline} 
+                                    style={{ padding: '0.65rem 1.25rem', borderRadius: '12px', background: '#FFF', border: '1px solid #E5E7EB', fontWeight: 600, color: '#374151', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                                >
+                                    <Eye size={16} />
+                                    <span>View Invites</span>
+                                </motion.a>
+                            </div>
+                        </div>
                     </div>
                 </motion.div>
 
-
-
-                {/* 3. Grid Layout: Events (Main) + Actions (Side) */}
+                {/* 5. Support / Need Help Card */}
                 <motion.div 
-                    variants={{
-                        hidden: { opacity: 0 },
-                        show: {
-                            opacity: 1,
-                            transition: {
-                                staggerChildren: 0.08
-                            }
-                        }
-                    }}
-                    initial="hidden"
-                    animate="show"
-                    className={redesignStyles.bentoGrid} 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ type: "spring", duration: 0.6, bounce: 0, delay: 0.3 }}
                     style={{ marginTop: '2.5rem' }}
                 >
-                    {/* Main Column */}
-                    <motion.div 
-                        variants={{
-                            hidden: { opacity: 0, y: 20 },
-                            show: { opacity: 1, y: 0, transition: { type: "spring", duration: 0.6, bounce: 0 } }
-                        }}
-                        className={redesignStyles.mainColumn}
-                    >
-                        
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                            <div className={redesignStyles.eventHeader} style={{ marginBottom: 0 }}>
-                                <div>
-                                    <h2 className={redesignStyles.eventTitle}>Wedding Events</h2>
-                                    <p className={styles.subtitle} style={{ marginBottom: 0 }}>Manage your invitations and details.</p>
-                                </div>
-                            </div>
-
-                            {/* Horizontal Nav */}
-                            <div className={styles.horizontalNavContainer}>
-                                {[
-                                    { id: 'save_the_date', name: 'Save The Date', date: formData.primaryDate, time: formData.primaryTime, description: 'Save the date for our special day!' },
-                                    ...(formData.events || []),
-                                    { id: 'thank_you', name: 'Thank You', date: formData.primaryDate, time: formData.primaryTime, description: 'Thank you for being a part of our celebration!' }
-                                ].map((event, idx) => {
-                                    const isActive = (activeEventId ? event.id === activeEventId : idx === 0 && !activeEventId);
-                                    return (
-                                        <button 
-                                            key={`nav-${idx}`} 
-                                            className={`${styles.navTab} ${isActive ? styles.navTabActive : ''}`}
-                                            onClick={() => setActiveEventId(event.id)}
-                                        >
-                                            <span className={styles.navLabel}>{event.name || 'Event'}</span>
-                                        </button>
-                                    );
-                                })}
-                            </div>
+                    <div className={redesignStyles.supportCard} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1.5rem', textAlign: 'left', padding: '1.75rem 2.25rem' }}>
+                        <div>
+                            <h3 style={{ margin: 0, fontSize: '1.4rem', color: '#FFFFFF' }}>Need help with your wedding suite?</h3>
+                            <p style={{ margin: '0.35rem 0 0 0', fontSize: '0.9rem', color: '#A1A1AA' }}>Our dedicated studio concierge is here to assist with customization, print exports, or RSVP support.</p>
                         </div>
-
-                        <div className={styles.eventList}>
-                            {[
-                                { id: 'save_the_date', name: 'Save The Date', date: formData.primaryDate, time: formData.primaryTime, description: 'Save the date for our special day!' },
-                                ...(formData.events || []),
-                                { id: 'thank_you', name: 'Thank You', date: formData.primaryDate, time: formData.primaryTime, description: 'Thank you for being a part of our celebration!' }
-                            ].filter((event, idx) => activeEventId ? event.id === activeEventId : idx === 0 && !activeEventId).map((event, idx) => {
-                                const matchedItemIndex = previewItems?.findIndex(pi => pi.event?.id === event.id || pi.id === event.id || (event.id === 'save_the_date' && pi.name.toLowerCase().includes('save')) || (event.id === 'thank_you' && pi.name.toLowerCase().includes('thank')));
-                                const matchedItem = matchedItemIndex !== -1 ? previewItems[matchedItemIndex] : null;
-                                const poster = (matchedItem ? matchedItem.image : null) ||
-                                                getEventImage(event) ||
-                                                previewItems.find(pi => (pi.name || '').toUpperCase().includes('WEDDING'))?.image ||
-                                                previewItems[0]?.image;
-
-                                return (
-                                    <div key={idx} className={redesignStyles.eventBentoCard}>
-                                        <div className={redesignStyles.eventBentoContent}>
-                                            
-                                            {/* Preview Column */}
-                                            {poster && (
-                                                <div className={redesignStyles.eventPreviewCol}>
-                                                    <div 
-                                                        className={redesignStyles.eventPreviewImageWrapper} 
-                                                        onClick={() => {
-                                                            if (matchedItemIndex !== -1) {
-                                                                setSuitePreviewIndex(matchedItemIndex);
-                                                                setSuitePreview(true);
-                                                            } else if (poster) {
-                                                                setLightbox({ image: poster, title: event.name || 'Event Preview' });
-                                                            }
-                                                        }}
-                                                    >
-                                                        <InvitationCard
-                                                            event={matchedItem?.event || event}
-                                                            theme={theme}
-                                                            groomName={formData.groomName || ''}
-                                                            brideName={formData.brideName || ''}
-                                                            groomParents={formData.groomParents}
-                                                            brideParents={formData.brideParents}
-                                                            welcomeMessage={formData.invitationMessage}
-                                                            isPlaceholder={true}
-                                                            isRawPreview={false}
-                                                            customImage={poster}
-                                                            className={styles.dashboardThumbCard}
-                                                            isSecured={true}
-                                                        />
-                                                        <div className={styles.previewOverlay}>
-                                                            <span>Click to preview Full Size</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {/* Details & Editor Column */}
-                                            <div className={redesignStyles.eventDetailsCol}>
-                                                <div className={styles.eventCardMetaRow} style={{ marginTop: 0, marginBottom: '1.5rem' }}>
-                                                    <div className={styles.metaItem}>
-                                                        <Calendar size={16} />
-                                                        <span>{formatDisplayDate(event.date) || 'TBD'}</span>
-                                                    </div>
-                                                    <span className={styles.metaDivider}>•</span>
-                                                    <div className={styles.metaItem}>
-                                                        <Clock size={16} />
-                                                        <span>{formatDisplayTime(event.time) || 'TBD'}</span>
-                                                    </div>
-                                                </div>
-
-                                                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#4B5563', marginBottom: '0.5rem' }}>
-                                                    WhatsApp message for your card
-                                                </label>
-                                                <textarea
-                                                    className={redesignStyles.messageEditor}
-                                                    value={event.description || ''}
-                                                    onChange={(e) => updateEvent(event.id, { description: e.target.value })}
-                                                    placeholder="Write a warm, welcoming message for your guests. (e.g. With joyful hearts, we invite you to celebrate our special day.)"
-                                                />
-                                                
-                                                <div className={styles.eventFooter} style={{ marginTop: '1.5rem', padding: 0, border: 'none' }}>
-                                                    <button 
-                                                        className={styles.eventFooterCopyBtn}
-                                                        onClick={() => navigator.clipboard.writeText(event.description || 'With joyful hearts, we invite you to celebrate our special day.')}
-                                                    >
-                                                        Copy Message
-                                                    </button>
-                                                    <button 
-                                                        className={styles.eventFooterNextBtn}
-                                                        onClick={() => {
-                                                            const currentIndex = formData.events?.findIndex(e => e.id === event.id) ?? 0;
-                                                            const nextEvent = formData.events?.[currentIndex + 1];
-                                                            if (nextEvent) {
-                                                                setActiveEventId(nextEvent.id);
-                                                            }
-                                                        }}
-                                                        disabled={idx === (formData.events?.length || 0) - 1}
-                                                    >
-                                                        Next Event
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </motion.div>
-
-                    {/* Side Column */}
-                    <motion.div 
-                        variants={{
-                            hidden: { opacity: 0, y: 20 },
-                            show: { opacity: 1, y: 0, transition: { type: "spring", duration: 0.6, bounce: 0 } }
-                        }}
-                        className={redesignStyles.sideColumn}
-                    >
-                        
-                        {/* RSVP Pie Chart Card */}
-                        <div className={styles.card}>
-                            <div className={styles.cardContent} style={{ padding: '1.5rem' }}>
-                                <h2 className={styles.cardTitle} style={{ marginBottom: '1.5rem' }}>RSVP Responses</h2>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
-                                    <div style={{ position: 'relative', width: '110px', height: '110px', flexShrink: 0 }}>
-                                        <svg viewBox="0 0 36 36" style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }}>
-                                            <circle stroke="#F3F4F6" strokeWidth="4" fill="transparent" r="16" cx="18" cy="18" />
-                                            <circle stroke="#22c55e" strokeWidth="4" fill="transparent" r="16" cx="18" cy="18"
-                                                pathLength="100" strokeDasharray={`${rsvpStats.total > 0 ? Math.round((rsvpStats.attending / rsvpStats.total) * 100) : 0} 100`} strokeDashoffset="0" strokeLinecap="round" />
-                                        </svg>
-                                        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                                            <span style={{ fontSize: '1.2rem', fontWeight: 700, color: '#333' }}>{rsvpStats.total}</span>
-                                            <span style={{ fontSize: '0.65rem', color: '#666', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total</span>
-                                        </div>
-                                    </div>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', flex: 1 }}>
-                                        <div>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
-                                                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#22c55e' }}></div>
-                                                <span style={{ fontSize: '0.8rem', color: '#4B5563', fontWeight: 600 }}>Attending</span>
-                                            </div>
-                                            <span style={{ fontSize: '1.1rem', fontWeight: 700, color: '#111827', marginLeft: '1rem' }}>{rsvpStats.attending}</span>
-                                        </div>
-                                        <div>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
-                                                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#D1D5DB' }}></div>
-                                                <span style={{ fontSize: '0.8rem', color: '#4B5563', fontWeight: 600 }}>Not Attending</span>
-                                            </div>
-                                            <span style={{ fontSize: '1.1rem', fontWeight: 700, color: '#111827', marginLeft: '1rem' }}>{rsvpStats.notAttending}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Video Invitation Card */}
-                        {lastSavedWeddingId && (
-                            <VideoInviteCard
-                                orderId={lastSavedWeddingId} // Use wedding ID/order ID identifier
-                                groomName={formData.groomName || 'Groom'}
-                                brideName={formData.brideName || 'Bride'}
-                                eventDate={formData.primaryDate || (formData.events?.[0]?.date) || '14th Feb 2026'}
-                                eventTime={formData.events?.[0]?.time || '6:30 PM'}
-                                venue={formData.events?.[0]?.venue || 'Hotel Grand Resort'}
-                                eventType={formData.events?.[0]?.name || 'Wedding'}
-                                themeColor={theme?.name?.toLowerCase().includes('haldi') ? '#D97706' : '#b38b40'}
-                                slide1Bg={getSlideImage('SAVE_THE_DATE', '/assets/themes/rajputana/save-the-date.png')}
-                                slide2Bg={getSlideImage('HALDI', '/assets/themes/rajputana/haldi-invite.png')}
-                                slide3Bg={getSlideImage('MEHENDI', '/assets/themes/rajputana/mehendi-invite.png')}
-                                slide4Bg={getSlideImage('SANGEET', '/assets/themes/rajputana/sangeet-invite.png')}
-                                slide5Bg={getSlideImage('WEDDING', '/assets/themes/rajputana/wedding-invite.png')}
-                            />
-                        )}
-
-                        {/* Status Card */}
-                        <div className={styles.card} style={{ margin: 0 }}>
-                            <div className={styles.cardMain}>
-                                <div className={styles.cardContent}>
-                                    <h2 className={styles.cardTitle}>Complete Suite</h2>
-                                    <div className={styles.paymentStatus}>
-                                        <Check size={14} className={styles.paymentCheck} />
-                                        <span style={{ fontSize: '0.8rem' }}>Assets Ready</span>
-                                    </div>
-                                </div>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                                    <div>
-                                        <p style={{ fontSize: '0.75rem', fontWeight: 600, color: '#333', marginBottom: '0.2rem' }}>Wedding Invitations</p>
-                                        <p style={{ fontSize: '0.75rem', color: '#666' }}>Save the Date · Wedding Invitation</p>
-                                    </div>
-                                    <div>
-                                        <p style={{ fontSize: '0.75rem', fontWeight: 600, color: '#333', marginBottom: '0.2rem' }}>Wedding Events</p>
-                                        <p style={{ fontSize: '0.75rem', color: '#666' }}>Haldi · Mehendi · Sangeet · Reception</p>
-                                    </div>
-                                    <div>
-                                        <p style={{ fontSize: '0.75rem', fontWeight: 600, color: '#333', marginBottom: '0.2rem' }}>Closing & Gratitude</p>
-                                        <p style={{ fontSize: '0.75rem', color: '#666' }}>Thank You Card</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className={styles.cardFooter} style={{ padding: '1rem', flexDirection: 'column', gap: '0.8rem' }}>
-                                <a onClick={(e) => { e.preventDefault(); setSuitePreviewIndex(0); setSuitePreview(true); }} className={styles.btnActionOutline} style={{ width: '100%', justifyContent: 'center', cursor: 'pointer' }}>
-                                    <Eye size={18} />
-                                    <span>View Suite</span>
-                                </a>
-                                <button className={styles.btnActionOutline} style={{ width: '100%', justifyContent: 'center' }}>
-                                    <Download size={18} />
-                                    <span>Complete Assets</span>
-                                </button>
-                            </div>
-                        </div>
-
-
-
-                        {/* Support Card */}
-                        <div className={redesignStyles.supportCard}>
-                            <h3>Need help?</h3>
-                            <p>Our premium support is here for your special day.</p>
-                            <button className={redesignStyles.supportBtn}>Contact Studio</button>
-                        </div>
-                    </motion.div>
+                        <motion.button 
+                            whileTap={{ scale: 0.96 }}
+                            transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                            className={redesignStyles.supportBtn}
+                            onClick={() => window.open('https://wa.me/?text=Hi%20Nimantran%20Studio,%20I%20need%20help%20with%20my%20wedding%20suite', '_blank')}
+                        >
+                            Contact Studio
+                        </motion.button>
+                    </div>
                 </motion.div>
             </main>
         </div>
@@ -839,18 +1004,37 @@ export default function DashboardPage() {
                                         >
                                             ←
                                         </button>
-                                        <img
-                                            src={currentItem.image}
-                                            alt={currentItem.name}
-                                            onClick={e => e.stopPropagation()}
-                                            style={{
-                                                height: '75vh',
-                                                maxWidth: '85vw',
-                                                borderRadius: '16px',
-                                                boxShadow: '0 24px 80px rgba(0,0,0,0.6)',
-                                                objectFit: 'contain',
-                                            }}
-                                        />
+                                        {String(currentItem.image || '').startsWith('structured:') ? (
+                                            <div
+                                                onClick={e => e.stopPropagation()}
+                                                style={{ height: '75vh', aspectRatio: '9 / 16', maxWidth: '85vw', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 24px 80px rgba(0,0,0,0.6)' }}
+                                            >
+                                                <PreviewCard
+                                                    event={currentItem.event}
+                                                    theme={theme}
+                                                    groomName={formData.groomName || ''}
+                                                    brideName={formData.brideName || ''}
+                                                    groomParents={formData.groomParents}
+                                                    brideParents={formData.brideParents}
+                                                    customImage={currentItem.image}
+                                                    isPlaceholder={true}
+                                                    isSecured={false}
+                                                />
+                                            </div>
+                                        ) : (
+                                            <img
+                                                src={currentItem.image}
+                                                alt={currentItem.name}
+                                                onClick={e => e.stopPropagation()}
+                                                style={{
+                                                    height: '75vh',
+                                                    maxWidth: '85vw',
+                                                    borderRadius: '16px',
+                                                    boxShadow: '0 24px 80px rgba(0,0,0,0.6)',
+                                                    objectFit: 'contain',
+                                                }}
+                                            />
+                                        )}
                                         <button 
                                             onClick={(e) => { e.stopPropagation(); setSuitePreviewIndex(Math.min(validItems.length - 1, currentIndex + 1)); }}
                                             disabled={currentIndex === validItems.length - 1}

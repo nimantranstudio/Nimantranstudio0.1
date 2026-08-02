@@ -88,7 +88,19 @@ export const PreviewCard = forwardRef<InvitationCardRef, PreviewCardProps>(funct
             // Layout still loading — hold the card's box so layout doesn't jump.
             return <div style={{ width: '100%', height: '100%', minHeight: 120, background: '#f3f2ef' }} />;
         }
-        const data = buildCardData(structuredCouple, (rest as any).event);
+        const r = rest as any;
+        // Bind from structuredCouple when given, else fall back to the same couple
+        // props InvitationCard receives — so PreviewCard is a true drop-in.
+        const couple = structuredCouple || {
+            groomName: r.groomName,
+            brideName: r.brideName,
+            groomParents: r.groomParents,
+            brideParents: r.brideParents,
+            primaryDate: r.event?.date,
+            primaryTime: r.event?.time,
+            defaultVenueName: r.event?.venue,
+        };
+        const data = buildCardData(couple, r.event);
         return (
             <StructuredPreviewCard
                 ref={ref}
