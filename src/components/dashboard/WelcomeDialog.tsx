@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import { useEffect, useState } from 'react';
-import { Sparkles, ArrowRight } from 'lucide-react';
+import { Sparkles, ArrowRight, Check } from 'lucide-react';
 
 const EASE: [number, number, number, number] = [0.23, 1, 0.32, 1];
 const EASE_OUT: [number, number, number, number] = [0.16, 1, 0.3, 1];
@@ -114,6 +114,20 @@ export function WelcomeDialog({ open, onClose, coupleNames }: { open: boolean; o
                             border: '1px solid #F0E6C8', boxShadow: '0 34px 90px rgba(60, 40, 10, 0.30)',
                         }}
                     >
+                        <motion.div
+                            variants={itemVariants}
+                            style={{
+                                display: 'inline-flex', alignItems: 'center', gap: 6, margin: '0 auto 1rem',
+                                padding: '0.3rem 0.8rem', borderRadius: 999, background: '#E7F6EC', color: '#1E7A3D',
+                                fontSize: 12.5, fontWeight: 700, letterSpacing: '0.01em',
+                            }}
+                        >
+                            <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 16, height: 16, borderRadius: '50%', background: '#22c55e', color: '#fff' }}>
+                                <Check size={11} strokeWidth={3} />
+                            </span>
+                            Payment successful
+                        </motion.div>
+
                         <motion.div
                             variants={itemVariants}
                             style={{

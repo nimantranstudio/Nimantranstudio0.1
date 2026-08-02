@@ -41,12 +41,14 @@ export async function sendWelcomeAndReceipt(opts: {
     const hero = isSendableImage(heroImageUrl) ? absolutize(heroImageUrl) : undefined;
 
     try {
+        console.log(`[welcome] sending to ${mobile} (order ${orderId}); hero=${hero ? 'yes' : 'no'} template=${WELCOME_TEMPLATE}`);
         const result = await messaging.sendWhatsAppTemplate(
             mobile,
             WELCOME_TEMPLATE,
             [couple],
             hero
         );
+        console.log(`[welcome] result (order ${orderId}): ${JSON.stringify(result)}`);
         if (!result.success) {
             console.warn(`Welcome WhatsApp not delivered (order ${orderId}): ${result.error}`);
         }

@@ -639,14 +639,15 @@ function PreviewContent() {
                     flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                     fontFamily: 'var(--font-sans)', color: '#1F1F1F'
                 }}>
-                    <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '32px', marginBottom: '16px' }}>🎉 Payment Successful</h1>
-                    <p style={{ fontSize: '18px', color: 'var(--muted-foreground)', marginBottom: '32px' }}>Your Wedding Bundle has been unlocked successfully.</p>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '16px' }}>
+                    {/* Quiet processing state during the unavoidable verify/provision
+                        wait. The real celebration is the confetti welcome on the
+                        dashboard — so no duplicate "Payment Successful" screen here. */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '16px', color: 'var(--muted-foreground)' }}>
                         <div className="spinner" style={{
-                            width: '24px', height: '24px', border: '3px solid var(--muted)',
+                            width: '22px', height: '22px', border: '3px solid var(--muted)',
                             borderTopColor: 'var(--primary)', borderRadius: '50%', animation: 'spin 1s linear infinite'
                         }} />
-                        Preparing your wedding assets...
+                        Securing your payment & setting up your suite…
                     </div>
                     <style dangerouslySetInnerHTML={{__html: `
                         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }

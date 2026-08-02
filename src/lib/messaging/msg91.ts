@@ -105,6 +105,12 @@ export const msg91Provider: MessagingProvider = {
                 }),
             });
             const data = await res.json();
+            // Log the full MSG91 response so delivery issues (template not approved,
+            // number not registered, etc.) are diagnosable. MSG91 returns 200 on
+            // ACCEPTANCE, not delivery, so "success" here only means it queued.
+            console.log(
+                `[msg91:whatsapp] to=${toIndiaMsisdn(mobile)} template=${templateName} media=${!!mediaUrl} status=${res.status} resp=${JSON.stringify(data)}`,
+            );
             if (!res.ok || data?.type === 'error') {
                 return {
                     success: false,
