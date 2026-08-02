@@ -79,24 +79,6 @@ export default async function ThemeDetailPage({ params }: { params: Promise<{ th
         );
     }
 
-    // Load the CardDocument layout for any designed (structured) bundle items in this theme,
-    // so the customer preview can render them via CardRenderer instead of an HTML iframe.
-    const structuredIds = new Set<string>();
-    for (const b of (themeData as any).bundles || []) {
-        for (const it of b.bundleItems || []) {
-            const p: string = it.templatePath || '';
-            if (p.startsWith('structured:')) structuredIds.add(p.slice('structured:'.length));
-        }
-    }
-    const templateLayouts: Record<string, any> = {};
-    if (structuredIds.size) {
-        const tpls = await prisma.template.findMany({
-            where: { id: { in: Array.from(structuredIds) } },
-            select: { id: true, layout: true },
-        });
-        for (const t of tpls) templateLayouts[t.id] = t.layout;
-    }
-
     // Format theme data for the client (Self-healing from API logic)
     const formattedTheme = {
         ...themeData,
@@ -108,21 +90,15 @@ export default async function ThemeDetailPage({ params }: { params: Promise<{ th
             name: b.BundleName,
             description: b.bundleDescription || '',
             bundleItems: (b.bundleItems || [])
+                // Customer cards are HTML only. Designed (structured) templates are for
+                // the admin editor + video, so keep them out of the customer flow.
+                .filter((item: any) => !String(item.templatePath || '').startsWith('structured:'))
                 .map((item: any) => {
-                    const p0: string = item.templatePath || '';
-                    // Designed template: attach its CardDocument layout so the client can render it.
-                    if (p0.startsWith('structured:')) {
-                        const layout = templateLayouts[p0.slice('structured:'.length)];
-                        if (!layout) return null; // template was deleted — drop the orphaned item
-                        return { ...item, templatePath: p0, kind: 'structured', layout };
-                    }
-                    // HTML template: normalise the path as before.
-                    let p = p0;
+                    let p = item.templatePath || '';
                     if (p.startsWith('public/')) p = '/' + p.substring(7);
                     if (p && !p.startsWith('/')) p = '/' + p;
-                    return { ...item, templatePath: p, kind: 'html' };
+                    return { ...item, templatePath: p };
                 })
-                .filter(Boolean)
         }))
     };
 
