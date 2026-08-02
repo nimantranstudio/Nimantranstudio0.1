@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useWeddingStore } from '@/store/wedding-store';
+import Image from 'next/image';
 import { LogOut, CreditCard, Users, ShoppingBag, LayoutDashboard } from 'lucide-react';
 import styles from '@/app/dashboard/dashboard.module.css';
 
@@ -18,7 +19,6 @@ export const DashboardSidebar = () => {
 
     const navItems = [
         { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-        { name: 'Wedding Assets', href: '/dashboard/assets', icon: CreditCard },
         { name: 'RSVP Manager', href: '/dashboard/rsvp', icon: Users },
         { name: 'Payment Details', href: '/dashboard/orders', icon: ShoppingBag },
     ];
@@ -45,13 +45,6 @@ export const DashboardSidebar = () => {
                     );
                 })}
             </nav>
-
-            <div className={styles.sidebarFooter}>
-                <button onClick={handleLogout} className={styles.logoutBtn}>
-                    <LogOut size={18} />
-                    <span>Logout</span>
-                </button>
-            </div>
         </aside>
     );
 };

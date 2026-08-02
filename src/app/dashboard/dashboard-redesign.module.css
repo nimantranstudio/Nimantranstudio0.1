@@ -7,97 +7,108 @@
     padding-bottom: 4rem;
 }
 
-/* Glassmorphism Hero Banner */
 .glassHero {
     position: relative;
-    border-radius: 28px;
-    padding: 2.5rem 3rem;
-    background: rgba(255, 255, 255, 0.75);
-    backdrop-filter: blur(20px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    box-shadow: 0 1px 3px rgba(200, 169, 81, 0.02), 0 16px 48px rgba(200, 169, 81, 0.06), inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+    border-radius: 24px;
+    padding: 1.5rem 1.75rem;
+    background: #FFFFFF;
+    border: 1px solid rgba(0, 0, 0, 0.08);
     overflow: hidden;
     display: flex;
+    flex-direction: column;
     justify-content: space-between;
-    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.03), 0 1px 3px rgba(0, 0, 0, 0.02);
+    height: 100%;
 }
 
 .heroLeft {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    z-index: 1;
+    gap: 0.4rem;
+    z-index: 2;
 }
 
 .heroCouple {
     font-family: var(--font-serif);
-    font-size: 2.5rem;
-    font-weight: 500;
-    color: #1a1a1a;
-    line-height: 1.1;
+    font-size: 1.75rem;
+    font-weight: 600;
+    line-height: 1.2;
     margin: 0;
-    letter-spacing: -0.03em;
+    letter-spacing: -0.02em;
     font-optical-sizing: auto;
+    color: #1A1A1A;
 }
 
 .heroMeta {
-    font-size: 1rem;
-    color: #666;
+    font-size: 0.85rem;
+    color: #666666;
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    font-weight: 500;
+    flex-wrap: wrap;
+}
+
+.heroMeta svg {
+    color: #C8A951;
 }
 
 .heroRight {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 0.75rem;
-    z-index: 1;
+    align-items: flex-start;
+    gap: 0.5rem;
+    z-index: 2;
+    width: 100%;
 }
 
 .countdownLabel {
-    font-size: 0.75rem;
+    font-size: 0.725rem;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    color: #888;
+    color: #888888;
     font-weight: 600;
 }
 
 .countdownBox {
     display: flex;
     align-items: center;
-    gap: 1.5rem;
-    padding: 1rem 1.5rem;
-    border-radius: 20px;
+    justify-content: space-around;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: 16px;
+    background: #FAFAFA;
+    border: 1px solid #F3F4F6;
 }
 
 .timeBlock {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.25rem;
-    min-width: 40px;
+    gap: 0.15rem;
+    min-width: 36px;
 }
 
 .timeValue {
-    font-size: 1.75rem;
-    font-weight: 500;
+    font-size: 1.5rem;
+    font-weight: 600;
     font-family: var(--font-serif);
     color: #C8A951;
     line-height: 1;
 }
 
 .timeUnit {
-    font-size: 0.65rem;
+    font-size: 0.6rem;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: #999;
+    letter-spacing: 0.08em;
+    color: #999999;
+    font-weight: 600;
 }
 
 .timerDivider {
     color: #E5E7EB;
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     font-weight: 300;
 }
 
@@ -150,12 +161,11 @@
     line-height: 1;
 }
 
-/* 2-Column Grid */
 .bentoGrid {
     display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 2rem;
-    align-items: start;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 1.75rem;
+    align-items: stretch;
 }
 
 .mainColumn {
@@ -364,3 +374,296 @@
         flex-direction: column;
     }
 }
+
+/* Carousel & Asset Cards Section */
+.carouselSection {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    margin-top: 2rem;
+    width: 100%;
+}
+
+.carouselHeaderRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.carouselTitleGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.carouselTitle {
+    font-family: var(--font-serif);
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #1A1A1A;
+    margin: 0;
+}
+
+.carouselSubtitle {
+    font-size: 0.875rem;
+    color: #666666;
+    margin: 0;
+}
+
+.carouselNavControls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.carouselNavBtn {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: #FFFFFF;
+    border: 1px solid #E5E7EB;
+    color: #1A1A1A;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.carouselNavBtn:hover {
+    background: #F9FAFB;
+    border-color: #C8A951;
+    color: #C8A951;
+    transform: scale(1.05);
+}
+
+.carouselNavBtn:active {
+    transform: scale(0.95);
+}
+
+/* Background Card Wrapper for Invitation Suite */
+.carouselContainerCard {
+    background: #FFFFFF;
+    border-radius: 24px;
+    padding: 0.85rem 1.15rem 0.75rem 1.15rem;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
+    position: relative;
+}
+
+.carouselContainerCard::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 24px;
+    padding: 1.5px;
+    background: linear-gradient(90deg, rgba(200, 169, 81, 0.2), rgba(200, 169, 81, 0.85), #C8A951, rgba(200, 169, 81, 0.85), rgba(200, 169, 81, 0.2));
+    background-size: 200% 100%;
+    animation: goldBorderSweep 4s linear infinite;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    z-index: 10;
+}
+
+@keyframes goldBorderSweep {
+    0% {
+        background-position: 0% 0%;
+    }
+    50% {
+        background-position: 100% 0%;
+    }
+    100% {
+        background-position: 0% 0%;
+    }
+}
+
+.viewAllLink {
+    transition: color 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s ease;
+}
+
+.viewAllLink:hover {
+    color: #C8A951 !important;
+    transform: translateX(2px);
+}
+
+.carouselOverlayNavBtn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 30;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #FFFFFF;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    color: #1A1A1A;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.carouselOverlayNavBtn:hover {
+    background: #FFFFFF;
+    border-color: #C8A951;
+    color: #C8A951;
+    transform: translateY(-50%) scale(1.1);
+    box-shadow: 0 6px 20px rgba(200, 169, 81, 0.2);
+}
+
+.carouselOverlayNavBtn:active {
+    transform: translateY(-50%) scale(0.95);
+}
+
+.carouselTrack {
+    display: flex;
+    gap: 0.85rem;
+    overflow-x: auto;
+    scroll-behavior: auto;
+    padding-bottom: 0.5rem;
+    padding-top: 0.15rem;
+    scrollbar-width: none;
+}
+
+.carouselTrack::-webkit-scrollbar {
+    display: none;
+}
+
+/* Card Mockup (Slightly Reduced Size for Sleek Carousel Display) */
+.suiteCard {
+    flex: 0 0 140px;
+    background: #FFFFFF;
+    border-radius: 14px;
+    padding: 0.5rem;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03), 0 1px 3px rgba(0, 0, 0, 0.02);
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    cursor: pointer;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
+}
+
+.suiteCard:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.07);
+}
+
+.suiteCardPosterWrapper {
+    width: 100%;
+    aspect-ratio: 9/16;
+    background: #F9FAFB;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid #F3F4F6;
+    cursor: pointer;
+}
+
+.suiteCardInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.suiteCardTitle {
+    font-family: var(--font-serif);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #1A1A1A;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.suiteCardMetaRow {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.68rem;
+    color: #666666;
+    font-weight: 500;
+}
+
+.suiteCardMetaDivider {
+    color: #D1D5DB;
+}
+
+.suiteWhatsappBtn {
+    width: 100%;
+    background: #25D366;
+    border: 1px solid #22C55E;
+    color: #FFFFFF;
+    padding: 0.38rem 0.5rem;
+    border-radius: 8px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(37, 211, 102, 0.25);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.suiteWhatsappBtn:hover {
+    background: #1EBE5D;
+    border-color: #16A34A;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37, 211, 102, 0.35);
+}
+
+.suiteWhatsappBtn:active {
+    transform: scale(0.96);
+}
+
+.suiteDownloadBtn {
+    width: 100%;
+    background: #FFFFFF;
+    border: 1px solid #E5E7EB;
+    color: #1F2937;
+    padding: 0.35rem 0.5rem;
+    border-radius: 8px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.suiteDownloadBtn:hover {
+    background: #F9FAFB;
+    border-color: #1F2937;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.suiteDownloadBtn:active {
+    transform: scale(0.96);
+    transition-duration: 0ms;
+}
+
+.suiteDownloadBtn:active {
+    transform: scale(0.97);
+}
+
+.footerActionBtn {
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.footerActionBtn:hover {
+    background-color: #F9FAFB !important;
+    border-color: #C8A951 !important;
+    color: #C8A951 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(200, 169, 81, 0.12) !important;
+}
+

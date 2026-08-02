@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import { useWeddingStore } from '@/store/wedding-store';
 import {
-    Plus, FileText, Trash2,
-    Users, CheckCircle2, XCircle,
-    HelpCircle, Copy, Share2, Download, Eye, Search,
+    Plus, Trash2, Copy, Share2, Download, Eye, Search, CheckCircle2,
+    FileText, Users, XCircle, HelpCircle
 } from 'lucide-react';
 import styles from './rsvp-list.module.css';
 import { DashboardSidebar } from '@/components/layout/DashboardSidebar';
@@ -116,243 +116,246 @@ export default function RSVPListPage() {
         URL.revokeObjectURL(url);
     };
 
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        show: {
+            opacity: 1,
+            transition: { staggerChildren: 0.1 }
+        }
+    };
+
+    const itemVariants = {
+        hidden: { opacity: 0, y: 15 },
+        show: {
+            opacity: 1,
+            y: 0,
+            transition: { type: 'spring', bounce: 0, duration: 0.5 }
+        }
+    };
+
     return (
         <div className={styles.container}>
             <DashboardSidebar />
 
             <main className={styles.main}>
-                <header className={styles.header}>
+                <motion.header
+                    className={styles.header}
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ type: 'spring', bounce: 0, duration: 0.6 }}
+                >
                     <h1 className={styles.title}>RSVP Dashboard</h1>
                     <Link href="/dashboard/rsvp/create" className={styles.createBtn}>
-                        <Plus size={16} />
-                        Create RSVP Event
+                        <Plus size={18} />
+                        <span>Create RSVP Event</span>
                     </Link>
-                </header>
+                </motion.header>
 
-                <div className={styles.listContainer}>
+                <motion.div
+                    className={styles.listContainer}
+                    variants={containerVariants}
+                    initial="hidden"
+                    animate="show"
+                >
                     {events.length === 0 && (
-                        <div className={styles.emptyStateContainer}>
+                        <motion.div variants={itemVariants} className={styles.emptyStateContainer}>
                             <h2 className={styles.emptyTitle}>Elegant RSVPs for Indian Weddings</h2>
                             <p className={styles.emptySubtitle}>
                                 Coordinate your guest list with ease. Digital tracking for the modern wedding coordinator.
                             </p>
-                            <Link href="/dashboard/rsvp/create" className={styles.emptyCreateBtn}>
+                            <Link href="/dashboard/rsvp/create" className={styles.createBtn}>
                                 CREATE RSVP EVENT
                             </Link>
-                        </div>
+                        </motion.div>
                     )}
 
-                    {/* Filter to only show Wedding event or the primary guest list */}
-                    {events.filter(e => e.eventType === 'Wedding' || e.name.toLowerCase().includes('wedding')).slice(0, 1).map((evt) => {
+                    {/* Primary event RSVP tracking */}
+                    {events.slice(0, 1).map((evt) => {
                         const rsvpLink = getRsvpLink();
 
                         return (
-                            <div key={evt.id} className={styles.eventGroup}>
-                                <div className={styles.card}>
-                                    <div className={styles.cardBody}>
-                                        {/* Header */}
-                                        <div className={styles.cardHeader}>
-                                            <div className={styles.headerLeft}>
-                                                <div className={styles.nameRow}>
-                                                    <h3 className={styles.eventName}>{evt.name}</h3>
-                                                    <div className={styles.statusLive}>
-                                                        <div className={styles.statusDot}></div>
-                                                        RSVP LIVE
-                                                    </div>
+                            <motion.div key={evt.id} variants={itemVariants} className={styles.eventGroup}>
+                                {/* Dark Luxury Event Hero Card */}
+                                <div className={styles.darkHeroCard}>
+                                    <div className={styles.heroHeader}>
+                                        <div className={styles.heroLeft}>
+                                            <div className={styles.nameRow}>
+                                                <h2 className={styles.eventName}>{evt.name}</h2>
+                                                <div className={styles.statusLive}>
+                                                    <span className={styles.statusDot}></span>
+                                                    RSVP LIVE
                                                 </div>
-
-                                                <div className={styles.detailsRow}>
-                                                    <div className={styles.detailItem}>
-                                                        <div className={styles.detailText}>
-                                                            <span className={styles.detailLabel}>Date & Time</span>
-                                                            <span className={styles.detailValue}>
-                                                                {evt.date || 'TBD'} • {evt.time || 'TBD'}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                    <div className={styles.detailItem}>
-                                                        <div className={styles.detailText}>
-                                                            <span className={styles.detailLabel}>Venue</span>
-                                                            <span className={styles.detailValue} title={evt.venue}>
-                                                                {evt.venue || 'TBD'}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                    <div className={styles.detailItem}>
-                                                        <div className={styles.detailText}>
-                                                            <span className={styles.detailLabel}>RSVP Deadline</span>
-                                                            <span className={styles.detailValue}>
-                                                                {evt.rsvpDeadline ? `Respond by ${evt.rsvpDeadline}` : 'No deadline'}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <p style={{ marginTop: '1.25rem', color: '#64748B', fontSize: '0.875rem' }}>
-                                                    Share this link with family and guests to collect confirmations instantly.
-                                                </p>
-                                            </div>
-                                            <div className={styles.headerRight}>
-                                                <button
-                                                    className={styles.iconBtn}
-                                                    onClick={() => copyLink(evt.id)}
-                                                    title={copiedId === evt.id ? 'Copied!' : 'Copy Link'}
-                                                >
-                                                    {copiedId === evt.id ? <CheckCircle2 size={18} color="#22C55E" /> : <Copy size={18} />}
-                                                </button>
-                                                <button className={styles.iconBtn} onClick={openWhatsApp} title="Share on WhatsApp">
-                                                    <Share2 size={18} />
-                                                </button>
-                                                {rsvpLink && (
-                                                    <Link href={rsvpLink} target="_blank" className={styles.iconBtn} title="Preview RSVP">
-                                                        <Eye size={18} />
-                                                    </Link>
-                                                )}
-                                                <button
-                                                    className={`${styles.iconBtn} ${styles.btnDelete}`}
-                                                    onClick={() => handleDeleteClick(evt.id)}
-                                                    title="Delete event"
-                                                >
-                                                    <Trash2 size={18} />
-                                                </button>
                                             </div>
                                         </div>
 
-                                        {/* Stats — from real API data */}
-                                        <div className={styles.statsRow}>
-                                            <div className={`${styles.statBlock} ${styles.statTotal}`}>
-                                                <div className={styles.statContent}>
-                                                    <div className={`${styles.statIconBox} ${styles.iconTotal}`}>
-                                                        <FileText size={24} />
-                                                    </div>
-                                                    <div className={styles.statInfo}>
-                                                        <span className={styles.statTitle}>Responses Received</span>
-                                                        <span className={styles.statMainNumber}>{stats.totalResponses}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div className={`${styles.statBlock} ${styles.statAttending}`}>
-                                                <div className={styles.statContent}>
-                                                    <div className={`${styles.statIconBox} ${styles.iconAttending}`}>
-                                                        <Users size={24} />
-                                                    </div>
-                                                    <div className={styles.statInfo}>
-                                                        <span className={styles.statTitle}>Attending</span>
-                                                        <span className={styles.statMainNumber}>{stats.attending}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div className={`${styles.statBlock} ${styles.statDecline}`}>
-                                                <div className={styles.statContent}>
-                                                    <div className={`${styles.statIconBox} ${styles.iconDecline}`}>
-                                                        <XCircle size={24} />
-                                                    </div>
-                                                    <div className={styles.statInfo}>
-                                                        <span className={styles.statTitle}>Not Attending</span>
-                                                        <span className={styles.statMainNumber}>{stats.declined}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div className={`${styles.statBlock} ${styles.statMaybe}`}>
-                                                <div className={styles.statContent}>
-                                                    <div className={`${styles.statIconBox} ${styles.iconMaybe}`}>
-                                                        <HelpCircle size={24} />
-                                                    </div>
-                                                    <div className={styles.statInfo}>
-                                                        <span className={styles.statTitle}>Maybe</span>
-                                                        <span className={styles.statMainNumber}>{stats.maybe}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                        {/* Glassmorphic Action Pills */}
+                                        <div className={styles.actionPillsGroup}>
+                                            <button
+                                                className={styles.pillBtn}
+                                                onClick={() => copyLink(evt.id)}
+                                            >
+                                                {copiedId === evt.id ? <CheckCircle2 size={16} color="#4ADE80" /> : <Copy size={16} />}
+                                                <span>{copiedId === evt.id ? 'Copied' : 'Copy Link'}</span>
+                                            </button>
+                                            <button className={styles.pillBtn} onClick={openWhatsApp}>
+                                                <Share2 size={16} />
+                                                <span>WhatsApp</span>
+                                            </button>
+                                            {rsvpLink && (
+                                                <Link href={rsvpLink} target="_blank" className={styles.pillBtn}>
+                                                    <Eye size={16} />
+                                                    <span>Preview</span>
+                                                </Link>
+                                            )}
+                                            <button
+                                                className={`${styles.pillBtn} ${styles.pillDelete}`}
+                                                onClick={() => handleDeleteClick(evt.id)}
+                                            >
+                                                <Trash2 size={16} />
+                                                <span>Delete</span>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* Details Grid */}
+                                    <div className={styles.detailsGrid}>
+                                        <div className={styles.detailCard}>
+                                            <span className={styles.detailLabel}>Date & Time</span>
+                                            <span className={styles.detailValue}>
+                                                {evt.date || 'TBD'} {evt.time ? `• ${evt.time}` : ''}
+                                            </span>
+                                        </div>
+                                        <div className={styles.detailCard}>
+                                            <span className={styles.detailLabel}>Venue</span>
+                                            <span className={styles.detailValue}>{evt.venue || 'TBD'}</span>
+                                        </div>
+                                        <div className={styles.detailCard}>
+                                            <span className={styles.detailLabel}>RSVP Deadline</span>
+                                            <span className={styles.detailValue}>
+                                                {evt.rsvpDeadline ? `Respond by ${evt.rsvpDeadline}` : 'No deadline'}
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* Guest List Card */}
-                                <div className={`${styles.card} ${styles.guestListCard}`}>
-                                    <div className={styles.guestListSection}>
-                                        <div className={styles.guestListHeader}>
-                                            <h3 className={styles.guestListTitle}>Guest List</h3>
-                                            <div className={styles.guestListActions}>
-                                                <div className={styles.searchWrapper}>
-                                                    <Search size={16} className={styles.searchIcon} />
-                                                    <input
-                                                        type="text"
-                                                        placeholder="Search guests..."
-                                                        className={styles.searchInput}
-                                                        value={searchQuery}
-                                                        onChange={e => setSearchQuery(e.target.value)}
-                                                    />
-                                                </div>
-                                                <button className={styles.iconBtn} onClick={openWhatsApp} title="Share on WhatsApp">
-                                                    <Share2 size={18} />
-                                                </button>
-                                                <button className={styles.btnActionOutline} onClick={handleExportCSV}>
-                                                    <Download size={16} />
-                                                    <span>Export CSV</span>
-                                                </button>
-                                            </div>
+                                {/* Color-Coded Bento Stats Grid */}
+                                <div className={styles.bentoStatsGrid}>
+                                    <div className={`${styles.bentoStatCard} ${styles.cardTotal}`}>
+                                        <div className={styles.bentoHeader}>
+                                            <span className={styles.bentoTitle}>Total Responses</span>
                                         </div>
+                                        <span className={styles.bentoNumber}>{stats.totalResponses}</span>
+                                    </div>
 
-                                        <div className={styles.tableContainer}>
-                                            <table className={styles.guestTable}>
-                                                <thead>
+                                    <div className={`${styles.bentoStatCard} ${styles.cardAttending}`}>
+                                        <div className={styles.bentoHeader}>
+                                            <span className={styles.bentoTitle}>Attending</span>
+                                        </div>
+                                        <span className={styles.bentoNumber}>{stats.attending}</span>
+                                    </div>
+
+                                    <div className={`${styles.bentoStatCard} ${styles.cardDeclined}`}>
+                                        <div className={styles.bentoHeader}>
+                                            <span className={styles.bentoTitle}>Not Attending</span>
+                                        </div>
+                                        <span className={styles.bentoNumber}>{stats.declined}</span>
+                                    </div>
+
+                                    <div className={`${styles.bentoStatCard} ${styles.cardMaybe}`}>
+                                        <div className={styles.bentoHeader}>
+                                            <span className={styles.bentoTitle}>Maybe</span>
+                                        </div>
+                                        <span className={styles.bentoNumber}>{stats.maybe}</span>
+                                    </div>
+                                </div>
+
+                                {/* Guest Responses Table */}
+                                <div className={styles.guestSection}>
+                                    <div className={styles.guestHeader}>
+                                        <div className={styles.guestTitleGroup}>
+                                            <h3 className={styles.guestTitle}>Guest Responses</h3>
+                                            <span className={styles.headcountBadge}>
+                                                <Users size={14} />
+                                                {stats.headcount} Confirmed Guests
+                                            </span>
+                                        </div>
+                                        <div className={styles.guestActions}>
+                                            <div className={styles.searchWrapper}>
+                                                <Search size={16} className={styles.searchIcon} />
+                                                <input
+                                                    type="text"
+                                                    placeholder="Search guests..."
+                                                    className={styles.searchInput}
+                                                    value={searchQuery}
+                                                    onChange={e => setSearchQuery(e.target.value)}
+                                                />
+                                            </div>
+                                            <button className={styles.exportBtn} onClick={handleExportCSV}>
+                                                <Download size={16} />
+                                                <span>Export CSV</span>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div className={styles.tableWrapper}>
+                                        <table className={styles.guestTable}>
+                                            <thead>
+                                                <tr>
+                                                    <th>GUEST NAME</th>
+                                                    <th>STATUS</th>
+                                                    <th>ADULTS</th>
+                                                    <th>PHONE</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {rsvpLoading ? (
                                                     <tr>
-                                                        <th>GUEST NAME</th>
-                                                        <th>STATUS</th>
-                                                        <th>ADULTS</th>
-                                                        <th>PHONE</th>
+                                                        <td colSpan={4} className={styles.emptyTable}>Loading responses...</td>
                                                     </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {rsvpLoading ? (
-                                                        <tr>
-                                                            <td colSpan={4} className={styles.emptyTable}>Loading responses...</td>
-                                                        </tr>
-                                                    ) : filteredRsvps.length === 0 ? (
-                                                        <tr>
-                                                            <td colSpan={4} className={styles.emptyTable}>
-                                                                {rsvps.length === 0
-                                                                    ? "No guests have RSVP'd yet."
-                                                                    : "No matching guests found."}
+                                                ) : filteredRsvps.length === 0 ? (
+                                                    <tr>
+                                                        <td colSpan={4} className={styles.emptyTable}>
+                                                            {rsvps.length === 0
+                                                                ? "No guests have RSVP'd yet."
+                                                                : "No matching guests found."}
+                                                        </td>
+                                                    </tr>
+                                                ) : (
+                                                    filteredRsvps.map(r => (
+                                                        <tr key={r.id}>
+                                                            <td className={styles.guestName}>{r.guestName}</td>
+                                                            <td>
+                                                                <span className={`${styles.statusBadge} ${
+                                                                    r.status === 'attending' ? styles.statusYes
+                                                                    : r.status === 'declined' ? styles.statusNo
+                                                                    : r.status === 'maybe' ? styles.statusMaybe
+                                                                    : styles.statusPending
+                                                                }`}>
+                                                                    {r.status === 'attending' ? 'ATTENDING'
+                                                                        : r.status === 'declined' ? 'DECLINED'
+                                                                        : r.status === 'maybe' ? 'MAYBE'
+                                                                        : 'PENDING'}
+                                                                </span>
                                                             </td>
+                                                            <td>{r.adultCount || 1}</td>
+                                                            <td>{r.phone || '-'}</td>
                                                         </tr>
-                                                    ) : (
-                                                        filteredRsvps.map(r => (
-                                                            <tr key={r.id}>
-                                                                <td className={styles.guestName}>{r.guestName}</td>
-                                                                <td>
-                                                                    <span className={`${styles.statusBadge} ${
-                                                                        r.status === 'attending' ? styles.statusYes
-                                                                        : r.status === 'declined' ? styles.statusNo
-                                                                        : styles.statusPending
-                                                                    }`}>
-                                                                        {r.status === 'attending' ? 'YES'
-                                                                            : r.status === 'declined' ? 'NO'
-                                                                            : r.status === 'maybe' ? 'MAYBE'
-                                                                            : 'PENDING'}
-                                                                    </span>
-                                                                </td>
-                                                                <td>{r.adultCount || 1}</td>
-                                                                <td>{r.phone || '-'}</td>
-                                                            </tr>
-                                                        ))
-                                                    )}
-                                                </tbody>
-                                            </table>
-                                        </div>
+                                                    ))
+                                                )}
+                                            </tbody>
+                                        </table>
                                     </div>
                                 </div>
-                            </div>
+                            </motion.div>
                         );
                     })}
-                </div>
+                </motion.div>
             </main>
 
             {deletingEventId && (
                 <div className={styles.modalOverlay} onClick={cancelDelete}>
                     <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
-                        <div style={{ marginBottom: '1rem', color: '#DC2626' }}>
+                        <div style={{ marginBottom: '1rem', color: '#EF4444' }}>
                             <Trash2 size={48} />
                         </div>
                         <h3 className={styles.modalTitle}>Delete Event?</h3>

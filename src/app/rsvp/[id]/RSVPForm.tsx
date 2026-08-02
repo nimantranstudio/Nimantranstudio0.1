@@ -8,7 +8,7 @@ import Link from 'next/link';
 import { FloatingFlowers } from '@/components/ui/FloatingFlowers';
 import { MandalaBackground } from '@/components/ui/MandalaBackground';
 import { FlowerPetalDrift } from '@/components/ui/FlowerPetalDrift';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 interface RSVPFormProps {
     wedding: any;
@@ -31,6 +31,7 @@ export const RSVPForm = ({ wedding }: RSVPFormProps) => {
     // Form state
     const [status, setStatus] = useState('attending');
     const [guestName, setGuestName] = useState('');
+    const [nameError, setNameError] = useState(false);
     const [phone, setPhone] = useState('');
     const [adultCount, setAdultCount] = useState(1);
     const [message, setMessage] = useState('');
@@ -45,6 +46,13 @@ export const RSVPForm = ({ wedding }: RSVPFormProps) => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (!guestName.trim()) {
+            setNameError(true);
+            return;
+        }
+        setNameError(false);
+
         setIsSubmitting(true);
         setSubmitError(null);
 
@@ -107,8 +115,6 @@ export const RSVPForm = ({ wedding }: RSVPFormProps) => {
         </>
     );
 
-
-
     const primaryEvent = wedding.events?.[0];
     const primaryEventDate = primaryEvent?.date
         ? new Date(primaryEvent.date).toLocaleDateString('en-GB', {
@@ -121,7 +127,12 @@ export const RSVPForm = ({ wedding }: RSVPFormProps) => {
         return (
             <div className={styles.wrapper}>
                 {renderFlowers()}
-                <div className={styles.card}>
+                <motion.div
+                    className={styles.card}
+                    initial={{ opacity: 0, scale: 0.96 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ type: 'spring', bounce: 0, duration: 0.5 }}
+                >
                     <div className={styles.successContent}>
                         <div className={styles.successIcon} style={{ background: 'linear-gradient(135deg, #FEF3C7, #FDE68A)' }}>
                             <Info size={38} color="#D97706" />
@@ -135,7 +146,7 @@ export const RSVPForm = ({ wedding }: RSVPFormProps) => {
                         crafted by
                         <img src="/logo.png" alt="Nimantran Studio" className={styles.brandLogo} />
                     </Link>
-                </div>
+                </motion.div>
             </div>
         );
     }
@@ -152,9 +163,12 @@ export const RSVPForm = ({ wedding }: RSVPFormProps) => {
             <div className={styles.wrapper}>
                 {renderFlowers()}
                 {showSuccessPetals && <FlowerPetalDrift />}
-                <div className={styles.card}>
-                    
-
+                <motion.div
+                    className={styles.card}
+                    initial={{ opacity: 0, scale: 0.96 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ type: 'spring', bounce: 0, duration: 0.5 }}
+                >
                     <div className={styles.successContent}>
                         <div className={styles.successIcon}>
                             <Check size={38} strokeWidth={3} />
@@ -196,12 +210,10 @@ export const RSVPForm = ({ wedding }: RSVPFormProps) => {
                         crafted by
                         <img src="/logo.png" alt="Nimantran Studio" className={styles.brandLogo} />
                     </Link>
-                </div>
+                </motion.div>
             </div>
         );
     }
-
-
 
     // ─── INVITE (default) ─────────────────────────────────────────────────
     const weddingEvents = (wedding.events || []).filter(
@@ -213,9 +225,12 @@ export const RSVPForm = ({ wedding }: RSVPFormProps) => {
         <div className={styles.wrapper}>
             {renderFlowers()}
             {showSuccessPetals && <FlowerPetalDrift />}
-            <div className={styles.card}>
-                
-
+            <motion.div
+                className={styles.card}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ type: 'spring', bounce: 0, duration: 0.6 }}
+            >
                 <header className={styles.header}>
                     <p className={styles.joyfullyText}>
                         You are joyfully invited<br />to the wedding of
@@ -226,8 +241,6 @@ export const RSVPForm = ({ wedding }: RSVPFormProps) => {
                         <span className={styles.brideName}>{wedding.brideName}</span>
                     </div>
                 </header>
-
-
 
                 <main className={styles.main}>
                     <div className={styles.welcomeBox}>
@@ -273,7 +286,7 @@ export const RSVPForm = ({ wedding }: RSVPFormProps) => {
                     )}
                 </main>
 
-                <div className={styles.ornamentDivider} style={{ marginTop: '2.5rem', marginBottom: '2.5rem' }}>
+                <div className={styles.ornamentDivider}>
                     <div className={styles.ornamentLine} />
                     <span>✦</span>
                     <div className={styles.ornamentLine} />
@@ -286,15 +299,20 @@ export const RSVPForm = ({ wedding }: RSVPFormProps) => {
                     </p>
                 </header>
 
-                <form id="rsvp-form" className={styles.form} onSubmit={handleSubmit}>
+                <form id="rsvp-form" className={styles.form} onSubmit={handleSubmit} noValidate>
                     <div className={styles.field}>
-                        <label>Your Name</label>
+                        <label>
+                            <span>Your Name</span>
+                            {nameError && <span className={styles.fieldErrorText}>Required</span>}
+                        </label>
                         <input
-                            required
                             placeholder="e.g. Rahul Patil"
-                            className={styles.input}
+                            className={clsx(styles.input, nameError && styles.inputError)}
                             value={guestName}
-                            onChange={(e) => setGuestName(e.target.value)}
+                            onChange={(e) => {
+                                setGuestName(e.target.value);
+                                if (e.target.value.trim()) setNameError(false);
+                            }}
                         />
                     </div>
 
@@ -370,7 +388,7 @@ export const RSVPForm = ({ wedding }: RSVPFormProps) => {
 
                 <div className={styles.buttonWrapper}>
                     {submitError && (
-                        <p style={{ color: '#B91C1C', fontSize: '0.875rem', textAlign: 'center' }}>
+                        <p style={{ color: '#EF4444', fontSize: '0.875rem', textAlign: 'center' }}>
                             {submitError}
                         </p>
                     )}
@@ -381,9 +399,9 @@ export const RSVPForm = ({ wedding }: RSVPFormProps) => {
 
                 <Link href="/" className={styles.poweredByCard}>
                     crafted by
-                        <img src="/logo.png" alt="Nimantran Studio" className={styles.brandLogo} />
+                    <img src="/logo.png" alt="Nimantran Studio" className={styles.brandLogo} />
                 </Link>
-            </div>
+            </motion.div>
         </div>
     );
 };

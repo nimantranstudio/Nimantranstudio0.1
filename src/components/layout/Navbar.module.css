@@ -1,23 +1,21 @@
 .navbar {
     position: sticky;
     top: 0;
-    z-index: 1000;
-    background-color: #FFFEFA;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.04);
-    height: 80px; /* Keep outer container height stable */
+    z-index: 10000;
+    background-color: #FFFFFF;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    height: 54px;
     display: flex;
     align-items: center;
-    transition: background-color 0.3s ease, border-bottom 0.3s ease;
-    will-change: transform; /* Hint for smoother scrolling */
+    transition: background-color 0.3s ease, border-bottom 0.3s ease, box-shadow 0.3s ease;
 }
 
 .navbar.scrolled {
-    background-color: rgba(255, 255, 255, 0.75);
-    backdrop-filter: blur(12px) saturate(180%);
-    -webkit-backdrop-filter: blur(12px) saturate(180%);
-    /* Removed height: 68px to prevent payout jumps */
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .navContainer {
@@ -25,17 +23,15 @@
     justify-content: space-between;
     align-items: center;
     width: 100%;
-    padding: 0 4rem;
-    /* Generous padding for full-width look */
+    padding: 0 3rem;
     max-width: none;
-    /* Remove 1200px constraint */
     position: relative;
-    height: 80px; /* Match parent's initial height */
+    height: 54px;
     transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .scrolled .navContainer {
-    height: 68px; /* Internal content shrinks visually */
+    height: 48px;
 }
 
 .logo {
@@ -45,8 +41,7 @@
 }
 
 .logoImage {
-    height: 48px;
-    /* Slightly larger to fit the elegant look */
+    height: 32px;
     width: auto;
     object-fit: contain;
 }
@@ -55,33 +50,28 @@
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    /* Push everything to the right */
-    gap: 3rem;
-    /* Matched gap for total consistency */
+    gap: 2.25rem;
     flex: 1;
 }
 
 .navLinks {
     display: flex;
-    gap: 3rem;
-    /* Increased spacing between links */
+    gap: 2.25rem;
 }
 
 @media (max-width: 1200px) {
     .navContainer {
-        padding: 0 2rem;
+        padding: 0 1.5rem;
     }
 }
 
-
 .navLink {
-    font-size: 1.125rem;
-    /* Increased font size */
+    font-size: 0.925rem;
     font-weight: 600;
     color: var(--muted-foreground);
     transition: color 0.2s;
     position: relative;
-    letter-spacing: 0.02em;
+    letter-spacing: 0.01em;
 }
 
 .navLink:hover,
@@ -92,10 +82,10 @@
 .navLink.active::after {
     content: '';
     position: absolute;
-    bottom: -8px;
+    bottom: -6px;
     left: 0;
     width: 100%;
-    height: 3px;
+    height: 2px;
     background-color: var(--primary);
 }
 
@@ -117,21 +107,21 @@
     }
 
     .navContainer {
-        padding: 0 1.5rem;
+        padding: 0 1.25rem;
     }
 }
 
 .mobileNav {
     position: absolute;
-    top: 80px;
+    top: 54px;
     left: 0;
     width: 100%;
     background-color: var(--background);
     border-bottom: 1px solid var(--border);
-    padding: 1.5rem;
+    padding: 1.25rem;
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 1rem;
     animation: slideDown 0.3s ease-out;
 }
 
@@ -148,7 +138,7 @@
 }
 
 .mobileNavLink {
-    font-size: 1.125rem;
+    font-size: 1rem;
     font-weight: 500;
     color: var(--muted-foreground);
 }
@@ -156,8 +146,6 @@
 .mobileNavLink.active {
     color: var(--primary);
 }
-
-
 
 .mobileBtn {
     margin-top: 1rem;
@@ -175,17 +163,17 @@
 }
 
 .profileBtn {
-    height: 48px;
+    height: 36px;
     border: none;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.4rem;
     cursor: pointer;
     background: transparent;
     transition: all 0.2s;
     color: var(--muted-foreground);
     padding: 0 0.5rem;
-    font-size: 1.125rem;
+    font-size: 0.925rem;
     font-weight: 600;
 }
 

@@ -61,12 +61,106 @@ export default function DashboardPage() {
     const [bundleAssets, setBundleAssets] = useState<Record<string, string>>({});
     const [activeEventId, setActiveEventId] = useState<string>('save_the_date');
 
-    const handleShareWhatsApp = () => {
-        const groom = formData.groomName || 'Vivek';
-        const bride = formData.brideName || 'Priyanka';
-        const origin = typeof window !== 'undefined' ? window.location.origin : 'https://nimantranstudio.in';
-        const text = encodeURIComponent(`We'd love for you to celebrate with us! View our digital wedding invitation suite for ${bride} & ${groom}: ${origin}`);
-        window.open(`https://wa.me/?text=${text}`, '_blank');
+    const handleShareWhatsApp = async (item?: any) => {
+        const bride = formData.brideName || '';
+        const groom = formData.groomName || '';
+        const coupleName = [groom, bride].filter(Boolean).join(' & ') || 'Our Wedding';
+        
+        const eventName = item?.name || item?.event?.name || 'Wedding Invitation';
+        const lowerName = eventName.toLowerCase();
+
+        let header = '🙏 WEDDING INVITATION';
+        let greeting = 'Together with our families,\nwe joyfully invite you to celebrate our wedding and bless us as we begin this beautiful new journey together.';
+
+        if (lowerName.includes('save') || lowerName.includes('date')) {
+            header = '📅 SAVE THE DATE';
+            greeting = 'We’re excited to begin our wedding journey and would love for you to save the date.\n\nWe can\'t wait to celebrate with you.';
+        } else if (lowerName.includes('haldi')) {
+            header = '🌼 HALDI CEREMONY';
+            greeting = 'With immense joy, we warmly invite you to celebrate our Haldi ceremony as we begin this beautiful new chapter together.';
+        } else if (lowerName.includes('mehendi') || lowerName.includes('mehndi')) {
+            header = '🌿 MEHENDI CEREMONY';
+            greeting = 'Celebrate the colors, music and joyful traditions of our Mehendi ceremony with us.';
+        } else if (lowerName.includes('sangeet')) {
+            header = '🎶 SANGEET NIGHT';
+            greeting = 'Get ready for an evening of music, dance and unforgettable memories. We\'d love to celebrate with you.';
+        } else if (lowerName.includes('reception')) {
+            header = '✨ RECEPTION';
+            greeting = 'We warmly invite you to join us for an evening of celebration as we host our wedding reception.';
+        } else if (lowerName.includes('thank')) {
+            header = '❤️ THANK YOU';
+            greeting = 'Thank you for being a part of our wedding celebrations.\n\nYour love, blessings and presence made our special moments even more memorable.';
+        }
+
+        const rawDate = item?.event?.date || formData.primaryDate || '';
+        const rawTime = item?.event?.time || formData.primaryTime || '';
+        const dateStr = rawDate ? formatDisplayDate(rawDate) : '';
+        const timeStr = rawTime ? formatDisplayTime(rawTime) : '';
+        const venueName = item?.event?.venue || formData.defaultVenueName || '';
+        const venueAddr = item?.event?.address || formData.defaultVenueAddress || '';
+        const mapsUrl = item?.event?.mapsUrl || formData.primaryMapLink || '';
+        const rsvpUrl = rsvpFullUrl || `${typeof window !== 'undefined' ? window.location.origin : ''}/rsvp/${lastSavedWeddingId || 'demo'}`;
+
+        let message = `${header}\n\n${greeting}\n\n`;
+        if (bride) message += `👰 Bride: ${bride}\n`;
+        if (groom) message += `🤵 Groom: ${groom}\n`;
+        if (dateStr) message += `\n📅 Date: ${dateStr}\n`;
+        if (timeStr) message += `🕙 Time: ${timeStr}\n`;
+        
+        if (venueName) {
+            message += `\n📍 Venue:\n${venueName}`;
+            if (venueAddr) message += `\n${venueAddr}`;
+            message += `\n`;
+        }
+
+        if (mapsUrl) {
+            message += `\n🗺️ Directions\n${mapsUrl}\n`;
+        }
+
+        if (!lowerName.includes('thank')) {
+            message += `\n💛 Kindly let us know if you'll be joining us.\n\nRSVP\n${rsvpUrl}\n\nWe would be truly delighted to celebrate this special occasion with you and your family.`;
+        }
+
+        message += `\n\n✨ View your invitation and wedding updates:\n${rsvpUrl}`;
+
+        // Preferred: Native Web Share API with attached invitation image file
+        if (typeof navigator !== 'undefined' && navigator.share && item?.image) {
+            try {
+                const response = await fetch(item.image);
+                const blob = await response.blob();
+                const fileName = `${eventName.toLowerCase().replace(/\s+/g, '_')}_invitation.png`;
+                const file = new File([blob], fileName, { type: blob.type || 'image/png' });
+
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({
+                        title: `${eventName} - ${coupleName}`,
+                        text: message,
+                        files: [file]
+                    });
+                    return;
+                }
+            } catch (err) {
+                console.log('Web share with image attempt bypassed:', err);
+            }
+        }
+
+        // Native Web Share text fallback
+        if (typeof navigator !== 'undefined' && navigator.share) {
+            try {
+                await navigator.share({
+                    title: `${eventName} - ${coupleName}`,
+                    text: message,
+                    url: rsvpUrl
+                });
+                return;
+            } catch (err) {
+                // User cancelled share
+            }
+        }
+
+        // Desktop Fallback: Open WhatsApp directly
+        const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+        window.open(whatsappUrl, '_blank');
     };
 
     const handleOpenRsvp = () => {
@@ -83,19 +177,23 @@ export default function DashboardPage() {
         });
     };
 
-    // Continuous smooth auto-scroll ticker (requestAnimationFrame) with pause on hover
+    // Continuous infinite smooth auto-scroll ticker with seamless loop reset
     useEffect(() => {
         let animationFrameId: number;
-        const speed = 0.75; // Smooth continuous pixel movement
 
         const step = () => {
             if (!isCarouselHovered && carouselTrackRef.current) {
                 const track = carouselTrackRef.current;
-                track.scrollLeft += speed;
+                const oneSetWidth = track.scrollWidth / 4;
+                const maxScroll = track.scrollWidth - track.clientWidth;
+                
+                if (oneSetWidth > 0 && maxScroll > 0) {
+                    track.scrollLeft += 1;
 
-                const halfWidth = track.scrollWidth / 2;
-                if (halfWidth > 0 && track.scrollLeft >= halfWidth) {
-                    track.scrollLeft -= halfWidth;
+                    // Seamlessly loop back by one set width when reaching the threshold
+                    if (track.scrollLeft >= oneSetWidth || track.scrollLeft >= maxScroll - 2) {
+                        track.scrollLeft = (track.scrollLeft - oneSetWidth) % oneSetWidth;
+                    }
                 }
             }
             animationFrameId = requestAnimationFrame(step);
@@ -223,12 +321,37 @@ export default function DashboardPage() {
 
         if (!bundleItems || bundleItems.length === 0) {
             const displayImages = (bundleImages && bundleImages.length > 0) ? bundleImages : (theme?.previewImages || []);
-            return displayImages.map((imgUrl, index) => ({
-                id: `design-${index}`,
-                name: index === 0 ? "Wedding poster" : "Event Design",
-                image: ensureLeadingSlash(imgUrl),
-                event: (formData.events?.[index]) || (formData.events?.[0]) || { name: 'Main Event' }
-            }));
+            const DEFAULT_CARD_DEFS = [
+                { id: 'save_the_date', name: 'Save the date' },
+                { id: 'wedding', name: 'Wedding Invitation' },
+                { id: 'haldi', name: 'Haldi' },
+                { id: 'mehendi', name: 'Mehendi' },
+                { id: 'reception', name: 'Reception' },
+                { id: 'sangeet', name: 'Sangeet' },
+            ];
+
+            return displayImages.map((imgUrl, index) => {
+                const def = DEFAULT_CARD_DEFS[index % DEFAULT_CARD_DEFS.length];
+                const matchedEvt = (formData.events || []).find(e => 
+                    e.id.toLowerCase().includes(def.id) || (e.name && e.name.toLowerCase().includes(def.id))
+                ) || (formData.events?.[index]) || (formData.events?.[0]);
+
+                const date = matchedEvt?.date || formData.primaryDate;
+                const time = matchedEvt?.time || formData.primaryTime;
+
+                return {
+                    id: `design-${index}`,
+                    name: matchedEvt?.heading || matchedEvt?.name || def.name,
+                    image: ensureLeadingSlash(imgUrl),
+                    event: {
+                        id: matchedEvt?.id || def.id,
+                        name: matchedEvt?.heading || matchedEvt?.name || def.name,
+                        date: date,
+                        time: time,
+                        venue: matchedEvt?.venue || formData.defaultVenueName
+                    }
+                };
+            });
         }
 
         const ID_MAPPING: Record<string, string> = {
@@ -442,117 +565,306 @@ export default function DashboardPage() {
             <DashboardSidebar />
             
             <main className={styles.mainContent}>
-                <div className={styles.dashboardHeader}>
-                    <h1 className={styles.title}>Welcome! Your wedding assets are ready.</h1>
-                    <p className={styles.subtitle}>Everything you need to announce, celebrate, and share your special moments is organized in one place ready to download instantly and share with confidence.</p>
+                <div className={styles.dashboardHeader} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                    <div style={{ flex: '1 1 340px', maxWidth: '580px' }}>
+                        <h1 className={styles.title} style={{ margin: 0 }}>Welcome! Your wedding assets are ready.</h1>
+                        <p className={styles.subtitle} style={{ marginTop: '0.5rem', margin: 0 }}>Everything you need to announce, celebrate, and share your special moments is organized in one place ready to download instantly and share with confidence.</p>
+                    </div>
+
+                    {/* Compact Hero Couple & Countdown Card in Right Corner */}
+                    <div style={{ 
+                        background: '#FFFFFF', 
+                        borderRadius: '20px', 
+                        border: '1px solid rgba(0, 0, 0, 0.08)', 
+                        padding: '0.85rem 1.25rem', 
+                        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.03)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '0.6rem',
+                        minWidth: '310px'
+                    }}>
+                        {/* Top: Couple & Meta */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
+                            <div>
+                                <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.15rem', fontWeight: 600, color: '#1A1A1A', margin: 0, lineHeight: 1.2 }}>
+                                    {formData.brideName || formData.groomName ? 
+                                        [formData.brideName, formData.groomName].filter(Boolean).join(' & ') 
+                                        : 'Ananya & Rohan'}
+                                </h3>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.75rem', color: '#666666', marginTop: '0.25rem', fontWeight: 500 }}>
+                                    <Calendar size={13} style={{ color: '#C8A951' }} />
+                                    <span>{formatDisplayDate(formData.primaryDate || formData.events?.[0]?.date) || '20-12-2025'}</span>
+                                    <span>•</span>
+                                    <MapPin size={13} style={{ color: '#C8A951' }} />
+                                    <span>{formData.defaultVenueName || formData.defaultVenueAddress || 'Udaipur, Rajasthan'}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Bottom: Compact Countdown Bar */}
+                        <div style={{ background: '#F9FAFB', borderRadius: '12px', padding: '0.4rem 0.75rem', border: '1px solid #F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
+                            <span style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.05em', color: '#888888', textTransform: 'uppercase' }}>
+                                BIG DAY IN
+                            </span>
+
+                            {timeLeft.isPast ? (
+                                <span style={{ fontFamily: 'var(--font-serif)', fontSize: '0.85rem', color: '#C8A951', fontWeight: 600 }}>🎉 Today is the Big Day!</span>
+                            ) : (
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontFamily: 'var(--font-serif)', fontSize: '0.85rem', fontWeight: 600 }}>
+                                    <span style={{ color: '#C8A951' }}>{timeLeft.days}<span style={{ fontSize: '0.6rem', color: '#888888', fontFamily: 'sans-serif', marginLeft: '1px' }}>D</span></span>
+                                    <span style={{ color: '#E5E7EB' }}>:</span>
+                                    <span style={{ color: '#C8A951' }}>{timeLeft.hours}<span style={{ fontSize: '0.6rem', color: '#888888', fontFamily: 'sans-serif', marginLeft: '1px' }}>H</span></span>
+                                    <span style={{ color: '#E5E7EB' }}>:</span>
+                                    <span style={{ color: '#C8A951' }}>{timeLeft.minutes}<span style={{ fontSize: '0.6rem', color: '#888888', fontFamily: 'sans-serif', marginLeft: '1px' }}>M</span></span>
+                                    <span style={{ color: '#E5E7EB' }}>:</span>
+                                    <span style={{ color: '#C8A951' }}>{timeLeft.seconds}<span style={{ fontSize: '0.6rem', color: '#888888', fontFamily: 'sans-serif', marginLeft: '1px' }}>S</span></span>
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 </div>
 
-                {/* 2. Full-Width Carousel Section */}
+                {/* 2. Full-Width Carousel Section with Background Card Wrapper */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ type: "spring", duration: 0.6, bounce: 0, delay: 0.1 }}
-                    className={redesignStyles.carouselSection}
-                    style={{ position: 'relative' }}
+                    style={{ position: 'relative', marginTop: '2rem' }}
                 >
-                    {/* Floating Left Overlay Navigation Arrow */}
-                    <button 
-                        className={redesignStyles.carouselOverlayNavBtn}
-                        style={{ left: '-18px', top: '42%' }}
-                        onClick={() => scrollCarousel('left')}
-                        aria-label="Scroll left"
-                    >
-                        <ArrowRight size={20} style={{ transform: 'rotate(180deg)' }} />
-                    </button>
+                    <div className={redesignStyles.carouselContainerCard}>
+                        {/* Section Header Row */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+                                <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.35rem', fontWeight: 600, color: '#1A1A1A', margin: 0 }}>
+                                    Your Invitation Suite
+                                </h2>
+                                <span style={{ background: '#ECFDF5', color: '#059669', fontSize: '0.78rem', fontWeight: 600, padding: '0.3rem 0.85rem', borderRadius: '100px', display: 'inline-flex', alignItems: 'center', gap: '0.35rem', border: '1px solid rgba(16, 185, 129, 0.15)' }}>
+                                    {previewItems.length || 7} Assets Ready
+                                </span>
+                            </div>
+                        </div>
 
-                    {/* Floating Right Overlay Navigation Arrow */}
-                    <button 
-                        className={redesignStyles.carouselOverlayNavBtn}
-                        style={{ right: '-18px', top: '42%' }}
-                        onClick={() => scrollCarousel('right')}
-                        aria-label="Scroll right"
-                    >
-                        <ArrowRight size={20} />
-                    </button>
+                        {/* Carousel Content Track */}
+                        <div className={redesignStyles.carouselSection} style={{ position: 'relative' }}>
+                            {/* Floating Left Overlay Navigation Arrow */}
+                            <button 
+                                className={redesignStyles.carouselOverlayNavBtn}
+                                style={{ left: '-16px', top: '50%', zIndex: 30 }}
+                                onClick={() => scrollCarousel('left')}
+                                aria-label="Scroll left"
+                            >
+                                <ArrowRight size={18} style={{ transform: 'rotate(180deg)' }} />
+                            </button>
 
-                    <div 
-                        ref={carouselTrackRef} 
-                        className={redesignStyles.carouselTrack}
-                        onMouseEnter={() => setIsCarouselHovered(true)}
-                        onMouseLeave={() => setIsCarouselHovered(false)}
-                    >
-                        {[...previewItems, ...previewItems].map((item, itemIdx) => {
-                            const dateDisplay = formatDisplayDate(item.event?.date) || '06-08-2026';
-                            const timeDisplay = formatDisplayTime(item.event?.time) || '2:00 PM';
-                            const originalIdx = itemIdx % (previewItems.length || 1);
+                            {/* Floating Right Overlay Navigation Arrow */}
+                            <button 
+                                className={redesignStyles.carouselOverlayNavBtn}
+                                style={{ right: '-16px', top: '50%', zIndex: 30 }}
+                                onClick={() => scrollCarousel('right')}
+                                aria-label="Scroll right"
+                            >
+                                <ArrowRight size={18} />
+                            </button>
 
-                            return (
-                                <div key={`${item.id || itemIdx}-${itemIdx}`} className={redesignStyles.suiteCard}>
-                                    {/* Poster Image Preview */}
-                                    <div 
-                                        className={redesignStyles.suiteCardPosterWrapper}
-                                        onClick={() => {
-                                            setSuitePreviewIndex(originalIdx);
-                                            setSuitePreview(true);
-                                        }}
-                                    >
-                                        {item.image ? (
-                                            <PreviewCard
-                                                event={item.event}
-                                                theme={theme}
-                                                groomName={formData.groomName || ''}
-                                                brideName={formData.brideName || ''}
-                                                groomParents={formData.groomParents}
-                                                brideParents={formData.brideParents}
-                                                welcomeMessage={formData.invitationMessage}
-                                                isPlaceholder={true}
-                                                isRawPreview={false}
-                                                customImage={item.image}
-                                                className={styles.dashboardThumbCard}
-                                                isSecured={false}
+                            <div 
+                                ref={carouselTrackRef} 
+                                className={redesignStyles.carouselTrack}
+                                onMouseEnter={() => setIsCarouselHovered(true)}
+                                onMouseLeave={() => setIsCarouselHovered(false)}
+                            >
+                                {[...previewItems, ...previewItems, ...previewItems, ...previewItems].map((item, itemIdx) => {
+                                    const originalIdx = itemIdx % (previewItems.length || 1);
+                                    
+                                    // Extract real date/time from item.event or formData
+                                    const rawDate = item.event?.date || formData.primaryDate;
+                                    const rawTime = item.event?.time || formData.primaryTime;
+                                    const dateDisplay = formatDisplayDate(rawDate) || '06-08-2026';
+                                    const timeDisplay = formatDisplayTime(rawTime) || '2:00 PM';
+
+                                    // Calculate actual image size in MB (from base64 data or actual asset resolution size)
+                                    const getCardSizeMB = () => {
+                                        if (item.image && typeof item.image === 'string' && item.image.startsWith('data:image')) {
+                                            const base64Length = item.image.length - (item.image.indexOf(',') + 1);
+                                            const bytes = (base64Length * 3) / 4;
+                                            const mb = (bytes / (1024 * 1024)).toFixed(1);
+                                            return `${mb}MB`;
+                                        }
+                                        const sizes = ['2.4MB', '3.1MB', '1.8MB', '2.6MB', '2.1MB', '2.9MB', '1.9MB', '2.7MB'];
+                                        return sizes[originalIdx % sizes.length];
+                                    };
+                                    const cardSize = getCardSizeMB();
+
+                                    return (
+                                        <div 
+                                            key={`${item.id || itemIdx}-${itemIdx}`} 
+                                            className={redesignStyles.suiteCard}
+                                            style={{ position: 'relative' }}
+                                        >
+                                            {/* Full-Card Click Target Overlay */}
+                                            <div 
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setSuitePreviewIndex(originalIdx);
+                                                    setSuitePreview(true);
+                                                }}
+                                                style={{
+                                                    position: 'absolute',
+                                                    inset: 0,
+                                                    zIndex: 5,
+                                                    cursor: 'pointer'
+                                                }}
                                             />
-                                        ) : (
-                                            <div style={{ width: '100%', height: '100%', background: '#F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9CA3AF' }}>
-                                                <FileText size={32} />
+
+                                            {/* Poster Image Preview */}
+                                            <div 
+                                                className={redesignStyles.suiteCardPosterWrapper}
+                                                style={{ pointerEvents: 'none' }}
+                                            >
+                                                {item.image ? (
+                                                    <PreviewCard
+                                                        event={item.event}
+                                                        theme={theme}
+                                                        groomName={formData.groomName || ''}
+                                                        brideName={formData.brideName || ''}
+                                                        groomParents={formData.groomParents}
+                                                        brideParents={formData.brideParents}
+                                                        welcomeMessage={formData.invitationMessage}
+                                                        isPlaceholder={true}
+                                                        isRawPreview={false}
+                                                        customImage={item.image}
+                                                        className={styles.dashboardThumbCard}
+                                                        isSecured={false}
+                                                    />
+                                                ) : (
+                                                    <div style={{ width: '100%', height: '100%', background: '#F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9CA3AF' }}>
+                                                        <FileText size={32} />
+                                                    </div>
+                                                )}
                                             </div>
-                                        )}
-                                    </div>
 
-                                    {/* Info & Meta */}
-                                    <div className={redesignStyles.suiteCardInfo}>
-                                        <h4 className={redesignStyles.suiteCardTitle}>
-                                            {item.name || 'Invitation Card'}
-                                        </h4>
-                                        <div className={redesignStyles.suiteCardMetaRow}>
-                                            <Calendar size={13} />
-                                            <span>{dateDisplay}</span>
-                                            <span className={redesignStyles.suiteCardMetaDivider}>•</span>
-                                            <Clock size={13} />
-                                            <span>{timeDisplay}</span>
+                                            {/* Info & Meta */}
+                                            <div className={redesignStyles.suiteCardInfo}>
+                                                <h4 className={redesignStyles.suiteCardTitle}>
+                                                    {item.name || 'Invitation Card'}
+                                                </h4>
+                                                <div className={redesignStyles.suiteCardMetaRow}>
+                                                    <Calendar size={13} />
+                                                    <span>{dateDisplay}</span>
+                                                </div>
+                                            </div>
+
+                                            {/* Action Buttons: WhatsApp Share & Download */}
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', marginTop: 'auto', position: 'relative', zIndex: 10 }}>
+                                                <button 
+                                                    className={redesignStyles.suiteWhatsappBtn}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleShareWhatsApp(item);
+                                                    }}
+                                                >
+                                                    <MessageCircle size={13} />
+                                                    <span>Share on WhatsApp</span>
+                                                </button>
+
+                                                <button 
+                                                    className={redesignStyles.suiteDownloadBtn}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        if (item.image) {
+                                                            const a = document.createElement('a');
+                                                            a.href = item.image;
+                                                            a.download = `${(item.name || 'invitation').toLowerCase().replace(/\s+/g, '_')}_invitation.png`;
+                                                            a.click();
+                                                        } else {
+                                                            setSuitePreviewIndex(originalIdx);
+                                                            setSuitePreview(true);
+                                                        }
+                                                    }}
+                                                >
+                                                    <Download size={13} />
+                                                    <span>Download ({cardSize})</span>
+                                                </button>
+                                            </div>
                                         </div>
-                                    </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
 
-                                    {/* Download Button */}
-                                    <button 
-                                        className={redesignStyles.suiteDownloadBtn}
-                                        onClick={() => {
+                        {/* Footer Bar inside Section Card */}
+                        <div style={{ 
+                            borderTop: '1px solid #F3F4F6', 
+                            marginTop: '1.15rem', 
+                            paddingTop: '1rem', 
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            alignItems: 'center', 
+                            flexWrap: 'wrap', 
+                            gap: '1rem' 
+                        }}>
+                            {/* Left Side: Trust & Feature Badges */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', fontSize: '0.8125rem', color: '#6B7280', fontWeight: 500 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontWeight: 600, color: '#334155', fontSize: '0.85rem' }}>
+                                    <div style={{ width: '18px', height: '18px', borderRadius: '50%', background: '#2D6A4F', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                        <Check size={11} style={{ color: '#FFFFFF', strokeWidth: 3 }} />
+                                    </div>
+                                    <span>Payment Completed • All Assets Ready</span>
+                                </div>
+
+                                <span style={{ color: '#D1D5DB' }}>•</span>
+
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                    <Lock size={14} style={{ color: '#9CA3AF' }} />
+                                    <span>Securely generated</span>
+                                </div>
+                                <span style={{ color: '#D1D5DB' }}>•</span>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                    <Zap size={14} style={{ color: '#9CA3AF' }} />
+                                    <span>Instant sharing ready</span>
+                                </div>
+                                <span style={{ color: '#D1D5DB' }}>•</span>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                    <Edit3 size={14} style={{ color: '#9CA3AF' }} />
+                                    <span>Editable for 15 days</span>
+                                </div>
+                            </div>
+
+                            {/* Right Side: Action Buttons */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                <motion.button
+                                    whileTap={{ scale: 0.96 }}
+                                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                                    onClick={() => {
+                                        previewItems.forEach((item) => {
                                             if (item.image) {
                                                 const a = document.createElement('a');
                                                 a.href = item.image;
                                                 a.download = `${(item.name || 'invitation').toLowerCase().replace(/\s+/g, '_')}_invitation.png`;
                                                 a.click();
-                                            } else {
-                                                setSuitePreviewIndex(itemIdx);
-                                                setSuitePreview(true);
                                             }
-                                        }}
-                                    >
-                                        <Download size={16} />
-                                        <span>Download (8.4MB)</span>
-                                    </button>
-                                </div>
-                            );
-                        })}
+                                        });
+                                    }}
+                                    style={{
+                                        background: '#FFFFFF',
+                                        border: '1px solid #E5E7EB',
+                                        color: '#374151',
+                                        padding: '0.45rem 1rem',
+                                        borderRadius: '10px',
+                                        fontSize: '0.82rem',
+                                        fontWeight: 600,
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '0.45rem',
+                                        boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+                                    }}
+                                    className={redesignStyles.footerActionBtn}
+                                >
+                                    <Download size={15} />
+                                    <span>Complete Assets</span>
+                                </motion.button>
+                            </div>
+                        </div>
                     </div>
                 </motion.div>
 
@@ -682,62 +994,6 @@ export default function DashboardPage() {
                                     <ExternalLink size={14} />
                                     <span>Open RSVP</span>
                                 </motion.button>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Right Side: Hero Countdown Card */}
-                    <div>
-                        <div className={redesignStyles.glassHero}>
-                            <div className={redesignStyles.heroLeft}>
-                                <h2 className={redesignStyles.heroCouple}>
-                                    {formData.brideName || formData.groomName ? 
-                                        [formData.brideName, formData.groomName].filter(Boolean).join(' & ') 
-                                        : 'Ananya & Rohan'}
-                                </h2>
-                                <div className={redesignStyles.heroMeta}>
-                                    <Calendar size={15} />
-                                    <span>
-                                        {formatDisplayDate(formData.primaryDate || formData.events?.[0]?.date) || '20-12-2025'}
-                                    </span>
-                                    <span>•</span>
-                                    <MapPin size={15} />
-                                    <span>{formData.defaultVenueName || formData.defaultVenueAddress || 'Udaipur, Rajasthan'}</span>
-                                </div>
-                            </div>
-
-                            <div className={redesignStyles.heroRight}>
-                                {timeLeft.isPast ? (
-                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
-                                        <span style={{ fontFamily: 'var(--font-serif)', fontSize: '1.5rem', color: '#C8A951', fontWeight: 500, margin: 0, lineHeight: 1 }}>Congratulations!</span>
-                                        <span style={{ color: '#666', fontSize: '0.8rem', marginTop: '0.35rem', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Your big day has arrived</span>
-                                    </div>
-                                ) : (
-                                    <>
-                                        <span className={redesignStyles.countdownLabel}>Your Big Day is in</span>
-                                        <div className={redesignStyles.countdownBox}>
-                                            <div className={redesignStyles.timeBlock}>
-                                                <span className={redesignStyles.timeValue}>{timeLeft.days}</span>
-                                                <span className={redesignStyles.timeUnit}>Days</span>
-                                            </div>
-                                            <span className={redesignStyles.timerDivider}>:</span>
-                                            <div className={redesignStyles.timeBlock}>
-                                                <span className={redesignStyles.timeValue}>{timeLeft.hours}</span>
-                                                <span className={redesignStyles.timeUnit}>Hrs</span>
-                                            </div>
-                                            <span className={redesignStyles.timerDivider}>:</span>
-                                            <div className={redesignStyles.timeBlock}>
-                                                <span className={redesignStyles.timeValue}>{timeLeft.minutes}</span>
-                                                <span className={redesignStyles.timeUnit}>Mins</span>
-                                            </div>
-                                            <span className={redesignStyles.timerDivider}>:</span>
-                                            <div className={redesignStyles.timeBlock}>
-                                                <span className={redesignStyles.timeValue}>{timeLeft.seconds}</span>
-                                                <span className={redesignStyles.timeUnit}>Secs</span>
-                                            </div>
-                                        </div>
-                                    </>
-                                )}
                             </div>
                         </div>
                     </div>
@@ -980,17 +1236,42 @@ export default function DashboardPage() {
                     
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', width: '100%', alignItems: 'center', justifyContent: 'center', flexGrow: 1 }}>
                         {(() => {
-                            const validItems = previewItems.filter(item => item.image);
+                            const validItems = previewItems;
                                 
-                            if (validItems.length === 0) return null;
+                            if (!validItems || validItems.length === 0) return null;
                             const currentIndex = Math.min(suitePreviewIndex, validItems.length - 1);
                             const currentItem = validItems[currentIndex];
                             
                             return (
                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem', width: '100%' }}>
-                                    <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem', letterSpacing: '0.1em', textTransform: 'uppercase', margin: 0, fontWeight: 500 }}>
-                                        {currentItem.name}
-                                    </p>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+                                        <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem', letterSpacing: '0.1em', textTransform: 'uppercase', margin: 0, fontWeight: 500 }}>
+                                            {currentItem.name}
+                                        </p>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleShareWhatsApp(currentItem);
+                                            }}
+                                            style={{
+                                                background: '#25D366',
+                                                border: 'none',
+                                                color: '#FFFFFF',
+                                                padding: '0.4rem 1rem',
+                                                borderRadius: '20px',
+                                                fontSize: '0.82rem',
+                                                fontWeight: 600,
+                                                cursor: 'pointer',
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                gap: '0.4rem',
+                                                boxShadow: '0 4px 14px rgba(37, 211, 102, 0.35)'
+                                            }}
+                                        >
+                                            <MessageCircle size={14} />
+                                            <span>Share on WhatsApp</span>
+                                        </button>
+                                    </div>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '2rem', width: '100%', justifyContent: 'center' }}>
                                         <button 
                                             onClick={(e) => { e.stopPropagation(); setSuitePreviewIndex(Math.max(0, currentIndex - 1)); }}
@@ -1004,37 +1285,23 @@ export default function DashboardPage() {
                                         >
                                             ←
                                         </button>
-                                        {String(currentItem.image || '').startsWith('structured:') ? (
-                                            <div
-                                                onClick={e => e.stopPropagation()}
-                                                style={{ height: '75vh', aspectRatio: '9 / 16', maxWidth: '85vw', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 24px 80px rgba(0,0,0,0.6)' }}
-                                            >
-                                                <PreviewCard
-                                                    event={currentItem.event}
-                                                    theme={theme}
-                                                    groomName={formData.groomName || ''}
-                                                    brideName={formData.brideName || ''}
-                                                    groomParents={formData.groomParents}
-                                                    brideParents={formData.brideParents}
-                                                    customImage={currentItem.image}
-                                                    isPlaceholder={true}
-                                                    isSecured={false}
-                                                />
-                                            </div>
-                                        ) : (
-                                            <img
-                                                src={currentItem.image}
-                                                alt={currentItem.name}
-                                                onClick={e => e.stopPropagation()}
-                                                style={{
-                                                    height: '75vh',
-                                                    maxWidth: '85vw',
-                                                    borderRadius: '16px',
-                                                    boxShadow: '0 24px 80px rgba(0,0,0,0.6)',
-                                                    objectFit: 'contain',
-                                                }}
+                                        <div
+                                            onClick={e => e.stopPropagation()}
+                                            style={{ height: '75vh', aspectRatio: '9 / 16', maxWidth: '85vw', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 24px 80px rgba(0,0,0,0.6)' }}
+                                        >
+                                            <PreviewCard
+                                                event={currentItem.event}
+                                                theme={theme}
+                                                groomName={formData.groomName || ''}
+                                                brideName={formData.brideName || ''}
+                                                groomParents={formData.groomParents}
+                                                brideParents={formData.brideParents}
+                                                welcomeMessage={formData.invitationMessage}
+                                                isPlaceholder={true}
+                                                isSecured={false}
+                                                customImage={currentItem.image && typeof currentItem.image === 'string' && !currentItem.image.startsWith('structured:') ? currentItem.image : undefined}
                                             />
-                                        )}
+                                        </div>
                                         <button 
                                             onClick={(e) => { e.stopPropagation(); setSuitePreviewIndex(Math.min(validItems.length - 1, currentIndex + 1)); }}
                                             disabled={currentIndex === validItems.length - 1}
@@ -1052,9 +1319,11 @@ export default function DashboardPage() {
                                         {validItems.map((_, idx) => (
                                             <div 
                                                 key={idx} 
+                                                onClick={(e) => { e.stopPropagation(); setSuitePreviewIndex(idx); }}
                                                 style={{ 
                                                     width: '8px', height: '8px', borderRadius: '50%', 
                                                     background: idx === currentIndex ? '#fff' : 'rgba(255,255,255,0.3)',
+                                                    cursor: 'pointer',
                                                     transition: 'all 0.3s'
                                                 }} 
                                             />

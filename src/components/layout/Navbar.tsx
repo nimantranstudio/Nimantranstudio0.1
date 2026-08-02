@@ -44,7 +44,7 @@ export const Navbar = () => {
         const handleScroll = () => {
             setIsScrolled(window.scrollY > 20);
         };
-        window.addEventListener('scroll', handleScroll);
+        window.addEventListener('scroll', handleScroll, { passive: true });
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
@@ -65,6 +65,9 @@ export const Navbar = () => {
 
     return (
         <nav className={clsx(styles.navbar, isScrolled && styles.scrolled)}>
+            {/* Invisible Top Hover Hot-Zone to catch cursor near top edge */}
+            <div className={styles.topTriggerZone} />
+
             <div className={clsx("container", styles.navContainer)}>
                 <Link href="/" className={styles.logo}>
                     <Image
