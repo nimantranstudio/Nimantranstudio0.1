@@ -114,6 +114,10 @@ function PreviewContent() {
     const [uploadedPhotos, setUploadedPhotos] = useState<Record<number, string>>({});
     const fileInputRef = useRef<HTMLInputElement>(null);
     const cardRef = useRef<InvitationCardRef>(null);
+    // Always-mounted (hidden) card used to reliably capture the couple's real
+    // invitation for the WhatsApp welcome — the visible cardRef only exists while
+    // the preview modal is open, which it usually isn't at payment time.
+    const heroCardRef = useRef<InvitationCardRef>(null);
     const suiteRefs = useRef<Record<string, InvitationCardRef | null>>({});
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -296,7 +300,7 @@ function PreviewContent() {
                                 (bundleItems || []).map((i: any) => i?.image).find(isImg) ||
                                 undefined;
                             try {
-                                const dataUrl = await cardRef.current?.captureDataUrl();
+                                const dataUrl = await (heroCardRef.current || cardRef.current)?.captureDataUrl();
                                 if (dataUrl) {
                                     const up = await fetch('/api/cards/upload', {
                                         method: 'POST',
@@ -384,7 +388,7 @@ function PreviewContent() {
                             (bundleItems || []).map((i: any) => i?.image).find(isImg) ||
                             undefined;
                         try {
-                            const dataUrl = await cardRef.current?.captureDataUrl();
+                            const dataUrl = await (heroCardRef.current || cardRef.current)?.captureDataUrl();
                             if (dataUrl) {
                                 const up = await fetch('/api/cards/upload', {
                                     method: 'POST',
@@ -434,7 +438,7 @@ function PreviewContent() {
                 prefill: {
                     name: formData.groomName || formData.brideName ? `${formData.groomName || ''} ${formData.brideName || ''}`.trim() : '',
                     email: auth.currentUser?.email || '',
-                    contact: userPhone || formData.rsvpContact || ''
+                    contact: formData.rsvpContact || userPhone || ""
                 },
                 theme: {
                     color: "#C8A951"
@@ -601,6 +605,10 @@ function PreviewContent() {
     };
 
     const previewItems = buildPreviewItems();
+    // The card captured for the WhatsApp welcome: prefer the wedding / save-the-date, else the first.
+    const heroItem =
+        previewItems.find((it: any) => /wedding|save/i.test(`${it?.name || ''} ${it?.id || ''}`)) ||
+        previewItems[0];
 
 
     const handleFormat = (payload: any) => {
@@ -657,6 +665,27 @@ function PreviewContent() {
                 onClose={() => { /* stays until navigation */ }}
                 coupleNames={[formData.groomName, formData.brideName].filter(Boolean).join(' & ') || undefined}
             />
+
+            {/* Hidden, always-mounted hero card — captured to a PNG at payment success
+                for the WhatsApp welcome (so it's the couple's REAL card, not a theme sample). */}
+            {heroItem && theme && (
+                <div aria-hidden style={{ position: 'fixed', left: '-99999px', top: 0, width: '500px', zIndex: -1, pointerEvents: 'none', opacity: 0 }}>
+                    <PreviewCard
+                        ref={heroCardRef}
+                        event={heroItem.event}
+                        theme={theme}
+                        groomName={formData.groomName || ''}
+                        brideName={formData.brideName || ''}
+                        groomParents={formData.groomParents}
+                        brideParents={formData.brideParents}
+                        welcomeMessage={formData.invitationMessage}
+                        customImage={heroItem.image}
+                        isPlaceholder={false}
+                        isRawPreview={false}
+                        type="image"
+                    />
+                </div>
+            )}
 
             {/* Hidden File Input for Photo Upload */}
             <input 

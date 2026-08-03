@@ -147,7 +147,7 @@ export default function PaymentPage() {
                 prefill: {
                     name: formData.groomName || formData.brideName ? `${formData.groomName || ''} ${formData.brideName || ''}`.trim() : '',
                     email: '',
-                    contact: userPhone || formData.rsvpContact || ''
+                    contact: formData.rsvpContact || userPhone || ""
                 },
                 theme: {
                     color: "#C8A951"
