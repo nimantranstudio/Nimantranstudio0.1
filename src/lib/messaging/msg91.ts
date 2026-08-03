@@ -18,6 +18,9 @@ const SENDER_ID = process.env.MSG91_SENDER_ID;
 const SMS_TEMPLATE_ID = process.env.MSG91_DLT_TE_ID; // DLT template for OTP SMS
 const WA_NUMBER = process.env.MSG91_WHATSAPP_NUMBER;
 const WA_NAMESPACE = process.env.MSG91_WA_NAMESPACE;
+// WhatsApp templates are approved under a specific language code — usually en_US,
+// not en. Must match the template's language on the MSG91 dashboard exactly.
+const WA_LANG = process.env.MSG91_WA_LANG || 'en_US';
 
 const FLOW_URL = 'https://control.msg91.com/api/v5/flow/';
 const WA_URL =
@@ -95,7 +98,7 @@ export const msg91Provider: MessagingProvider = {
                         type: 'template',
                         template: {
                             name: templateName,
-                            language: { code: 'en', policy: 'deterministic' },
+                            language: { code: WA_LANG, policy: 'deterministic' },
                             ...(WA_NAMESPACE ? { namespace: WA_NAMESPACE } : {}),
                             to_and_components: [
                                 { to: [toIndiaMsisdn(mobile)], components },
