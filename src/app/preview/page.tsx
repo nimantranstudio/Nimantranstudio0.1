@@ -80,6 +80,10 @@ function PreviewContent() {
     const [selectedPreviewIndex, setSelectedPreviewIndex] = useState<number | null>(null);
     const [activeSliderIndex, setActiveSliderIndex] = useState<number>(0);
     const [isProcessing, setIsProcessing] = useState(false);
+    // The couple's WhatsApp number — where the invitation + updates are sent.
+    const [whatsappNumber, setWhatsappNumber] = useState<string>(() => userPhone || formData.rsvpContact || '');
+    const whatsappDigits = whatsappNumber.replace(/\D/g, '').slice(-10);
+    const whatsappValid = whatsappDigits.length === 10;
     const [paymentStatus, setPaymentStatus] = useState<'idle' | 'success' | 'failed'>('idle');
     const [cardLayout, setCardLayout] = useState<{ width: number; height: number; aspectRatio: number }>({
         width: 500,
@@ -289,9 +293,8 @@ function PreviewContent() {
                         // WhatsApp welcome) is skipped in the mock flow. Fire the welcome
                         // here so it can be tested on localhost. Ask for a test number
                         // since there is no Razorpay payment contact to read.
-                        const testPhone = window.prompt(
-                            'DEV TEST — enter a WhatsApp number (10 digits) to receive the welcome message (blank to skip):'
-                        );
+                        // Use the WhatsApp number the couple entered at checkout.
+                        const testPhone = whatsappDigits;
                         if (testPhone && testPhone.replace(/\D/g, '').length >= 10) {
                             const isImg = (u: any) => typeof u === 'string' && /\.(png|jpe?g|webp)(\?|$)/i.test(u);
                             // Prefer the couple's real card (capture + host); fall back to a bundle image.
@@ -408,7 +411,8 @@ function PreviewContent() {
                                 razorpay_order_id: response.razorpay_order_id,
                                 razorpay_signature: response.razorpay_signature,
                                 formData,
-                                heroImageUrl
+                                heroImageUrl,
+                                whatsappNumber: whatsappDigits
                             })
                         });
 
@@ -438,7 +442,7 @@ function PreviewContent() {
                 prefill: {
                     name: formData.groomName || formData.brideName ? `${formData.groomName || ''} ${formData.brideName || ''}`.trim() : '',
                     email: auth.currentUser?.email || '',
-                    contact: formData.rsvpContact || userPhone || ""
+                    contact: whatsappDigits || formData.rsvpContact || userPhone || ""
                 },
                 theme: {
                     color: "#C8A951"
@@ -1494,12 +1498,35 @@ function PreviewContent() {
                                     </div>
                                 </div>
 
+                                <div style={{ margin: '0 0 0.9rem' }}>
+                                    <label htmlFor="wa-number" style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#4b5563', marginBottom: '0.4rem' }}>
+                                        WhatsApp number for your invitation &amp; updates
+                                    </label>
+                                    <div style={{ display: 'flex', alignItems: 'center', border: `1px solid ${whatsappNumber && !whatsappValid ? '#ef4444' : '#e5e7eb'}`, borderRadius: 10, background: '#fff', overflow: 'hidden' }}>
+                                        <span style={{ padding: '0 0.65rem', color: '#6b7280', fontWeight: 600, fontSize: '0.95rem', borderRight: '1px solid #eee', lineHeight: '2.9' }}>+91</span>
+                                        <input
+                                            id="wa-number"
+                                            type="tel"
+                                            inputMode="numeric"
+                                            maxLength={10}
+                                            value={whatsappDigits}
+                                            onChange={(e) => setWhatsappNumber(e.target.value)}
+                                            placeholder="10-digit WhatsApp number"
+                                            style={{ flex: 1, border: 'none', outline: 'none', padding: '0.7rem 0.75rem', fontSize: '0.95rem', background: 'transparent' }}
+                                        />
+                                    </div>
+                                    <p style={{ margin: '0.4rem 0 0', fontSize: '0.72rem', color: whatsappNumber && !whatsappValid ? '#ef4444' : '#9ca3af' }}>
+                                        {whatsappNumber && !whatsappValid ? 'Enter a valid 10-digit number.' : 'Your invitation & login are sent here on WhatsApp.'}
+                                    </p>
+                                </div>
+
                                 <button
                                     className={styles.unlockButton}
                                     onClick={handleCheckout}
                                     onMouseEnter={() => setIsButtonHovered(true)}
                                     onMouseLeave={() => setIsButtonHovered(false)}
-                                    disabled={isProcessing}
+                                    disabled={isProcessing || !whatsappValid}
+                                    style={!whatsappValid ? { opacity: 0.6, cursor: 'not-allowed' } : undefined}
                                 >
                                     {isProcessing ? (
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>

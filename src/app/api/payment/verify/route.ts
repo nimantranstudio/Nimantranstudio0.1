@@ -42,6 +42,7 @@ export async function POST(req: NextRequest) {
             razorpay_signature,
             formData,
             heroImageUrl,
+            whatsappNumber,
         } = await req.json();
 
         if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
@@ -90,7 +91,10 @@ export async function POST(req: NextRequest) {
         const bundleId = notes.bundleId;
         const packageId = notes.packageId || null;
 
-        const mobile = toTenDigits(String(rzpPayment.contact || ''));
+        // Prefer the WhatsApp number the couple explicitly entered at checkout;
+        // fall back to the Razorpay payment contact. This is the account + welcome number.
+        const explicit = toTenDigits(String(whatsappNumber || ''));
+        const mobile = explicit.length === 10 ? explicit : toTenDigits(String(rzpPayment.contact || ''));
         const email = cleanEmail(rzpPayment.email);
         const amountRupees = Number(rzpPayment.amount) / 100;
 
