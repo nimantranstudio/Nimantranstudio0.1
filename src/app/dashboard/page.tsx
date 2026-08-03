@@ -118,13 +118,17 @@ export default function DashboardPage() {
         }
 
         if (!lowerName.includes('thank')) {
-            message += `\n💛 Kindly let us know if you'll be joining us.\n\nRSVP\n${rsvpUrl}\n\nWe would be truly delighted to celebrate this special occasion with you and your family.`;
+            message += `\n💛 Kindly let us know if you'll be joining us — we'd be truly delighted to celebrate this special occasion with you and your family.\n`;
         }
 
-        message += `\n\n✨ View your invitation and wedding updates:\n${rsvpUrl}`;
+        // Single link for both viewing the invitation and RSVP (same page).
+        message += `\n🔗 View your invitation & RSVP:\n${rsvpUrl}`;
 
-        // Preferred: Native Web Share API with attached invitation image file
-        if (typeof navigator !== 'undefined' && navigator.share && item?.image) {
+        // Preferred: Native Web Share API with attached invitation image file.
+        // Only attach when we actually have a raster image URL — an .html template
+        // (or a structured: marker) would attach a broken/non-image file.
+        const isRasterImage = (u: any) => typeof u === 'string' && /\.(png|jpe?g|webp)(\?|$)/i.test(u);
+        if (typeof navigator !== 'undefined' && navigator.share && isRasterImage(item?.image)) {
             try {
                 const response = await fetch(item.image);
                 const blob = await response.blob();
@@ -170,11 +174,19 @@ export default function DashboardPage() {
 
     const scrollCarousel = (direction: 'left' | 'right') => {
         if (!carouselTrackRef.current) return;
-        const scrollAmount = 240;
-        carouselTrackRef.current.scrollBy({
-            left: direction === 'left' ? -scrollAmount : scrollAmount,
+        const track = carouselTrackRef.current;
+        const scrollAmount = direction === 'left' ? -320 : 320;
+
+        setIsCarouselHovered(true);
+
+        track.scrollBy({
+            left: scrollAmount,
             behavior: 'smooth'
         });
+
+        setTimeout(() => {
+            setIsCarouselHovered(false);
+        }, 600);
     };
 
     // Continuous infinite smooth auto-scroll ticker with seamless loop reset

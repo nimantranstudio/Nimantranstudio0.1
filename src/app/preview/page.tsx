@@ -376,12 +376,25 @@ function PreviewContent() {
                         // up through provisioning, so there's no separate "securing" screen.
                         setPaymentStatus('success');
 
-                        // Hero image for the WhatsApp welcome: first real (non-.html) bundle image.
+                        // Hero image for the WhatsApp welcome. Prefer the couple's OWN
+                        // personalized card (capture + host); fall back to a bundle image.
                         const isImg = (u: any) => typeof u === 'string' && /\.(png|jpe?g|webp)(\?|$)/i.test(u);
-                        const heroImageUrl =
+                        let heroImageUrl: string | undefined =
                             (bundleImages || []).find(isImg) ||
                             (bundleItems || []).map((i: any) => i?.image).find(isImg) ||
                             undefined;
+                        try {
+                            const dataUrl = await cardRef.current?.captureDataUrl();
+                            if (dataUrl) {
+                                const up = await fetch('/api/cards/upload', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ dataUrl, name: `${formData.groomName || 'wedding'}-${formData.brideName || 'invite'}` }),
+                                });
+                                const upData = await up.json().catch(() => ({}));
+                                if (up.ok && upData?.success && upData?.url) heroImageUrl = upData.url;
+                            }
+                        } catch { /* keep the fallback bundle image */ }
 
                         const verifyRes = await fetch('/api/payment/verify', {
                             method: 'POST',
