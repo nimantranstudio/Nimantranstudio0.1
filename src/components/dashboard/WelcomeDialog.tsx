@@ -2,13 +2,11 @@
 
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import { useEffect, useState } from 'react';
-import { Sparkles, ArrowRight, Check } from 'lucide-react';
+import { Check } from 'lucide-react';
 
 const EASE: [number, number, number, number] = [0.23, 1, 0.32, 1];
 const EASE_OUT: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
-// Matches the "Great choice" transition: backdrop blur-in, then a soft spring +
-// de-blur on the card, with its children staggering up.
 const backdropVariants: Variants = {
     hidden: { opacity: 0, backdropFilter: 'blur(0px)' },
     visible: { opacity: 1, backdropFilter: 'blur(9px)', transition: { duration: 0.45, ease: EASE } },
@@ -28,7 +26,19 @@ const itemVariants: Variants = {
 };
 
 const GLYPHS = ['❦', '✦', '❀', '♥'];
-const COLORS = ['#C8A951', '#B39D73', '#FDA4AF', '#EBCDC3', '#8A6D1F'];
+const COLORS = ['#C8A951', '#B39D73', '#22C55E', '#EBCDC3', '#8A6D1F'];
+
+function usePrefersReducedMotion() {
+    const [reduced, setReduced] = useState(false);
+    useEffect(() => {
+        const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+        setReduced(mq.matches);
+        const on = () => setReduced(mq.matches);
+        mq.addEventListener?.('change', on);
+        return () => mq.removeEventListener?.('change', on);
+    }, []);
+    return reduced;
+}
 
 /** A one-shot confetti burst from the dialog centre. */
 function Confetti() {
@@ -64,7 +74,7 @@ function Confetti() {
                     }}
                     transition={{ duration: b.duration, delay: b.delay, ease: EASE_OUT }}
                     style={{
-                        position: 'absolute', left: '50%', top: '46%',
+                        position: 'absolute', left: '50%', top: '44%',
                         marginLeft: -b.size / 2, marginTop: -b.size / 2,
                         color: b.color, fontSize: b.size, lineHeight: 1, userSelect: 'none',
                     }}
@@ -76,13 +86,23 @@ function Confetti() {
     );
 }
 
-export function WelcomeDialog({ open, onClose, coupleNames }: { open: boolean; onClose: () => void; coupleNames?: string }) {
-    // Auto-dismiss so the dashboard is never blocked; the button lets them enter sooner.
+interface WelcomeDialogProps {
+    open: boolean;
+    onClose: () => void;
+    coupleNames?: string;
+    /** Auto-dismiss after a few seconds (dashboard). Set false while provisioning
+     *  on /preview, where the dialog stays until navigation. */
+    autoDismiss?: boolean;
+}
+
+export function WelcomeDialog({ open, onClose, coupleNames, autoDismiss = true }: WelcomeDialogProps) {
+    const reduced = usePrefersReducedMotion();
+
     useEffect(() => {
-        if (!open) return;
+        if (!open || !autoDismiss) return;
         const t = setTimeout(onClose, 5600);
         return () => clearTimeout(t);
-    }, [open, onClose]);
+    }, [open, autoDismiss, onClose]);
 
     return (
         <AnimatePresence>
@@ -92,86 +112,70 @@ export function WelcomeDialog({ open, onClose, coupleNames }: { open: boolean; o
                     initial="hidden"
                     animate="visible"
                     exit="exit"
-                    onClick={onClose}
+                    onClick={autoDismiss ? onClose : undefined}
                     role="dialog"
                     aria-modal="true"
-                    aria-label="Welcome to Nimantran Studio"
+                    aria-label="Payment successful"
                     style={{
                         position: 'fixed', inset: 0, zIndex: 9998,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        background: 'rgba(24, 20, 12, 0.30)', padding: '1.5rem',
+                        background: 'rgba(24, 20, 12, 0.34)', padding: '1.5rem',
                     }}
                 >
-                    <Confetti />
+                    {!reduced && <Confetti />}
 
                     <motion.div
                         variants={cardVariants}
                         onClick={(e) => e.stopPropagation()}
                         style={{
-                            position: 'relative', zIndex: 1, width: 'min(92vw, 460px)',
-                            background: 'linear-gradient(180deg, #FFFDF8 0%, #FBF6EA 100%)',
-                            borderRadius: 26, padding: '2.9rem 2.25rem 2.5rem', textAlign: 'center',
-                            border: '1px solid #F0E6C8', boxShadow: '0 34px 90px rgba(60, 40, 10, 0.30)',
+                            position: 'relative', zIndex: 1, width: 'min(92vw, 440px)',
+                            background: 'linear-gradient(180deg, #FFFEFB 0%, #FBF6EA 100%)',
+                            borderRadius: 26, padding: '2.75rem 2.25rem 2.5rem', textAlign: 'center',
+                            border: '1px solid #F0E6C8', boxShadow: '0 34px 90px rgba(60, 40, 10, 0.32)',
                         }}
                     >
+                        {/* Success mark — the hero of the moment */}
                         <motion.div
                             variants={itemVariants}
                             style={{
-                                display: 'inline-flex', alignItems: 'center', gap: 6, margin: '0 auto 1rem',
-                                padding: '0.3rem 0.8rem', borderRadius: 999, background: '#E7F6EC', color: '#1E7A3D',
-                                fontSize: 12.5, fontWeight: 700, letterSpacing: '0.01em',
-                            }}
-                        >
-                            <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 16, height: 16, borderRadius: '50%', background: '#22c55e', color: '#fff' }}>
-                                <Check size={11} strokeWidth={3} />
-                            </span>
-                            Payment successful
-                        </motion.div>
-
-                        <motion.div
-                            variants={itemVariants}
-                            style={{
-                                width: 66, height: 66, margin: '0 auto 1.25rem', borderRadius: '50%',
+                                width: 74, height: 74, margin: '0 auto 1.3rem', borderRadius: '50%',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                background: 'radial-gradient(circle at 50% 35%, #FBE7BE, #E6C878)',
-                                color: '#6E520F', boxShadow: '0 10px 26px rgba(200, 169, 81, 0.45)',
+                                background: 'radial-gradient(circle at 50% 32%, #4ADE80, #16A34A)',
+                                color: '#fff', boxShadow: '0 12px 30px rgba(22, 163, 74, 0.42)',
                             }}
                         >
-                            <Sparkles size={30} strokeWidth={1.75} />
+                            <Check size={38} strokeWidth={3} />
                         </motion.div>
 
+                        {/* PRIMARY */}
                         <motion.h1
                             variants={itemVariants}
-                            style={{ fontFamily: 'var(--font-serif, serif)', fontSize: 'clamp(24px, 4.5vw, 30px)', color: '#2A2417', margin: 0, lineHeight: 1.2 }}
+                            style={{ fontFamily: 'var(--font-serif, serif)', fontSize: 'clamp(26px, 5vw, 33px)', color: '#1E7A3D', margin: 0, lineHeight: 1.15, fontWeight: 700 }}
                         >
-                            Welcome to Nimantran Studio
+                            Payment Successful
                         </motion.h1>
 
+                        {/* SECONDARY */}
+                        <motion.p
+                            variants={itemVariants}
+                            style={{ margin: '0.7rem 0 0', fontFamily: 'var(--font-serif, serif)', fontSize: 'clamp(17px, 3vw, 20px)', color: '#2A2417', lineHeight: 1.3 }}
+                        >
+                            Welcome to Nimantran Studio
+                        </motion.p>
+
                         {coupleNames && (
-                            <motion.p variants={itemVariants} style={{ margin: '0.6rem 0 0', fontWeight: 600, color: '#8A6D1F', letterSpacing: '0.01em' }}>
+                            <motion.p variants={itemVariants} style={{ margin: '0.5rem 0 0', fontWeight: 600, color: '#8A6D1F', letterSpacing: '0.01em' }}>
                                 {coupleNames}
                             </motion.p>
                         )}
 
+                        {/* SUBTEXT */}
                         <motion.p
                             variants={itemVariants}
-                            style={{ margin: '0.85rem 0 1.75rem', fontSize: 15.5, lineHeight: 1.6, color: '#6B6353' }}
+                            style={{ margin: '0.9rem 0 0', fontSize: 15, lineHeight: 1.6, color: '#6B6353' }}
                         >
                             Your wedding suite is ready. Let’s make every invitation unforgettable.
                         </motion.p>
-
-                        <motion.button
-                            variants={itemVariants}
-                            onClick={onClose}
-                            style={{
-                                display: 'inline-flex', alignItems: 'center', gap: 8, cursor: 'pointer',
-                                background: 'linear-gradient(180deg, #D8B65E, #C29A3C)', color: '#fff',
-                                border: 'none', borderRadius: 999, padding: '0.8rem 1.6rem', fontWeight: 700, fontSize: 15,
-                                boxShadow: '0 12px 26px rgba(194, 154, 60, 0.4)',
-                            }}
-                        >
-                            Enter your dashboard <ArrowRight size={17} />
-                        </motion.button>
                     </motion.div>
                 </motion.div>
             )}

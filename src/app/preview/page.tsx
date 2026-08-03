@@ -6,6 +6,7 @@ import { useWeddingStore } from '@/store/wedding-store';
 import type { Theme } from '@/lib/constants/themes';
 import { InvitationCard, InvitationCardRef } from '@/components/preview/InvitationCard';
 import { PreviewCard } from '@/components/preview/PreviewCard';
+import { WelcomeDialog } from '@/components/dashboard/WelcomeDialog';
 import styles from '@/components/preview/Preview.module.css';
 import { ChevronLeft, ChevronRight, X, Headphones, Play, Edit, Download, Share2, Check, Lock, Link as LinkIcon, Copy, Sparkles, MessageCircle, Activity, ShieldCheck, Type, Image as ImageIcon, MapPin, Bold, AlignLeft, AlignCenter, AlignRight, Type as FormatIcon, Maximize, Sticker, Trash2, Palette, Square, AlignJustify, ChevronDown, Users, Star, Loader2 } from 'lucide-react';
 import Link from 'next/link';
@@ -334,7 +335,7 @@ function PreviewContent() {
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ bundleId: bundleItems?.[0]?.id })
                         });
-                        router.push('/dashboard?welcome=true');
+                        router.push('/dashboard');
                         return;
                     }
                 }
@@ -371,6 +372,10 @@ function PreviewContent() {
                 handler: async function (response: any) {
                     try {
                         console.log('Payment successful:', response);
+                        // Show the single celebratory success dialog immediately — it stays
+                        // up through provisioning, so there's no separate "securing" screen.
+                        setPaymentStatus('success');
+
                         // Hero image for the WhatsApp welcome: first real (non-.html) bundle image.
                         const isImg = (u: any) => typeof u === 'string' && /\.(png|jpe?g|webp)(\?|$)/i.test(u);
                         const heroImageUrl =
@@ -392,8 +397,6 @@ function PreviewContent() {
 
                         const verifyData = await verifyRes.json();
                         if (verifyRes.ok && verifyData.success) {
-                            setPaymentStatus('success');
-
                             // Record the provisioned wedding + auth so the dashboard resolves.
                             setCheckoutComplete(verifyData.weddingId, userPhone);
 
@@ -404,7 +407,7 @@ function PreviewContent() {
                                 body: JSON.stringify({ bundleId: bundleItems?.[0]?.id })
                             });
 
-                            router.push('/dashboard?welcome=true');
+                            router.push('/dashboard');
                         } else {
                             throw new Error(verifyData.error || 'Payment verification failed');
                         }
@@ -632,28 +635,15 @@ function PreviewContent() {
             <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="afterInteractive" onLoad={() => console.log('Razorpay script loaded')} />
             
             {/* Success Overlay */}
-            {paymentStatus === 'success' && (
-                <div style={{
-                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-                    background: '#FDFBF7', zIndex: 9999, display: 'flex',
-                    flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                    fontFamily: 'var(--font-sans)', color: '#1F1F1F'
-                }}>
-                    {/* Quiet processing state during the unavoidable verify/provision
-                        wait. The real celebration is the confetti welcome on the
-                        dashboard — so no duplicate "Payment Successful" screen here. */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '16px', color: 'var(--muted-foreground)' }}>
-                        <div className="spinner" style={{
-                            width: '22px', height: '22px', border: '3px solid var(--muted)',
-                            borderTopColor: 'var(--primary)', borderRadius: '50%', animation: 'spin 1s linear infinite'
-                        }} />
-                        Securing your payment & setting up your suite…
-                    </div>
-                    <style dangerouslySetInnerHTML={{__html: `
-                        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-                    `}} />
-                </div>
-            )}
+            {/* Single celebratory success screen. It appears the moment payment
+                succeeds and stays through provisioning (autoDismiss off) until we
+                navigate to the dashboard — so there's no separate "securing" screen. */}
+            <WelcomeDialog
+                open={paymentStatus === 'success'}
+                autoDismiss={false}
+                onClose={() => { /* stays until navigation */ }}
+                coupleNames={[formData.groomName, formData.brideName].filter(Boolean).join(' & ') || undefined}
+            />
 
             {/* Hidden File Input for Photo Upload */}
             <input 
