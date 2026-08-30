@@ -11,8 +11,10 @@ import { PreviewCard } from '@/components/preview/PreviewCard';
 import type { Theme } from '@/lib/constants/themes';
 import styles from './dashboard.module.css';
 import redesignStyles from './dashboard-redesign.module.css';
+import rsvpStyles from './rsvp/rsvp-list.module.css';
 import { motion, AnimatePresence } from 'framer-motion';
 import { VideoInviteCard } from './VideoInviteCard';
+import { auth } from '@/lib/firebase';
 import { 
     Users, 
     FileText, 
@@ -39,13 +41,27 @@ import {
     MapPin,
     Quote,
     MoreVertical,
-    Heart
+    Heart,
+    Trash2,
+    Search
 } from 'lucide-react';
 import Link from 'next/link';
 
+interface RSVPEntry {
+    id: string;
+    guestName: string;
+    status: string;
+    adultCount: number;
+    childCount: number;
+    phone?: string;
+    dietary?: string;
+    message?: string;
+    createdAt: string;
+}
+
 export default function DashboardPage() {
     const router = useRouter();
-    const { formData, selectedThemeId, isAuthenticated, bundleImages, bundleItems, lastSavedWeddingId, updateEvent } = useWeddingStore();
+    const { formData, selectedThemeId, isAuthenticated, bundleImages, bundleItems, lastSavedWeddingId, updateEvent, removeEvent } = useWeddingStore();
     const [isMounted, setIsMounted] = useState(false);
     const [showWelcome, setShowWelcome] = useState(false);
     const [rsvpStats, setRsvpStats] = useState({ total: 0, attending: 0, notAttending: 0, maybe: 0 });
@@ -60,6 +76,101 @@ export default function DashboardPage() {
     const [suitePreviewIndex, setSuitePreviewIndex] = useState(0);
     const [bundleAssets, setBundleAssets] = useState<Record<string, string>>({});
     const [activeEventId, setActiveEventId] = useState<string>('save_the_date');
+
+    const [deletingRsvpEventId, setDeletingRsvpEventId] = useState<string | null>(null);
+    const [copiedRsvpId, setCopiedRsvpId] = useState<string | null>(null);
+    const [rsvpsList, setRsvpsList] = useState<RSVPEntry[]>([]);
+    const [rsvpListLoading, setRsvpListLoading] = useState(false);
+    const [rsvpSearchQuery, setRsvpSearchQuery] = useState('');
+
+    useEffect(() => {
+        if (!lastSavedWeddingId) return;
+        setRsvpListLoading(true);
+        const fetchRsvps = async () => {
+            try {
+                await auth.authStateReady();
+                const token = auth.currentUser ? await auth.currentUser.getIdToken() : '';
+                const res = await fetch(`/api/rsvp/${lastSavedWeddingId}`, {
+                    headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+                });
+                const data = await res.json();
+                if (data.success && Array.isArray(data.rsvps)) {
+                    setRsvpsList(data.rsvps);
+                    const attending = data.rsvps
+                        .filter((r: any) => r.status === 'attending')
+                        .reduce((sum: number, r: any) => sum + (r.adultCount || 1), 0);
+                    const notAttending = data.rsvps.filter((r: any) => r.status === 'declined').length;
+                    const maybe = data.rsvps.filter((r: any) => r.status === 'maybe').length;
+                    setRsvpStats({ total: attending + notAttending + maybe, attending, notAttending, maybe });
+                }
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setRsvpListLoading(false);
+            }
+        };
+        fetchRsvps();
+    }, [lastSavedWeddingId]);
+
+    const fullRsvpStats = {
+        totalResponses: rsvpsList.length,
+        attending: rsvpsList.filter(r => r.status === 'attending').length,
+        declined: rsvpsList.filter(r => r.status === 'declined').length,
+        maybe: rsvpsList.filter(r => r.status === 'maybe').length,
+        headcount: rsvpsList
+            .filter(r => r.status === 'attending')
+            .reduce((sum, r) => sum + (r.adultCount || 1), 0),
+    };
+
+    const filteredRsvpsList = rsvpsList.filter(r =>
+        r.guestName.toLowerCase().includes(rsvpSearchQuery.toLowerCase()) ||
+        (r.phone && r.phone.includes(rsvpSearchQuery))
+    );
+
+    const handleDeleteRsvpClick = (id: string) => setDeletingRsvpEventId(id);
+    const confirmDeleteRsvp = () => {
+        if (deletingRsvpEventId) { removeEvent(deletingRsvpEventId); setDeletingRsvpEventId(null); }
+    };
+    const cancelDeleteRsvp = () => setDeletingRsvpEventId(null);
+
+    const getRsvpPageLink = () => {
+        const origin = typeof window !== 'undefined' ? window.location.origin : '';
+        return lastSavedWeddingId ? `${origin}/rsvp/${lastSavedWeddingId}` : '';
+    };
+
+    const copyRsvpPageLink = (id: string) => {
+        navigator.clipboard.writeText(getRsvpPageLink());
+        setCopiedRsvpId(id);
+        setTimeout(() => setCopiedRsvpId(null), 2000);
+    };
+
+    const openWhatsAppRsvp = () => {
+        const names = formData.groomName && formData.brideName
+            ? `${formData.groomName} & ${formData.brideName}`
+            : 'our wedding';
+        const text = `Please RSVP for ${names}: ${getRsvpPageLink()}`;
+        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+    };
+
+    const handleExportRsvpCSV = () => {
+        const headers = ['Guest Name', 'Status', 'Adults', 'Children', 'Phone', 'Dietary'];
+        const rows = rsvpsList.map(r => [
+            r.guestName,
+            r.status,
+            String(r.adultCount || 1),
+            String(r.childCount || 0),
+            r.phone || '-',
+            r.dietary || '-',
+        ]);
+        const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `wedding_rsvps.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+    };
 
     const handleShareWhatsApp = async (item?: any) => {
         const bride = formData.brideName || '';
@@ -880,260 +991,230 @@ export default function DashboardPage() {
                     </div>
                 </motion.div>
 
-                {/* 3. Bento Grid for RSVP Chart & Hero Countdown Cards */}
-                <motion.div 
+
+
+                {/* RSVP Manager Dashboard Section */}
+                <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ type: "spring", duration: 0.6, bounce: 0, delay: 0.2 }}
-                    className={redesignStyles.bentoGrid} 
+                    transition={{ type: "spring", duration: 0.6, bounce: 0, delay: 0.3 }}
                     style={{ marginTop: '2.5rem' }}
                 >
-                    {/* Left Side: RSVP Responses Card */}
-                    <div>
-                        <div className={styles.card} style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '1.5rem', borderRadius: '24px' }}>
-                            <div>
-                                {/* Header Row */}
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-                                    <h2 className={styles.cardTitle} style={{ margin: 0, fontSize: '1.25rem' }}>RSVP Responses</h2>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: '#F0FDF4', color: '#16A34A', padding: '0.3rem 0.65rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600, border: '1px solid #DCFCE7' }}>
-                                        <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#16A34A' }}></div>
-                                        <span>RSVP Live</span>
+                    {/* Header Row */}
+                    <div className={rsvpStyles.header}>
+                        <h1 className={rsvpStyles.title}>RSVP Dashboard</h1>
+                    </div>
+
+                    {/* Events List Container */}
+                    <div className={rsvpStyles.listContainer}>
+                        {(formData.events && formData.events.length > 0 ? formData.events.slice(0, 1) : [{
+                            id: 'primary_event',
+                            name: [formData.groomName, formData.brideName].filter(Boolean).join(' & ') || 'Haldi',
+                            date: formData.primaryDate || 'TBD',
+                            time: formData.primaryTime || '15:00',
+                            venue: formData.defaultVenueName || 'TBD',
+                            rsvpDeadline: 'No deadline'
+                        }]).map((evt) => {
+                            const rsvpLink = getRsvpPageLink();
+
+                            return (
+                                <div key={evt.id} className={rsvpStyles.eventGroup}>
+                                    {/* Dark Luxury Event Hero Card */}
+                                    <div className={rsvpStyles.darkHeroCard}>
+                                        <div className={rsvpStyles.heroHeader}>
+                                            <div className={rsvpStyles.heroLeft}>
+                                                <div className={rsvpStyles.nameRow}>
+                                                    <h2 className={rsvpStyles.eventName}>{evt.name}</h2>
+                                                    <div className={rsvpStyles.statusLive}>
+                                                        <span className={rsvpStyles.statusDot}></span>
+                                                        RSVP LIVE
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Glassmorphic Action Pills */}
+                                            <div className={rsvpStyles.actionPillsGroup}>
+                                                <button
+                                                    className={rsvpStyles.pillBtn}
+                                                    onClick={() => copyRsvpPageLink(evt.id)}
+                                                >
+                                                    {copiedRsvpId === evt.id ? <CheckCircle2 size={16} color="#4ADE80" /> : <Copy size={16} />}
+                                                    <span>{copiedRsvpId === evt.id ? 'Copied' : 'Copy Link'}</span>
+                                                </button>
+                                                <button className={rsvpStyles.pillBtn} onClick={openWhatsAppRsvp}>
+                                                    <Share2 size={16} />
+                                                    <span>WhatsApp</span>
+                                                </button>
+                                                {rsvpLink && (
+                                                    <Link href={rsvpLink} target="_blank" className={rsvpStyles.pillBtn}>
+                                                        <Eye size={16} />
+                                                        <span>Preview</span>
+                                                    </Link>
+                                                )}
+                                                <button
+                                                    className={`${rsvpStyles.pillBtn} ${rsvpStyles.pillDelete}`}
+                                                    onClick={() => handleDeleteRsvpClick(evt.id)}
+                                                >
+                                                    <Trash2 size={16} />
+                                                    <span>Delete</span>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        {/* Details Grid */}
+                                        <div className={rsvpStyles.detailsGrid}>
+                                            <div className={rsvpStyles.detailCard}>
+                                                <span className={rsvpStyles.detailLabel}>Date & Time</span>
+                                                <span className={rsvpStyles.detailValue}>
+                                                    {evt.date || 'TBD'} {evt.time ? `• ${evt.time}` : ''}
+                                                </span>
+                                            </div>
+                                            <div className={rsvpStyles.detailCard}>
+                                                <span className={rsvpStyles.detailLabel}>Venue</span>
+                                                <span className={rsvpStyles.detailValue}>{evt.venue || 'TBD'}</span>
+                                            </div>
+                                            <div className={rsvpStyles.detailCard}>
+                                                <span className={rsvpStyles.detailLabel}>RSVP Deadline</span>
+                                                <span className={rsvpStyles.detailValue}>
+                                                    {evt.rsvpDeadline ? `Respond by ${evt.rsvpDeadline}` : 'No deadline'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Color-Coded Bento Stats Grid */}
+                                    <div className={rsvpStyles.bentoStatsGrid}>
+                                        <div className={`${rsvpStyles.bentoStatCard} ${rsvpStyles.cardTotal}`}>
+                                            <div className={rsvpStyles.bentoHeader}>
+                                                <span className={rsvpStyles.bentoTitle}>Total Responses</span>
+                                            </div>
+                                            <span className={rsvpStyles.bentoNumber}>{fullRsvpStats.totalResponses}</span>
+                                        </div>
+
+                                        <div className={`${rsvpStyles.bentoStatCard} ${rsvpStyles.cardAttending}`}>
+                                            <div className={rsvpStyles.bentoHeader}>
+                                                <span className={rsvpStyles.bentoTitle}>Attending</span>
+                                            </div>
+                                            <span className={rsvpStyles.bentoNumber}>{fullRsvpStats.attending}</span>
+                                        </div>
+
+                                        <div className={`${rsvpStyles.bentoStatCard} ${rsvpStyles.cardDeclined}`}>
+                                            <div className={rsvpStyles.bentoHeader}>
+                                                <span className={rsvpStyles.bentoTitle}>Not Attending</span>
+                                            </div>
+                                            <span className={rsvpStyles.bentoNumber}>{fullRsvpStats.declined}</span>
+                                        </div>
+
+                                        <div className={`${rsvpStyles.bentoStatCard} ${rsvpStyles.cardMaybe}`}>
+                                            <div className={rsvpStyles.bentoHeader}>
+                                                <span className={rsvpStyles.bentoTitle}>Maybe</span>
+                                            </div>
+                                            <span className={rsvpStyles.bentoNumber}>{fullRsvpStats.maybe}</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Guest Responses Table */}
+                                    <div className={rsvpStyles.guestSection}>
+                                        <div className={rsvpStyles.guestHeader}>
+                                            <div className={rsvpStyles.guestTitleGroup}>
+                                                <h3 className={rsvpStyles.guestTitle}>Guest Responses</h3>
+                                                <span className={rsvpStyles.headcountBadge}>
+                                                    <Users size={14} />
+                                                    {fullRsvpStats.headcount} Confirmed Guests
+                                                </span>
+                                            </div>
+                                            <div className={rsvpStyles.guestActions}>
+                                                <div className={rsvpStyles.searchWrapper}>
+                                                    <Search size={16} className={rsvpStyles.searchIcon} />
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Search guests..."
+                                                        className={rsvpStyles.searchInput}
+                                                        value={rsvpSearchQuery}
+                                                        onChange={e => setRsvpSearchQuery(e.target.value)}
+                                                    />
+                                                </div>
+                                                <button className={rsvpStyles.exportBtn} onClick={handleExportRsvpCSV}>
+                                                    <Download size={16} />
+                                                    <span>Export CSV</span>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div className={rsvpStyles.tableWrapper}>
+                                            <table className={rsvpStyles.guestTable}>
+                                                <thead>
+                                                    <tr>
+                                                        <th>GUEST NAME</th>
+                                                        <th>STATUS</th>
+                                                        <th>ADULTS</th>
+                                                        <th>PHONE</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {rsvpListLoading ? (
+                                                        <tr>
+                                                            <td colSpan={4} className={rsvpStyles.emptyTable}>Loading responses...</td>
+                                                        </tr>
+                                                    ) : filteredRsvpsList.length === 0 ? (
+                                                        <tr>
+                                                            <td colSpan={4} className={rsvpStyles.emptyTable}>
+                                                                {rsvpsList.length === 0
+                                                                    ? "No guests have RSVP'd yet."
+                                                                    : "No matching guests found."}
+                                                            </td>
+                                                        </tr>
+                                                    ) : (
+                                                        filteredRsvpsList.map(r => (
+                                                            <tr key={r.id}>
+                                                                <td className={rsvpStyles.guestName}>{r.guestName}</td>
+                                                                <td>
+                                                                    <span className={`${rsvpStyles.statusBadge} ${
+                                                                        r.status === 'attending' ? rsvpStyles.statusYes
+                                                                        : r.status === 'declined' ? rsvpStyles.statusNo
+                                                                        : r.status === 'maybe' ? rsvpStyles.statusMaybe
+                                                                        : rsvpStyles.statusPending
+                                                                    }`}>
+                                                                        {r.status === 'attending' ? 'ATTENDING'
+                                                                            : r.status === 'declined' ? 'DECLINED'
+                                                                            : r.status === 'maybe' ? 'MAYBE'
+                                                                            : 'PENDING'}
+                                                                    </span>
+                                                                </td>
+                                                                <td>{r.adultCount || 1}</td>
+                                                                <td>{r.phone || '-'}</td>
+                                                            </tr>
+                                                        ))
+                                                    )}
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </div>
                                 </div>
-
-                                {/* Chart & Horizontal Stats Row */}
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', flexWrap: 'wrap' }}>
-                                    {/* Donut Chart */}
-                                    <div style={{ position: 'relative', width: '95px', height: '95px', flexShrink: 0 }}>
-                                        <svg viewBox="0 0 36 36" style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }}>
-                                            <circle stroke="#F3F4F6" strokeWidth="4" fill="transparent" r="16" cx="18" cy="18" />
-                                            <circle 
-                                                stroke="#22c55e" 
-                                                strokeWidth="4" 
-                                                fill="transparent" 
-                                                r="16" 
-                                                cx="18" 
-                                                cy="18"
-                                                pathLength="100" 
-                                                strokeDasharray={`${rsvpStats.total > 0 ? Math.round((rsvpStats.attending / rsvpStats.total) * 100) : 0} 100`} 
-                                                strokeDashoffset="0" 
-                                                strokeLinecap="round" 
-                                            />
-                                        </svg>
-                                        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                                            <span style={{ fontSize: '1.2rem', fontWeight: 700, color: '#111827', lineHeight: 1 }}>{rsvpStats.total}</span>
-                                            <span style={{ fontSize: '0.6rem', color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: '2px', fontWeight: 600 }}>Total</span>
-                                        </div>
-                                    </div>
-
-                                    {/* Horizontal Stats Blocks: Attending, Not Attending, Maybe */}
-                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(80px, 1fr))', gap: '0.6rem', flex: 1 }}>
-                                        <div style={{ background: '#FAFAFA', padding: '0.75rem 0.85rem', borderRadius: '12px', border: '1px solid #F3F4F6' }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginBottom: '0.25rem' }}>
-                                                <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#22C55E' }}></div>
-                                                <span style={{ fontSize: '0.725rem', color: '#4B5563', fontWeight: 600 }}>Attending</span>
-                                            </div>
-                                            <span style={{ fontSize: '1.2rem', fontWeight: 700, color: '#111827' }}>{rsvpStats.attending}</span>
-                                        </div>
-
-                                        <div style={{ background: '#FAFAFA', padding: '0.75rem 0.85rem', borderRadius: '12px', border: '1px solid #F3F4F6' }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginBottom: '0.25rem' }}>
-                                                <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#9CA3AF' }}></div>
-                                                <span style={{ fontSize: '0.725rem', color: '#4B5563', fontWeight: 600 }}>Not Attending</span>
-                                            </div>
-                                            <span style={{ fontSize: '1.2rem', fontWeight: 700, color: '#111827' }}>{rsvpStats.notAttending}</span>
-                                        </div>
-
-                                        <div style={{ background: '#FAFAFA', padding: '0.75rem 0.85rem', borderRadius: '12px', border: '1px solid #F3F4F6' }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginBottom: '0.25rem' }}>
-                                                <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#F59E0B' }}></div>
-                                                <span style={{ fontSize: '0.725rem', color: '#4B5563', fontWeight: 600 }}>Maybe</span>
-                                            </div>
-                                            <span style={{ fontSize: '1.2rem', fontWeight: 700, color: '#111827' }}>{rsvpStats.maybe || 0}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Action Buttons: Copy RSVP Link & Open RSVP */}
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid #F3F4F6', flexWrap: 'wrap' }}>
-                                <motion.button 
-                                    whileTap={{ scale: 0.96 }}
-                                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                                    onClick={handleCopyRsvpLink}
-                                    style={{ 
-                                        flex: 1, 
-                                        padding: '0.6rem 0.85rem', 
-                                        borderRadius: '10px', 
-                                        background: copiedRsvp ? '#ECFDF5' : '#FFFFFF', 
-                                        border: copiedRsvp ? '1px solid #10B981' : '1px solid #E5E7EB', 
-                                        color: copiedRsvp ? '#059669' : '#374151', 
-                                        fontSize: '0.8rem', 
-                                        fontWeight: 600, 
-                                        cursor: 'pointer', 
-                                        display: 'flex', 
-                                        alignItems: 'center', 
-                                        justifyContent: 'center', 
-                                        gap: '0.4rem',
-                                        transition: 'background 0.2s ease, border 0.2s ease, color 0.2s ease'
-                                    }}
-                                >
-                                    {copiedRsvp ? <Check size={14} /> : <Copy size={14} />}
-                                    <span>{copiedRsvp ? 'Copied Link!' : 'Copy RSVP Link'}</span>
-                                </motion.button>
-
-                                <motion.button 
-                                    whileTap={{ scale: 0.96 }}
-                                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                                    onClick={handleOpenRsvp}
-                                    style={{ 
-                                        flex: 1, 
-                                        padding: '0.6rem 0.85rem', 
-                                        borderRadius: '10px', 
-                                        background: '#1A1A1A', 
-                                        color: '#FFFFFF', 
-                                        border: 'none', 
-                                        fontSize: '0.8rem', 
-                                        fontWeight: 600, 
-                                        cursor: 'pointer', 
-                                        display: 'flex', 
-                                        alignItems: 'center', 
-                                        justifyContent: 'center', 
-                                        gap: '0.4rem',
-                                        boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
-                                    }}
-                                >
-                                    <ExternalLink size={14} />
-                                    <span>Open RSVP</span>
-                                </motion.button>
-                            </div>
-                        </div>
+                            );
+                        })}
                     </div>
                 </motion.div>
 
-                {/* Merged Full-Width Complete Wedding Communication Suite Card */}
-                <motion.div 
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ type: "spring", duration: 0.6, bounce: 0 }}
-                    style={{ marginTop: '2rem' }}
-                >
-                    <div className={styles.card} style={{ borderRadius: '24px', border: '1px solid rgba(0, 0, 0, 0.08)', background: '#FFFFFF', padding: '2rem', boxShadow: '0 4px 24px rgba(0,0,0,0.03)' }}>
-                        {/* Header Row */}
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.75rem' }}>
-                            <div>
-                                <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.5rem', fontWeight: 600, color: '#1A1A1A', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                    Complete Wedding Communication Suite ✨
-                                </h2>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '0.4rem' }}>
-                                    <div style={{ width: '18px', height: '18px', borderRadius: '50%', background: '#2E5B38', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFF' }}>
-                                        <Check size={11} strokeWidth={3} />
-                                    </div>
-                                    <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#4B5563' }}>Payment Completed • All Assets Ready</span>
-                                </div>
+                {deletingRsvpEventId && (
+                    <div className={rsvpStyles.modalOverlay} onClick={cancelDeleteRsvp}>
+                        <div className={rsvpStyles.modalContent} onClick={e => e.stopPropagation()}>
+                            <div style={{ marginBottom: '1rem', color: '#EF4444' }}>
+                                <Trash2 size={48} />
                             </div>
-                        </div>
-
-                        {/* Middle Content: 2 Columns */}
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.75rem', marginBottom: '1.75rem' }}>
-                            {/* Left Column: Events breakdown */}
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', background: '#FAFAFA', padding: '1.25rem 1.5rem', borderRadius: '16px', border: '1px solid #F3F4F6' }}>
-                                <div>
-                                    <p style={{ fontSize: '0.78rem', fontWeight: 700, color: '#1A1A1A', margin: 0, marginBottom: '0.2rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Wedding Invitations</p>
-                                    <p style={{ fontSize: '0.875rem', color: '#4B5563', margin: 0 }}>Save the Date · Wedding Invitation</p>
-                                </div>
-                                <div>
-                                    <p style={{ fontSize: '0.78rem', fontWeight: 700, color: '#1A1A1A', margin: 0, marginBottom: '0.2rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Wedding Events</p>
-                                    <p style={{ fontSize: '0.875rem', color: '#4B5563', margin: 0 }}>Haldi · Mehendi · Sangeet · Reception</p>
-                                </div>
-                                <div>
-                                    <p style={{ fontSize: '0.78rem', fontWeight: 700, color: '#1A1A1A', margin: 0, marginBottom: '0.2rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Closing & Gratitude</p>
-                                    <p style={{ fontSize: '0.875rem', color: '#4B5563', margin: 0 }}>Thank You Card</p>
-                                </div>
-                            </div>
-
-                            {/* Right Column: Capabilities checklist */}
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', justifyContent: 'center', background: '#FAFAFA', padding: '1.25rem 1.5rem', borderRadius: '16px', border: '1px solid #F3F4F6' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: '1.5px solid #C8A951', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#C8A951', flexShrink: 0 }}>
-                                        <Check size={11} strokeWidth={3} />
-                                    </div>
-                                    <span style={{ fontSize: '0.875rem', color: '#374151', fontWeight: 500 }}>Covers up to 7 wedding events</span>
-                                </div>
-
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: '1.5px solid #C8A951', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#C8A951', flexShrink: 0 }}>
-                                        <Check size={11} strokeWidth={3} />
-                                    </div>
-                                    <span style={{ fontSize: '0.875rem', color: '#374151', fontWeight: 500 }}>Mobile-optimized image invites</span>
-                                </div>
-
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: '1.5px solid #C8A951', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#C8A951', flexShrink: 0 }}>
-                                        <Check size={11} strokeWidth={3} />
-                                    </div>
-                                    <span style={{ fontSize: '0.875rem', color: '#374151', fontWeight: 500 }}>RSVP link with live guest count</span>
-                                </div>
-
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: '1.5px solid #C8A951', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#C8A951', flexShrink: 0 }}>
-                                        <Check size={11} strokeWidth={3} />
-                                    </div>
-                                    <span style={{ fontSize: '0.875rem', color: '#374151', fontWeight: 500 }}>Guest management RSVP</span>
-                                </div>
-
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: '1.5px solid #C8A951', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#C8A951', flexShrink: 0 }}>
-                                        <Check size={11} strokeWidth={3} />
-                                    </div>
-                                    <span style={{ fontSize: '0.875rem', color: '#374151', fontWeight: 500 }}>One-click WhatsApp sharing</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Footer Action Row */}
-                        <div style={{ paddingTop: '1.25rem', borderTop: '1px solid #F3F4F6', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-                            {/* Left Meta Info */}
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', fontSize: '0.8rem', color: '#6B7280', flexWrap: 'wrap' }}>
-                                <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                                    <Lock size={14} style={{ color: '#9CA3AF' }} /> Securely generated
-                                </span>
-                                <span>•</span>
-                                <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                                    <Zap size={14} style={{ color: '#9CA3AF' }} /> Instant sharing ready
-                                </span>
-                                <span>•</span>
-                                <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                                    <MessageCircle size={14} style={{ color: '#9CA3AF' }} /> Editable for 15 days
-                                </span>
-                            </div>
-
-                            {/* Right Action Buttons */}
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-                                <motion.button 
-                                    whileTap={{ scale: 0.96 }}
-                                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                                    className={styles.btnActionOutline} 
-                                    style={{ padding: '0.65rem 1.25rem', borderRadius: '12px', background: '#FFF', border: '1px solid #E5E7EB', fontWeight: 600, color: '#374151', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-                                >
-                                    <Download size={16} />
-                                    <span>Complete Assets</span>
-                                </motion.button>
-
-                                <motion.a 
-                                    whileTap={{ scale: 0.96 }}
-                                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                                    onClick={(e) => { e.preventDefault(); setSuitePreviewIndex(0); setSuitePreview(true); }} 
-                                    className={styles.btnActionOutline} 
-                                    style={{ padding: '0.65rem 1.25rem', borderRadius: '12px', background: '#FFF', border: '1px solid #E5E7EB', fontWeight: 600, color: '#374151', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-                                >
-                                    <Eye size={16} />
-                                    <span>View Invites</span>
-                                </motion.a>
+                            <h3 className={rsvpStyles.modalTitle}>Delete Event?</h3>
+                            <p className={rsvpStyles.modalText}>
+                                Are you sure you want to delete this event? This action cannot be undone and you will lose all collected RSVPs.
+                            </p>
+                            <div className={rsvpStyles.modalActions}>
+                                <button className={rsvpStyles.btnCancel} onClick={cancelDeleteRsvp}>Cancel</button>
+                                <button className={rsvpStyles.btnConfirmDelete} onClick={confirmDeleteRsvp}>Yes, Delete</button>
                             </div>
                         </div>
                     </div>
-                </motion.div>
+                )}
+
+
 
                 {/* 5. Support / Need Help Card */}
                 <motion.div 

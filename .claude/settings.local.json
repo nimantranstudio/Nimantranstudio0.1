@@ -1,5 +1,12 @@
 {
-  "description": "Impeccable design detector: runs after Edit/Write/MultiEdit on UI files and surfaces findings as system reminders.",
+  "permissions": {
+    "allow": [
+      "Bash(exit 1)",
+      "Bash(git push *)",
+      "Bash(git fetch *)",
+      "Bash(node -e ' *)"
+    ]
+  },
   "hooks": {
     "PostToolUse": [
       {
@@ -14,5 +21,6 @@
         ]
       }
     ]
-  }
+  },
+  "description": "Impeccable design detector: runs after Edit/Write/MultiEdit on UI files and surfaces findings as system reminders."
 }

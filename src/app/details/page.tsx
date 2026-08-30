@@ -573,7 +573,7 @@ function DetailsContent() {
                                     animate={{ height: 'auto', opacity: 1 }}
                                     exit={{ height: 0, opacity: 0 }}
                                     transition={{ type: "spring", bounce: 0, duration: 0.4 }}
-                                    style={{ overflow: 'hidden' }}
+                                    style={{ overflow: activeChapter === 1 ? 'visible' : 'hidden' }}
                                 >
                                     <div className={styles.chapterBody}>
                                         <div style={{ display: 'flex', flexDirection: isBrideFirst ? 'column-reverse' : 'column', gap: '1.5rem', position: 'relative' }}>
@@ -679,7 +679,7 @@ function DetailsContent() {
                                     animate={{ height: 'auto', opacity: 1 }}
                                     exit={{ height: 0, opacity: 0 }}
                                     transition={{ type: "spring", bounce: 0, duration: 0.4 }}
-                                    style={{ overflow: 'hidden' }}
+                                    style={{ overflow: activeChapter === 2 ? 'visible' : 'hidden' }}
                                 >
                                     <div className={styles.chapterBody}>
                                         <div className={clsx(styles.studioInputGroup, styles.split)}>
@@ -793,7 +793,7 @@ function DetailsContent() {
                                     animate={{ height: 'auto', opacity: 1 }}
                                     exit={{ height: 0, opacity: 0 }}
                                     transition={{ type: "spring", bounce: 0, duration: 0.4 }}
-                                    style={{ overflow: 'hidden' }}
+                                    style={{ overflow: activeChapter === 3 ? 'visible' : 'hidden' }}
                                 >
                                     <div className={styles.chapterBody}>
                                         <div className={styles.timelineBuilder}>
@@ -933,7 +933,7 @@ function DetailsContent() {
                                     animate={{ height: 'auto', opacity: 1 }}
                                     exit={{ height: 0, opacity: 0 }}
                                     transition={{ type: "spring", bounce: 0, duration: 0.4 }}
-                                    style={{ overflow: 'hidden' }}
+                                    style={{ overflow: activeChapter === 4 ? 'visible' : 'hidden' }}
                                 >
                                     <div className={styles.chapterBody}>
                                         <div className={clsx(styles.studioInputGroup, styles.split)}>

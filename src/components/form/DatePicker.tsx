@@ -88,10 +88,10 @@ export const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, id, cla
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
-                        initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                        initial={{ opacity: 0, y: 8, scale: 0.96 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 10, scale: 0.98 }}
-                        transition={{ duration: 0.2, ease: "easeOut" }}
+                        exit={{ opacity: 0, y: 6, scale: 0.96 }}
+                        transition={{ type: "spring", bounce: 0, duration: 0.35 }}
                         className={styles.popover}
                     >
                         <div className={styles.header}>

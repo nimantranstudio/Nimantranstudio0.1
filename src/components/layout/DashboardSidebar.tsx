@@ -19,7 +19,6 @@ export const DashboardSidebar = () => {
 
     const navItems = [
         { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-        { name: 'RSVP Manager', href: '/dashboard/rsvp', icon: Users },
         { name: 'Payment Details', href: '/dashboard/orders', icon: ShoppingBag },
     ];
 

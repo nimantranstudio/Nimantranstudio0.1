@@ -16,9 +16,9 @@ export default function RSVPPage() {
 
     const handleCreateRSVP = () => {
         if (isAuthenticated) {
-            router.push('/dashboard/rsvp/create');
+            router.push('/dashboard');
         } else {
-            router.push('/login?redirect=/dashboard/rsvp/create');
+            router.push('/login?redirect=/dashboard');
         }
     };
 

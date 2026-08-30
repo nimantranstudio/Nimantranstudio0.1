@@ -162,24 +162,44 @@
     z-index: 1001;
 }
 
-.profileBtn {
-    height: 36px;
-    border: none;
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    cursor: pointer;
-    background: transparent;
-    transition: all 0.2s;
-    color: var(--muted-foreground);
-    padding: 0 0.5rem;
+.loginLink {
     font-size: 0.925rem;
     font-weight: 600;
+    color: var(--muted-foreground);
+    transition: color 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    letter-spacing: 0.01em;
+    padding: 0.35rem 0.6rem;
+    border-radius: 8px;
+}
+
+.loginLink:hover {
+    color: var(--foreground);
+}
+
+.profileBtn {
+    height: auto;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    cursor: pointer;
+    background: transparent;
+    transition: color 0.2s ease;
+    color: var(--muted-foreground);
+    padding: 0.35rem 0.6rem;
+    font-size: 0.925rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    box-shadow: none;
 }
 
 .profileBtn:hover,
 .profileBtn.active {
+    background: transparent;
     color: var(--foreground);
+    box-shadow: none;
 }
 
 .chevron {

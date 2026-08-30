@@ -661,13 +661,11 @@
     color: #111827;
     font-family: var(--font-sans);
     transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    text-shadow: 0 0 12px rgba(212, 175, 55, 0.35);
 }
 
 .finalPriceMagnetic {
     font-weight: 750 !important;
     transform: scale(1.02);
-    text-shadow: 0 0 20px rgba(212, 175, 55, 0.7);
 }
 
 .unlockButton {

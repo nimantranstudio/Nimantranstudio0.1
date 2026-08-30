@@ -444,6 +444,15 @@ function PreviewContent() {
                     email: auth.currentUser?.email || '',
                     contact: whatsappDigits || formData.rsvpContact || userPhone || ""
                 },
+                // UPI only — no cards/netbanking/wallets/EMI, so no card-linked bank offers show up.
+                method: {
+                    upi: true,
+                    card: false,
+                    netbanking: false,
+                    wallet: false,
+                    paylater: false,
+                    emi: false,
+                },
                 theme: {
                     color: "#C8A951"
                 },

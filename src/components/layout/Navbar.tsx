@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useWeddingStore } from '@/store/wedding-store';
-import { Menu, X, User, LogOut, LayoutDashboard, ChevronDown } from 'lucide-react';
+import { Menu, X, LogOut, LayoutDashboard, ChevronDown } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import styles from './Navbar.module.css';
 import { clsx } from 'clsx';
@@ -60,7 +60,7 @@ export const Navbar = () => {
     const getDisplayName = () => {
         if (isAdmin) return 'NSAdmin';
         if (userPhone && userPhone.length >= 10) return userPhone;
-        return 'Guest User';
+        return 'My Nimantran';
     };
 
     return (
@@ -100,8 +100,10 @@ export const Navbar = () => {
                                 <button
                                     className={clsx(styles.profileBtn, isProfileOpen && styles.active)}
                                     onClick={() => setIsProfileOpen(!isProfileOpen)}
+                                    aria-expanded={isProfileOpen}
+                                    aria-label="User Account Menu"
                                 >
-                                    <span>Login</span>
+                                    <span>My Nimantran</span>
                                     <ChevronDown size={14} className={clsx(styles.chevron, isProfileOpen && styles.rotated)} />
                                 </button>
 
@@ -109,7 +111,7 @@ export const Navbar = () => {
                                     <div className={styles.dropdownMenu}>
                                         <div className={styles.dropdownHeader}>
                                             <span className={styles.userName}>Hi, {getDisplayName()}</span>
-                                            <span className={styles.userRole}>User Account</span>
+                                            <span className={styles.userRole}>{isAdmin ? 'Administrator' : 'User Account'}</span>
                                         </div>
                                         <Link
                                             href="/dashboard"
@@ -127,9 +129,8 @@ export const Navbar = () => {
                                 )}
                             </div>
                         ) : (
-                            <Link href="/login" className={styles.profileBtn}>
+                            <Link href="/login" className={styles.loginLink}>
                                 <span>Login</span>
-                                <ChevronDown size={14} className={styles.chevron} />
                             </Link>
                         )}
                     </div>

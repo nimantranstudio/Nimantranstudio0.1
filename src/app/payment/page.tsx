@@ -149,6 +149,15 @@ export default function PaymentPage() {
                     email: '',
                     contact: formData.rsvpContact || userPhone || ""
                 },
+                // UPI only — no cards/netbanking/wallets/EMI, so no card-linked bank offers show up.
+                method: {
+                    upi: true,
+                    card: false,
+                    netbanking: false,
+                    wallet: false,
+                    paylater: false,
+                    emi: false,
+                },
                 theme: {
                     color: "#C8A951"
                 },
