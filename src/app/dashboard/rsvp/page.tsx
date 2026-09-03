@@ -9,7 +9,6 @@ import {
     FileText, Users, XCircle, HelpCircle
 } from 'lucide-react';
 import styles from './rsvp-list.module.css';
-import { DashboardSidebar } from '@/components/layout/DashboardSidebar';
 import { auth } from '@/lib/firebase';
 
 interface RSVPEntry {
@@ -135,8 +134,6 @@ export default function RSVPListPage() {
 
     return (
         <div className={styles.container}>
-            <DashboardSidebar />
-
             <main className={styles.main}>
                 <motion.header
                     className={styles.header}

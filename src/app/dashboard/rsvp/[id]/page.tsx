@@ -5,7 +5,6 @@ import { useWeddingStore } from '@/store/wedding-store';
 import { formatDisplayDate } from '@/lib/format-date';
 import { ArrowLeft, Calendar, MapPin, Download, Share2, Search } from 'lucide-react';
 import styles from './guest-list.module.css';
-import { DashboardSidebar } from '@/components/layout/DashboardSidebar';
 import { useMemo, useState, useEffect } from 'react';
 import { auth } from '@/lib/firebase';
 
@@ -105,8 +104,6 @@ export default function GuestListPage() {
 
     return (
         <div className={styles.container}>
-            <DashboardSidebar />
-
             <main className={styles.main}>
                 <div className={styles.header}>
                     <div className={styles.headerTop}>

@@ -10,6 +10,7 @@ import Script from 'next/script';
 import { InvitationCardRef } from '@/components/preview/InvitationCard';
 import { PreviewCard } from '@/components/preview/PreviewCard';
 import { ProvisioningOverlay } from '@/components/payment/ProvisioningOverlay';
+import { WelcomeDialog } from '@/components/dashboard/WelcomeDialog';
 import clsx from 'clsx';
 
 export default function PaymentPage() {
@@ -347,9 +348,14 @@ export default function PaymentPage() {
                 </div>
             )}
 
-            {/* Fullscreen provisioning overlay while the backend sets everything up */}
+            {/* Fullscreen payment success card modal */}
             {paymentStatus === 'success' && (
-                <ProvisioningOverlay coupleNames={coupleNames} />
+                <WelcomeDialog 
+                    open={paymentStatus === 'success'} 
+                    onClose={() => router.push('/dashboard')} 
+                    coupleNames={coupleNames}
+                    autoDismiss={false} 
+                />
             )}
 
             <div className={styles.breadcrumbBar}>

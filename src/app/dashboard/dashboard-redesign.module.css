@@ -442,99 +442,169 @@
     transform: scale(0.95);
 }
 
+/* Dedicated Couple Info Card above Invitation Suite */
+.coupleInfoCard {
+    background: #FFFFFF;
+    border-radius: 20px;
+    padding: 1.25rem 1.75rem;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.01), 0 6px 20px rgba(0, 0, 0, 0.02);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.coupleInfoCard:hover {
+    border-color: rgba(200, 169, 81, 0.25);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.01), 0 10px 28px rgba(0, 0, 0, 0.035);
+}
+
 /* Background Card Wrapper for Invitation Suite */
 .carouselContainerCard {
     background: #FFFFFF;
     border-radius: 24px;
-    padding: 0.85rem 1.15rem 0.75rem 1.15rem;
-    border: 1px solid #E5E7EB;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.03), 0 1px 3px rgba(0, 0, 0, 0.02);
+    padding: 1.5rem 1.75rem 1.5rem 1.75rem;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.01), 0 8px 30px rgba(0, 0, 0, 0.025);
     position: relative;
 }
 
-.viewAllLink {
-    transition: color 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s ease;
+.carouselHeaderRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
 }
 
-.viewAllLink:hover {
-    color: #C8A951 !important;
-    transform: translateX(2px);
+.carouselNavGroup {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
-.carouselOverlayNavBtn {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 30;
-    width: 40px;
-    height: 40px;
+.carouselHeaderNavBtn {
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
-    background: #FFFFFF;
-    border: 1px solid rgba(0, 0, 0, 0.12);
-    color: #1A1A1A;
+    background: #F9FAFB;
+    border: 1px solid #E5E7EB;
+    color: #4B5563;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
     transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.carouselOverlayNavBtn:hover {
-    background: #FFFFFF;
-    border-color: #C8A951;
-    color: #C8A951;
-    transform: translateY(-50%) scale(1.1);
-    box-shadow: 0 6px 20px rgba(200, 169, 81, 0.2);
+.carouselHeaderNavBtn:hover {
+    background: #111827;
+    border-color: #111827;
+    color: #FFFFFF;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
-.carouselOverlayNavBtn:active {
-    transform: translateY(-50%) scale(0.95);
+.carouselHeaderNavBtn:active {
+    transform: scale(0.92);
+    transition: transform 0s;
 }
 
 .carouselTrack {
     display: flex;
-    gap: 0.85rem;
+    gap: 1.15rem;
     overflow-x: auto;
     scroll-behavior: auto;
-    padding-bottom: 0.5rem;
-    padding-top: 0.15rem;
+    padding: 0.25rem 0.25rem 0.5rem 0.25rem;
     scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
 }
 
 .carouselTrack::-webkit-scrollbar {
     display: none;
 }
 
-/* Card Mockup (Slightly Reduced Size for Sleek Carousel Display) */
+/* Card Mockup - Elevated Pro Max Design */
 .suiteCard {
-    flex: 0 0 140px;
+    flex: 0 0 162px;
+    min-width: 158px;
+    scroll-snap-align: start;
     background: #FFFFFF;
-    border-radius: 14px;
-    padding: 0.5rem;
+    border-radius: 18px;
+    padding: 0.65rem;
     border: 1px solid rgba(0, 0, 0, 0.06);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03), 0 1px 3px rgba(0, 0, 0, 0.02);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.015), 0 4px 16px rgba(0, 0, 0, 0.025);
     display: flex;
     flex-direction: column;
-    gap: 0.35rem;
+    gap: 0.5rem;
     cursor: pointer;
-    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
+    position: relative;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, border-color 0.25s ease;
 }
 
 .suiteCard:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.07);
+    transform: translateY(-6px);
+    border-color: rgba(200, 169, 81, 0.45);
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(200, 169, 81, 0.08);
+}
+
+.suiteCard:active {
+    transform: scale(0.97);
+    transition: transform 0s;
 }
 
 .suiteCardPosterWrapper {
     width: 100%;
     aspect-ratio: 9/16;
     background: #F9FAFB;
-    border-radius: 10px;
+    border-radius: 12px;
     overflow: hidden;
     position: relative;
-    border: 1px solid #F3F4F6;
+    border: 1px solid rgba(0, 0, 0, 0.04);
     cursor: pointer;
+}
+
+/* Elegant poster hover overlay */
+.suiteCardOverlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(2px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    border-radius: 12px;
+}
+
+.suiteCard:hover .suiteCardOverlay {
+    opacity: 1;
+}
+
+.suiteCardOverlayBadge {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(8px);
+    color: #1E293B;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.35rem 0.75rem;
+    border-radius: 100px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    transform: translateY(4px);
+    transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.suiteCard:hover .suiteCardOverlayBadge {
+    transform: translateY(0);
 }
 
 .suiteCardInfo {
@@ -545,11 +615,14 @@
 
 .suiteCardTitle {
     font-family: var(--font-serif);
-    font-size: 0.875rem;
+    font-size: 0.88rem;
     font-weight: 600;
-    color: #1A1A1A;
+    color: #1F2937;
     margin: 0;
-    line-height: 1.2;
+    line-height: 1.25;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .suiteCardMetaRow {
@@ -557,7 +630,7 @@
     align-items: center;
     gap: 0.25rem;
     font-size: 0.68rem;
-    color: #666666;
+    color: #6B7280;
     font-weight: 500;
 }
 
@@ -565,33 +638,46 @@
     color: #D1D5DB;
 }
 
+/* Elegant, Refined Secondary WhatsApp Pill Button */
 .suiteWhatsappBtn {
     width: 100%;
-    background: #25D366;
-    border: 1px solid #22C55E;
-    color: #FFFFFF;
-    padding: 0.38rem 0.5rem;
-    border-radius: 8px;
+    background: #FFFFFF;
+    border: 1px solid #E5E7EB;
+    color: #374151;
+    padding: 0.42rem 0.6rem;
+    border-radius: 100px;
     font-size: 0.72rem;
     font-weight: 600;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.35rem;
+    gap: 0.4rem;
     cursor: pointer;
-    box-shadow: 0 2px 8px rgba(37, 211, 102, 0.25);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
     transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+.suiteWhatsappBtn svg {
+    color: #16A34A;
+    transition: color 0.2s ease;
+}
+
+.suiteCard:hover .suiteWhatsappBtn,
 .suiteWhatsappBtn:hover {
-    background: #1EBE5D;
-    border-color: #16A34A;
+    background: #16A34A;
+    border-color: #15803D;
+    color: #FFFFFF;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(37, 211, 102, 0.35);
+}
+
+.suiteCard:hover .suiteWhatsappBtn svg,
+.suiteWhatsappBtn:hover svg {
+    color: #FFFFFF;
 }
 
 .suiteWhatsappBtn:active {
-    transform: scale(0.96);
+    transform: scale(0.97);
 }
 
 .suiteDownloadBtn {

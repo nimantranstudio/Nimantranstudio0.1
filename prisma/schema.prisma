@@ -96,9 +96,12 @@ model Order {
   status            String          @default("pending") // pending | created | paid | ready | failed
   razorpayOrderId   String?         @unique
   razorpayPaymentId String?
+  paymentMethod     String?
   contactEmail      String?
   contactPhone      String?
   weddingId         String?
+  invoiceNumber     String?         @unique
+  invoiceIssuedAt   DateTime?
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
   bundle            Bundle          @relation(fields: [bundleId], references: [id])
@@ -106,6 +109,17 @@ model Order {
   videoRenderJob    VideoRenderJob?
 
   @@map("Order")
+}
+
+// Sequential per-financial-year counter backing GST invoice numbers
+// (id = FY label like "2026-27"). GST invoice rules require a continuous,
+// unbroken sequence — never reuse or renumber, even if an order is later
+// disputed/refunded.
+model InvoiceCounter {
+  id  String @id
+  seq Int    @default(0)
+
+  @@map("InvoiceCounter")
 }
 
 model VideoRenderJob {

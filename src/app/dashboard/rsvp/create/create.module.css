@@ -1,14 +1,15 @@
-/* Dashboard Layout Matches */
 .container {
-    display: flex;
+    display: block;
+    width: 100%;
     min-height: 100vh;
     background-color: #FDFBF7;
 }
 
 .main {
-    flex: 1;
-    padding: 2.5rem 3rem;
-    overflow-y: auto;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 5rem;
 }
 
 /* Breadcrumb Styles */

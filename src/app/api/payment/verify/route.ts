@@ -6,6 +6,7 @@ import { WeddingFormSchema } from '@/lib/schemas/wedding-form';
 import { createSessionToken, SESSION_COOKIE, sessionCookieOptions } from '@/lib/session';
 import { toTenDigits } from '@/lib/messaging/types';
 import { sendWelcomeAndReceipt } from '@/lib/notifications';
+import { ensureInvoiceNumber } from '@/lib/invoice/invoice-number';
 import sanitizeHtml from 'sanitize-html';
 
 function sanitize(str: any): string {
@@ -141,6 +142,7 @@ export async function POST(req: NextRequest) {
                     status: 'paid',
                     razorpayOrderId: razorpay_order_id,
                     razorpayPaymentId: razorpay_payment_id,
+                    paymentMethod: rzpPayment.method || null,
                     contactEmail: email,
                     contactPhone: mobile,
                 },
@@ -153,10 +155,20 @@ export async function POST(req: NextRequest) {
                     status: 'paid',
                     userId: user.id,
                     razorpayPaymentId: razorpay_payment_id,
+                    paymentMethod: rzpPayment.method || null,
                     contactEmail: email,
                     contactPhone: mobile,
                 },
             });
+        }
+
+        // Payment is confirmed at this point (signature verified above) — issue
+        // the GST invoice number now, independent of whether suite provisioning
+        // below succeeds. Never blocks the response.
+        try {
+            await ensureInvoiceNumber(order.id);
+        } catch (invoiceErr: any) {
+            console.error('Invoice numbering failed:', invoiceErr?.message);
         }
 
         // 5. Provision the wedding suite. If this throws AFTER payment, the user

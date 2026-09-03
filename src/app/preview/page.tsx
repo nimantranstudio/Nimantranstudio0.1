@@ -421,14 +421,17 @@ function PreviewContent() {
                             // Record the provisioned wedding + auth so the dashboard resolves.
                             setCheckoutComplete(verifyData.weddingId, userPhone);
 
-                            // Generate Bundle
-                            await fetch('/api/generate-bundle', {
+                            // Generate Bundle in background
+                            fetch('/api/generate-bundle', {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ bundleId: bundleItems?.[0]?.id })
-                            });
+                            }).catch(() => {});
 
-                            router.push('/dashboard');
+                            // Brief celebration time on screen, then automatically navigate to dashboard
+                            setTimeout(() => {
+                                router.push('/dashboard');
+                            }, 2600);
                         } else {
                             throw new Error(verifyData.error || 'Payment verification failed');
                         }
@@ -668,14 +671,11 @@ function PreviewContent() {
         <div className={styles.previewPage}>
             <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="afterInteractive" onLoad={() => console.log('Razorpay script loaded')} />
             
-            {/* Success Overlay */}
-            {/* Single celebratory success screen. It appears the moment payment
-                succeeds and stays through provisioning (autoDismiss off) until we
-                navigate to the dashboard — so there's no separate "securing" screen. */}
+            {/* Success Celebration Overlay with Flower Shower */}
             <WelcomeDialog
                 open={paymentStatus === 'success'}
                 autoDismiss={false}
-                onClose={() => { /* stays until navigation */ }}
+                onClose={() => router.push('/dashboard')}
                 coupleNames={[formData.groomName, formData.brideName].filter(Boolean).join(' & ') || undefined}
             />
 

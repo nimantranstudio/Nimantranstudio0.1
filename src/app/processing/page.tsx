@@ -61,8 +61,8 @@ export default function ProcessingPage() {
                 }, delay);
             };
 
-            triggerBurst(0, 0.5);      // Center
-            triggerBurst(5000, 0.8);   // Right
+            // Second blast only
+            triggerBurst(5000, 0.8);
 
             // Auto-navigate to preview after 10 seconds total
             const navigateTimer = setTimeout(() => {

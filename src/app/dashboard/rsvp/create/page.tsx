@@ -10,7 +10,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useWeddingStore } from '@/store/wedding-store';
 import dashboardStyles from '../../dashboard.module.css';
-import { DashboardSidebar } from '@/components/layout/DashboardSidebar';
 
 export default function RSVPCreatePage() {
     const router = useRouter();
@@ -77,8 +76,6 @@ export default function RSVPCreatePage() {
 
     return (
         <div className={styles.container}>
-            <DashboardSidebar />
-
             <main className={styles.main}>
                 {/* Breadcrumb */}
                 <div className={styles.breadcrumb}>

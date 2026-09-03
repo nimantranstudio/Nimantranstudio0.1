@@ -16,7 +16,6 @@ import {
 import styles from './dashboard-wedding.module.css';
 import dashboardStyles from '../dashboard.module.css';
 import { clsx } from 'clsx';
-import { DashboardSidebar } from '@/components/layout/DashboardSidebar';
 
 interface RSVP {
     id: string;
@@ -79,8 +78,6 @@ export default function DashboardPage() {
 
     return (
         <div className={dashboardStyles.dashboardContainer}>
-            <DashboardSidebar />
-            
             <main className={dashboardStyles.main}>
                 <header className={dashboardStyles.header}>
                     <h1 className={dashboardStyles.title}>Guest Management</h1>

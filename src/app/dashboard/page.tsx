@@ -1,10 +1,9 @@
 'use client';
 
 import { useWeddingStore } from '@/store/wedding-store';
-import { formatDisplayDate, formatDisplayTime } from '@/lib/format-date';
+import { formatDisplayDate, formatLongDisplayDate, formatDisplayTime, parseWeddingDate, calculateDaysRemaining } from '@/lib/format-date';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
-import { DashboardSidebar } from '@/components/layout/DashboardSidebar';
 import { WelcomeDialog } from '@/components/dashboard/WelcomeDialog';
 import { InvitationCard, InvitationCardRef } from '@/components/preview/InvitationCard';
 import { PreviewCard } from '@/components/preview/PreviewCard';
@@ -43,6 +42,9 @@ import {
     MoreVertical,
     Heart,
     Trash2,
+    CreditCard,
+    ChevronLeft,
+    ChevronRight,
     Search
 } from 'lucide-react';
 import Link from 'next/link';
@@ -297,24 +299,29 @@ export default function DashboardPage() {
 
         setTimeout(() => {
             setIsCarouselHovered(false);
-        }, 600);
+        }, 300);
     };
 
-    // Continuous infinite smooth auto-scroll ticker with seamless loop reset
+    // Continuous slow, majestic infinite auto-scroll ticker with seamless loop reset
     useEffect(() => {
         let animationFrameId: number;
+        let lastTime = performance.now();
 
-        const step = () => {
+        const step = (time: number) => {
+            const deltaTime = Math.min((time - lastTime) / 1000, 0.1);
+            lastTime = time;
+
             if (!isCarouselHovered && carouselTrackRef.current) {
                 const track = carouselTrackRef.current;
                 const oneSetWidth = track.scrollWidth / 4;
                 const maxScroll = track.scrollWidth - track.clientWidth;
                 
                 if (oneSetWidth > 0 && maxScroll > 0) {
-                    track.scrollLeft += 1;
+                    // Smooth, gentle 30px per second glide
+                    track.scrollLeft += 30 * deltaTime;
 
                     // Seamlessly loop back by one set width when reaching the threshold
-                    if (track.scrollLeft >= oneSetWidth || track.scrollLeft >= maxScroll - 2) {
+                    if (track.scrollLeft >= oneSetWidth) {
                         track.scrollLeft = (track.scrollLeft - oneSetWidth) % oneSetWidth;
                     }
                 }
@@ -325,6 +332,7 @@ export default function DashboardPage() {
         animationFrameId = requestAnimationFrame(step);
         return () => cancelAnimationFrame(animationFrameId);
     }, [isCarouselHovered]);
+
     const [timeLeft, setTimeLeft] = useState({
         days: '00',
         hours: '00',
@@ -334,22 +342,12 @@ export default function DashboardPage() {
     });
 
     useEffect(() => {
-        let targetDateStr = formData.primaryDate;
-        if (!targetDateStr && formData.events && formData.events.length > 0) {
-            targetDateStr = formData.events[0].date;
-        }
+        const rawDate = formData.primaryDate || (formData.events && formData.events.length > 0 ? formData.events[0].date : '');
+        const rawTime = formData.primaryTime || (formData.events && formData.events.length > 0 ? formData.events[0].time : '');
+        const parsedTarget = parseWeddingDate(rawDate, rawTime);
 
-        let targetDate: Date;
-        if (targetDateStr && !isNaN(Date.parse(targetDateStr))) {
-            targetDate = new Date(targetDateStr);
-        } else {
-            // Default 47 days, 8 hours, 24 mins, 36 secs as in mockup
-            targetDate = new Date();
-            targetDate.setDate(targetDate.getDate() + 47);
-            targetDate.setHours(targetDate.getHours() + 8);
-            targetDate.setMinutes(targetDate.getMinutes() + 24);
-            targetDate.setSeconds(targetDate.getSeconds() + 36);
-        }
+        // If user has provided a date, use it; otherwise use a future reference date
+        const targetDate = parsedTarget || parseWeddingDate('20-12-2025') || new Date(Date.now() + 47 * 86400000);
 
         const updateTimer = () => {
             const now = new Date().getTime();
@@ -376,7 +374,7 @@ export default function DashboardPage() {
         updateTimer();
         const interval = setInterval(updateTimer, 1000);
         return () => clearInterval(interval);
-    }, [formData.primaryDate, formData.events]);
+    }, [formData.primaryDate, formData.primaryTime, formData.events]);
 
     useEffect(() => {
         setIsMounted(true);
@@ -685,110 +683,169 @@ export default function DashboardPage() {
                 </div>
             )}
             
-            <DashboardSidebar />
-            
             <main className={styles.mainContent}>
-                <div className={styles.dashboardHeader} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1.5rem', marginBottom: '1.5rem' }}>
-                    <div style={{ flex: '1 1 340px', maxWidth: '580px' }}>
-                        <h1 className={styles.title} style={{ margin: 0 }}>Welcome! Your wedding assets are ready.</h1>
-                        <p className={styles.subtitle} style={{ marginTop: '0.5rem', margin: 0 }}>Everything you need to announce, celebrate, and share your special moments is organized in one place ready to download instantly and share with confidence.</p>
-                    </div>
-
-                    {/* Compact Hero Couple & Countdown Card in Right Corner */}
-                    <div style={{ 
-                        background: '#FFFFFF', 
-                        borderRadius: '20px', 
-                        border: '1px solid rgba(0, 0, 0, 0.08)', 
-                        padding: '0.85rem 1.25rem', 
-                        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.03)',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '0.6rem',
-                        minWidth: '310px'
-                    }}>
-                        {/* Top: Couple & Meta */}
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
-                            <div>
-                                <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.15rem', fontWeight: 600, color: '#1A1A1A', margin: 0, lineHeight: 1.2 }}>
-                                    {formData.brideName || formData.groomName ? 
-                                        [formData.brideName, formData.groomName].filter(Boolean).join(' & ') 
-                                        : 'Ananya & Rohan'}
-                                </h3>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.75rem', color: '#666666', marginTop: '0.25rem', fontWeight: 500 }}>
-                                    <Calendar size={13} style={{ color: '#C8A951' }} />
-                                    <span>{formatDisplayDate(formData.primaryDate || formData.events?.[0]?.date) || '20-12-2025'}</span>
-                                    <span>•</span>
-                                    <MapPin size={13} style={{ color: '#C8A951' }} />
-                                    <span>{formData.defaultVenueName || formData.defaultVenueAddress || 'Udaipur, Rajasthan'}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Bottom: Compact Countdown Bar */}
-                        <div style={{ background: '#F9FAFB', borderRadius: '12px', padding: '0.4rem 0.75rem', border: '1px solid #F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
-                            <span style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.05em', color: '#888888', textTransform: 'uppercase' }}>
-                                BIG DAY IN
-                            </span>
-
-                            {timeLeft.isPast ? (
-                                <span style={{ fontFamily: 'var(--font-serif)', fontSize: '0.85rem', color: '#C8A951', fontWeight: 600 }}>🎉 Today is the Big Day!</span>
-                            ) : (
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontFamily: 'var(--font-serif)', fontSize: '0.85rem', fontWeight: 600 }}>
-                                    <span style={{ color: '#C8A951' }}>{timeLeft.days}<span style={{ fontSize: '0.6rem', color: '#888888', fontFamily: 'sans-serif', marginLeft: '1px' }}>D</span></span>
-                                    <span style={{ color: '#E5E7EB' }}>:</span>
-                                    <span style={{ color: '#C8A951' }}>{timeLeft.hours}<span style={{ fontSize: '0.6rem', color: '#888888', fontFamily: 'sans-serif', marginLeft: '1px' }}>H</span></span>
-                                    <span style={{ color: '#E5E7EB' }}>:</span>
-                                    <span style={{ color: '#C8A951' }}>{timeLeft.minutes}<span style={{ fontSize: '0.6rem', color: '#888888', fontFamily: 'sans-serif', marginLeft: '1px' }}>M</span></span>
-                                    <span style={{ color: '#E5E7EB' }}>:</span>
-                                    <span style={{ color: '#C8A951' }}>{timeLeft.seconds}<span style={{ fontSize: '0.6rem', color: '#888888', fontFamily: 'sans-serif', marginLeft: '1px' }}>S</span></span>
-                                </div>
-                            )}
-                        </div>
-                    </div>
+                {/* 1. Clean Full-Width Dashboard Welcome Header */}
+                <div className={styles.dashboardHeader} style={{ marginBottom: '1.5rem' }}>
+                    <h1 className={styles.title} style={{ margin: 0 }}>Welcome! Your wedding suite is ready.</h1>
+                    <p className={styles.subtitle} style={{ marginTop: '0.45rem', margin: 0, color: '#64748B', fontSize: '0.95rem' }}>Download your cards, share instantly on WhatsApp, and track guest RSVPs in real time.</p>
                 </div>
 
-                {/* 2. Full-Width Carousel Section with Background Card Wrapper */}
+                {/* 2. Dedicated Couple & Wedding Details Celebration Card */}
+                <motion.div
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ type: "spring", duration: 0.5, bounce: 0, delay: 0.08 }}
+                    style={{ marginBottom: '1.25rem' }}
+                >
+                    <div className={redesignStyles.coupleInfoCard}>
+                        {/* Couple Name & Date / Countdown Row */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                            {/* Line 1: Couple Name */}
+                            <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.45rem', fontWeight: 600, color: '#111827', margin: 0, lineHeight: 1.2, letterSpacing: '-0.02em' }}>
+                                {formData.brideName || formData.groomName ? 
+                                    [formData.brideName, formData.groomName].filter(Boolean).join(' & ') 
+                                    : 'Ananya & Rohan'}
+                            </h3>
+
+                            {/* Line 2: Real-time Date  ·  Real-time Days to go */}
+                            {(() => {
+                                const userDateStr = formData.primaryDate || (formData.events && formData.events.length > 0 ? formData.events[0].date : '');
+                                const countdownData = calculateDaysRemaining(userDateStr || '20-12-2025');
+                                const displayDate = formatLongDisplayDate(userDateStr) || '20 December 2025';
+
+                                return (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.86rem', color: '#64748B', fontWeight: 500, flexWrap: 'wrap' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                                            <Calendar size={13} style={{ color: '#C8A951' }} />
+                                            <span style={{ color: '#334155', fontWeight: 600 }}>
+                                                {displayDate}
+                                            </span>
+                                        </div>
+
+                                        <span style={{ color: '#94A3B8', margin: '0 0.15rem' }}>·</span>
+
+                                        <span style={{ color: '#B45309', fontWeight: 600 }}>
+                                            {countdownData.text}
+                                        </span>
+                                    </div>
+                                );
+                            })()}
+                        </div>
+
+                        {/* Right Corner Group: Action Buttons */}
+                        <div style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: '0.75rem', 
+                            flexWrap: 'wrap', 
+                            marginLeft: 'auto' 
+                        }}>
+
+                            {/* Complete Assets Download Button */}
+                            <motion.button
+                                whileTap={{ scale: 0.95 }}
+                                transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                                onClick={() => {
+                                    previewItems.forEach((item) => {
+                                        if (item.image) {
+                                            const a = document.createElement('a');
+                                            a.href = item.image;
+                                            a.download = `${(item.name || 'invitation').toLowerCase().replace(/\s+/g, '_')}_invitation.png`;
+                                            a.click();
+                                        }
+                                    });
+                                }}
+                                style={{
+                                    background: '#FFFFFF',
+                                    border: '1px solid #E5E7EB',
+                                    color: '#374151',
+                                    padding: '0.45rem 1rem',
+                                    borderRadius: '100px',
+                                    fontSize: '0.82rem',
+                                    fontWeight: 600,
+                                    cursor: 'pointer',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '0.45rem',
+                                    boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+                                    transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)'
+                                }}
+                                className={redesignStyles.footerActionBtn}
+                            >
+                                <Download size={14} />
+                                <span>Download Assets</span>
+                            </motion.button>
+
+                            {/* Share on WhatsApp Button */}
+                            <motion.button
+                                whileTap={{ scale: 0.95 }}
+                                transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                                onClick={() => handleShareWhatsApp()}
+                                style={{
+                                    background: '#FFFFFF',
+                                    border: '1px solid #E5E7EB',
+                                    color: '#374151',
+                                    padding: '0.45rem 1rem',
+                                    borderRadius: '100px',
+                                    fontSize: '0.82rem',
+                                    fontWeight: 600,
+                                    cursor: 'pointer',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '0.45rem',
+                                    boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+                                    transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)'
+                                }}
+                                className={redesignStyles.footerActionBtn}
+                            >
+                                <MessageCircle size={15} style={{ color: '#16A34A' }} />
+                                <span>Share on WhatsApp</span>
+                            </motion.button>
+                        </div>
+                    </div>
+                </motion.div>
+
+                {/* 3. Full-Width Carousel Section with Background Card Wrapper */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ type: "spring", duration: 0.6, bounce: 0, delay: 0.1 }}
-                    style={{ position: 'relative', marginTop: '2rem' }}
+                    transition={{ type: "spring", duration: 0.6, bounce: 0, delay: 0.12 }}
+                    style={{ position: 'relative' }}
                 >
                     <div className={redesignStyles.carouselContainerCard}>
                         {/* Section Header Row */}
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
+                        <div className={redesignStyles.carouselHeaderRow}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-                                <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.35rem', fontWeight: 600, color: '#1A1A1A', margin: 0 }}>
+                                <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.35rem', fontWeight: 600, color: '#1A1A1A', margin: 0, letterSpacing: '-0.01em' }}>
                                     Your Invitation Suite
                                 </h2>
-                                <span style={{ background: '#ECFDF5', color: '#059669', fontSize: '0.78rem', fontWeight: 600, padding: '0.3rem 0.85rem', borderRadius: '100px', display: 'inline-flex', alignItems: 'center', gap: '0.35rem', border: '1px solid rgba(16, 185, 129, 0.15)' }}>
-                                    {previewItems.length || 7} Assets Ready
+                                <span style={{ background: '#ECFDF5', color: '#059669', fontSize: '0.78rem', fontWeight: 600, padding: '0.3rem 0.85rem', borderRadius: '100px', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', border: '1px solid rgba(16, 185, 129, 0.15)' }}>
+                                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10B981', display: 'inline-block' }} />
+                                    {previewItems.length || 5} Assets Ready
                                 </span>
+                            </div>
+
+                            {/* Header Navigation Controls */}
+                            <div className={redesignStyles.carouselNavGroup}>
+                                <button 
+                                    className={redesignStyles.carouselHeaderNavBtn}
+                                    onClick={() => scrollCarousel('left')}
+                                    aria-label="Scroll left"
+                                >
+                                    <ChevronLeft size={18} />
+                                </button>
+                                <button 
+                                    className={redesignStyles.carouselHeaderNavBtn}
+                                    onClick={() => scrollCarousel('right')}
+                                    aria-label="Scroll right"
+                                >
+                                    <ChevronRight size={18} />
+                                </button>
                             </div>
                         </div>
 
                         {/* Carousel Content Track */}
                         <div className={redesignStyles.carouselSection} style={{ position: 'relative' }}>
-                            {/* Floating Left Overlay Navigation Arrow */}
-                            <button 
-                                className={redesignStyles.carouselOverlayNavBtn}
-                                style={{ left: '-16px', top: '50%', zIndex: 30 }}
-                                onClick={() => scrollCarousel('left')}
-                                aria-label="Scroll left"
-                            >
-                                <ArrowRight size={18} style={{ transform: 'rotate(180deg)' }} />
-                            </button>
-
-                            {/* Floating Right Overlay Navigation Arrow */}
-                            <button 
-                                className={redesignStyles.carouselOverlayNavBtn}
-                                style={{ right: '-16px', top: '50%', zIndex: 30 }}
-                                onClick={() => scrollCarousel('right')}
-                                aria-label="Scroll right"
-                            >
-                                <ArrowRight size={18} />
-                            </button>
-
                             <div 
                                 ref={carouselTrackRef} 
                                 className={redesignStyles.carouselTrack}
@@ -797,29 +854,13 @@ export default function DashboardPage() {
                             >
                                 {[...previewItems, ...previewItems, ...previewItems, ...previewItems].map((item, itemIdx) => {
                                     const originalIdx = itemIdx % (previewItems.length || 1);
-                                    
                                     // Extract real date/time from item.event or formData
                                     const rawDate = item.event?.date || formData.primaryDate;
-                                    const rawTime = item.event?.time || formData.primaryTime;
                                     const dateDisplay = formatDisplayDate(rawDate) || '06-08-2026';
-                                    const timeDisplay = formatDisplayTime(rawTime) || '2:00 PM';
-
-                                    // Calculate actual image size in MB (from base64 data or actual asset resolution size)
-                                    const getCardSizeMB = () => {
-                                        if (item.image && typeof item.image === 'string' && item.image.startsWith('data:image')) {
-                                            const base64Length = item.image.length - (item.image.indexOf(',') + 1);
-                                            const bytes = (base64Length * 3) / 4;
-                                            const mb = (bytes / (1024 * 1024)).toFixed(1);
-                                            return `${mb}MB`;
-                                        }
-                                        const sizes = ['2.4MB', '3.1MB', '1.8MB', '2.6MB', '2.1MB', '2.9MB', '1.9MB', '2.7MB'];
-                                        return sizes[originalIdx % sizes.length];
-                                    };
-                                    const cardSize = getCardSizeMB();
 
                                     return (
                                         <div 
-                                            key={`${item.id || itemIdx}-${itemIdx}`} 
+                                            key={`${item.id || itemIdx}-${itemIdx}`}
                                             className={redesignStyles.suiteCard}
                                             style={{ position: 'relative' }}
                                         >
@@ -863,6 +904,14 @@ export default function DashboardPage() {
                                                         <FileText size={32} />
                                                     </div>
                                                 )}
+
+                                                {/* Hover Overlay Badge */}
+                                                <div className={redesignStyles.suiteCardOverlay}>
+                                                    <div className={redesignStyles.suiteCardOverlayBadge}>
+                                                        <Eye size={12} />
+                                                        <span>Preview</span>
+                                                    </div>
+                                                </div>
                                             </div>
 
                                             {/* Info & Meta */}
@@ -876,8 +925,8 @@ export default function DashboardPage() {
                                                 </div>
                                             </div>
 
-                                            {/* Action Buttons: WhatsApp Share & Download */}
-                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', marginTop: 'auto', position: 'relative', zIndex: 10 }}>
+                                            {/* Action Button: WhatsApp Share */}
+                                            <div style={{ marginTop: 'auto', position: 'relative', zIndex: 10, width: '100%' }}>
                                                 <button 
                                                     className={redesignStyles.suiteWhatsappBtn}
                                                     onClick={(e) => {
@@ -888,104 +937,10 @@ export default function DashboardPage() {
                                                     <MessageCircle size={13} />
                                                     <span>Share on WhatsApp</span>
                                                 </button>
-
-                                                <button 
-                                                    className={redesignStyles.suiteDownloadBtn}
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        if (item.image) {
-                                                            const a = document.createElement('a');
-                                                            a.href = item.image;
-                                                            a.download = `${(item.name || 'invitation').toLowerCase().replace(/\s+/g, '_')}_invitation.png`;
-                                                            a.click();
-                                                        } else {
-                                                            setSuitePreviewIndex(originalIdx);
-                                                            setSuitePreview(true);
-                                                        }
-                                                    }}
-                                                >
-                                                    <Download size={13} />
-                                                    <span>Download ({cardSize})</span>
-                                                </button>
                                             </div>
                                         </div>
                                     );
                                 })}
-                            </div>
-                        </div>
-
-                        {/* Footer Bar inside Section Card */}
-                        <div style={{ 
-                            borderTop: '1px solid #F3F4F6', 
-                            marginTop: '1.15rem', 
-                            paddingTop: '1rem', 
-                            display: 'flex', 
-                            justifyContent: 'space-between', 
-                            alignItems: 'center', 
-                            flexWrap: 'wrap', 
-                            gap: '1rem' 
-                        }}>
-                            {/* Left Side: Trust & Feature Badges */}
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', fontSize: '0.8125rem', color: '#6B7280', fontWeight: 500 }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontWeight: 600, color: '#334155', fontSize: '0.85rem' }}>
-                                    <div style={{ width: '18px', height: '18px', borderRadius: '50%', background: '#2D6A4F', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                        <Check size={11} style={{ color: '#FFFFFF', strokeWidth: 3 }} />
-                                    </div>
-                                    <span>Payment Completed • All Assets Ready</span>
-                                </div>
-
-                                <span style={{ color: '#D1D5DB' }}>•</span>
-
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                                    <Lock size={14} style={{ color: '#9CA3AF' }} />
-                                    <span>Securely generated</span>
-                                </div>
-                                <span style={{ color: '#D1D5DB' }}>•</span>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                                    <Zap size={14} style={{ color: '#9CA3AF' }} />
-                                    <span>Instant sharing ready</span>
-                                </div>
-                                <span style={{ color: '#D1D5DB' }}>•</span>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                                    <Edit3 size={14} style={{ color: '#9CA3AF' }} />
-                                    <span>Editable for 15 days</span>
-                                </div>
-                            </div>
-
-                            {/* Right Side: Action Buttons */}
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                <motion.button
-                                    whileTap={{ scale: 0.96 }}
-                                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                                    onClick={() => {
-                                        previewItems.forEach((item) => {
-                                            if (item.image) {
-                                                const a = document.createElement('a');
-                                                a.href = item.image;
-                                                a.download = `${(item.name || 'invitation').toLowerCase().replace(/\s+/g, '_')}_invitation.png`;
-                                                a.click();
-                                            }
-                                        });
-                                    }}
-                                    style={{
-                                        background: '#FFFFFF',
-                                        border: '1px solid #E5E7EB',
-                                        color: '#374151',
-                                        padding: '0.45rem 1rem',
-                                        borderRadius: '10px',
-                                        fontSize: '0.82rem',
-                                        fontWeight: 600,
-                                        cursor: 'pointer',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '0.45rem',
-                                        boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
-                                    }}
-                                    className={redesignStyles.footerActionBtn}
-                                >
-                                    <Download size={15} />
-                                    <span>Complete Assets</span>
-                                </motion.button>
                             </div>
                         </div>
                     </div>
@@ -1051,13 +1006,13 @@ export default function DashboardPage() {
                                                         <span>Preview</span>
                                                     </Link>
                                                 )}
-                                                <button
-                                                    className={`${rsvpStyles.pillBtn} ${rsvpStyles.pillDelete}`}
-                                                    onClick={() => handleDeleteRsvpClick(evt.id)}
+                                                <Link
+                                                    href="/details"
+                                                    className={`${rsvpStyles.pillBtn} ${rsvpStyles.pillEdit}`}
                                                 >
-                                                    <Trash2 size={16} />
-                                                    <span>Delete</span>
-                                                </button>
+                                                    <Edit3 size={15} />
+                                                    <span>Edit</span>
+                                                </Link>
                                             </div>
                                         </div>
 
@@ -1214,8 +1169,6 @@ export default function DashboardPage() {
                     </div>
                 )}
 
-
-
                 {/* 5. Support / Need Help Card */}
                 <motion.div 
                     initial={{ opacity: 0, y: 20 }}
@@ -1347,22 +1300,60 @@ export default function DashboardPage() {
                                                 handleShareWhatsApp(currentItem);
                                             }}
                                             style={{
-                                                background: '#25D366',
-                                                border: 'none',
+                                                background: '#16A34A',
+                                                border: '1px solid rgba(255, 255, 255, 0.2)',
                                                 color: '#FFFFFF',
-                                                padding: '0.4rem 1rem',
+                                                padding: '0.45rem 1.15rem',
                                                 borderRadius: '20px',
                                                 fontSize: '0.82rem',
                                                 fontWeight: 600,
                                                 cursor: 'pointer',
                                                 display: 'inline-flex',
                                                 alignItems: 'center',
-                                                gap: '0.4rem',
-                                                boxShadow: '0 4px 14px rgba(37, 211, 102, 0.35)'
+                                                gap: '0.45rem',
+                                                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+                                                transition: 'all 0.15s ease'
                                             }}
                                         >
                                             <MessageCircle size={14} />
                                             <span>Share on WhatsApp</span>
+                                        </button>
+
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                if (currentItem.image && typeof currentItem.image === 'string' && !currentItem.image.startsWith('structured:')) {
+                                                    const a = document.createElement('a');
+                                                    a.href = currentItem.image;
+                                                    a.download = `${(currentItem.name || 'invitation').toLowerCase().replace(/\s+/g, '_')}_invitation.png`;
+                                                    a.click();
+                                                } else {
+                                                    // Fallback download
+                                                    const a = document.createElement('a');
+                                                    a.href = currentItem.image || '/assets/themes/sample-card.png';
+                                                    a.download = `${(currentItem.name || 'invitation').toLowerCase().replace(/\s+/g, '_')}_invitation.png`;
+                                                    a.click();
+                                                }
+                                            }}
+                                            style={{
+                                                background: 'rgba(255, 255, 255, 0.15)',
+                                                border: '1px solid rgba(255, 255, 255, 0.35)',
+                                                color: '#FFFFFF',
+                                                padding: '0.45rem 1.15rem',
+                                                borderRadius: '20px',
+                                                fontSize: '0.82rem',
+                                                fontWeight: 600,
+                                                cursor: 'pointer',
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                gap: '0.45rem',
+                                                backdropFilter: 'blur(10px)',
+                                                boxShadow: '0 4px 14px rgba(0, 0, 0, 0.25)',
+                                                transition: 'all 0.15s ease'
+                                            }}
+                                        >
+                                            <Download size={14} />
+                                            <span>Download Card</span>
                                         </button>
                                     </div>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '2rem', width: '100%', justifyContent: 'center' }}>

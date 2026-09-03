@@ -1,21 +1,13 @@
 .dashboardContainer {
-    display: flex;
+    display: block;
+    width: 100%;
     min-height: 100vh;
     background-color: var(--background);
 }
 
 /* Sidebar */
 .sidebar {
-    width: 270px;
-    background: #FFFFFF;
-    border-right: 1px solid rgba(0, 0, 0, 0.05);
-    display: flex;
-    flex-direction: column;
-    padding: 1.25rem 0;
-    flex-shrink: 0;
-    position: sticky;
-    top: 54px;
-    height: calc(100vh - 54px);
+    display: none;
 }
 
 .brand {
@@ -131,9 +123,10 @@
 
 /* Main Content */
 .main {
-    flex: 1;
-    padding: 2.5rem 2rem;
-    overflow-y: auto;
+    width: 100%;
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 5rem;
 }
 
 .headerSpacer {
@@ -942,9 +935,10 @@
 /* --- Dashboard Overview Styles (Ultra Premium) --- */
 
 .mainContent {
-    flex: 1;
-    padding: 2.5rem 3.5rem;
-    overflow-y: auto;
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2.5rem 2rem 5rem;
     background-color: var(--background);
 }
 

@@ -45,7 +45,8 @@ const nextConfig: NextConfig = {
   serverExternalPackages: [
     '@remotion/renderer',
     '@remotion/bundler',
-    '@ffmpeg-installer/ffmpeg'
+    '@ffmpeg-installer/ffmpeg',
+    'pdfkit'
   ],
 };
 

@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useWeddingStore } from '@/store/wedding-store';
-import { Menu, X, LogOut, LayoutDashboard, ChevronDown } from 'lucide-react';
+import { Menu, X, LogOut, LayoutDashboard, ChevronDown, CreditCard } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import styles from './Navbar.module.css';
 import { clsx } from 'clsx';
@@ -121,6 +121,14 @@ export const Navbar = () => {
                                             <LayoutDashboard size={16} />
                                             Dashboard
                                         </Link>
+                                        <Link
+                                            href="/dashboard/orders"
+                                            className={styles.dropdownItem}
+                                            onClick={() => setIsProfileOpen(false)}
+                                        >
+                                            <CreditCard size={16} />
+                                            Payment Details
+                                        </Link>
                                         <button onClick={handleLogout} className={clsx(styles.dropdownItem, styles.logout)}>
                                             <LogOut size={16} />
                                             Logout
@@ -167,6 +175,15 @@ export const Navbar = () => {
                                 >
                                     <LayoutDashboard size={18} style={{ marginRight: '0.5rem' }} />
                                     Dashboard
+                                </Link>
+                                <Link
+                                    href="/dashboard/orders"
+                                    className={clsx("btn btn-secondary", styles.mobileBtn)}
+                                    onClick={() => setIsOpen(false)}
+                                    style={{ marginBottom: '0.5rem' }}
+                                >
+                                    <CreditCard size={18} style={{ marginRight: '0.5rem' }} />
+                                    Payment Details
                                 </Link>
                                 <button
                                     onClick={() => { handleLogout(); setIsOpen(false); }}

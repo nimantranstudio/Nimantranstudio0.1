@@ -82,9 +82,8 @@ export function ProcessingOverlay({ onComplete }: ProcessingOverlayProps) {
                 }, delay);
             };
 
-            // Two sequential center blasts
-            triggerBurst(0, 0.5, 0.6);      // First burst
-            triggerBurst(1500, 0.5, 0.6);   // Second burst
+            // Single celebration blast (second blast)
+            triggerBurst(1500, 0.5, 0.6);
 
             // Auto-exit faster (4 seconds instead of 10)
             const exitTimer = setTimeout(() => {

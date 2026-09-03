@@ -350,6 +350,73 @@
     font-weight: 600;
 }
 
+/* Download spinner */
+.spin {
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Payment History */
+.historyList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.historyRow {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    padding: 0.875rem 1rem;
+    background: #FAFAF8;
+    border: 1px solid #F3F4F6;
+    border-radius: 12px;
+}
+
+.historyMeta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    flex: 1;
+}
+
+.historyTitle {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.historySub {
+    font-size: 0.8125rem;
+    color: #888;
+}
+
+.historyDownloadBtn {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: white;
+    border: 1px solid #E5D9B6;
+    padding: 0.4rem 0.75rem;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #1B4332;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.historyDownloadBtn:disabled,
+.downloadTaxBtn:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
 /* Kit Section */
 .kitHeader {
     display: flex;
