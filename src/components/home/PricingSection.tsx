@@ -1,160 +1,116 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Check, ShieldCheck, Star } from 'lucide-react';
+import { Check, ShieldCheck, Star, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
-import styles from '@/app/page.module.css';
+import styles from './PricingSection.module.css';
 
 const features = [
     "Up to 7 wedding events covered",
-    "Mobile-optimised image invites",
-    "WhatsApp one-click sharing",
-    "Live RSVP dashboard",
     "Unlimited guest responses",
+    "Mobile-optimised image invites",
+    "Live RSVP dashboard",
+    "WhatsApp 1-click sharing",
     "Guest list CSV export",
     "Google Calendar & Maps links",
-    "No watermark, ever",
+    "Zero watermark, yours forever",
 ];
 
 export const PricingSection = () => {
     return (
-        <section className={styles.premiumConversionSection}>
-            <div className="container">
-                <div className={styles.premiumConversionContent}>
+        <section className={styles.section} id="pricing">
+            <div className={styles.contentWrapper}>
 
-                    {/* Headline */}
-                    <motion.div
-                        className={styles.premiumHeroLayer}
-                        initial={{ opacity: 0, y: 30 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.8 }}
-                    >
-                        <span className={styles.eyebrowText}>BEGIN YOUR CELEBRATION TODAY</span>
-                        <h2 className={styles.premiumHeadline}>
-                            One Price. Your Entire Wedding Invitation Suite.
-                        </h2>
-                        <p className={styles.premiumSubtext}>
-                            Create and share on WhatsApp in under 5 minutes.
-                        </p>
-                    </motion.div>
+                {/* Headline & Eyebrow */}
+                <motion.div
+                    className={styles.headerBlock}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: '-50px' }}
+                    transition={{ type: 'spring', bounce: 0, duration: 0.5 }}
+                >
+                    <span className={styles.eyebrow}>BEGIN YOUR CELEBRATION TODAY</span>
+                    <h2 className={styles.headline}>
+                        One Price. Your Entire Wedding Invitation Suite.
+                    </h2>
+                    <p className={styles.subheadline}>
+                        Create and share on WhatsApp in under 5 minutes.
+                    </p>
+                </motion.div>
 
-                    {/* Card */}
-                    <motion.div
-                        className={styles.integratedPricingBlock}
-                        initial={{ opacity: 0, y: 40 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.8, delay: 0.2 }}
-                        style={{ gap: 0, padding: 0, overflow: 'hidden' }}
-                    >
-                        {/* Social proof bar */}
-                        <div style={{
-                            width: '100%',
-                            background: '#111',
-                            padding: '0.875rem 2.5rem',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '0.625rem',
-                        }}>
-                            <div style={{ display: 'flex', gap: '3px' }}>
-                                {[...Array(5)].map((_, i) => (
-                                    <Star key={i} size={13} fill="#D4AF37" color="#D4AF37" />
-                                ))}
-                            </div>
-                            <span style={{ color: '#fff', fontSize: '0.8rem', fontWeight: 500, letterSpacing: '0.01em' }}>
-                                Trusted by <strong style={{ color: '#D4AF37' }}>Indian couples</strong>
-                            </span>
+                {/* Compact Apple-Style Pricing Card */}
+                <motion.div
+                    className={styles.pricingCard}
+                    initial={{ opacity: 0, y: 24, scale: 0.98 }}
+                    whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                    viewport={{ once: true, margin: '-50px' }}
+                    transition={{ type: 'spring', bounce: 0, duration: 0.55, delay: 0.1 }}
+                >
+                    {/* Top Social Proof Strip */}
+                    <div className={styles.topProofStrip}>
+                        <div className={styles.starsGroup}>
+                            {[...Array(5)].map((_, i) => (
+                                <Star key={i} size={13} fill="#D4AF37" color="#D4AF37" />
+                            ))}
                         </div>
+                        <span className={styles.proofText}>
+                            Trusted by <strong className={styles.proofHighlight}>Indian couples</strong>
+                        </span>
+                    </div>
 
-                        {/* Price section */}
-                        <div style={{ padding: '2.5rem 2.5rem 2rem', textAlign: 'center' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.625rem', marginBottom: '0.875rem' }}>
-                                <span style={{ fontSize: '0.95rem', color: '#94A3B8', textDecoration: 'line-through', fontWeight: 500 }}>₹2,500</span>
-                                <span style={{ background: '#DCFCE7', color: '#15803D', fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.06em', padding: '4px 12px', borderRadius: '100px' }}>
-                                    SAVE ₹1,501
-                                </span>
+                    <div className={styles.cardBody}>
+                        {/* Price & Savings */}
+                        <div className={styles.priceRow}>
+                            <div className={styles.savingsPillWrapper}>
+                                <span className={styles.originalPrice}>₹2,500</span>
+                                <span className={styles.savingsBadge}>SAVE ₹1,501</span>
                             </div>
 
-                            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: '0.375rem', marginBottom: '0.875rem' }}>
-                                <span style={{
-                                    fontFamily: 'var(--font-serif)',
-                                    fontSize: '4.5rem',
-                                    fontWeight: 700,
-                                    color: '#111',
-                                    lineHeight: 1,
-                                }}>
-                                    <span style={{ fontSize: '2rem', verticalAlign: 'super', fontWeight: 500 }}>₹</span>999
-                                </span>
-                                <span style={{
-                                    fontSize: '0.7rem',
-                                    fontWeight: 700,
-                                    letterSpacing: '0.1em',
-                                    color: '#94A3B8',
-                                    textTransform: 'uppercase',
-                                    alignSelf: 'flex-end',
-                                    paddingBottom: '0.625rem',
-                                }}>one-time</span>
+                            <div className={styles.mainPriceWrapper}>
+                                <span className={styles.currencySign}>₹</span>
+                                <span className={styles.priceNumber}>999</span>
+                                <span className={styles.oneTimeLabel}>one-time</span>
                             </div>
 
-                            <p style={{ fontSize: '0.8rem', color: '#94A3B8', lineHeight: 1.5 }}>
+                            <p className={styles.priceSubtext}>
                                 No subscription · No hidden fees · Yours forever
                             </p>
                         </div>
 
-                        {/* Features — single column */}
-                        <div style={{ padding: '2rem 2.5rem' }}>
-                            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
-                                {features.map((f, i) => (
-                                    <motion.li
-                                        key={i}
-                                        suppressHydrationWarning
-                                        style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.875rem', color: '#333', lineHeight: 1.4 }}
-                                        initial={{ opacity: 0, y: 10 }}
-                                        whileInView={{ opacity: 1, y: 0 }}
-                                        viewport={{ once: true }}
-                                        transition={{ duration: 0.4, delay: 0.05 + i * 0.05 }}
-                                    >
-                                        <Check size={15} strokeWidth={2.5} color="#D4AF37" style={{ flexShrink: 0 }} />
-                                        <span>{f}</span>
-                                    </motion.li>
-                                ))}
-                            </ul>
-                        </div>
+                        {/* 2-Column Features Grid (4 x 2) */}
+                        <ul className={styles.featuresGrid}>
+                            {features.map((feature, i) => (
+                                <motion.li
+                                    key={i}
+                                    className={styles.featureItem}
+                                    initial={{ opacity: 0, y: 8 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    viewport={{ once: true }}
+                                    transition={{ type: 'spring', bounce: 0, duration: 0.4, delay: 0.15 + i * 0.03 }}
+                                >
+                                    <div className={styles.checkBadge}>
+                                        <Check size={11} strokeWidth={3} color="#C8A951" />
+                                    </div>
+                                    <span className={styles.featureText}>{feature}</span>
+                                </motion.li>
+                            ))}
+                        </ul>
 
-                        {/* CTA */}
-                        <div style={{ padding: '2rem 2.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.875rem' }}>
-                            <Link
-                                href="/themes"
-                                style={{
-                                    display: 'block',
-                                    width: '100%',
-                                    textAlign: 'center',
-                                    background: 'linear-gradient(135deg, #ECC878 0%, #D4AF37 100%)',
-                                    color: '#111',
-                                    padding: '1.125rem',
-                                    borderRadius: '10px',
-                                    fontWeight: 700,
-                                    fontSize: '1rem',
-                                    letterSpacing: '0.02em',
-                                    textDecoration: 'none',
-                                    boxShadow: '0 4px 20px rgba(212,175,55,0.3)',
-                                }}
-                            >
-                                Create My Invitation — ₹999
+                        {/* CTA Button & Trust Footnote */}
+                        <div className={styles.ctaFooter}>
+                            <Link href="/themes" className={styles.ctaButton}>
+                                <span>Create My Invitation — ₹999</span>
+                                <ArrowRight size={17} strokeWidth={2.5} className={styles.ctaArrow} />
                             </Link>
 
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
-                                <ShieldCheck size={13} color="#94A3B8" style={{ flexShrink: 0 }} />
-                                <span style={{ fontSize: '0.75rem', color: '#94A3B8', lineHeight: 1.4 }}>
-                                    Preview free · Satisfaction guarantee · Secure via Razorpay
-                                </span>
+                            <div className={styles.guaranteeRow}>
+                                <ShieldCheck size={14} color="#C8A951" style={{ flexShrink: 0 }} />
+                                <span>Preview free · Satisfaction guarantee · Secure via Razorpay</span>
                             </div>
                         </div>
-                    </motion.div>
+                    </div>
+                </motion.div>
 
-                </div>
             </div>
         </section>
     );
