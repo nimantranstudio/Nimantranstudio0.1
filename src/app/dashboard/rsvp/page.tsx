@@ -235,39 +235,41 @@ export default function RSVPListPage() {
                                     </div>
                                 </div>
 
-                                {/* Color-Coded Bento Stats Grid */}
-                                <div className={styles.bentoStatsGrid}>
-                                    <div className={`${styles.bentoStatCard} ${styles.cardTotal}`}>
-                                        <div className={styles.bentoHeader}>
-                                            <span className={styles.bentoTitle}>Total Responses</span>
-                                        </div>
-                                        <span className={styles.bentoNumber}>{stats.totalResponses}</span>
-                                    </div>
-
-                                    <div className={`${styles.bentoStatCard} ${styles.cardAttending}`}>
-                                        <div className={styles.bentoHeader}>
-                                            <span className={styles.bentoTitle}>Attending</span>
-                                        </div>
-                                        <span className={styles.bentoNumber}>{stats.attending}</span>
-                                    </div>
-
-                                    <div className={`${styles.bentoStatCard} ${styles.cardDeclined}`}>
-                                        <div className={styles.bentoHeader}>
-                                            <span className={styles.bentoTitle}>Not Attending</span>
-                                        </div>
-                                        <span className={styles.bentoNumber}>{stats.declined}</span>
-                                    </div>
-
-                                    <div className={`${styles.bentoStatCard} ${styles.cardMaybe}`}>
-                                        <div className={styles.bentoHeader}>
-                                            <span className={styles.bentoTitle}>Maybe</span>
-                                        </div>
-                                        <span className={styles.bentoNumber}>{stats.maybe}</span>
-                                    </div>
-                                </div>
-
-                                {/* Guest Responses Table */}
+                                {/* Merged Unified Guest Responses Section */}
                                 <div className={styles.guestSection}>
+                                    {/* Color-Coded Stats Summary Grid */}
+                                    <div className={styles.bentoStatsGrid}>
+                                        <div className={`${styles.bentoStatCard} ${styles.cardTotal}`}>
+                                            <div className={styles.bentoHeader}>
+                                                <span className={styles.bentoTitle}>Total Responses</span>
+                                            </div>
+                                            <span className={styles.bentoNumber}>{stats.totalResponses}</span>
+                                        </div>
+
+                                        <div className={`${styles.bentoStatCard} ${styles.cardAttending}`}>
+                                            <div className={styles.bentoHeader}>
+                                                <span className={styles.bentoTitle}>Attending</span>
+                                            </div>
+                                            <span className={styles.bentoNumber}>{stats.attending}</span>
+                                        </div>
+
+                                        <div className={`${styles.bentoStatCard} ${styles.cardDeclined}`}>
+                                            <div className={styles.bentoHeader}>
+                                                <span className={styles.bentoTitle}>Not Attending</span>
+                                            </div>
+                                            <span className={styles.bentoNumber}>{stats.declined}</span>
+                                        </div>
+
+                                        <div className={`${styles.bentoStatCard} ${styles.cardMaybe}`}>
+                                            <div className={styles.bentoHeader}>
+                                                <span className={styles.bentoTitle}>Maybe</span>
+                                            </div>
+                                            <span className={styles.bentoNumber}>{stats.maybe}</span>
+                                        </div>
+                                    </div>
+
+                                    <div className={styles.sectionDivider} />
+
                                     <div className={styles.guestHeader}>
                                         <div className={styles.guestTitleGroup}>
                                             <h3 className={styles.guestTitle}>Guest Responses</h3>
