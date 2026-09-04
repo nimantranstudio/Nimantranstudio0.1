@@ -42,7 +42,7 @@ export default function Footer() {
                         <ul>
                             <li><Link href="/themes">Invitation Templates</Link></li>
                             <li><Link href="/pricing">Pricing</Link></li>
-                            <li><Link href="/blogs">Blog & Insights</Link></li>
+                            <li><Link href="/blogs">Nimantran ideas</Link></li>
                             <li><Link href="/about">About Us</Link></li>
                         </ul>
                     </div>
