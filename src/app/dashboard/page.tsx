@@ -695,40 +695,13 @@ export default function DashboardPage() {
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ type: "spring", duration: 0.5, bounce: 0, delay: 0.08 }}
-                    style={{ marginBottom: '1.5rem' }}
+                    style={{ marginBottom: '1.25rem' }}
                 >
                     <div className={redesignStyles.coupleInfoCard}>
-                        {/* Background Luxury Graphics & Ambient Light */}
-                        <div className={redesignStyles.coupleCardGlow} />
-                        <div className={redesignStyles.coupleCardGlowLeft} />
-                        <svg 
-                            className={redesignStyles.coupleCardBackgroundGraphic} 
-                            viewBox="0 0 200 200" 
-                            fill="none" 
-                            xmlns="http://www.w3.org/2000/svg"
-                        >
-                            {/* Decorative Concentric Wedding Mandala / Botanical Artwork */}
-                            <circle cx="100" cy="100" r="92" stroke="currentColor" strokeWidth="1" strokeDasharray="4 4" />
-                            <circle cx="100" cy="100" r="76" stroke="currentColor" strokeWidth="1.2" />
-                            <circle cx="100" cy="100" r="60" stroke="currentColor" strokeWidth="0.8" strokeDasharray="2 3" />
-                            <circle cx="100" cy="100" r="44" stroke="currentColor" strokeWidth="1.5" />
-                            <circle cx="100" cy="100" r="28" stroke="currentColor" strokeWidth="1" />
-                            <circle cx="100" cy="100" r="12" fill="currentColor" opacity="0.35" />
-                            {/* 8 Botanical Petal Lines */}
-                            <path d="M100 8 L100 192 M8 100 L192 100 M35 35 L165 165 M35 165 L165 35" stroke="currentColor" strokeWidth="0.8" opacity="0.45" />
-                            <path d="M100 24 C85 60 60 85 24 100 C60 115 85 140 100 176 C115 140 140 115 176 100 C140 85 115 60 100 24 Z" stroke="currentColor" strokeWidth="1.2" fill="currentColor" fillOpacity="0.04" />
-                            <path d="M100 44 C90 70 70 90 44 100 C70 110 90 130 100 156 C110 130 130 110 156 100 C130 90 110 70 100 44 Z" stroke="currentColor" strokeWidth="1" fill="currentColor" fillOpacity="0.05" />
-                        </svg>
-
                         {/* Couple Name & Date / Countdown Row */}
-                        <div className={redesignStyles.coupleCardContent}>
-                            <div className={redesignStyles.suiteTag}>
-                                <Sparkles size={11} style={{ color: '#C8A951' }} />
-                                <span>Wedding Invitation Suite</span>
-                            </div>
-
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
                             {/* Line 1: Couple Name */}
-                            <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.9rem', fontWeight: 600, color: '#111827', margin: 0, lineHeight: 1.15, letterSpacing: '-0.025em' }}>
+                            <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.65rem', fontWeight: 600, color: '#111827', margin: 0, lineHeight: 1.25, letterSpacing: '-0.02em' }}>
                                 {formData.brideName || formData.groomName ? 
                                     [formData.brideName, formData.groomName].filter(Boolean).join(' & ') 
                                     : 'Ananya & Rohan'}
@@ -741,32 +714,36 @@ export default function DashboardPage() {
                                 const displayDate = formatLongDisplayDate(userDateStr) || '20 December 2025';
 
                                 return (
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '0.9rem', color: '#64748B', fontWeight: 500, flexWrap: 'wrap' }}>
-                                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', background: '#FFFFFF', padding: '0.28rem 0.85rem', borderRadius: '100px', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 1px 2px rgba(0,0,0,0.02)' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', color: '#64748B', fontWeight: 500, flexWrap: 'wrap' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                                             <Calendar size={14} style={{ color: '#C8A951' }} />
                                             <span style={{ color: '#334155', fontWeight: 600 }}>
                                                 {displayDate}
                                             </span>
                                         </div>
 
-                                        <span style={{ color: '#CBD5E1' }}>•</span>
+                                        <span style={{ color: '#94A3B8', margin: '0 0.15rem' }}>·</span>
 
-                                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', background: '#FEF3C7', padding: '0.28rem 0.85rem', borderRadius: '100px', border: '1px solid #FDE68A' }}>
-                                            <span style={{ color: '#92400E', fontWeight: 700, fontSize: '0.825rem' }}>
-                                                {countdownData.text}
-                                            </span>
-                                        </div>
+                                        <span style={{ color: '#B45309', fontWeight: 600 }}>
+                                            {countdownData.text}
+                                        </span>
                                     </div>
                                 );
                             })()}
                         </div>
 
                         {/* Right Corner Group: Action Buttons */}
-                        <div className={redesignStyles.coupleCardActions}>
+                        <div style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: '0.85rem', 
+                            flexWrap: 'wrap', 
+                            marginLeft: 'auto' 
+                        }}>
+
                             {/* Complete Assets Download Button */}
                             <motion.button
                                 whileTap={{ scale: 0.95 }}
-                                whileHover={{ scale: 1.02 }}
                                 transition={{ type: "spring", stiffness: 400, damping: 17 }}
                                 onClick={() => {
                                     previewItems.forEach((item) => {
@@ -780,45 +757,46 @@ export default function DashboardPage() {
                                 }}
                                 style={{
                                     background: '#FFFFFF',
-                                    border: '1px solid rgba(200, 169, 81, 0.3)',
-                                    color: '#1E293B',
-                                    padding: '0.65rem 1.25rem',
+                                    border: '1px solid #E5E7EB',
+                                    color: '#374151',
+                                    padding: '0.55rem 1.15rem',
                                     borderRadius: '100px',
-                                    fontSize: '0.875rem',
+                                    fontSize: '0.85rem',
                                     fontWeight: 600,
                                     cursor: 'pointer',
                                     display: 'inline-flex',
                                     alignItems: 'center',
                                     gap: '0.5rem',
-                                    boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                                    boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
                                     transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)'
                                 }}
+                                className={redesignStyles.footerActionBtn}
                             >
-                                <Download size={15} style={{ color: '#C8A951' }} />
+                                <Download size={15} />
                                 <span>Download Assets</span>
                             </motion.button>
 
                             {/* Share on WhatsApp Button */}
                             <motion.button
                                 whileTap={{ scale: 0.95 }}
-                                whileHover={{ scale: 1.02 }}
                                 transition={{ type: "spring", stiffness: 400, damping: 17 }}
                                 onClick={() => handleShareWhatsApp()}
                                 style={{
                                     background: '#FFFFFF',
-                                    border: '1px solid #BBF7D0',
-                                    color: '#15803D',
-                                    padding: '0.65rem 1.25rem',
+                                    border: '1px solid #E5E7EB',
+                                    color: '#374151',
+                                    padding: '0.55rem 1.15rem',
                                     borderRadius: '100px',
-                                    fontSize: '0.875rem',
+                                    fontSize: '0.85rem',
                                     fontWeight: 600,
                                     cursor: 'pointer',
                                     display: 'inline-flex',
                                     alignItems: 'center',
                                     gap: '0.5rem',
-                                    boxShadow: '0 2px 8px rgba(22, 163, 74, 0.08)',
+                                    boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
                                     transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)'
                                 }}
+                                className={redesignStyles.footerActionBtn}
                             >
                                 <MessageCircle size={16} style={{ color: '#16A34A' }} />
                                 <span>Share on WhatsApp</span>
