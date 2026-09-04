@@ -45,7 +45,8 @@ import {
     CreditCard,
     ChevronLeft,
     ChevronRight,
-    Search
+    Search,
+    X
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -84,6 +85,7 @@ export default function DashboardPage() {
     const [rsvpsList, setRsvpsList] = useState<RSVPEntry[]>([]);
     const [rsvpListLoading, setRsvpListLoading] = useState(false);
     const [rsvpSearchQuery, setRsvpSearchQuery] = useState('');
+    const [rsvpStatusFilter, setRsvpStatusFilter] = useState<'all' | 'attending' | 'declined' | 'maybe'>('all');
 
     useEffect(() => {
         if (!lastSavedWeddingId) return;
@@ -124,10 +126,12 @@ export default function DashboardPage() {
             .reduce((sum, r) => sum + (r.adultCount || 1), 0),
     };
 
-    const filteredRsvpsList = rsvpsList.filter(r =>
-        r.guestName.toLowerCase().includes(rsvpSearchQuery.toLowerCase()) ||
-        (r.phone && r.phone.includes(rsvpSearchQuery))
-    );
+    const filteredRsvpsList = rsvpsList.filter(r => {
+        const matchesSearch = r.guestName.toLowerCase().includes(rsvpSearchQuery.toLowerCase()) ||
+            (r.phone && r.phone.includes(rsvpSearchQuery));
+        const matchesStatus = rsvpStatusFilter === 'all' ? true : r.status === rsvpStatusFilter;
+        return matchesSearch && matchesStatus;
+    });
 
     const handleDeleteRsvpClick = (id: string) => setDeletingRsvpEventId(id);
     const confirmDeleteRsvp = () => {
@@ -948,7 +952,7 @@ export default function DashboardPage() {
 
 
 
-                {/* RSVP Manager Dashboard Section */}
+                {/* RSVP Manager Dashboard Section - Unified Master Command Card */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -960,7 +964,7 @@ export default function DashboardPage() {
                         <h1 className={rsvpStyles.title}>RSVP Dashboard</h1>
                     </div>
 
-                    {/* Events List Container */}
+                    {/* Unified Events Master List Container */}
                     <div className={rsvpStyles.listContainer}>
                         {(formData.events && formData.events.length > 0 ? formData.events.slice(0, 1) : [{
                             id: 'primary_event',
@@ -974,128 +978,195 @@ export default function DashboardPage() {
 
                             return (
                                 <div key={evt.id} className={rsvpStyles.eventGroup}>
-                                    {/* Dark Luxury Event Hero Card */}
-                                    <div className={rsvpStyles.darkHeroCard}>
-                                        <div className={rsvpStyles.heroHeader}>
-                                            <div className={rsvpStyles.heroLeft}>
-                                                <div className={rsvpStyles.nameRow}>
+                                    <div className={rsvpStyles.eventMasterCard}>
+                                        {/* 1. Master Event Header & Action Suite */}
+                                        <div className={rsvpStyles.masterHeader}>
+                                            <div className={rsvpStyles.headerLeft}>
+                                                <div className={rsvpStyles.titleRow}>
                                                     <h2 className={rsvpStyles.eventName}>{evt.name}</h2>
-                                                    <div className={rsvpStyles.statusLive}>
-                                                        <span className={rsvpStyles.statusDot}></span>
+                                                    <div className={rsvpStyles.statusLiveBadge}>
+                                                        <span className={rsvpStyles.pulseDot}></span>
                                                         RSVP LIVE
+                                                    </div>
+                                                </div>
+
+                                                {/* Meta Chips */}
+                                                <div className={rsvpStyles.metaChipsRow}>
+                                                    <div className={rsvpStyles.metaChip}>
+                                                        <Calendar size={13} className={rsvpStyles.metaIcon} />
+                                                        <span>{evt.date || 'TBD'} {evt.time ? `• ${evt.time}` : ''}</span>
+                                                    </div>
+                                                    <div className={rsvpStyles.metaChip}>
+                                                        <MapPin size={13} className={rsvpStyles.metaIcon} />
+                                                        <span>{evt.venue || 'TBD'}</span>
+                                                    </div>
+                                                    <div className={rsvpStyles.metaChip}>
+                                                        <Clock size={13} className={rsvpStyles.metaIcon} />
+                                                        <span>{evt.rsvpDeadline ? `Deadline: ${evt.rsvpDeadline}` : 'No deadline'}</span>
                                                     </div>
                                                 </div>
                                             </div>
 
-                                            {/* Glassmorphic Action Pills */}
-                                            <div className={rsvpStyles.actionPillsGroup}>
+                                            {/* Action Suite */}
+                                            <div className={rsvpStyles.actionSuite}>
                                                 <button
-                                                    className={rsvpStyles.pillBtn}
-                                                    onClick={() => copyRsvpPageLink(evt.id)}
+                                                    className={rsvpStyles.actionBtnWhatsapp}
+                                                    onClick={openWhatsAppRsvp}
                                                 >
-                                                    {copiedRsvpId === evt.id ? <CheckCircle2 size={16} color="#4ADE80" /> : <Copy size={16} />}
-                                                    <span>{copiedRsvpId === evt.id ? 'Copied' : 'Copy Link'}</span>
-                                                </button>
-                                                <button className={rsvpStyles.pillBtn} onClick={openWhatsAppRsvp}>
-                                                    <Share2 size={16} />
+                                                    <Share2 size={15} />
                                                     <span>WhatsApp</span>
                                                 </button>
+                                                <button
+                                                    className={rsvpStyles.actionBtn}
+                                                    onClick={() => copyRsvpPageLink(evt.id)}
+                                                >
+                                                    {copiedRsvpId === evt.id ? <CheckCircle2 size={15} color="#10B981" /> : <Copy size={15} />}
+                                                    <span>{copiedRsvpId === evt.id ? 'Copied' : 'Copy Link'}</span>
+                                                </button>
                                                 {rsvpLink && (
-                                                    <Link href={rsvpLink} target="_blank" className={rsvpStyles.pillBtn}>
-                                                        <Eye size={16} />
+                                                    <Link href={rsvpLink} target="_blank" className={rsvpStyles.actionBtn}>
+                                                        <Eye size={15} />
                                                         <span>Preview</span>
                                                     </Link>
                                                 )}
                                                 <Link
                                                     href="/details"
-                                                    className={`${rsvpStyles.pillBtn} ${rsvpStyles.pillEdit}`}
+                                                    className={`${rsvpStyles.actionBtn} ${rsvpStyles.actionBtnEdit}`}
                                                 >
-                                                    <Edit3 size={15} />
+                                                    <Edit3 size={14} />
                                                     <span>Edit</span>
                                                 </Link>
                                             </div>
                                         </div>
 
-                                        {/* Details Grid */}
-                                        <div className={rsvpStyles.detailsGrid}>
-                                            <div className={rsvpStyles.detailCard}>
-                                                <span className={rsvpStyles.detailLabel}>Date & Time</span>
-                                                <span className={rsvpStyles.detailValue}>
-                                                    {evt.date || 'TBD'} {evt.time ? `• ${evt.time}` : ''}
-                                                </span>
-                                            </div>
-                                            <div className={rsvpStyles.detailCard}>
-                                                <span className={rsvpStyles.detailLabel}>Venue</span>
-                                                <span className={rsvpStyles.detailValue}>{evt.venue || 'TBD'}</span>
-                                            </div>
-                                            <div className={rsvpStyles.detailCard}>
-                                                <span className={rsvpStyles.detailLabel}>RSVP Deadline</span>
-                                                <span className={rsvpStyles.detailValue}>
-                                                    {evt.rsvpDeadline ? `Respond by ${evt.rsvpDeadline}` : 'No deadline'}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
+                                        {/* 2. Interactive Metrics Control Bar (Apple-style Segmented Filter Strip) */}
+                                        <div className={rsvpStyles.metricsControlBar}>
+                                            <div className={rsvpStyles.segmentedPillTrack} role="tablist">
+                                                <button
+                                                    type="button"
+                                                    role="tab"
+                                                    aria-selected={rsvpStatusFilter === 'all'}
+                                                    className={`${rsvpStyles.segmentTab} ${rsvpStatusFilter === 'all' ? rsvpStyles.segmentTabActive : ''}`}
+                                                    onClick={() => setRsvpStatusFilter('all')}
+                                                >
+                                                    {rsvpStatusFilter === 'all' && (
+                                                        <motion.div
+                                                            layoutId="activeFilterPill"
+                                                            className={rsvpStyles.segmentPillBg}
+                                                            transition={{ type: "spring", bounce: 0, duration: 0.28 }}
+                                                        />
+                                                    )}
+                                                    <span className={rsvpStyles.segmentLabel}>Total Responses</span>
+                                                    <span className={`${rsvpStyles.segmentCount} ${rsvpStyles.countAll}`}>
+                                                        {fullRsvpStats.totalResponses}
+                                                    </span>
+                                                </button>
 
-                                    {/* Color-Coded Bento Stats Grid */}
-                                    <div className={rsvpStyles.bentoStatsGrid}>
-                                        <div className={`${rsvpStyles.bentoStatCard} ${rsvpStyles.cardTotal}`}>
-                                            <div className={rsvpStyles.bentoHeader}>
-                                                <span className={rsvpStyles.bentoTitle}>Total Responses</span>
-                                            </div>
-                                            <span className={rsvpStyles.bentoNumber}>{fullRsvpStats.totalResponses}</span>
-                                        </div>
+                                                <button
+                                                    type="button"
+                                                    role="tab"
+                                                    aria-selected={rsvpStatusFilter === 'attending'}
+                                                    className={`${rsvpStyles.segmentTab} ${rsvpStatusFilter === 'attending' ? rsvpStyles.segmentTabActive : ''}`}
+                                                    onClick={() => setRsvpStatusFilter('attending')}
+                                                >
+                                                    {rsvpStatusFilter === 'attending' && (
+                                                        <motion.div
+                                                            layoutId="activeFilterPill"
+                                                            className={rsvpStyles.segmentPillBg}
+                                                            transition={{ type: "spring", bounce: 0, duration: 0.28 }}
+                                                        />
+                                                    )}
+                                                    <span className={rsvpStyles.statusIndicatorDot} style={{ background: '#22C55E' }}></span>
+                                                    <span className={rsvpStyles.segmentLabel}>Attending</span>
+                                                    <span className={`${rsvpStyles.segmentCount} ${rsvpStyles.countAttending}`}>
+                                                        {fullRsvpStats.attending}
+                                                    </span>
+                                                </button>
 
-                                        <div className={`${rsvpStyles.bentoStatCard} ${rsvpStyles.cardAttending}`}>
-                                            <div className={rsvpStyles.bentoHeader}>
-                                                <span className={rsvpStyles.bentoTitle}>Attending</span>
-                                            </div>
-                                            <span className={rsvpStyles.bentoNumber}>{fullRsvpStats.attending}</span>
-                                        </div>
+                                                <button
+                                                    type="button"
+                                                    role="tab"
+                                                    aria-selected={rsvpStatusFilter === 'declined'}
+                                                    className={`${rsvpStyles.segmentTab} ${rsvpStatusFilter === 'declined' ? rsvpStyles.segmentTabActive : ''}`}
+                                                    onClick={() => setRsvpStatusFilter('declined')}
+                                                >
+                                                    {rsvpStatusFilter === 'declined' && (
+                                                        <motion.div
+                                                            layoutId="activeFilterPill"
+                                                            className={rsvpStyles.segmentPillBg}
+                                                            transition={{ type: "spring", bounce: 0, duration: 0.28 }}
+                                                        />
+                                                    )}
+                                                    <span className={rsvpStyles.statusIndicatorDot} style={{ background: '#F43F5E' }}></span>
+                                                    <span className={rsvpStyles.segmentLabel}>Not Attending</span>
+                                                    <span className={`${rsvpStyles.segmentCount} ${rsvpStyles.countDeclined}`}>
+                                                        {fullRsvpStats.declined}
+                                                    </span>
+                                                </button>
 
-                                        <div className={`${rsvpStyles.bentoStatCard} ${rsvpStyles.cardDeclined}`}>
-                                            <div className={rsvpStyles.bentoHeader}>
-                                                <span className={rsvpStyles.bentoTitle}>Not Attending</span>
-                                            </div>
-                                            <span className={rsvpStyles.bentoNumber}>{fullRsvpStats.declined}</span>
-                                        </div>
-
-                                        <div className={`${rsvpStyles.bentoStatCard} ${rsvpStyles.cardMaybe}`}>
-                                            <div className={rsvpStyles.bentoHeader}>
-                                                <span className={rsvpStyles.bentoTitle}>Maybe</span>
-                                            </div>
-                                            <span className={rsvpStyles.bentoNumber}>{fullRsvpStats.maybe}</span>
-                                        </div>
-                                    </div>
-
-                                    {/* Guest Responses Table */}
-                                    <div className={rsvpStyles.guestSection}>
-                                        <div className={rsvpStyles.guestHeader}>
-                                            <div className={rsvpStyles.guestTitleGroup}>
-                                                <h3 className={rsvpStyles.guestTitle}>Guest Responses</h3>
-                                                <span className={rsvpStyles.headcountBadge}>
-                                                    <Users size={14} />
-                                                    {fullRsvpStats.headcount} Confirmed Guests
-                                                </span>
-                                            </div>
-                                            <div className={rsvpStyles.guestActions}>
-                                                <div className={rsvpStyles.searchWrapper}>
-                                                    <Search size={16} className={rsvpStyles.searchIcon} />
-                                                    <input
-                                                        type="text"
-                                                        placeholder="Search guests..."
-                                                        className={rsvpStyles.searchInput}
-                                                        value={rsvpSearchQuery}
-                                                        onChange={e => setRsvpSearchQuery(e.target.value)}
-                                                    />
-                                                </div>
-                                                <button className={rsvpStyles.exportBtn} onClick={handleExportRsvpCSV}>
-                                                    <Download size={16} />
-                                                    <span>Export CSV</span>
+                                                <button
+                                                    type="button"
+                                                    role="tab"
+                                                    aria-selected={rsvpStatusFilter === 'maybe'}
+                                                    className={`${rsvpStyles.segmentTab} ${rsvpStatusFilter === 'maybe' ? rsvpStyles.segmentTabActive : ''}`}
+                                                    onClick={() => setRsvpStatusFilter('maybe')}
+                                                >
+                                                    {rsvpStatusFilter === 'maybe' && (
+                                                        <motion.div
+                                                            layoutId="activeFilterPill"
+                                                            className={rsvpStyles.segmentPillBg}
+                                                            transition={{ type: "spring", bounce: 0, duration: 0.28 }}
+                                                        />
+                                                    )}
+                                                    <span className={rsvpStyles.statusIndicatorDot} style={{ background: '#F59E0B' }}></span>
+                                                    <span className={rsvpStyles.segmentLabel}>Maybe</span>
+                                                    <span className={`${rsvpStyles.segmentCount} ${rsvpStyles.countMaybe}`}>
+                                                        {fullRsvpStats.maybe}
+                                                    </span>
                                                 </button>
                                             </div>
+
+                                            {/* Confirmed Headcount Chip */}
+                                            <div className={rsvpStyles.headcountBadge}>
+                                                <Users size={14} />
+                                                <span><strong>{fullRsvpStats.headcount}</strong> Confirmed Headcount</span>
+                                            </div>
                                         </div>
 
+                                        {/* 3. Table Toolbar (Search + Export) */}
+                                        <div className={rsvpStyles.tableToolbar}>
+                                            <div className={rsvpStyles.searchBox}>
+                                                <Search size={15} className={rsvpStyles.searchIcon} />
+                                                <input
+                                                    type="text"
+                                                    placeholder="Search guests or phone..."
+                                                    className={rsvpStyles.searchInput}
+                                                    value={rsvpSearchQuery}
+                                                    onChange={e => setRsvpSearchQuery(e.target.value)}
+                                                />
+                                                {rsvpSearchQuery && (
+                                                    <button
+                                                        type="button"
+                                                        aria-label="Clear search"
+                                                        className={rsvpStyles.searchClearBtn}
+                                                        onClick={() => setRsvpSearchQuery('')}
+                                                    >
+                                                        <X size={12} />
+                                                    </button>
+                                                )}
+                                            </div>
+
+                                            <button
+                                                type="button"
+                                                className={rsvpStyles.exportBtn}
+                                                onClick={handleExportRsvpCSV}
+                                            >
+                                                <Download size={14} />
+                                                <span>Export CSV</span>
+                                            </button>
+                                        </div>
+
+                                        {/* 4. Guest Table */}
                                         <div className={rsvpStyles.tableWrapper}>
                                             <table className={rsvpStyles.guestTable}>
                                                 <thead>
@@ -1109,20 +1180,70 @@ export default function DashboardPage() {
                                                 <tbody>
                                                     {rsvpListLoading ? (
                                                         <tr>
-                                                            <td colSpan={4} className={rsvpStyles.emptyTable}>Loading responses...</td>
+                                                            <td colSpan={4}>
+                                                                <div className={rsvpStyles.emptyStateContainer}>
+                                                                    <div className={rsvpStyles.emptyIconCircle}>
+                                                                        <Users size={24} />
+                                                                    </div>
+                                                                    <h4 className={rsvpStyles.emptyHeading}>Loading responses...</h4>
+                                                                    <p className={rsvpStyles.emptyText}>Fetching the latest RSVP entries for your event.</p>
+                                                                </div>
+                                                            </td>
                                                         </tr>
                                                     ) : filteredRsvpsList.length === 0 ? (
                                                         <tr>
-                                                            <td colSpan={4} className={rsvpStyles.emptyTable}>
-                                                                {rsvpsList.length === 0
-                                                                    ? "No guests have RSVP'd yet."
-                                                                    : "No matching guests found."}
+                                                            <td colSpan={4}>
+                                                                <div className={rsvpStyles.emptyStateContainer}>
+                                                                    <div className={rsvpStyles.emptyIconCircle}>
+                                                                        <Share2 size={24} />
+                                                                    </div>
+                                                                    {rsvpsList.length === 0 ? (
+                                                                        <>
+                                                                            <h4 className={rsvpStyles.emptyHeading}>No guest responses yet</h4>
+                                                                            <p className={rsvpStyles.emptyText}>
+                                                                                Share your RSVP link on WhatsApp or with wedding invitations to collect responses.
+                                                                            </p>
+                                                                            <button
+                                                                                type="button"
+                                                                                className={rsvpStyles.emptyShareBtn}
+                                                                                onClick={openWhatsAppRsvp}
+                                                                            >
+                                                                                <Share2 size={14} />
+                                                                                <span>Share on WhatsApp</span>
+                                                                            </button>
+                                                                        </>
+                                                                    ) : (
+                                                                        <>
+                                                                            <h4 className={rsvpStyles.emptyHeading}>No matching guests</h4>
+                                                                            <p className={rsvpStyles.emptyText}>
+                                                                                No guests found for &ldquo;{rsvpSearchQuery || rsvpStatusFilter}&rdquo;. Try clearing filters.
+                                                                            </p>
+                                                                            <button
+                                                                                type="button"
+                                                                                className={rsvpStyles.emptyShareBtn}
+                                                                                onClick={() => {
+                                                                                    setRsvpSearchQuery('');
+                                                                                    setRsvpStatusFilter('all');
+                                                                                }}
+                                                                            >
+                                                                                <span>Reset Filters</span>
+                                                                            </button>
+                                                                        </>
+                                                                    )}
+                                                                </div>
                                                             </td>
                                                         </tr>
                                                     ) : (
                                                         filteredRsvpsList.map(r => (
                                                             <tr key={r.id}>
-                                                                <td className={rsvpStyles.guestName}>{r.guestName}</td>
+                                                                <td>
+                                                                    <div className={rsvpStyles.guestNameCell}>
+                                                                        <div className={rsvpStyles.guestAvatar}>
+                                                                            {r.guestName ? r.guestName.charAt(0).toUpperCase() : 'G'}
+                                                                        </div>
+                                                                        <span className={rsvpStyles.guestNameText}>{r.guestName}</span>
+                                                                    </div>
+                                                                </td>
                                                                 <td>
                                                                     <span className={`${rsvpStyles.statusBadge} ${
                                                                         r.status === 'attending' ? rsvpStyles.statusYes
@@ -1130,14 +1251,14 @@ export default function DashboardPage() {
                                                                         : r.status === 'maybe' ? rsvpStyles.statusMaybe
                                                                         : rsvpStyles.statusPending
                                                                     }`}>
-                                                                        {r.status === 'attending' ? 'ATTENDING'
-                                                                            : r.status === 'declined' ? 'DECLINED'
-                                                                            : r.status === 'maybe' ? 'MAYBE'
-                                                                            : 'PENDING'}
+                                                                        {r.status === 'attending' ? 'Attending'
+                                                                            : r.status === 'declined' ? 'Declined'
+                                                                            : r.status === 'maybe' ? 'Maybe'
+                                                                            : 'Pending'}
                                                                     </span>
                                                                 </td>
                                                                 <td>{r.adultCount || 1}</td>
-                                                                <td>{r.phone || '-'}</td>
+                                                                <td>{r.phone || '—'}</td>
                                                             </tr>
                                                         ))
                                                     )}
