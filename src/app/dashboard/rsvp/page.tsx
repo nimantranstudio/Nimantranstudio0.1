@@ -141,7 +141,7 @@ export default function RSVPListPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ type: 'spring', bounce: 0, duration: 0.6 }}
                 >
-                    <h1 className={styles.title}>RSVP Dashboard</h1>
+                    <h1 className={styles.title}>Website and RSVP Response</h1>
                     <Link href="/dashboard/rsvp/create" className={styles.createBtn}>
                         <Plus size={18} />
                         <span>Create RSVP Event</span>

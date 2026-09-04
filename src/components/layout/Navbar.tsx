@@ -190,7 +190,7 @@ export const Navbar = () => {
                                                     onClick={() => setIsProfileOpen(false)}
                                                 >
                                                     <LayoutDashboard size={16} className={styles.itemIcon} />
-                                                    <span>RSVP Dashboard</span>
+                                                    <span>Website and RSVP Response</span>
                                                     <ArrowRight size={13} className={styles.itemArrow} />
                                                 </Link>
 

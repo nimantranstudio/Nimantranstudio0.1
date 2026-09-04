@@ -957,7 +957,7 @@ export default function DashboardPage() {
                 >
                     {/* Header Row */}
                     <div className={rsvpStyles.header}>
-                        <h1 className={rsvpStyles.title}>RSVP Dashboard</h1>
+                        <h1 className={rsvpStyles.title}>Website and RSVP Response</h1>
                     </div>
 
                     {/* Events List Container */}
