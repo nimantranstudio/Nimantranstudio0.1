@@ -98,56 +98,54 @@ export const Navbar = () => {
                     />
                 </Link>
 
-                {/* 2. Grouped Nav Links + Account on Right */}
+                {/* 2. Unified Single Capsule on Right (Home + Themes + My Nimantran) */}
                 <div className={styles.rightGroup} suppressHydrationWarning>
-                    {/* Desktop Nav Track with Interactive Sliding Pill */}
                     <nav 
-                        className={styles.desktopNav} 
+                        className={styles.navCapsule} 
                         onMouseLeave={() => setHoveredNav(null)}
                         aria-label="Main Navigation"
                     >
-                        <div className={styles.navTrack}>
-                            {NAV_LINKS.map((link) => {
-                                const isActive = pathname === link.href;
-                                const isHovered = hoveredNav === link.href;
+                        {NAV_LINKS.map((link) => {
+                            const isActive = pathname === link.href;
+                            const isHovered = hoveredNav === link.href;
 
-                                return (
-                                    <Link
-                                        key={link.href}
-                                        href={link.href}
-                                        className={clsx(
-                                            styles.navLink,
-                                            isActive && styles.activeLink
-                                        )}
-                                        onMouseEnter={() => setHoveredNav(link.href)}
-                                    >
-                                        {/* Hover sliding pill */}
-                                        {isHovered && (
-                                            <motion.div
-                                                layoutId="navHoverPill"
-                                                className={styles.hoverPill}
-                                                transition={{ type: 'spring', bounce: 0, duration: 0.25 }}
-                                            />
-                                        )}
+                            return (
+                                <Link
+                                    key={link.href}
+                                    href={link.href}
+                                    className={clsx(
+                                        styles.navLink,
+                                        isActive && styles.activeLink
+                                    )}
+                                    onMouseEnter={() => setHoveredNav(link.href)}
+                                >
+                                    {/* Hover sliding pill */}
+                                    {isHovered && (
+                                        <motion.div
+                                            layoutId="navHoverPill"
+                                            className={styles.hoverPill}
+                                            transition={{ type: 'spring', bounce: 0, duration: 0.25 }}
+                                        />
+                                    )}
 
-                                        <span className={styles.linkText}>{link.name}</span>
+                                    <span className={styles.linkText}>{link.name}</span>
 
-                                        {/* Active Route Indicator Dot */}
-                                        {isActive && !isHovered && (
-                                            <motion.span 
-                                                layoutId="activeDot"
-                                                className={styles.activeDot}
-                                                transition={{ type: 'spring', bounce: 0, duration: 0.3 }}
-                                            />
-                                        )}
-                                    </Link>
-                                );
-                            })}
-                        </div>
-                    </nav>
+                                    {/* Active Route Indicator Dot */}
+                                    {isActive && !isHovered && (
+                                        <motion.span 
+                                            layoutId="activeDot"
+                                            className={styles.activeDot}
+                                            transition={{ type: 'spring', bounce: 0, duration: 0.3 }}
+                                        />
+                                    )}
+                                </Link>
+                            );
+                        })}
 
-                    {/* Account / Auth Action */}
-                    <div className={styles.authAction} suppressHydrationWarning>
+                        {/* Subtle Divider inside Capsule */}
+                        <div className={styles.capsuleDivider} />
+
+                        {/* Account / Profile Action inside same Capsule */}
                         {hasMounted && isAuthenticated ? (
                             /* Authenticated Profile Dropdown */
                             <div className={styles.profileWrapper} ref={dropdownRef}>
@@ -158,11 +156,11 @@ export const Navbar = () => {
                                     aria-label="User Account Menu"
                                 >
                                     <span className={styles.avatar}>
-                                        {isAdmin ? <Shield size={14} /> : <User size={14} />}
+                                        {isAdmin ? <Shield size={13} /> : <User size={13} />}
                                     </span>
                                     <span className={styles.profileLabel}>My Nimantran</span>
                                     <ChevronDown 
-                                        size={14} 
+                                        size={13} 
                                         className={clsx(styles.chevron, isProfileOpen && styles.chevronRotated)} 
                                     />
                                 </button>
@@ -222,12 +220,12 @@ export const Navbar = () => {
                                 </AnimatePresence>
                             </div>
                         ) : (
-                            /* Logged-out State: Clean Login Button */
+                            /* Logged-out State: Clean Login inside Capsule */
                             <Link href="/login" className={styles.loginBtn}>
                                 Log in
                             </Link>
                         )}
-                    </div>
+                    </nav>
 
                     {/* Mobile Menu Toggle Button */}
                     <button
