@@ -84,7 +84,7 @@ export const Navbar = () => {
     };
 
     return (
-        <header className={clsx(styles.header, isScrolled && styles.scrolled)}>
+        <header className={clsx(styles.header, isScrolled && styles.scrolled)} suppressHydrationWarning>
             <div className={styles.navContainer}>
                 {/* 1. Brand Logo on Left */}
                 <Link href="/" className={styles.logo} aria-label="Nimantran Studio Home">
@@ -99,7 +99,7 @@ export const Navbar = () => {
                 </Link>
 
                 {/* 2. Grouped Nav Links + Account on Right */}
-                <div className={styles.rightGroup}>
+                <div className={styles.rightGroup} suppressHydrationWarning>
                     {/* Desktop Nav Track with Interactive Sliding Pill */}
                     <nav 
                         className={styles.desktopNav} 
@@ -147,7 +147,7 @@ export const Navbar = () => {
                     </nav>
 
                     {/* Account / Auth Action */}
-                    <div className={styles.authAction}>
+                    <div className={styles.authAction} suppressHydrationWarning>
                         {hasMounted && isAuthenticated ? (
                             /* Authenticated Profile Dropdown */
                             <div className={styles.profileWrapper} ref={dropdownRef}>
@@ -284,7 +284,7 @@ export const Navbar = () => {
                                 ))}
                             </div>
 
-                            <div className={styles.mobileActions}>
+                            <div className={styles.mobileActions} suppressHydrationWarning>
                                 {hasMounted && isAuthenticated ? (
                                     <div className={styles.mobileAuthCard}>
                                         <div className={styles.mobileUserRow}>
