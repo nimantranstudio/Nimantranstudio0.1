@@ -98,10 +98,10 @@ export const Navbar = () => {
                     />
                 </Link>
 
-                {/* 2. Unified Single Capsule on Right (Home + Themes + My Nimantran) */}
+                {/* 2. Grouped Nav Links on Right (Clean single row, no outer capsule) */}
                 <div className={styles.rightGroup} suppressHydrationWarning>
                     <nav 
-                        className={styles.navCapsule} 
+                        className={styles.navRow} 
                         onMouseLeave={() => setHoveredNav(null)}
                         aria-label="Main Navigation"
                     >
@@ -119,12 +119,12 @@ export const Navbar = () => {
                                     )}
                                     onMouseEnter={() => setHoveredNav(link.href)}
                                 >
-                                    {/* Hover sliding pill */}
+                                    {/* Hover sliding pill with warm ivory/yellow tone */}
                                     {isHovered && (
                                         <motion.div
                                             layoutId="navHoverPill"
                                             className={styles.hoverPill}
-                                            transition={{ type: 'spring', bounce: 0, duration: 0.25 }}
+                                            transition={{ type: 'spring', bounce: 0.15, duration: 0.28 }}
                                         />
                                     )}
 
@@ -142,10 +142,7 @@ export const Navbar = () => {
                             );
                         })}
 
-                        {/* Subtle Divider inside Capsule */}
-                        <div className={styles.capsuleDivider} />
-
-                        {/* Account / Profile Action inside same Capsule */}
+                        {/* Account / Profile Action */}
                         {hasMounted && isAuthenticated ? (
                             /* Authenticated Profile Dropdown */
                             <div className={styles.profileWrapper} ref={dropdownRef}>
@@ -220,7 +217,7 @@ export const Navbar = () => {
                                 </AnimatePresence>
                             </div>
                         ) : (
-                            /* Logged-out State: Clean Login inside Capsule */
+                            /* Logged-out State: Clean Login Button */
                             <Link href="/login" className={styles.loginBtn}>
                                 Log in
                             </Link>
