@@ -128,14 +128,19 @@ export default function ExitIntentModal() {
 
                         <div className={styles.content}>
                             <div className={styles.imageWrapper}>
-                                <Image 
-                                    src="/assets/wedding-package-mockup.png" 
-                                    alt="Wedding Planning PDF Guide" 
-                                    width={220} 
-                                    height={220}
-                                    className={styles.mockupImage}
-                                    priority
-                                />
+                                <div className={styles.imageCard}>
+                                    <div className={styles.cornerRibbon}>
+                                        <span className={styles.ribbonText}>FREE</span>
+                                    </div>
+                                    <Image 
+                                        src="/assets/wedding-package-mockup.png" 
+                                        alt="Wedding Planning PDF Guide" 
+                                        width={200} 
+                                        height={200}
+                                        className={styles.mockupImage}
+                                        priority
+                                    />
+                                </div>
                             </div>
 
                             <h2 className={styles.headline}>Free wedding planner pdf before you go...</h2>
