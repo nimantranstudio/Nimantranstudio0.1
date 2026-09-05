@@ -17,6 +17,16 @@ export default function ExitIntentModal() {
 
     useEffect(() => {
         setIsClient(true);
+
+        // Allow previewing via query parameter (e.g. ?preview=exit-intent or ?exit=1)
+        if (typeof window !== 'undefined') {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('preview') === 'exit-intent' || urlParams.get('exit') === '1' || urlParams.get('preview') === 'pdf') {
+                setIsVisible(true);
+                return;
+            }
+        }
+
         const shown = sessionStorage.getItem('exit_intent_shown');
         if (shown) {
             setHasBeenShown(true);
@@ -36,10 +46,21 @@ export default function ExitIntentModal() {
 
     useEffect(() => {
         // Strict guard: only execute on landing page ('/')
-        if (!isClient || hasBeenShown || pathname !== '/') {
+        if (!isClient || pathname !== '/') {
             setIsVisible(false);
             return;
         }
+
+        // If preview query parameter is present, keep visible
+        if (typeof window !== 'undefined') {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('preview') === 'exit-intent' || urlParams.get('exit') === '1' || urlParams.get('preview') === 'pdf') {
+                setIsVisible(true);
+                return;
+            }
+        }
+
+        if (hasBeenShown) return;
 
         const handleMouseLeave = (e: MouseEvent) => {
             if (e.clientY <= 0) {
@@ -51,7 +72,7 @@ export default function ExitIntentModal() {
         const timer = setTimeout(() => {
             window.addEventListener('mousemove', handleExitIntent);
             document.addEventListener('mouseleave', handleMouseLeave);
-        }, 5000);
+        }, 3000);
 
         return () => {
             clearTimeout(timer);
