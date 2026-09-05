@@ -192,12 +192,6 @@ export default function ExitIntentModal() {
                                     </button>
                                 </div>
                             </div>
-
-                            <div className={styles.actions}>
-                                <button className={styles.dismissLink} onClick={dismiss}>
-                                    No thanks, I&apos;ll explore on my own
-                                </button>
-                            </div>
                         </div>
                     </motion.div>
                 </div>
