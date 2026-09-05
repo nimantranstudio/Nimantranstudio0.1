@@ -30,7 +30,7 @@ export default function RootWrapper({ children }: { children: React.ReactNode })
             </main>
             {!isHidden && <Footer />}
             {!isHidden && <FloatingWhatsApp />}
-            {!isHidden && <ExitIntentModal />}
+            {isLandingPage && <ExitIntentModal />}
         </div>
     );
 }

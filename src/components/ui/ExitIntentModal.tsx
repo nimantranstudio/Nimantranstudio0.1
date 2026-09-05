@@ -1,12 +1,14 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Check, ArrowRight, Sparkles, Send, Download } from 'lucide-react';
 import Image from 'next/image';
 import styles from './ExitIntentModal.module.css';
 
 export default function ExitIntentModal() {
+    const pathname = usePathname();
     const [isVisible, setIsVisible] = useState(false);
     const [hasBeenShown, setHasBeenShown] = useState(false);
     const [isClient, setIsClient] = useState(false);
@@ -24,7 +26,7 @@ export default function ExitIntentModal() {
     const handleExitIntent = useCallback((e: MouseEvent) => {
         if (hasBeenShown) return;
 
-        // Trigger when cursor moves near the top of the viewport
+        // Trigger when cursor moves near the top of the viewport or leaves window through top
         if (e.clientY <= 10) {
             setIsVisible(true);
             setHasBeenShown(true);
@@ -33,18 +35,30 @@ export default function ExitIntentModal() {
     }, [hasBeenShown]);
 
     useEffect(() => {
-        if (!isClient || hasBeenShown) return;
+        // Strict guard: only execute on landing page ('/')
+        if (!isClient || hasBeenShown || pathname !== '/') {
+            setIsVisible(false);
+            return;
+        }
 
-        // 10-second delay for first-time users as requested
+        const handleMouseLeave = (e: MouseEvent) => {
+            if (e.clientY <= 0) {
+                handleExitIntent(e);
+            }
+        };
+
+        // Delay after page load before enabling exit-intent to avoid false triggers
         const timer = setTimeout(() => {
             window.addEventListener('mousemove', handleExitIntent);
-        }, 10000);
+            document.addEventListener('mouseleave', handleMouseLeave);
+        }, 5000);
 
         return () => {
             clearTimeout(timer);
             window.removeEventListener('mousemove', handleExitIntent);
+            document.removeEventListener('mouseleave', handleMouseLeave);
         };
-    }, [isClient, hasBeenShown, handleExitIntent]);
+    }, [isClient, hasBeenShown, pathname, handleExitIntent]);
 
     const dismiss = () => {
         setIsVisible(false);
@@ -61,7 +75,7 @@ export default function ExitIntentModal() {
         }, 2000);
     };
 
-    if (!isClient) return null;
+    if (!isClient || pathname !== '/') return null;
 
     return (
         <AnimatePresence>
