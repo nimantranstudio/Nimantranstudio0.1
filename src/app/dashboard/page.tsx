@@ -989,13 +989,6 @@ export default function DashboardPage() {
 
                                             {/* Glassmorphic Action Pills */}
                                             <div className={rsvpStyles.actionPillsGroup}>
-                                                <button
-                                                    className={rsvpStyles.pillBtn}
-                                                    onClick={() => copyRsvpPageLink(evt.id)}
-                                                >
-                                                    {copiedRsvpId === evt.id ? <CheckCircle2 size={16} color="#4ADE80" /> : <Copy size={16} />}
-                                                    <span>{copiedRsvpId === evt.id ? 'Copied' : 'Copy Link'}</span>
-                                                </button>
                                                 <button className={rsvpStyles.pillBtn} onClick={openWhatsAppRsvp}>
                                                     <Share2 size={16} />
                                                     <span>WhatsApp</span>
@@ -1006,13 +999,6 @@ export default function DashboardPage() {
                                                         <span>Preview</span>
                                                     </Link>
                                                 )}
-                                                <Link
-                                                    href="/details"
-                                                    className={`${rsvpStyles.pillBtn} ${rsvpStyles.pillEdit}`}
-                                                >
-                                                    <Edit3 size={15} />
-                                                    <span>Edit</span>
-                                                </Link>
                                             </div>
                                         </div>
 
