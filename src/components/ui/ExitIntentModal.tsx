@@ -12,8 +12,6 @@ export default function ExitIntentModal() {
     const [isVisible, setIsVisible] = useState(false);
     const [hasBeenShown, setHasBeenShown] = useState(false);
     const [isClient, setIsClient] = useState(false);
-    const [leadInfo, setLeadInfo] = useState('');
-    const [isSubmitted, setIsSubmitted] = useState(false);
 
     useEffect(() => {
         setIsClient(true);
@@ -88,24 +86,11 @@ export default function ExitIntentModal() {
     const handleDownload = () => {
         const link = document.createElement('a');
         link.href = '/assets/wedding-guide.pdf';
-        link.download = 'Nimantran_Wedding_Planning_Guide.pdf';
+        link.download = 'Nimantran_Wedding_Communication_Planner_2026.pdf';
         link.target = '_blank';
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-    };
-
-    const handleLeadSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!leadInfo || leadInfo.length < 10) return;
-        
-        setIsSubmitted(true);
-        setTimeout(() => {
-            handleDownload();
-            setTimeout(() => {
-                dismiss();
-            }, 1500);
-        }, 800);
     };
 
     if (!isClient || pathname !== '/') return null;
@@ -119,11 +104,11 @@ export default function ExitIntentModal() {
                         initial={{ opacity: 0, y: 20, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 20, scale: 0.95 }}
-                        transition={{ duration: 0.5, ease: [0.19, 1, 0.22, 1] }}
+                        transition={{ duration: 0.4, ease: [0.19, 1, 0.22, 1] }}
                         onClick={(e) => e.stopPropagation()}
                     >
                         <button className={styles.closeBtn} onClick={dismiss} aria-label="Dismiss">
-                            <X size={24} />
+                            <X size={22} />
                         </button>
 
                         <div className={styles.content}>
@@ -166,37 +151,6 @@ export default function ExitIntentModal() {
                                 <Download size={18} />
                                 <span>Download PDF</span>
                             </button>
-
-                            {/* SECONDARY / MUTED SECTION: Send on WhatsApp */}
-                            <div className={styles.secondarySection}>
-                                <div className={styles.divider}>
-                                    <span>or get it on WhatsApp</span>
-                                </div>
-
-                                <div className={styles.mutedInputGroup}>
-                                    <div className={styles.compactPrefix}>
-                                        <Image src="https://flagcdn.com/in.svg" alt="India" width={16} height={12} />
-                                        <span>+91</span>
-                                    </div>
-                                    <input 
-                                        type="text" 
-                                        placeholder="Enter WhatsApp number" 
-                                        className={styles.compactInput}
-                                        value={leadInfo}
-                                        onChange={(e) => setLeadInfo(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                                        disabled={isSubmitted}
-                                    />
-                                    <button 
-                                        className={styles.secondarySendBtn} 
-                                        onClick={handleLeadSubmit}
-                                        disabled={isSubmitted || leadInfo.length < 10}
-                                        title="Send PDF copy to WhatsApp"
-                                    >
-                                        {isSubmitted ? <Check size={14} /> : <Send size={14} />}
-                                        <span>{isSubmitted ? 'Sent' : 'Send'}</span>
-                                    </button>
-                                </div>
-                            </div>
                         </div>
                     </motion.div>
                 </div>
