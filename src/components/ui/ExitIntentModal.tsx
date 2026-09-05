@@ -143,10 +143,15 @@ export default function ExitIntentModal() {
                                 </div>
                             </div>
 
-                            <h2 className={styles.headline}>Free wedding planner pdf before you go...</h2>
+                            <h2 className={styles.headline}>Free Wedding Planner PDF</h2>
+
+                            <div className={styles.priceHighlightBadge}>
+                                <span className={styles.worthOriginal}>Worth ₹324</span>
+                                <span className={styles.worthHighlight}>100% FREE Today</span>
+                            </div>
                             
                             <p className={styles.subheadline}>
-                                Claim your <strong style={{ color: '#0A252C' }}>FREE</strong> Wedding Planning PDF (worth <span style={{ textDecoration: 'line-through', opacity: 0.6 }}>₹324</span>) with essential timelines and checklist.
+                                A comprehensive 50-page communication planner with timelines, checklists, and guest coordination systems.
                             </p>
                             
                             <p className={styles.emotionalLine}>
