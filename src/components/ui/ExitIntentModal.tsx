@@ -85,15 +85,27 @@ export default function ExitIntentModal() {
         setIsVisible(false);
     };
 
+    const handleDownload = () => {
+        const link = document.createElement('a');
+        link.href = '/assets/wedding-guide.pdf';
+        link.download = 'Nimantran_Wedding_Planning_Guide.pdf';
+        link.target = '_blank';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     const handleLeadSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!leadInfo) return;
+        if (!leadInfo || leadInfo.length < 10) return;
         
-        // Mock submission
         setIsSubmitted(true);
         setTimeout(() => {
-            dismiss();
-        }, 2000);
+            handleDownload();
+            setTimeout(() => {
+                dismiss();
+            }, 1500);
+        }, 800);
     };
 
     if (!isClient || pathname !== '/') return null;
