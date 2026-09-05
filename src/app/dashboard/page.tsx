@@ -1277,9 +1277,9 @@ export default function DashboardPage() {
                         ::-webkit-scrollbar { display: none; }
                     `}} />
                     
-                    <div style={{ position: 'sticky', top: '1rem', width: '100%', maxWidth: '800px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', zIndex: 10 }}>
-                         <h3 style={{ color: 'rgba(255,255,255,0.7)', margin: 0, fontSize: '1rem', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Complete Suite Preview</h3>
-                         <button onClick={() => setSuitePreview(false)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', padding: '0.5rem 1rem', borderRadius: '20px', fontSize: '0.9rem', cursor: 'pointer', backdropFilter: 'blur(10px)' }}>✕ Close</button>
+                    <div style={{ position: 'sticky', top: '1rem', width: '100%', maxWidth: '900px', display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '2rem', zIndex: 10 }}>
+                         <h3 style={{ color: 'rgba(255,255,255,0.75)', margin: 0, fontSize: '1rem', letterSpacing: '0.08em', textTransform: 'uppercase', textAlign: 'center', fontWeight: 600 }}>Complete Suite Preview</h3>
+                         <button onClick={() => setSuitePreview(false)} style={{ position: 'absolute', right: 0, background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', padding: '0.45rem 1rem', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 500, cursor: 'pointer', backdropFilter: 'blur(10px)', transition: 'all 0.15s ease' }}>✕ Close</button>
                     </div>
                     
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', width: '100%', alignItems: 'center', justifyContent: 'center', flexGrow: 1 }}>
