@@ -1291,73 +1291,7 @@ export default function DashboardPage() {
                             const currentItem = validItems[currentIndex];
                             
                             return (
-                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem', width: '100%' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
-                                        <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem', letterSpacing: '0.1em', textTransform: 'uppercase', margin: 0, fontWeight: 500 }}>
-                                            {currentItem.name}
-                                        </p>
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleShareWhatsApp(currentItem);
-                                            }}
-                                            style={{
-                                                background: '#16A34A',
-                                                border: '1px solid rgba(255, 255, 255, 0.2)',
-                                                color: '#FFFFFF',
-                                                padding: '0.45rem 1.15rem',
-                                                borderRadius: '20px',
-                                                fontSize: '0.82rem',
-                                                fontWeight: 600,
-                                                cursor: 'pointer',
-                                                display: 'inline-flex',
-                                                alignItems: 'center',
-                                                gap: '0.45rem',
-                                                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
-                                                transition: 'all 0.15s ease'
-                                            }}
-                                        >
-                                            <MessageCircle size={14} />
-                                            <span>Share on WhatsApp</span>
-                                        </button>
-
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                if (currentItem.image && typeof currentItem.image === 'string' && !currentItem.image.startsWith('structured:')) {
-                                                    const a = document.createElement('a');
-                                                    a.href = currentItem.image;
-                                                    a.download = `${(currentItem.name || 'invitation').toLowerCase().replace(/\s+/g, '_')}_invitation.png`;
-                                                    a.click();
-                                                } else {
-                                                    // Fallback download
-                                                    const a = document.createElement('a');
-                                                    a.href = currentItem.image || '/assets/themes/sample-card.png';
-                                                    a.download = `${(currentItem.name || 'invitation').toLowerCase().replace(/\s+/g, '_')}_invitation.png`;
-                                                    a.click();
-                                                }
-                                            }}
-                                            style={{
-                                                background: 'rgba(255, 255, 255, 0.15)',
-                                                border: '1px solid rgba(255, 255, 255, 0.35)',
-                                                color: '#FFFFFF',
-                                                padding: '0.45rem 1.15rem',
-                                                borderRadius: '20px',
-                                                fontSize: '0.82rem',
-                                                fontWeight: 600,
-                                                cursor: 'pointer',
-                                                display: 'inline-flex',
-                                                alignItems: 'center',
-                                                gap: '0.45rem',
-                                                backdropFilter: 'blur(10px)',
-                                                boxShadow: '0 4px 14px rgba(0, 0, 0, 0.25)',
-                                                transition: 'all 0.15s ease'
-                                            }}
-                                        >
-                                            <Download size={14} />
-                                            <span>Download Card</span>
-                                        </button>
-                                    </div>
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.25rem', width: '100%' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '2rem', width: '100%', justifyContent: 'center' }}>
                                         <button 
                                             onClick={(e) => { e.stopPropagation(); setSuitePreviewIndex(Math.max(0, currentIndex - 1)); }}
@@ -1401,7 +1335,73 @@ export default function DashboardPage() {
                                             →
                                         </button>
                                     </div>
-                                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+
+                                    {/* Action buttons directly below the card and above the carousel dots */}
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center', marginTop: '0.25rem' }}>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleShareWhatsApp(currentItem);
+                                            }}
+                                            style={{
+                                                background: '#16A34A',
+                                                border: '1px solid rgba(255, 255, 255, 0.2)',
+                                                color: '#FFFFFF',
+                                                padding: '0.5rem 1.25rem',
+                                                borderRadius: '20px',
+                                                fontSize: '0.85rem',
+                                                fontWeight: 600,
+                                                cursor: 'pointer',
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                gap: '0.45rem',
+                                                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+                                                transition: 'all 0.15s ease'
+                                            }}
+                                        >
+                                            <MessageCircle size={14} />
+                                            <span>Share on WhatsApp</span>
+                                        </button>
+
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                if (currentItem.image && typeof currentItem.image === 'string' && !currentItem.image.startsWith('structured:')) {
+                                                    const a = document.createElement('a');
+                                                    a.href = currentItem.image;
+                                                    a.download = `${(currentItem.name || 'invitation').toLowerCase().replace(/\s+/g, '_')}_invitation.png`;
+                                                    a.click();
+                                                } else {
+                                                    // Fallback download
+                                                    const a = document.createElement('a');
+                                                    a.href = currentItem.image || '/assets/themes/sample-card.png';
+                                                    a.download = `${(currentItem.name || 'invitation').toLowerCase().replace(/\s+/g, '_')}_invitation.png`;
+                                                    a.click();
+                                                }
+                                            }}
+                                            style={{
+                                                background: 'rgba(255, 255, 255, 0.15)',
+                                                border: '1px solid rgba(255, 255, 255, 0.35)',
+                                                color: '#FFFFFF',
+                                                padding: '0.5rem 1.25rem',
+                                                borderRadius: '20px',
+                                                fontSize: '0.85rem',
+                                                fontWeight: 600,
+                                                cursor: 'pointer',
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                gap: '0.45rem',
+                                                backdropFilter: 'blur(10px)',
+                                                boxShadow: '0 4px 14px rgba(0, 0, 0, 0.25)',
+                                                transition: 'all 0.15s ease'
+                                            }}
+                                        >
+                                            <Download size={14} />
+                                            <span>Download Card</span>
+                                        </button>
+                                    </div>
+
+                                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.25rem', flexWrap: 'wrap', justifyContent: 'center' }}>
                                         {validItems.map((_, idx) => (
                                             <div 
                                                 key={idx} 
