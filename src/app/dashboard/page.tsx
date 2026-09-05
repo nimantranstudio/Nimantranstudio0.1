@@ -1336,8 +1336,8 @@ export default function DashboardPage() {
                                         </button>
                                     </div>
 
-                                    {/* Action buttons directly below the card and above the carousel dots */}
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center', marginTop: '0.25rem' }}>
+                                    {/* Action buttons directly below the card and above the carousel dots with equal sizing */}
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', flexWrap: 'wrap', justifyContent: 'center', marginTop: '0.25rem' }}>
                                         <button
                                             onClick={(e) => {
                                                 e.stopPropagation();
@@ -1347,19 +1347,23 @@ export default function DashboardPage() {
                                                 background: '#16A34A',
                                                 border: '1px solid rgba(255, 255, 255, 0.2)',
                                                 color: '#FFFFFF',
-                                                padding: '0.5rem 1.25rem',
-                                                borderRadius: '20px',
+                                                minWidth: '190px',
+                                                height: '42px',
+                                                padding: '0 1.25rem',
+                                                borderRadius: '9999px',
                                                 fontSize: '0.85rem',
                                                 fontWeight: 600,
                                                 cursor: 'pointer',
                                                 display: 'inline-flex',
                                                 alignItems: 'center',
-                                                gap: '0.45rem',
+                                                justifyContent: 'center',
+                                                gap: '0.5rem',
                                                 boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
-                                                transition: 'all 0.15s ease'
+                                                transition: 'all 0.15s ease',
+                                                boxSizing: 'border-box'
                                             }}
                                         >
-                                            <MessageCircle size={14} />
+                                            <MessageCircle size={15} />
                                             <span>Share on WhatsApp</span>
                                         </button>
 
@@ -1383,20 +1387,24 @@ export default function DashboardPage() {
                                                 background: 'rgba(255, 255, 255, 0.15)',
                                                 border: '1px solid rgba(255, 255, 255, 0.35)',
                                                 color: '#FFFFFF',
-                                                padding: '0.5rem 1.25rem',
-                                                borderRadius: '20px',
+                                                minWidth: '190px',
+                                                height: '42px',
+                                                padding: '0 1.25rem',
+                                                borderRadius: '9999px',
                                                 fontSize: '0.85rem',
                                                 fontWeight: 600,
                                                 cursor: 'pointer',
                                                 display: 'inline-flex',
                                                 alignItems: 'center',
-                                                gap: '0.45rem',
+                                                justifyContent: 'center',
+                                                gap: '0.5rem',
                                                 backdropFilter: 'blur(10px)',
                                                 boxShadow: '0 4px 14px rgba(0, 0, 0, 0.25)',
-                                                transition: 'all 0.15s ease'
+                                                transition: 'all 0.15s ease',
+                                                boxSizing: 'border-box'
                                             }}
                                         >
-                                            <Download size={14} />
+                                            <Download size={15} />
                                             <span>Download Card</span>
                                         </button>
                                     </div>
