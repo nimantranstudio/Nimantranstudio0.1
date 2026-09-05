@@ -126,51 +126,57 @@ export default function ExitIntentModal() {
                                 />
                             </div>
 
-                            <h2 className={styles.headline}>Before you go...</h2>
+                            <h2 className={styles.headline}>Free wedding planner pdf before you go...</h2>
                             
                             <p className={styles.subheadline}>
-                                Let us help you create an amazing inviting experience.
-                            </p>
-                            
-                            <p className={styles.subheadline}>
-                                Claim your <strong style={{color: '#0A252C'}}>FREE</strong> Wedding Planning PDF (worth <span style={{textDecoration: 'line-through', opacity: 0.6}}>₹324</span>) instantly on WhatsApp.
+                                Claim your <strong style={{ color: '#0A252C' }}>FREE</strong> Wedding Planning PDF (worth <span style={{ textDecoration: 'line-through', opacity: 0.6 }}>₹324</span>) with essential timelines and checklist.
                             </p>
                             
                             <p className={styles.emotionalLine}>
                                 &ldquo;It&apos;s our gift to help your big day go effortlessly!&rdquo;
                             </p>
 
-                            <div className={styles.leadCapture} style={{ borderTop: 'none', marginTop: '0' }}>
-                                <div className={styles.inputGroup}>
-                                    <div className={styles.phonePrefix}>
-                                        <Image src="https://flagcdn.com/in.svg" alt="India" width={20} height={15} />
+                            {/* PRIMARY CTA: Download PDF Directly */}
+                            <button 
+                                className={styles.primaryDownloadCTA} 
+                                onClick={handleDownload}
+                            >
+                                <Download size={18} />
+                                <span>Download PDF</span>
+                            </button>
+
+                            {/* SECONDARY / MUTED SECTION: Send on WhatsApp */}
+                            <div className={styles.secondarySection}>
+                                <div className={styles.divider}>
+                                    <span>or get it on WhatsApp</span>
+                                </div>
+
+                                <div className={styles.mutedInputGroup}>
+                                    <div className={styles.compactPrefix}>
+                                        <Image src="https://flagcdn.com/in.svg" alt="India" width={16} height={12} />
                                         <span>+91</span>
                                     </div>
                                     <input 
                                         type="text" 
                                         placeholder="Enter WhatsApp number" 
-                                        className={styles.input}
+                                        className={styles.compactInput}
                                         value={leadInfo}
                                         onChange={(e) => setLeadInfo(e.target.value.replace(/\D/g, '').slice(0, 10))}
                                         disabled={isSubmitted}
                                     />
+                                    <button 
+                                        className={styles.secondarySendBtn} 
+                                        onClick={handleLeadSubmit}
+                                        disabled={isSubmitted || leadInfo.length < 10}
+                                        title="Send PDF copy to WhatsApp"
+                                    >
+                                        {isSubmitted ? <Check size={14} /> : <Send size={14} />}
+                                        <span>{isSubmitted ? 'Sent' : 'Send'}</span>
+                                    </button>
                                 </div>
-                                
-                                <button 
-                                    className={styles.primaryCTA} 
-                                    onClick={handleLeadSubmit}
-                                    style={{ marginTop: '1rem', width: '100%' }}
-                                    disabled={isSubmitted || leadInfo.length < 10}
-                                >
-                                    {isSubmitted ? 'Sent Successfully!' : 'Send My Free PDF on WhatsApp'}
-                                </button>
                             </div>
 
-                            <div className={styles.actions} style={{ marginTop: '1.5rem', alignItems: 'center' }}>
-                                <button className={styles.downloadLink} onClick={() => window.open('/assets/wedding-guide.pdf', '_blank')}>
-                                    <Download size={16} /> Download PDF Directly
-                                </button>
-                                
+                            <div className={styles.actions}>
                                 <button className={styles.dismissLink} onClick={dismiss}>
                                     No thanks, I&apos;ll explore on my own
                                 </button>
