@@ -54,6 +54,7 @@ const INITIAL_FORM_DATA: WeddingFormData = {
     events: DEFAULT_EVENTS,
     rsvpContact: '',
     rsvpDeadline: '',
+    eventType: 'Wedding',
     invitationMessage: '',
 };
 

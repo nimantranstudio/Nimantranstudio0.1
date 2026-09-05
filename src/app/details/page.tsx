@@ -948,12 +948,6 @@ function DetailsContent() {
                                                     }}
                                                 >
                                                     <option value="Wedding">Wedding Ceremony</option>
-                                                    <option value="Reception">Reception Suite</option>
-                                                    <option value="Sangeet">Sangeet Party</option>
-                                                    <option value="Haldi">Haldi Ritual</option>
-                                                    <option value="Mehendi">Mehendi Night</option>
-                                                    <option value="Engagement">Engagement Ring Ceremony</option>
-                                                    <option value="Other">Special Event</option>
                                                 </select>
                                             </div>
                                             <div>
