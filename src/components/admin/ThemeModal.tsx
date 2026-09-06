@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { X, Upload, Image as ImageIcon } from 'lucide-react';
+import { X, Upload } from 'lucide-react';
 import styles from './ThemeModal.module.css';
 import { auth } from '@/lib/firebase';
 

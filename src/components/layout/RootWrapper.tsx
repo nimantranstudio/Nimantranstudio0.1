@@ -6,15 +6,9 @@ import { Navbar } from "@/components/layout/Navbar";
 import { FloatingWhatsApp } from "@/components/ui/FloatingWhatsApp";
 import ExitIntentModal from "@/components/ui/ExitIntentModal";
 import { AnnouncementStrip } from "@/components/home/AnnouncementStrip";
-import { useState, useEffect } from "react";
 
 export default function RootWrapper({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
-    const [hasMounted, setHasMounted] = useState(false);
-
-    useEffect(() => {
-        setHasMounted(true);
-    }, []);
 
     const isAdmin = pathname?.startsWith('/admin');
     const isRsvpPage = pathname?.startsWith('/rsvp/');

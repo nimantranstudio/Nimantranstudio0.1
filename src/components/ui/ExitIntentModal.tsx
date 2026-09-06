@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Check, ArrowRight, Sparkles, Send, Download } from 'lucide-react';
+import { X, Download } from 'lucide-react';
 import Image from 'next/image';
 import styles from './ExitIntentModal.module.css';
 

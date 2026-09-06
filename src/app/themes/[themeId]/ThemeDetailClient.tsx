@@ -943,7 +943,6 @@ export default function ThemeDetailClient({
                                 <ThemeCard
                                     key={recTheme.id}
                                     theme={recTheme}
-                                    onSelect={(id) => router.push(`/themes/${id}`)}
                                 />
                             ))}
                         </div>

@@ -4,20 +4,12 @@ import { motion } from "framer-motion";
 import { ThemeCard } from "@/components/ui/ThemeCard";
 import styles from "@/app/page.module.css";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import type { Theme } from "@/lib/constants/themes";
 
 interface ThemeShowcaseProps {
   initialThemes: any[];
 }
 
 export function ThemeShowcase({ initialThemes }: ThemeShowcaseProps) {
-  const router = useRouter();
-
-  const handleThemeSelect = (id: string) => {
-    router.push(`/themes/${id}`);
-  };
-
   return (
     <section className={styles.showcase}>
       <div className="container">
@@ -54,7 +46,6 @@ export function ThemeShowcase({ initialThemes }: ThemeShowcaseProps) {
               >
                 <ThemeCard
                   theme={theme}
-                  onSelect={handleThemeSelect}
                 />
               </motion.div>
             ))

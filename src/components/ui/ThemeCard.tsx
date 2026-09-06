@@ -9,10 +9,9 @@ import clsx from 'clsx';
 
 interface ThemeCardProps {
     theme: Theme;
-    onSelect: (id: string) => void;
 }
 
-export const ThemeCard = ({ theme, onSelect }: ThemeCardProps) => {
+export const ThemeCard = ({ theme }: ThemeCardProps) => {
     const isBestSeller = theme.isBestSeller || theme.name.toLowerCase().includes('test theme');
 
     // Build the list of images to cycle through on hover

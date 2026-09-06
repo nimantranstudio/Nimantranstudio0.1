@@ -348,6 +348,11 @@ export default function MyOrdersPage() {
                                         )}
                                         <span>Download Receipt (PDF)</span>
                                     </button>
+                                    {downloadError && downloadingId !== latest.id && (
+                                        <p style={{ color: '#B3261E', fontSize: '0.8125rem', padding: '0 0.95rem 0.95rem', margin: 0 }}>
+                                            {downloadError}
+                                        </p>
+                                    )}
                                 </div>
                             </div>
 

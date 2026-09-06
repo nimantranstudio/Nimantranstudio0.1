@@ -33,12 +33,22 @@ export const Navbar = () => {
     const [isScrolled, setIsScrolled] = useState(false);
     const [hoveredNav, setHoveredNav] = useState<string | null>(null);
 
-    const { isAuthenticated, isAdmin, userPhone, logout } = useWeddingStore();
+    const { isAuthenticated, isAdmin, userPhone, login, logout } = useWeddingStore();
     const [hasMounted, setHasMounted] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         setHasMounted(true);
+
+        // Sync session and phone number from server if authenticated
+        fetch('/api/auth/me')
+            .then((res) => res.json())
+            .then((data) => {
+                if (data?.authenticated && data.user?.mobileNumber) {
+                    login(data.user.mobileNumber, data.isAdmin);
+                }
+            })
+            .catch(() => {});
 
         const handleClickOutside = (event: MouseEvent) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -48,7 +58,7 @@ export const Navbar = () => {
 
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
+    }, [login]);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -73,13 +83,25 @@ export const Navbar = () => {
 
     const getDisplayName = () => {
         if (isAdmin) return 'NS Admin';
-        if (userPhone && userPhone.length >= 10) return userPhone;
         return 'My Account';
+    };
+
+    const getFormattedPhone = () => {
+        if (isAdmin && !userPhone) return 'Administrator';
+        if (!userPhone) return 'Account Active';
+        const digits = userPhone.replace(/\D/g, '');
+        if (digits.length === 10) {
+            return `+91 ${digits.slice(0, 5)} ${digits.slice(5)}`;
+        }
+        if (digits.length === 12 && digits.startsWith('91')) {
+            const ten = digits.slice(2);
+            return `+91 ${ten.slice(0, 5)} ${ten.slice(5)}`;
+        }
+        return userPhone.startsWith('+') ? userPhone : `+91 ${userPhone}`;
     };
 
     const getInitial = () => {
         if (isAdmin) return 'A';
-        if (userPhone && userPhone.length >= 2) return userPhone.slice(-2);
         return 'N';
     };
 
@@ -178,7 +200,7 @@ export const Navbar = () => {
                                                 <div className={styles.headerMeta}>
                                                     <span className={styles.userName}>{getDisplayName()}</span>
                                                     <span className={styles.userBadge}>
-                                                        {isAdmin ? 'Administrator' : 'Active Member'}
+                                                        {getFormattedPhone()}
                                                     </span>
                                                 </div>
                                             </div>
@@ -287,7 +309,7 @@ export const Navbar = () => {
                                             <div>
                                                 <div className={styles.mobileUserName}>{getDisplayName()}</div>
                                                 <div className={styles.userBadge}>
-                                                    {isAdmin ? 'Administrator' : 'Active Account'}
+                                                    {getFormattedPhone()}
                                                 </div>
                                             </div>
                                         </div>

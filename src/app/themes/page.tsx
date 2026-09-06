@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useWeddingStore } from '@/store/wedding-store';
 import { useState, useEffect } from 'react';
 import type { Theme } from '@/lib/constants/themes';
@@ -10,7 +9,6 @@ import styles from './themes.module.css';
 import { motion } from 'framer-motion';
 
 export default function ThemesPage() {
-    const router = useRouter();
     const { setThemeId } = useWeddingStore();
     const [themes, setThemes] = useState<Theme[]>([]);
     const [loading, setLoading] = useState(true);
@@ -32,10 +30,6 @@ export default function ThemesPage() {
 
         fetchThemes();
     }, []);
-
-    const handleThemeSelect = (id: string) => {
-        router.push(`/themes/${id}`);
-    };
 
     return (
         <div className={styles.page}>
@@ -82,7 +76,6 @@ export default function ThemesPage() {
                             >
                                 <ThemeCard
                                     theme={theme}
-                                    onSelect={handleThemeSelect}
                                 />
                             </motion.div>
                         ))
