@@ -1592,7 +1592,7 @@ function PreviewContent() {
                             <div className={styles.infoBoxFull}>
                                 <h3 className={styles.infoBoxTitle}>SATISFACTION GUARANTEED</h3>
                                 <p className={styles.infoBoxText}>
-                                    Final assets will be generated without watermarks in high definition immediately after payment. Editing allowed for next 15 days.
+                                    Final assets will be generated without watermarks in high definition immediately after payment.
                                 </p>
                             </div>
                             <div className={styles.infoBoxSplit}>

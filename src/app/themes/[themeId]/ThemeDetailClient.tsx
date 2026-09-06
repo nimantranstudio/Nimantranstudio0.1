@@ -371,11 +371,9 @@ export default function ThemeDetailClient({
             {/* Personalization Transition Screen removed - moved to /details */}
 
             <header style={{
-                borderBottom: '1px solid var(--border)',
-                backgroundColor: 'var(--background)',
-                marginBottom: '2rem'
+                marginBottom: '1.5rem'
             }}>
-                <div className="container" style={{ padding: '1.5rem 0' }}>
+                <div className="container" style={{ padding: '1.25rem 0 0.5rem 0' }}>
                     <Breadcrumbs
                         items={[
                             { label: 'Home', href: '/' },
@@ -913,7 +911,7 @@ export default function ThemeDetailClient({
                             <div className={styles.guaranteeBox}>
                                 <span className={styles.guaranteeTitle}>Satisfaction Guaranteed</span>
                                 <p className={styles.guaranteeText}>
-                                    Final assets will be generated without watermarks in high definition immediately after payment. Editing allowed for next 15 days.
+                                    Final assets will be generated without watermarks in high definition immediately after payment.
                                 </p>
                             </div>
 

@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowLeft, Clock, Calendar, MoveRight } from 'lucide-react';
+import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { getPrisma } from '@/lib/prisma';
 import styles from './post.module.css';
 
@@ -58,8 +59,9 @@ function renderContent(markdown: string) {
                 tableLines.push(lines[i].trim());
                 i++;
             }
-            const [header, , ...rows] = tableLines;
-            const headers = header.split('|').filter(Boolean).map(h => h.trim());
+            const [headerLine, , ...rowLines] = tableLines;
+            const headers = headerLine.split('|').filter(Boolean).map(h => h.trim());
+            const rows = rowLines.map(r => r.trim());
             elements.push(
                 <div key={key++} className={styles.tableWrapper}>
                     <table>
@@ -113,30 +115,41 @@ function renderContent(markdown: string) {
 
 function inlineFormat(text: string): string {
     return text
-        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
 }
 
-export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function BlogPostPage({
+    params,
+}: {
+    params: Promise<{ slug: string }>;
+}) {
     const { slug } = await params;
     const prisma = getPrisma();
     const post = await prisma.blog.findUnique({ where: { slug } });
+
     if (!post) notFound();
 
+    // Related posts (same category or latest, exclude current)
     const related = await prisma.blog.findMany({
-        where: { published: true, slug: { not: slug } },
+        where: { slug: { not: slug } },
         take: 3,
-        orderBy: { createdAt: 'desc' }
+        orderBy: { createdAt: 'desc' },
     });
 
     return (
         <main className={styles.page}>
-            {/* Back nav */}
+            {/* Breadcrumb nav */}
             <div className={styles.backBar}>
-                <div className="container">
-                    <Link href="/blogs" className={styles.backLink}>
-                        <ArrowLeft size={16} /> All Articles
-                    </Link>
+                <div className="container" style={{ padding: '1.25rem 0 0.5rem 0' }}>
+                    <Breadcrumbs
+                        items={[
+                            { label: 'Home', href: '/' },
+                            { label: 'Blog', href: '/blogs' },
+                            { label: post.title, active: true },
+                        ]}
+                    />
                 </div>
             </div>
 

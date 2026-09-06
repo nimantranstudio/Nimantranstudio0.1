@@ -105,7 +105,7 @@ export default function EventLinkPage() {
                         </button>
 
                         <div style={{ marginTop: '2rem' }}>
-                            <Link href="/dashboard/rsvp" style={{ color: '#1B5E20', fontWeight: 600, textDecoration: 'none' }}>
+                            <Link href="/dashboard" style={{ color: '#1B5E20', fontWeight: 600, textDecoration: 'none' }}>
                                 Go to Dashboard
                             </Link>
                         </div>

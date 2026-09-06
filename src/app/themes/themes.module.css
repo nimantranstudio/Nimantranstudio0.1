@@ -5,10 +5,9 @@
 }
 
 .header {
-    padding: 1.5rem 0;
+    padding: 1.25rem 0 0.5rem 0;
     text-align: left;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 4rem;
+    margin-bottom: 2.5rem;
 }
 
 .hero {

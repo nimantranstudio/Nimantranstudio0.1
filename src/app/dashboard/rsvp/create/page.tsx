@@ -71,7 +71,7 @@ export default function RSVPCreatePage() {
             alert(`Backend sync failed: ${result.error || 'Unknown error'}. Link might not work immediately.`);
         }
 
-        router.push('/dashboard/rsvp');
+        router.push('/dashboard');
     };
 
     return (
@@ -79,7 +79,7 @@ export default function RSVPCreatePage() {
             <main className={styles.main}>
                 {/* Breadcrumb */}
                 <div className={styles.breadcrumb}>
-                    <span className={styles.breadcrumbLink}>Rsvp Manager</span>
+                    <Link href="/dashboard" className={styles.breadcrumbLink}>Dashboard</Link>
                     <span className={styles.separator}>/</span>
                     <span className={styles.activeBreadcrumb}>Create</span>
                 </div>
@@ -215,7 +215,7 @@ export default function RSVPCreatePage() {
                         >
                             CREATE LINK
                         </button>
-                        <Link href="/dashboard/rsvp" className={styles.cancelLink}>
+                        <Link href="/dashboard" className={styles.cancelLink}>
                             CANCEL AND GO BACK
                         </Link>
                     </div>

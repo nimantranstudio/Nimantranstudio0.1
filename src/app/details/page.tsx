@@ -450,7 +450,7 @@ function DetailsContent() {
                         { label: 'Home', href: '/' },
                         { label: 'Themes', href: '/themes' },
                         { label: `${themeName}${selectedPlan ? ` (${selectedPlan})` : ''}`, href: `/themes/${selectedThemeId}` },
-                        { label: 'wedding details', active: true },
+                        { label: 'Wedding Details', active: true },
                     ]}
                 />
                 
