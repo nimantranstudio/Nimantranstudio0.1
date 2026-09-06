@@ -3,7 +3,7 @@
 import { useRouter, useParams } from 'next/navigation';
 import { useWeddingStore } from '@/store/wedding-store';
 import { formatDisplayDate } from '@/lib/format-date';
-import { ArrowLeft, Calendar, MapPin, Download, Share2, Search } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, Download, Share2, Search, X } from 'lucide-react';
 import styles from './guest-list.module.css';
 import { useMemo, useState, useEffect } from 'react';
 import { auth } from '@/lib/firebase';
@@ -62,10 +62,14 @@ export default function GuestListPage() {
             .reduce((sum, r) => sum + (r.adultCount || 1), 0),
     }), [rsvps]);
 
-    const filteredRsvps = rsvps.filter(r =>
-        r.guestName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (r.phone && r.phone.includes(searchQuery))
-    );
+    const filteredRsvps = (rsvps || []).filter(r => {
+        const query = searchQuery.trim().toLowerCase();
+        if (!query) return true;
+        const name = (r.guestName || (r as any).name || '').toLowerCase();
+        const phone = (r.phone || '').toLowerCase();
+        const status = (r.status || '').toLowerCase();
+        return name.includes(query) || phone.includes(query) || status.includes(query);
+    });
 
     const handleWhatsAppShare = () => {
         const summary =
@@ -78,24 +82,37 @@ export default function GuestListPage() {
         window.open(`https://wa.me/?text=${encodeURIComponent(summary)}`, '_blank');
     };
 
-    const handleExportCSV = () => {
-        const headers = ['Guest Name', 'Status', 'Adults', 'Children', 'Dietary', 'Phone'];
-        const rows = rsvps.map(r => [
-            r.guestName,
-            r.status,
-            String(r.adultCount || 1),
-            String(r.childCount || 0),
-            r.dietary || '-',
-            r.phone || '-',
-        ]);
-        const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${(event?.name || 'rsvp').replace(/\s+/g, '_')}_guests.csv`;
-        a.click();
-        URL.revokeObjectURL(url);
+    const handleDownloadExcel = async () => {
+        try {
+            const XLSX = await import('xlsx');
+            const data = (rsvps || []).map((r, index) => ({
+                'S.No': index + 1,
+                'Guest Name': r.guestName || 'Guest',
+                'Status': (r.status || 'ATTENDING').toUpperCase(),
+                'Adults': Number(r.adultCount) || 1,
+                'Children': Number(r.childCount) || 0,
+                'Dietary': r.dietary || '-',
+                'Phone': r.phone || '-',
+            }));
+
+            const worksheet = XLSX.utils.json_to_sheet(data);
+            worksheet['!cols'] = [
+                { wch: 6 },
+                { wch: 22 },
+                { wch: 14 },
+                { wch: 10 },
+                { wch: 10 },
+                { wch: 18 },
+                { wch: 16 },
+            ];
+
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'Guest List');
+            const eventSlug = (event?.name || 'wedding').replace(/\s+/g, '_').toLowerCase();
+            XLSX.writeFile(workbook, `${eventSlug}_guest_list.xlsx`);
+        } catch (err) {
+            console.error('Error exporting Excel file:', err);
+        }
     };
 
     if (!event) {
@@ -151,23 +168,46 @@ export default function GuestListPage() {
                     <div className={styles.listHeader}>
                         <h2 className={styles.listTitle}>Guest List</h2>
                         <div className={styles.tableControls}>
-                            <div className={styles.searchContainer}>
+                            <div className={styles.searchContainer} style={{ position: 'relative' }}>
                                 <Search className={styles.searchIcon} size={16} />
                                 <input
                                     type="text"
-                                    placeholder="Search guests..."
+                                    placeholder="Search guests by name..."
                                     className={styles.searchInput}
                                     value={searchQuery}
                                     onChange={e => setSearchQuery(e.target.value)}
+                                    aria-label="Search guests by name"
                                 />
+                                {searchQuery && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setSearchQuery('')}
+                                        style={{
+                                            position: 'absolute',
+                                            right: '0.85rem',
+                                            background: 'transparent',
+                                            border: 'none',
+                                            cursor: 'pointer',
+                                            color: '#94A3B8',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            padding: '4px',
+                                            borderRadius: '50%',
+                                        }}
+                                        title="Clear search"
+                                    >
+                                        <X size={14} />
+                                    </button>
+                                )}
                             </div>
                             <button onClick={handleWhatsAppShare} className={styles.btnWhatsapp}>
                                 <Share2 size={16} />
                                 Copy for WhatsApp
                             </button>
-                            <button onClick={handleExportCSV} className={styles.btnExport}>
+                            <button onClick={handleDownloadExcel} className={styles.btnExport}>
                                 <Download size={16} />
-                                Export CSV
+                                Download List
                             </button>
                         </div>
                     </div>

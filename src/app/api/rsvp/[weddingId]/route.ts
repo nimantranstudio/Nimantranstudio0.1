@@ -51,7 +51,10 @@ export async function GET(
 
         const { weddingId } = await params;
 
-        const wedding = await prisma.wedding.findUnique({ where: { id: weddingId } });
+        const wedding = await prisma.wedding.findUnique({
+            where: { id: weddingId },
+            include: { events: true }
+        });
         if (!wedding || wedding.ownerId !== user.id) {
             return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
         }
@@ -61,7 +64,7 @@ export async function GET(
             orderBy: { createdAt: 'desc' },
         });
 
-        return NextResponse.json({ success: true, rsvps });
+        return NextResponse.json({ success: true, rsvps, wedding });
     } catch (error: any) {
         return NextResponse.json({ success: false, error: error.message }, { status: 400 });
     }

@@ -219,7 +219,16 @@ export const RSVPForm = ({ wedding }: RSVPFormProps) => {
     const weddingEvents = (wedding.events || []).filter(
         (e: any) => e.name?.toLowerCase().includes('wedding') || e.eventType === 'Wedding'
     );
-    const displayEvents = weddingEvents.length > 0 ? weddingEvents.slice(0, 1) : wedding.events?.slice(0, 1) ?? [];
+    const displayEvents = weddingEvents.length > 0
+        ? weddingEvents.slice(0, 1)
+        : [{
+            id: 'primary-wedding-ceremony',
+            name: 'Wedding Ceremony',
+            eventName: 'Wedding Ceremony',
+            date: (wedding as any).primaryDate || '',
+            time: (wedding as any).primaryTime || '',
+            venue: (wedding as any).defaultVenueName || (wedding as any).venue || '',
+        }];
 
     return (
         <div className={styles.wrapper}>

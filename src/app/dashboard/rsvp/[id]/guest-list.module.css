@@ -217,26 +217,21 @@
 
 .statusBadge {
     display: inline-block;
-    padding: 0.25rem 0.75rem;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    font-weight: 700;
+    font-size: 0.8125rem;
+    font-weight: 600;
     text-transform: uppercase;
 }
 
 .statusYes {
-    background-color: #E6F4EA;
-    color: #1E7E34;
+    color: #16A34A;
 }
 
 .statusNo {
-    background-color: #FCE8E6;
-    color: #C53030;
+    color: #DC2626;
 }
 
 .statusPending {
-    background-color: #FFF7E6;
-    color: #B7791F;
+    color: #64748B;
 }
 
 .pax {

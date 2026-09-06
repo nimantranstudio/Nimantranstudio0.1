@@ -184,20 +184,14 @@
 }
 
 .statusYes {
-    color: #2E7D32;
-    background: #E8F5E9;
-    padding: 0.25rem 0.75rem;
-    border-radius: 6px;
-    font-size: 0.75rem;
+    color: #16A34A;
+    font-size: 0.8125rem;
     font-weight: 600;
 }
 
 .statusNo {
-    color: #C62828;
-    background: #FFEBEE;
-    padding: 0.25rem 0.75rem;
-    border-radius: 6px;
-    font-size: 0.75rem;
+    color: #DC2626;
+    font-size: 0.8125rem;
     font-weight: 600;
 }
 

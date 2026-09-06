@@ -42,20 +42,36 @@ export async function POST(req: NextRequest) {
                 rsvpDeadline: validatedData.rsvpDeadline ? new Date(validatedData.rsvpDeadline) : null,
                 invitationMessage: sanitize(validatedData.invitationMessage),
                 events: {
-                    create: (validatedData.events || []).map(event => ({
-                        name: sanitize(event.name || 'Untitled Event'),
-                        date: sanitize(event.date),
-                        time: sanitize(event.time),
-                        venue: sanitize(event.venue),
-                        mapLink: sanitize(event.mapLink),
-                        description: sanitize(event.description),
-                        eventType: sanitize(event.eventType),
-                        // Ensure empty string becomes null for DateTime field
-                        rsvpDeadline: event.rsvpDeadline ? event.rsvpDeadline : null,
-                        allowCompanions: event.allowCompanions ?? true,
-                        collectDietary: event.collectDietary ?? false,
-                        // maxGuests: event.maxGuests 
-                    }))
+                    create: (() => {
+                        const list = (validatedData.events || []).map(event => ({
+                            name: sanitize(event.name || 'Untitled Event'),
+                            date: sanitize(event.date),
+                            time: sanitize(event.time),
+                            venue: sanitize(event.venue),
+                            mapLink: sanitize(event.mapLink),
+                            description: sanitize(event.description),
+                            eventType: sanitize(event.eventType),
+                            rsvpDeadline: event.rsvpDeadline ? event.rsvpDeadline : null,
+                            allowCompanions: event.allowCompanions ?? true,
+                            collectDietary: event.collectDietary ?? false,
+                        }));
+                        const hasWedding = list.some(e => e.name?.toLowerCase().includes('wedding') || e.eventType === 'Wedding');
+                        if (!hasWedding) {
+                            list.unshift({
+                                name: 'Wedding Ceremony',
+                                date: sanitize(validatedData.primaryDate),
+                                time: sanitize(validatedData.primaryTime),
+                                venue: sanitize(validatedData.defaultVenueName),
+                                mapLink: sanitize(validatedData.primaryMapLink),
+                                description: 'The Wedding Ceremony',
+                                eventType: 'Wedding',
+                                rsvpDeadline: validatedData.rsvpDeadline ? sanitize(validatedData.rsvpDeadline) : null,
+                                allowCompanions: true,
+                                collectDietary: false,
+                            });
+                        }
+                        return list;
+                    })()
                 }
             },
             include: {

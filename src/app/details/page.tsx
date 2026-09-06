@@ -484,7 +484,21 @@ function DetailsContent() {
                                                 invitationMessage: formData.invitationMessage || "Please join us for our special day!",
                                                 allowCompanions: formData.allowCompanions || false,
                                                 collectDietary: formData.collectDietary || false,
-                                                events: formData.events || []
+                                                events: [
+                                                    {
+                                                        id: 'wedding-ceremony',
+                                                        name: 'Wedding Ceremony',
+                                                        eventName: 'Wedding Ceremony',
+                                                        date: formData.primaryDate,
+                                                        time: formData.primaryTime,
+                                                        venue: formData.defaultVenueName,
+                                                        eventType: 'Wedding',
+                                                        description: '',
+                                                        heading: 'Wedding Ceremony',
+                                                        isCustomVenue: false
+                                                    },
+                                                    ...(formData.events || [])
+                                                ]
                                             }} />
                                         </motion.div>
                                     ) : (

@@ -189,18 +189,36 @@ export async function POST(req: NextRequest) {
                     rsvpDeadline: validated.rsvpDeadline ? new Date(validated.rsvpDeadline) : null,
                     invitationMessage: sanitize(validated.invitationMessage),
                     events: {
-                        create: (validated.events || []).map((event) => ({
-                            name: sanitize(event.name || 'Untitled Event'),
-                            date: sanitize(event.date),
-                            time: sanitize(event.time),
-                            venue: sanitize(event.venue),
-                            mapLink: sanitize(event.mapLink),
-                            description: sanitize(event.description),
-                            eventType: sanitize(event.eventType),
-                            rsvpDeadline: event.rsvpDeadline ? event.rsvpDeadline : null,
-                            allowCompanions: event.allowCompanions ?? true,
-                            collectDietary: event.collectDietary ?? false,
-                        })),
+                        create: (() => {
+                            const list = (validated.events || []).map((event) => ({
+                                name: sanitize(event.name || 'Untitled Event'),
+                                date: sanitize(event.date),
+                                time: sanitize(event.time),
+                                venue: sanitize(event.venue),
+                                mapLink: sanitize(event.mapLink),
+                                description: sanitize(event.description),
+                                eventType: sanitize(event.eventType),
+                                rsvpDeadline: event.rsvpDeadline ? event.rsvpDeadline : null,
+                                allowCompanions: event.allowCompanions ?? true,
+                                collectDietary: event.collectDietary ?? false,
+                            }));
+                            const hasWedding = list.some(e => e.name?.toLowerCase().includes('wedding') || e.eventType === 'Wedding');
+                            if (!hasWedding) {
+                                list.unshift({
+                                    name: 'Wedding Ceremony',
+                                    date: sanitize(validated.primaryDate),
+                                    time: sanitize(validated.primaryTime),
+                                    venue: sanitize(validated.defaultVenueName),
+                                    mapLink: sanitize(validated.primaryMapLink),
+                                    description: 'The Wedding Ceremony',
+                                    eventType: 'Wedding',
+                                    rsvpDeadline: validated.rsvpDeadline ? sanitize(validated.rsvpDeadline) : null,
+                                    allowCompanions: true,
+                                    collectDietary: false,
+                                });
+                            }
+                            return list;
+                        })(),
                     },
                 },
             });

@@ -6,10 +6,12 @@ import { motion } from 'framer-motion';
 import { useWeddingStore } from '@/store/wedding-store';
 import {
     Plus, Trash2, Copy, Share2, Download, Eye, Search, CheckCircle2,
-    FileText, Users, XCircle, HelpCircle
+    FileText, Users, XCircle, HelpCircle, MessageCircle, X
 } from 'lucide-react';
 import styles from './rsvp-list.module.css';
+import { ShareArrowIcon } from '@/components/ui/ShareArrowIcon';
 import { auth } from '@/lib/firebase';
+import { formatDisplayDate, formatDisplayTime } from '@/lib/format-date';
 
 interface RSVPEntry {
     id: string;
@@ -31,6 +33,7 @@ export default function RSVPListPage() {
     const [rsvps, setRsvps] = useState<RSVPEntry[]>([]);
     const [rsvpLoading, setRsvpLoading] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
+    const [dbWedding, setDbWedding] = useState<any>(null);
 
     const events = formData?.events || [];
 
@@ -45,7 +48,10 @@ export default function RSVPListPage() {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const data = await res.json();
-                if (data.success) setRsvps(data.rsvps);
+                if (data.success) {
+                    if (data.wedding) setDbWedding(data.wedding);
+                    if (Array.isArray(data.rsvps)) setRsvps(data.rsvps);
+                }
             } catch (err) {
                 console.error(err);
             } finally {
@@ -65,10 +71,14 @@ export default function RSVPListPage() {
             .reduce((sum, r) => sum + (r.adultCount || 1), 0),
     };
 
-    const filteredRsvps = rsvps.filter(r =>
-        r.guestName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (r.phone && r.phone.includes(searchQuery))
-    );
+    const filteredRsvps = (rsvps || []).filter(r => {
+        const query = searchQuery.trim().toLowerCase();
+        if (!query) return true;
+        const name = (r.guestName || (r as any).name || '').toLowerCase();
+        const phone = (r.phone || '').toLowerCase();
+        const status = (r.status || '').toLowerCase();
+        return name.includes(query) || phone.includes(query) || status.includes(query);
+    });
 
     const handleDeleteClick = (id: string) => setDeletingEventId(id);
     const confirmDelete = () => {
@@ -95,24 +105,38 @@ export default function RSVPListPage() {
         window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
     };
 
-    const handleExportCSV = () => {
-        const headers = ['Guest Name', 'Status', 'Adults', 'Children', 'Phone', 'Dietary'];
-        const rows = rsvps.map(r => [
-            r.guestName,
-            r.status,
-            String(r.adultCount || 1),
-            String(r.childCount || 0),
-            r.phone || '-',
-            r.dietary || '-',
-        ]);
-        const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `wedding_rsvps.csv`;
-        a.click();
-        URL.revokeObjectURL(url);
+    const handleDownloadExcel = async () => {
+        try {
+            const XLSX = await import('xlsx');
+            const data = (rsvps || []).map((r, index) => ({
+                'S.No': index + 1,
+                'Guest Name': r.guestName || 'Guest',
+                'Status': (r.status || 'ATTENDING').toUpperCase(),
+                'Adults': Number(r.adultCount) || 1,
+                'Children': Number(r.childCount) || 0,
+                'Phone': r.phone || '-',
+                'Dietary': r.dietary || '-',
+                'Message': r.message || '-',
+            }));
+
+            const worksheet = XLSX.utils.json_to_sheet(data);
+            worksheet['!cols'] = [
+                { wch: 6 },
+                { wch: 22 },
+                { wch: 14 },
+                { wch: 10 },
+                { wch: 10 },
+                { wch: 16 },
+                { wch: 18 },
+                { wch: 30 },
+            ];
+
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'Guest List');
+            XLSX.writeFile(workbook, `wedding_guest_list.xlsx`);
+        } catch (err) {
+            console.error('Error exporting Excel file:', err);
+        }
     };
 
     const containerVariants = {
@@ -167,36 +191,64 @@ export default function RSVPListPage() {
                     )}
 
                     {/* Primary event RSVP tracking */}
-                    {events.slice(0, 1).map((evt) => {
+                    {(() => {
                         const rsvpLink = getRsvpLink();
+                        const invitationTypeName = 'Wedding Ceremony';
+
+                        const weddingCeremonyEvent = formData.events?.find(e =>
+                            e.id?.toLowerCase().includes('wedding') ||
+                            e.name?.toLowerCase().includes('wedding') ||
+                            e.eventType?.toLowerCase().includes('wedding')
+                        ) || dbWedding?.events?.find((e: any) =>
+                            e.id?.toLowerCase().includes('wedding') ||
+                            e.name?.toLowerCase().includes('wedding') ||
+                            e.eventType?.toLowerCase().includes('wedding')
+                        );
+
+                        // Date & Time
+                        const rawDate = formData.primaryDate || weddingCeremonyEvent?.date || dbWedding?.events?.[0]?.date || '';
+                        const formattedDate = formatDisplayDate(rawDate);
+                        const rawTime = formData.primaryTime || weddingCeremonyEvent?.time || dbWedding?.events?.[0]?.time || '';
+                        const formattedTime = formatDisplayTime(rawTime);
+                        
+                        const dateDisplay = (formattedDate || rawDate)
+                            ? `${formattedDate || rawDate}${formattedTime ? ` • ${formattedTime}` : (rawTime ? ` • ${rawTime}` : '')}`
+                            : 'TBD';
+
+                        // Venue
+                        const venueDisplay = formData.defaultVenueName || formData.defaultVenueAddress || weddingCeremonyEvent?.venue || dbWedding?.events?.[0]?.venue || 'TBD';
+
+                        // RSVP Deadline
+                        const rawDeadline = formData.rsvpDeadline || weddingCeremonyEvent?.rsvpDeadline || dbWedding?.rsvpDeadline || '';
+                        const formattedDeadline = formatDisplayDate(rawDeadline);
+                        const deadlineDisplay = (formattedDeadline || rawDeadline) ? `Respond by ${formattedDeadline || rawDeadline}` : 'No deadline';
 
                         return (
-                            <motion.div key={evt.id} variants={itemVariants} className={styles.eventGroup}>
+                            <motion.div key="primary_wedding_ceremony" variants={itemVariants} className={styles.eventGroup}>
                                 {/* Dark Luxury Event Hero Card */}
                                 <div className={styles.darkHeroCard}>
                                     <div className={styles.heroHeader}>
                                         <div className={styles.heroLeft}>
                                             <div className={styles.nameRow}>
-                                                <h2 className={styles.eventName}>{evt.name}</h2>
+                                                <h2 className={styles.eventName}>Website and RSVP Response</h2>
                                                 <div className={styles.statusLive}>
                                                     <span className={styles.statusDot}></span>
                                                     RSVP LIVE
                                                 </div>
                                             </div>
+                                            <p className={styles.eventSubtitle}>
+                                                {invitationTypeName}
+                                            </p>
                                         </div>
 
                                         {/* Glassmorphic Action Pills */}
                                         <div className={styles.actionPillsGroup}>
                                             <button
                                                 className={styles.pillBtn}
-                                                onClick={() => copyLink(evt.id)}
+                                                onClick={() => copyLink('primary_wedding_ceremony')}
                                             >
-                                                {copiedId === evt.id ? <CheckCircle2 size={16} color="#4ADE80" /> : <Copy size={16} />}
-                                                <span>{copiedId === evt.id ? 'Copied' : 'Copy Link'}</span>
-                                            </button>
-                                            <button className={styles.pillBtn} onClick={openWhatsApp}>
-                                                <Share2 size={16} />
-                                                <span>WhatsApp</span>
+                                                {copiedId === 'primary_wedding_ceremony' ? <CheckCircle2 size={16} color="#4ADE80" /> : <Copy size={16} />}
+                                                <span>{copiedId === 'primary_wedding_ceremony' ? 'Copied' : 'Copy Link'}</span>
                                             </button>
                                             {rsvpLink && (
                                                 <Link href={rsvpLink} target="_blank" className={styles.pillBtn}>
@@ -204,12 +256,9 @@ export default function RSVPListPage() {
                                                     <span>Preview</span>
                                                 </Link>
                                             )}
-                                            <button
-                                                className={`${styles.pillBtn} ${styles.pillDelete}`}
-                                                onClick={() => handleDeleteClick(evt.id)}
-                                            >
-                                                <Trash2 size={16} />
-                                                <span>Delete</span>
+                                            <button className={styles.pillBtn} onClick={openWhatsApp}>
+                                                <ShareArrowIcon size={16} color="#111827" />
+                                                <span>Share on WhatsApp</span>
                                             </button>
                                         </div>
                                     </div>
@@ -219,17 +268,17 @@ export default function RSVPListPage() {
                                         <div className={styles.detailCard}>
                                             <span className={styles.detailLabel}>Date & Time</span>
                                             <span className={styles.detailValue}>
-                                                {evt.date || 'TBD'} {evt.time ? `• ${evt.time}` : ''}
+                                                {dateDisplay}
                                             </span>
                                         </div>
                                         <div className={styles.detailCard}>
                                             <span className={styles.detailLabel}>Venue</span>
-                                            <span className={styles.detailValue}>{evt.venue || 'TBD'}</span>
+                                            <span className={styles.detailValue}>{venueDisplay}</span>
                                         </div>
                                         <div className={styles.detailCard}>
                                             <span className={styles.detailLabel}>RSVP Deadline</span>
                                             <span className={styles.detailValue}>
-                                                {evt.rsvpDeadline ? `Respond by ${evt.rsvpDeadline}` : 'No deadline'}
+                                                {deadlineDisplay}
                                             </span>
                                         </div>
                                     </div>
@@ -283,15 +332,38 @@ export default function RSVPListPage() {
                                                 <Search size={16} className={styles.searchIcon} />
                                                 <input
                                                     type="text"
-                                                    placeholder="Search guests..."
+                                                    placeholder="Search guests by name..."
                                                     className={styles.searchInput}
                                                     value={searchQuery}
                                                     onChange={e => setSearchQuery(e.target.value)}
+                                                    aria-label="Search guests by name"
                                                 />
+                                                {searchQuery && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setSearchQuery('')}
+                                                        style={{
+                                                            position: 'absolute',
+                                                            right: '0.85rem',
+                                                            background: 'transparent',
+                                                            border: 'none',
+                                                            cursor: 'pointer',
+                                                            color: '#94A3B8',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            padding: '4px',
+                                                            borderRadius: '50%',
+                                                        }}
+                                                        title="Clear search"
+                                                    >
+                                                        <X size={14} />
+                                                    </button>
+                                                )}
                                             </div>
-                                            <button className={styles.exportBtn} onClick={handleExportCSV}>
+                                            <button className={styles.exportBtn} onClick={handleDownloadExcel}>
                                                 <Download size={16} />
-                                                <span>Export CSV</span>
+                                                <span>Download List</span>
                                             </button>
                                         </div>
                                     </div>
@@ -347,7 +419,7 @@ export default function RSVPListPage() {
                                 </div>
                             </motion.div>
                         );
-                    })}
+                    })()}
                 </motion.div>
             </main>
 

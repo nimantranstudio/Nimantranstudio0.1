@@ -1437,7 +1437,7 @@ Another round to persistent non-responders. Keep it warm:
 
 ### 5 Days Before: Close RSVP
 
-Give confirmed numbers to caterer and venue. Export CSV from your dashboard.
+Give confirmed numbers to caterer and venue. Download the guest list from your dashboard.
 
 **Add 10% buffer** to your confirmed number for last-minute arrivals.
 
