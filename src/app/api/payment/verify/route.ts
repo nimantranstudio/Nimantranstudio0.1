@@ -74,7 +74,16 @@ export async function POST(req: NextRequest) {
         });
         if (existing && existing.status === 'ready' && existing.user) {
             return withSession(
-                { success: true, weddingId: existing.weddingId, orderId: existing.id },
+                {
+                    success: true,
+                    weddingId: existing.weddingId,
+                    orderId: existing.id,
+                    receipt: {
+                        amount: existing.totalAmount,
+                        invoiceNumber: existing.invoiceNumber,
+                        paymentMethod: existing.paymentMethod,
+                    },
+                },
                 existing.user
             );
         }
@@ -163,10 +172,11 @@ export async function POST(req: NextRequest) {
         }
 
         // Payment is confirmed at this point (signature verified above) — issue
-        // the GST invoice number now, independent of whether suite provisioning
+        // the receipt number now, independent of whether suite provisioning
         // below succeeds. Never blocks the response.
+        let invoiceNumber: string | null = null;
         try {
-            await ensureInvoiceNumber(order.id);
+            invoiceNumber = (await ensureInvoiceNumber(order.id)).invoiceNumber;
         } catch (invoiceErr: any) {
             console.error('Invoice numbering failed:', invoiceErr?.message);
         }
@@ -247,7 +257,19 @@ export async function POST(req: NextRequest) {
         }).catch((e) => console.error('Notification dispatch failed:', e));
 
         // 7. Issue the session and return.
-        return withSession({ success: true, weddingId, orderId: order.id }, user);
+        return withSession(
+            {
+                success: true,
+                weddingId,
+                orderId: order.id,
+                receipt: {
+                    amount: amountRupees,
+                    invoiceNumber,
+                    paymentMethod: rzpPayment.method || null,
+                },
+            },
+            user
+        );
     } catch (error: any) {
         console.error('Error verifying payment:', error);
         return NextResponse.json(

@@ -21,6 +21,12 @@ export default function PaymentPage() {
     const [selectedPreviewIndex, setSelectedPreviewIndex] = useState(0);
     const [isProcessing, setIsProcessing] = useState(false);
     const [paymentStatus, setPaymentStatus] = useState<'idle' | 'success' | 'failed'>('idle');
+    const [receiptInfo, setReceiptInfo] = useState<{
+        orderId: string;
+        amount: number | null;
+        invoiceNumber: string | null;
+        paymentMethod: string | null;
+    } | null>(null);
 
     const handlePay = async () => {
         setIsProcessing(true);
@@ -129,6 +135,13 @@ export default function PaymentPage() {
                         if (!verifyRes.ok || !verifyData.success) {
                             throw new Error(verifyData.error || 'Payment verification failed');
                         }
+
+                        setReceiptInfo({
+                            orderId: verifyData.orderId,
+                            amount: verifyData.receipt?.amount ?? null,
+                            invoiceNumber: verifyData.receipt?.invoiceNumber ?? null,
+                            paymentMethod: verifyData.receipt?.paymentMethod ?? null,
+                        });
 
                         // Record the provisioned wedding + auth state client-side so
                         // the dashboard's server-linked features (RSVP links) resolve.
@@ -350,11 +363,17 @@ export default function PaymentPage() {
 
             {/* Fullscreen payment success card modal */}
             {paymentStatus === 'success' && (
-                <WelcomeDialog 
-                    open={paymentStatus === 'success'} 
-                    onClose={() => router.push('/dashboard')} 
+                <WelcomeDialog
+                    open={paymentStatus === 'success'}
+                    onClose={() => router.push('/dashboard')}
                     coupleNames={coupleNames}
-                    autoDismiss={false} 
+                    autoDismiss={false}
+                    orderId={receiptInfo?.orderId}
+                    amount={receiptInfo?.amount}
+                    planName={selectedPlan}
+                    themeName={theme?.name}
+                    receiptNumber={receiptInfo?.invoiceNumber}
+                    paymentMethod={receiptInfo?.paymentMethod}
                 />
             )}
 

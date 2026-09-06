@@ -69,6 +69,14 @@ export default function DashboardPage() {
     const { formData, selectedThemeId, isAuthenticated, bundleImages, bundleItems, lastSavedWeddingId, updateEvent, removeEvent } = useWeddingStore();
     const [isMounted, setIsMounted] = useState(false);
     const [showWelcome, setShowWelcome] = useState(false);
+    const [welcomeReceipt, setWelcomeReceipt] = useState<{
+        orderId: string;
+        amount: number | null;
+        planName: string | null;
+        themeName: string | null;
+        invoiceNumber: string | null;
+        paymentMethod: string | null;
+    } | null>(null);
     const [rsvpStats, setRsvpStats] = useState({ total: 0, attending: 0, notAttending: 0, maybe: 0 });
     const [copiedRsvp, setCopiedRsvp] = useState(false);
     const [theme, setTheme] = useState<Theme | null>(null);
@@ -407,6 +415,22 @@ export default function DashboardPage() {
         // dashboard, then cleans the query param so a refresh won't replay it.
         if (new URLSearchParams(window.location.search).get('welcome') === 'true') {
             setShowWelcome(true);
+            fetch('/api/orders')
+                .then((res) => res.json())
+                .then((data) => {
+                    const latest = data?.success ? data.orders?.[0] : null;
+                    if (latest) {
+                        setWelcomeReceipt({
+                            orderId: latest.id,
+                            amount: latest.totalAmount,
+                            planName: latest.planName,
+                            themeName: latest.themeName,
+                            invoiceNumber: latest.invoiceNumber,
+                            paymentMethod: latest.paymentMethod,
+                        });
+                    }
+                })
+                .catch(() => {});
         }
     }, []);
 
@@ -647,6 +671,12 @@ export default function DashboardPage() {
                 open={showWelcome}
                 onClose={closeWelcome}
                 coupleNames={[formData.groomName, formData.brideName].filter(Boolean).join(' & ') || undefined}
+                orderId={welcomeReceipt?.orderId}
+                amount={welcomeReceipt?.amount}
+                planName={welcomeReceipt?.planName}
+                themeName={welcomeReceipt?.themeName}
+                receiptNumber={welcomeReceipt?.invoiceNumber}
+                paymentMethod={welcomeReceipt?.paymentMethod}
             />
 
             {/* Fullscreen Preview Modal */}

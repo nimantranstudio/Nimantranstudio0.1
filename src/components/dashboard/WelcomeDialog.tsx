@@ -2,16 +2,17 @@
 
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import { useEffect, useState } from 'react';
-import { 
-    Check, 
-    ChevronRight, 
-    Download, 
-    FileText, 
-    CheckCircle2, 
-    Zap, 
-    CreditCard, 
+import {
+    Check,
+    ChevronRight,
+    Download,
+    FileText,
+    CheckCircle2,
+    Zap,
+    CreditCard,
     LayoutDashboard,
-    IndianRupee
+    IndianRupee,
+    Loader2
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -120,16 +121,59 @@ interface WelcomeDialogProps {
     onClose: () => void;
     coupleNames?: string;
     autoDismiss?: boolean;
+    /** The order this celebration is for — required to download the real receipt. */
+    orderId?: string | null;
+    amount?: number | null;
+    planName?: string | null;
+    themeName?: string | null;
+    receiptNumber?: string | null;
+    paymentMethod?: string | null;
 }
 
-export function WelcomeDialog({ open, onClose, coupleNames, autoDismiss = false }: WelcomeDialogProps) {
+export function WelcomeDialog({
+    open,
+    onClose,
+    coupleNames,
+    autoDismiss = false,
+    orderId,
+    amount,
+    planName,
+    themeName,
+    receiptNumber,
+    paymentMethod,
+}: WelcomeDialogProps) {
     const reduced = usePrefersReducedMotion();
+    const [downloading, setDownloading] = useState(false);
 
     useEffect(() => {
         if (!open || !autoDismiss) return;
         const t = setTimeout(onClose, 5000);
         return () => clearTimeout(t);
     }, [open, autoDismiss, onClose]);
+
+    const handleDownloadReceipt = async () => {
+        if (!orderId || downloading) return;
+        setDownloading(true);
+        try {
+            const res = await fetch(`/api/orders/${orderId}/invoice`);
+            if (!res.ok) throw new Error('Receipt download failed');
+            const blob = await res.blob();
+            const disposition = res.headers.get('Content-Disposition') || '';
+            const filename = /filename="([^"]+)"/.exec(disposition)?.[1] || 'receipt.pdf';
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error('Receipt download failed:', err);
+        } finally {
+            setDownloading(false);
+        }
+    };
 
     const formattedDate = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
     const formattedTime = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
@@ -200,11 +244,20 @@ export function WelcomeDialog({ open, onClose, coupleNames, autoDismiss = false 
                                 {formattedDate} • {formattedTime}
                             </motion.p>
 
+                            {coupleNames && (
+                                <motion.p
+                                    variants={itemVariants}
+                                    style={{ margin: '0.5rem 0 0', fontWeight: 600, color: '#9E7D2B', letterSpacing: '0.01em' }}
+                                >
+                                    {coupleNames}
+                                </motion.p>
+                            )}
+
                             <motion.p
                                 variants={itemVariants}
                                 style={{ margin: '1.25rem 0 0.25rem', fontFamily: 'var(--font-serif, serif)', fontSize: '1.1rem', color: '#111827', fontWeight: 600, lineHeight: 1.3 }}
                             >
-                                WhatsApp Essentials Activated 🎊
+                                {planName || 'Wedding Suite'} Activated 🎊
                             </motion.p>
 
                             <motion.p
@@ -282,7 +335,9 @@ export function WelcomeDialog({ open, onClose, coupleNames, autoDismiss = false 
                                             </div>
                                             <span style={{ fontSize: '0.82rem', color: '#6B7280', fontWeight: 500 }}>Amount Paid</span>
                                         </div>
-                                        <span style={{ fontFamily: 'var(--font-serif)', fontSize: '1.35rem', fontWeight: 700, color: '#163B2B' }}>₹10</span>
+                                        <span style={{ fontFamily: 'var(--font-serif)', fontSize: '1.35rem', fontWeight: 700, color: '#163B2B' }}>
+                                            {amount != null ? `₹${amount.toLocaleString('en-IN')}` : '—'}
+                                        </span>
                                     </div>
 
                                     {/* Receipt No */}
@@ -293,7 +348,7 @@ export function WelcomeDialog({ open, onClose, coupleNames, autoDismiss = false 
                                             </div>
                                             <span style={{ fontSize: '0.82rem', color: '#6B7280', fontWeight: 500 }}>Receipt No.</span>
                                         </div>
-                                        <span style={{ fontSize: '0.82rem', fontWeight: 600, color: '#1F2937' }}>NS/2026-27/0001</span>
+                                        <span style={{ fontSize: '0.82rem', fontWeight: 600, color: '#1F2937' }}>{receiptNumber || 'Generating…'}</span>
                                     </div>
 
                                     {/* Plan */}
@@ -305,7 +360,7 @@ export function WelcomeDialog({ open, onClose, coupleNames, autoDismiss = false 
                                             <span style={{ fontSize: '0.82rem', color: '#6B7280', fontWeight: 500 }}>Plan</span>
                                         </div>
                                         <span style={{ background: '#F3F4F6', color: '#374151', padding: '0.15rem 0.65rem', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 600 }}>
-                                            WhatsApp Essentials
+                                            {planName || 'Wedding Suite'}
                                         </span>
                                     </div>
 
@@ -331,7 +386,7 @@ export function WelcomeDialog({ open, onClose, coupleNames, autoDismiss = false 
                                             <span style={{ fontSize: '0.82rem', color: '#6B7280', fontWeight: 500 }}>Theme Purchased</span>
                                         </div>
                                         <span style={{ fontSize: '0.82rem', fontWeight: 600, color: '#1F2937' }}>
-                                            Suvarna Sohala
+                                            {themeName || '—'}
                                         </span>
                                     </div>
 
@@ -343,14 +398,17 @@ export function WelcomeDialog({ open, onClose, coupleNames, autoDismiss = false 
                                             </div>
                                             <span style={{ fontSize: '0.82rem', color: '#6B7280', fontWeight: 500 }}>Payment Method</span>
                                         </div>
-                                        <span style={{ fontSize: '0.82rem', fontWeight: 500, color: '#9CA3AF' }}>—</span>
+                                        <span style={{ fontSize: '0.82rem', fontWeight: 500, color: paymentMethod ? '#1F2937' : '#9CA3AF' }}>
+                                            {paymentMethod ? paymentMethod.toUpperCase() : '—'}
+                                        </span>
                                     </div>
                                 </div>
                             </div>
 
                             {/* Download Receipt PDF Strip */}
                             <button
-                                onClick={() => window.print()}
+                                onClick={handleDownloadReceipt}
+                                disabled={!orderId || downloading}
                                 style={{
                                     background: '#E7ECE8',
                                     border: 'none',
@@ -359,7 +417,8 @@ export function WelcomeDialog({ open, onClose, coupleNames, autoDismiss = false 
                                     fontSize: '0.82rem',
                                     fontWeight: 600,
                                     color: '#163B2B',
-                                    cursor: 'pointer',
+                                    cursor: orderId ? 'pointer' : 'default',
+                                    opacity: orderId ? 1 : 0.6,
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
@@ -367,8 +426,18 @@ export function WelcomeDialog({ open, onClose, coupleNames, autoDismiss = false 
                                     transition: 'background-color 160ms ease-out'
                                 }}
                             >
-                                <Download size={15} />
-                                <span>Download Receipt (PDF)</span>
+                                {downloading ? (
+                                    <motion.span
+                                        style={{ display: 'flex' }}
+                                        animate={{ rotate: 360 }}
+                                        transition={{ repeat: Infinity, duration: 0.8, ease: 'linear' }}
+                                    >
+                                        <Loader2 size={15} />
+                                    </motion.span>
+                                ) : (
+                                    <Download size={15} />
+                                )}
+                                <span>{downloading ? 'Preparing…' : 'Download Receipt (PDF)'}</span>
                             </button>
                         </div>
                     </motion.div>

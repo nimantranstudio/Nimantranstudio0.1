@@ -85,6 +85,12 @@ function PreviewContent() {
     const whatsappDigits = whatsappNumber.replace(/\D/g, '').slice(-10);
     const whatsappValid = whatsappDigits.length === 10;
     const [paymentStatus, setPaymentStatus] = useState<'idle' | 'success' | 'failed'>('idle');
+    const [receiptInfo, setReceiptInfo] = useState<{
+        orderId: string;
+        amount: number | null;
+        invoiceNumber: string | null;
+        paymentMethod: string | null;
+    } | null>(null);
     const [cardLayout, setCardLayout] = useState<{ width: number; height: number; aspectRatio: number }>({
         width: 500,
         height: 889,
@@ -418,6 +424,13 @@ function PreviewContent() {
 
                         const verifyData = await verifyRes.json();
                         if (verifyRes.ok && verifyData.success) {
+                            setReceiptInfo({
+                                orderId: verifyData.orderId,
+                                amount: verifyData.receipt?.amount ?? null,
+                                invoiceNumber: verifyData.receipt?.invoiceNumber ?? null,
+                                paymentMethod: verifyData.receipt?.paymentMethod ?? null,
+                            });
+
                             // Record the provisioned wedding + auth so the dashboard resolves.
                             setCheckoutComplete(verifyData.weddingId, userPhone);
 
@@ -677,6 +690,12 @@ function PreviewContent() {
                 autoDismiss={false}
                 onClose={() => router.push('/dashboard')}
                 coupleNames={[formData.groomName, formData.brideName].filter(Boolean).join(' & ') || undefined}
+                orderId={receiptInfo?.orderId}
+                amount={receiptInfo?.amount}
+                planName={selectedPlan}
+                themeName={theme?.name}
+                receiptNumber={receiptInfo?.invoiceNumber}
+                paymentMethod={receiptInfo?.paymentMethod}
             />
 
             {/* Hidden, always-mounted hero card — captured to a PNG at payment success
