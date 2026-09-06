@@ -804,12 +804,15 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                 doc.head.appendChild(styleEl);
             }
             
-            // Fix viewport units: The templates were designed on desktop screens where 'vw' was huge.
+            // Fix viewport units and legacy 500/705 aspect ratios:
             // Inside our 500px iframe, 'vw' causes fonts to shrink massively. Replacing 'vw' with 'vmax' 
             // forces the fonts back up, letting their 'clamp()' max values take over naturally.
             if (!doc.body.dataset.vwFixed) {
                 const styleTags = doc.querySelectorAll('style:not(#runtime-preview-fix)');
                 styleTags.forEach(tag => {
+                    if (tag.innerHTML.includes('500 / 705') || tag.innerHTML.includes('500/705')) {
+                        tag.innerHTML = tag.innerHTML.replace(/500\s*\/\s*705/g, '9 / 16');
+                    }
                     if (tag.innerHTML.includes('vw')) {
                         // Use lookahead to ensure we only replace CSS values and not base64 strings
                         tag.innerHTML = tag.innerHTML.replace(/([\d.]+)vw(?=[\s;},!)])/g, '$1vmax');
@@ -822,6 +825,9 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                 html, body { 
                     margin: 0 !important; 
                     padding: 0 !important;
+                    width: 100% !important;
+                    height: 100% !important;
+                    overflow: hidden !important;
                 }
                 body {
                     background-size: cover !important;
@@ -830,6 +836,11 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                 }
                 .invitation-wrapper, .invite-wrapper {
                     max-height: none !important;
+                    aspect-ratio: 9/16 !important;
+                    width: 100% !important;
+                    height: 100% !important;
+                    box-shadow: none !important;
+                    margin: 0 !important;
                 }
                 * { hyphens: none !important; -webkit-hyphens: none !important; }
                 .text-overlay { padding-top: 15vh !important; }
@@ -1571,8 +1582,9 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                     overflow: 'hidden',
                     position: 'relative',
                     background: 'transparent',
-                    aspectRatio: 'auto',
-                    height: `${iframeHeight * containerScale}px`
+                    aspectRatio: '9/16',
+                    width: '100%',
+                    height: '100%'
                 }}
             >
                 {/* Loading shimmer - visible until iframe is ready */}
@@ -1633,8 +1645,8 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
         );
     }
 
-    const vw = isRawPreview ? imageDimensions.width : 600;
-    const vh = isRawPreview ? imageDimensions.height : 800;
+    const vw = imageDimensions.width > 0 ? imageDimensions.width : 1080;
+    const vh = imageDimensions.height > 0 ? imageDimensions.height : 1920;
     const cx = vw / 2;
     const scaleX = (x: number) => (x / 600) * vw;
     const scaleY = (y: number) => (y / 800) * vh;

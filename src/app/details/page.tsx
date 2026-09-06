@@ -476,7 +476,7 @@ function DetailsContent() {
                             <motion.div
                                 animate={{ y: activeChapter === 4 ? 0 : cameraY }}
                                 transition={isCrafting ? { ease: "linear", duration: 3.5 } : { type: "spring", bounce: 0, duration: 0.6 }}
-                                style={{ width: '100%' }}
+                                style={{ width: '100%', height: '100%' }}
                             >
                                 <AnimatePresence mode="wait">
                                     {activeChapter === 4 ? (
@@ -486,7 +486,7 @@ function DetailsContent() {
                                             animate={{ opacity: 1, scale: 1 }}
                                             exit={{ opacity: 0, scale: 0.95 }}
                                             transition={{ type: "spring", bounce: 0, duration: 0.4 }}
-                                            style={{ height: '800px', width: '100%', overflowY: 'auto', background: '#FDFBF7' }}
+                                            style={{ height: '100%', width: '100%', overflowY: 'auto', background: '#FDFBF7' }}
                                         >
                                             <RSVPForm wedding={{
                                                 id: 'preview',
@@ -522,7 +522,8 @@ function DetailsContent() {
                                             transition={{ duration: 0.3 }}
                                             style={{
                                                 width: '100%',
-                                                aspectRatio: '600 / 800',
+                                                height: '100%',
+                                                aspectRatio: '9 / 16',
                                                 display: 'flex',
                                                 flexDirection: 'column',
                                                 alignItems: 'center',
