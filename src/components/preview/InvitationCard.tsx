@@ -8,6 +8,7 @@ import { Play } from 'lucide-react';
 import Image from 'next/image';
 
 import { useState, useEffect, useRef, forwardRef, useImperativeHandle, useMemo } from 'react';
+import { buildFieldPayload } from '@/lib/templates/field-contract';
 import { clsx } from 'clsx';
 
 export interface InvitationCardRef {
@@ -17,6 +18,8 @@ export interface InvitationCardRef {
     captureDataUrl: () => Promise<string | null>;
     sendMessage: (payload: any) => void;
     getSerializedHtml?: () => string;
+    /** Clears the localStorage saved layout for this card and reloads the iframe. */
+    clearCache?: () => void;
 }
 
 interface InvitationCardProps {
@@ -104,15 +107,16 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
         }
     }, [customImage, isHTMLDesign, isRawPreview, onLayoutMeasure]);
 
+    const [isReady, setIsReady] = useState(false);
+    const [reloadKey, setReloadKey] = useState(0);
+    const [staticQrCode, setStaticQrCode] = useState<{link: string, title: string} | null>(null);
+
     const cacheBuster = useMemo(() => Date.now(), []);
     const iframeSrc = useMemo(() => {
         if (!customImage) return '';
         const separator = customImage.includes('?') ? '&' : '?';
-        return `${customImage}${separator}cb=${cacheBuster}`;
-    }, [customImage, cacheBuster]);
-
-    const [isReady, setIsReady] = useState(false);
-    const [staticQrCode, setStaticQrCode] = useState<{link: string, title: string} | null>(null);
+        return `${customImage}${separator}cb=${cacheBuster}&r=${reloadKey}`;
+    }, [customImage, cacheBuster, reloadKey]);
 
     const hasLoadedSavedLayout = useRef(false);
 
@@ -348,6 +352,14 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
             clone.querySelector('#html2canvas-capture-style')?.remove();
             return "<!DOCTYPE html>\n" + clone.outerHTML;
         },
+        clearCache: () => {
+            if (typeof window === 'undefined') return;
+            const storageKey = `wedding-card-edits-${event.id}-${theme.id}`;
+            localStorage.removeItem(storageKey);
+            hasLoadedSavedLayout.current = false;
+            setIsReady(false);
+            setReloadKey(k => k + 1);
+        },
         captureDataUrl: (): Promise<string | null> => {
             // Mirrors downloadImage's html2canvas capture, but resolves the PNG
             // data URL instead of triggering a download. Never throws; resolves
@@ -560,7 +572,9 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                 'event-name': displayEventName,
                 'heading': (isSpecialEvent && !event.tagline) ? undefined : (event.tagline || 'We are pleased to invite you to the wedding of'),
                 'subheading': (isSpecialEvent && !event.tagline) ? undefined : event.tagline,
-                'event-subheading': (isSpecialEvent && !event.tagline) ? undefined : event.tagline,
+                // 'event-subheading' intentionally omitted: across every template it's the
+                // "{name} ke {event}" line wrapping a data-field="bride-name" span, never a tagline
+                // slot. See the data-field guard below for the general form of this protection.
                 'groom-name': groomName || 'Groom Name',
                 'bride-name': brideName || 'Bride Name',
                 'groom-parents': groomParents || 'Groom Parents',
@@ -599,6 +613,11 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                     if (regexFlexible.test(text)) {
                         text = text.replace(regexFlexible, valStr);
                         changed = true;
+                        // Record which field owns this element's content so pass 2 (below) never
+                        // lets an unrelated key's id/class fallback overwrite it — e.g. a
+                        // ".style-heading" div holding {{bride_name}}'s Mehendi must not later be
+                        // claimed by the 'heading' key just because it shares that CSS class.
+                        textNode.parentElement?.setAttribute('data-mapped-field', key);
                     }
                 });
 
@@ -687,6 +706,27 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                 }
 
                 if (el) {
+                    // Never let a key blindly overwrite an element another field already owns —
+                    // either structurally (a nested <span data-field="..."> — e.g. #event-subheading
+                    // wrapping data-field="bride-name") or because pass 1 already mustache-substituted
+                    // a *different* field's token directly into this element (e.g. a ".style-heading"
+                    // div holding {{bride_name}}'s Mehendi must not be reclaimed by the 'heading' key
+                    // just because it shares that CSS class). Both are "id/class fallback found the
+                    // wrong element" — same bug, two template conventions.
+                    // A third convention has neither marker above — plain text with only
+                    // id="event-subheading" (e.g. "Anjali's Sangeet") — but across every template
+                    // in the bundle that id is always the dedicated name+event line, never a
+                    // tagline slot, so treat it as its own implicit owner. Its name substitution
+                    // then happens via the Anjali/Rahul text-node fallback further below, once this
+                    // guard stops pass 2 from overwriting the placeholder text first.
+                    const managedChild = el.querySelector('[data-field]');
+                    const owner = managedChild?.getAttribute('data-field')
+                        || el.getAttribute('data-mapped-field')
+                        || (el.id === 'event-subheading' ? 'event-subheading' : null);
+                    if (owner && owner !== id) {
+                        return;
+                    }
+
                     let displayValue = value.toString();
                     if (!displayValue && showSizingBoxes) {
                         if (id === 'groom-name') displayValue = 'Groom Name';
@@ -1385,6 +1425,30 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                     }
                 });
             }
+
+            // Inject reactive postMessage listener once per iframe load.
+            // New templates use data-field attributes; legacy templates fall back to getElementById.
+            const listenerWin = iframeRef.current?.contentWindow as any;
+            if (listenerWin && !listenerWin.__nimantranReady) {
+                listenerWin.__nimantranReady = true;
+                const listenerDoc = doc;
+                listenerWin.addEventListener('message', function(e: any) {
+                    if (!e.data || e.data.type !== 'NIMANTRAN_UPDATE') return;
+                    const fields: Record<string, string> = e.data.payload;
+                    if (!fields) return;
+                    Object.keys(fields).forEach(function(fieldId) {
+                        const val = fields[fieldId];
+                        if (val == null) return;
+                        const dataEls = listenerDoc.querySelectorAll(`[data-field="${fieldId}"]`);
+                        if (dataEls.length) {
+                            dataEls.forEach((el: Element) => { (el as HTMLElement).textContent = val; });
+                            return;
+                        }
+                        const fallbackEl = listenerDoc.getElementById(fieldId);
+                        if (fallbackEl) fallbackEl.textContent = val;
+                    });
+                });
+            }
         };
 
         const currentIframe = iframeRef.current;
@@ -1434,6 +1498,25 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
             (currentIframe as any)._onLoadCallback = null;
         };
     }, [isHTMLDesign, event, welcomeMessage, groomName, brideName, groomParents, brideParents, customImage, isRawPreview, onLayoutMeasure, isReady]);
+
+    // Reactive postMessage bridge — fires on every prop change once the iframe is ready.
+    // Sends field updates to the iframe so new templates (data-field attributes) update
+    // on every keystroke without re-running the full DOM-scraping updateContent().
+    // Legacy templates also benefit via the getElementById fallback in the listener.
+    useEffect(() => {
+        if (!isHTMLDesign || !isReady || !iframeRef.current?.contentWindow) return;
+        const payload = buildFieldPayload({
+            groomName:    groomName   || undefined,
+            brideName:    brideName   || undefined,
+            groomParents: groomParents || undefined,
+            brideParents: brideParents || undefined,
+            eventName:    event?.name  || undefined,
+            eventDate:    formatDisplayDate(event?.date)  || undefined,
+            eventTime:    formatDisplayTime(event?.time)  || undefined,
+            eventVenue:   event?.venue || undefined,
+        });
+        iframeRef.current.contentWindow.postMessage({ type: 'NIMANTRAN_UPDATE', payload }, '*');
+    }, [isHTMLDesign, isReady, groomName, brideName, groomParents, brideParents, event]);
 
     // Separate effect to apply/remove sizing-box class when edit mode toggles.
     // This does NOT re-run the full content mapping, so saved edits are never overwritten.
@@ -1520,7 +1603,7 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                     <iframe
                         key={srcDoc ? 'srcdoc-preview' : iframeSrc}
                         ref={iframeRef}
-                        src={srcDoc ? undefined : encodeURI(iframeSrc || '')}
+                        src={srcDoc ? undefined : (iframeSrc ? encodeURI(iframeSrc) : undefined)}
                         srcDoc={srcDoc}
                         onLoad={(e) => {
                             const target = e.target as any;

@@ -38,6 +38,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { InvitationCard, InvitationCardRef } from '@/components/preview/InvitationCard';
 import { PreviewCard } from '@/components/preview/PreviewCard';
+import { classifyEventType } from '@/lib/templates/event-type';
 
 // Motion variants for welcome popup transitions (animation-vocabulary / apple-design / emil-design-eng)
 const overlayVariants = {
@@ -91,14 +92,15 @@ const itemVariants = {
 function DetailsContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const { 
-        formData, 
-        updateFormData, 
-        saveWedding, 
-        selectedThemeId, 
-        bundleImages, 
+    const {
+        formData,
+        updateFormData,
+        saveWedding,
+        selectedThemeId,
+        bundleImages,
         bundleItems,
         selectedPlan,
+        setBundleData,
         addEvent,
         removeEvent,
         updateEvent
@@ -124,78 +126,82 @@ function DetailsContent() {
     const [isCrafting, setIsCrafting] = useState(false);
     const cardRef = useRef<InvitationCardRef>(null);
 
-    const templateUrl = useMemo(() => {
-        let searchEventTerm = 'wedding';
+    // Resolves which bundleItem (and therefore which saved template file) belongs to the
+    // currently selected event. `bundleItems` is already scoped to exactly one bundle (the
+    // theme's own — fetched per selectedThemeId), so this never needs to guard against
+    // cross-bundle leakage; the only question is *which item within it*.
+    //
+    // Matched by classified event TYPE against the DB's own `event.eventName` — not by
+    // substring-matching the (admin-controlled, sanitized) templatePath filename. The wedding
+    // form's local event ids ('haldi', 'mehendi', ...) have no direct link to the DB's opaque
+    // `evt_N` ids, so both sides are classified down to the same small set of stable type
+    // strings and compared exactly. This is immune to filename formatting differences
+    // (spaces vs underscores, extra words) that broke the old templatePath.includes() check.
+    const targetBundleItem = useMemo(() => {
+        if (!bundleItems || bundleItems.length === 0) return null;
+
+        let targetType: ReturnType<typeof classifyEventType> = 'wedding';
         if (activeChapter === 3 && activePreviewEventId && activePreviewEventId !== 'wedding') {
             const foundEvent = formData.events?.find(e => e.id === activePreviewEventId);
-            if (foundEvent && foundEvent.name) {
-                searchEventTerm = foundEvent.name.toLowerCase();
-            } else {
-                searchEventTerm = activePreviewEventId.toLowerCase();
-            }
+            const nameForClassification = foundEvent?.name || activePreviewEventId;
+            targetType = classifyEventType(nameForClassification);
         }
 
-        // 1. First, check bundleItems
-        if (bundleItems && bundleItems.length > 0) {
-            let targetItem;
-            
-            if (searchEventTerm === 'wedding') {
-                targetItem = bundleItems.find(item => 
-                    item.templatePath && 
-                    (item.eventId === 'evt_7' || item.eventId === 'wedding' || item.templatePath.includes('item-Wedding_Invitation') || (item.eventType || '').toUpperCase().includes('WEDDING') || item.templatePath.toLowerCase().includes('wedding'))
-                );
-            } else {
-                // Match by eventId, template path, or event name for things like Haldi, Mehendi
-                targetItem = bundleItems.find(item => {
-                    const match = item.templatePath && 
-                        (
-                            item.eventId?.toLowerCase() === searchEventTerm || 
-                            item.templatePath.toLowerCase().includes(searchEventTerm) ||
-                            item.event?.eventName?.toLowerCase().includes(searchEventTerm) ||
-                            item.eventType?.toLowerCase().includes(searchEventTerm) ||
-                            item.templateName?.toLowerCase().includes(searchEventTerm)
-                        );
-                    return match;
-                });
-                
-                // Fallback to wedding if specific event template not found
-                if (!targetItem) {
-                    targetItem = bundleItems.find(item => 
-                        item.templatePath && 
-                        (item.eventId === 'evt_7' || item.eventId === 'wedding' || item.templatePath.includes('item-Wedding_Invitation') || (item.eventType || '').toUpperCase().includes('WEDDING') || item.templatePath.toLowerCase().includes('wedding'))
-                    );
-                }
-            }
+        const classify = (item: any) => classifyEventType(item.event?.eventName || item.templateName || item.eventType);
 
-            if (targetItem) return targetItem.templatePath;
-            
-            // Fallback to any HTML file in bundleItems, then any file
+        let match = targetType ? bundleItems.find(item => item.templatePath && classify(item) === targetType) : undefined;
+
+        // Fall back to the wedding template if this specific event has no template of its own.
+        if (!match) {
+            match = bundleItems.find(item => item.templatePath && classify(item) === 'wedding');
+        }
+
+        return match || null;
+    }, [bundleItems, activeChapter, activePreviewEventId, formData.events]);
+
+    const templateUrl = useMemo(() => {
+        // 1. The classified bundleItem match, when one exists.
+        if (targetBundleItem?.templatePath) return targetBundleItem.templatePath;
+
+        // 2. Any HTML item at all, then any item — better than a blank preview.
+        if (bundleItems && bundleItems.length > 0) {
             const anyHtmlItem = bundleItems.find(item => item.templatePath && item.templatePath.toLowerCase().includes('.html'));
             if (anyHtmlItem) return anyHtmlItem.templatePath;
-            
             if (bundleItems[0]?.templatePath) return bundleItems[0].templatePath;
         }
 
-        // 2. Check bundleImages (fallback for legacy themes without bundleItems)
+        // 3. Legacy themes with no bundleItems at all, just a flat image list.
         if (bundleImages && bundleImages.length > 0) {
-            let targetImage;
-            
-            if (searchEventTerm !== 'wedding') {
-                targetImage = bundleImages.find(img => img.toLowerCase().includes(searchEventTerm));
+            let searchTerm = 'wedding';
+            if (activeChapter === 3 && activePreviewEventId && activePreviewEventId !== 'wedding') {
+                const foundEvent = formData.events?.find(e => e.id === activePreviewEventId);
+                searchTerm = (foundEvent?.name || activePreviewEventId).toLowerCase();
             }
-            
+            let targetImage = searchTerm !== 'wedding' ? bundleImages.find(img => img.toLowerCase().includes(searchTerm)) : undefined;
             if (!targetImage) {
                 targetImage = bundleImages.find(img => img.toLowerCase().includes('wedding') || img.toLowerCase().includes('reception') || img.includes('item-Wedding_Invitation'));
             }
-
-            if (targetImage) return targetImage;
-            
-            // Fallback to the first image in the bundle if no match found
-            return bundleImages[0];
+            return targetImage || bundleImages[0];
         }
-        
+
         return undefined;
-    }, [bundleItems, bundleImages, activeChapter, activePreviewEventId]);
+    }, [targetBundleItem, bundleItems, bundleImages, activeChapter, activePreviewEventId, formData.events]);
+
+    // The resolved bundleItem row can exist while its actual file on disk doesn't (e.g. an
+    // admin-uploaded template that was later moved/deleted) — verify existence so a dead
+    // link shows a clean message instead of the browser's raw 404 page inside the iframe.
+    const [templateMissing, setTemplateMissing] = useState(false);
+    useEffect(() => {
+        if (!templateUrl || !templateUrl.toLowerCase().endsWith('.html')) {
+            setTemplateMissing(false);
+            return;
+        }
+        let alive = true;
+        fetch(templateUrl, { method: 'HEAD', cache: 'no-store' })
+            .then(res => { if (alive) setTemplateMissing(!res.ok); })
+            .catch(() => { if (alive) setTemplateMissing(true); });
+        return () => { alive = false; };
+    }, [templateUrl]);
 
     // When the active card is a designed (structured) template, resolve its CardDocument
     // layout so we render it via CardRenderer instead of loading the marker as an image.
@@ -248,22 +254,28 @@ function DetailsContent() {
         }
     }, [searchParams]);
 
-    // Fetch theme config
+    // Fetch theme config and refresh bundleItems from DB on every details page load
     useEffect(() => {
         if (!selectedThemeId) return;
 
         async function fetchTheme() {
             try {
-                const res = await fetch(`/api/themes/${selectedThemeId}`);
+                const res = await fetch(`/api/themes/${selectedThemeId}`, { cache: 'no-store' });
                 if (res.ok) {
                     const data = await res.json();
                     setActiveTheme(data.theme);
+                    // Refresh bundleItems so admin template updates are reflected immediately
+                    const freshItems = data.theme?.bundles?.[0]?.bundleItems || [];
+                    if (freshItems.length > 0) {
+                        setBundleData(selectedPlan, bundleImages, freshItems);
+                    }
                 }
             } catch (error) {
                 console.error("Failed to fetch theme", error);
             }
         }
         fetchTheme();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedThemeId]);
 
     // Auto-save useEffect with 1s debounce
@@ -501,6 +513,34 @@ function DetailsContent() {
                                                 ]
                                             }} />
                                         </motion.div>
+                                    ) : templateMissing ? (
+                                        <motion.div
+                                            key={`invite-preview-missing-${previewEvent?.id || 'wedding'}`}
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            exit={{ opacity: 0 }}
+                                            transition={{ duration: 0.3 }}
+                                            style={{
+                                                width: '100%',
+                                                aspectRatio: '600 / 800',
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                gap: '8px',
+                                                textAlign: 'center',
+                                                padding: '32px',
+                                                background: '#FAF7F2',
+                                                border: '1px dashed #D4AF37',
+                                                borderRadius: '8px',
+                                                color: '#8A7B5C',
+                                            }}
+                                        >
+                                            <span style={{ fontSize: '14px', fontWeight: 600 }}>Preview unavailable</span>
+                                            <span style={{ fontSize: '12.5px', opacity: 0.85 }}>
+                                                The template for this event hasn&apos;t been uploaded yet. It will appear here once it&apos;s added in the theme&apos;s bundle.
+                                            </span>
+                                        </motion.div>
                                     ) : (
                                         <motion.div
                                             key={`invite-preview-${previewEvent?.id || 'wedding'}-${templateUrl}`}
@@ -537,6 +577,34 @@ function DetailsContent() {
                             </motion.div>
                         </div>
                     </div>
+
+                    {/* Refresh Preview — clears localStorage saved layout and reloads the iframe */}
+                    <button
+                        onClick={() => cardRef.current?.clearCache?.()}
+                        title="Clear cached layout and reload the preview"
+                        style={{
+                            marginTop: '10px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            background: 'none',
+                            border: '1px solid #D4AF37',
+                            borderRadius: '6px',
+                            color: '#B39D73',
+                            fontSize: '12px',
+                            fontFamily: 'inherit',
+                            padding: '5px 12px',
+                            cursor: 'pointer',
+                            letterSpacing: '0.04em',
+                            opacity: 0.8,
+                            transition: 'opacity 0.2s',
+                            alignSelf: 'center',
+                        }}
+                        onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
+                        onMouseLeave={e => (e.currentTarget.style.opacity = '0.8')}
+                    >
+                        ↺ Refresh Preview
+                    </button>
                 </section>
 
                 {/* Right Column Workspace (60%) */}

@@ -42,6 +42,7 @@ const StructuredPreviewCard = forwardRef<
         },
         sendMessage: () => { /* designed cards are not edited on the client */ },
         getSerializedHtml: () => '',
+        clearCache: () => { /* structured cards have no iframe cache to clear */ },
     }), []);
 
     return (

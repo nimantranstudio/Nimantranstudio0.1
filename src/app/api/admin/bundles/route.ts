@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { writeFile, mkdir } from 'fs/promises';
+import { randomUUID } from 'crypto';
 import path from 'path';
+import { buildTemplateFilename } from '@/lib/admin/template-filename';
 
 export const dynamic = 'force-dynamic';
 
@@ -132,6 +134,11 @@ export async function POST(request: NextRequest) {
             }
         }
 
+        // Pre-generate the bundle's id so per-item template filenames (which are keyed on
+        // it) can be built before the Bundle row itself exists — prisma.bundle.create below
+        // is given this same id explicitly instead of falling back to its @default(cuid()).
+        const bundleId = randomUUID();
+
         const bundleItemsDataToCreate = [];
         for (const meta of bundleItemsMeta) {
             let templateFileStr = meta.existingUrl;
@@ -140,9 +147,8 @@ export async function POST(request: NextRequest) {
             if (file instanceof File) {
                 const bytes = await file.arrayBuffer();
                 const buffer = Buffer.from(bytes);
-                const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-                const typeSlug = (meta.eventType || meta.templateName || meta.id || 'template').replace(/\s+/g, '_');
-                const filename = `template-${typeSlug}-${uniqueSuffix}${path.extname(file.name)}`;
+                const eventName = meta.eventType || meta.templateName || meta.id || 'template';
+                const filename = buildTemplateFilename(bundleId, meta.eventId, eventName, path.extname(file.name));
                 const filepath = path.join(uploadDir, filename);
                 await writeFile(filepath, buffer);
                 templateFileStr = `/Image/bundle/${filename}`;
@@ -158,6 +164,7 @@ export async function POST(request: NextRequest) {
         const itemImagePaths = Object.values(itemImages);
         const bundle = await prisma.bundle.create({
             data: {
+                id: bundleId,
                 BundleName: name,
                 bundleDescription: description,
                 isActive,

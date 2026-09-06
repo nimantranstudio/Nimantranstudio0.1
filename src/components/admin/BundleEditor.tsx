@@ -451,8 +451,13 @@ export function BundleEditor({ bundleId, initialData, themes, packages, allEvent
             const method = isNew ? 'POST' : 'PUT';
 
             const response = await fetch(url, { method, body: formData });
-            if (response.ok) router.push('/admin/bundles');
-            else alert('Failed to save bundle details');
+            if (response.ok) {
+                router.push('/admin/bundles');
+            } else {
+                const errorBody = await response.json().catch(() => null);
+                console.error('Failed to save bundle details:', errorBody);
+                alert(`Failed to save bundle details${errorBody?.error ? `: ${errorBody.error}` : ''}`);
+            }
         } catch (error) {
             console.error(error);
             alert('Error saving bundle details');

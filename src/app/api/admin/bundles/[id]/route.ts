@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { writeFile, mkdir } from 'fs/promises';
 import path from 'path';
+import { buildTemplateFilename } from '@/lib/admin/template-filename';
 
 export async function PUT(
     request: NextRequest,
@@ -88,8 +89,8 @@ export async function PUT(
             if (file instanceof File) {
                 const bytes = await file.arrayBuffer();
                 const buffer = Buffer.from(bytes);
-                const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-                const filename = `template-${meta.eventType}-${uniqueSuffix}${path.extname(file.name)}`;
+                const eventName = meta.eventType || meta.templateName || meta.id || 'template';
+                const filename = buildTemplateFilename(id, meta.eventId, eventName, path.extname(file.name));
                 const filepath = path.join(uploadDir, filename);
                 await writeFile(filepath, buffer);
                 templateFileStr = `/Image/bundle/${filename}`;
@@ -102,43 +103,55 @@ export async function PUT(
             });
         }
 
-        // Delete existing bundle items and re-create
-        await prisma.bundleItem.deleteMany({ where: { bundleId: id } });
-
+        // Delete existing bundle items and re-create — wrapped in one transaction so a failure
+        // in the update (e.g. a bad bundleItems/bundleInvoices payload) rolls back the delete
+        // too, instead of leaving the bundle with its items wiped and nothing recreated.
         const itemImagePaths = Object.values(itemImages);
-        const bundle = await prisma.bundle.update({
-            where: { id },
-            data: {
-                BundleName: name,
-                bundleDescription: description,
-                isActive,
-                isPopular,
-                themeId: themeId || null,
-                bundleInvoices: {
-                    deleteMany: {},
-                    create: parsedInvoices.map((inv: any) => ({
-                        ...inv,
-                        isDisplay: Boolean(packageDisplayOptions[inv.packageId] ?? true)
-                    }))
-                  },
-                thumbnailUrl: itemImagePaths.length > 0 ? (itemImagePaths[0] as string) : (bundleItemsDataToCreate.length > 0 ? bundleItemsDataToCreate[0].templatePath : null),
-                itemImages: JSON.stringify(itemImages),
-                bundleItems: {
-                    create: bundleItemsDataToCreate.map((item: any) => ({
-                        eventId: item.eventId,
-                        templateName: item.templateName,
-                        templatePath: item.templatePath
-                    }))
-                }
-            },
-            include: {
-                bundleItems: {
-                    include: { event: true }
+        const bundle = await prisma.$transaction(async (tx) => {
+            await tx.bundleItem.deleteMany({ where: { bundleId: id } });
+
+            return tx.bundle.update({
+                where: { id },
+                data: {
+                    BundleName: name,
+                    bundleDescription: description,
+                    isActive,
+                    isPopular,
+                    themeId: themeId || null,
+                    bundleInvoices: {
+                        deleteMany: {},
+                        create: parsedInvoices.map((inv: any) => ({
+                            ...inv,
+                            isDisplay: Boolean(packageDisplayOptions[inv.packageId] ?? true)
+                        }))
+                      },
+                    thumbnailUrl: itemImagePaths.length > 0 ? (itemImagePaths[0] as string) : (bundleItemsDataToCreate.length > 0 ? bundleItemsDataToCreate[0].templatePath : null),
+                    itemImages: JSON.stringify(itemImages),
+                    bundleItems: {
+                        create: bundleItemsDataToCreate.map((item: any) => ({
+                            eventId: item.eventId,
+                            templateName: item.templateName,
+                            templatePath: item.templatePath
+                        }))
+                    }
                 },
-                bundleInvoices: {
-                    include: { package: true }
+                include: {
+                    bundleItems: {
+                        include: { event: true }
+                    },
+                    bundleInvoices: {
+                        include: { package: true }
+                    }
                 }
-            }
+            });
+        }, {
+            // DATABASE_URL is a remote (Railway-proxied) Postgres instance, so the delete +
+            // nested-update round trip inside this transaction routinely exceeds Prisma's
+            // default 5s interactive-transaction timeout under real network latency — this
+            // was the actual cause of "Failed to save bundle details". 20s matches the real
+            // cost of the operation instead of masking a timeout as a generic save failure.
+            timeout: 20000,
+            maxWait: 10000
         });
 
         const { revalidatePath } = await import('next/cache');
