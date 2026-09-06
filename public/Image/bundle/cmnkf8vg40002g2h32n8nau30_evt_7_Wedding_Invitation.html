@@ -69,7 +69,7 @@
             text-align: center;
             color: #4a0e2e;
 
-            padding: 33% 16% 8% 16%; /* TOP RIGHT BOTTOM LEFT */
+            padding: 38% 16% 6% 16%; /* TOP RIGHT BOTTOM LEFT - Increased top padding to clear Om symbol */
 
             width: 100%;
             height: 100%;
@@ -77,66 +77,54 @@
         
         /* Responsive Typography using clamp() for all screen sizes */
         .event-name {
-            font-size: clamp(26px, 6.5vw, 34px); /* Increased font size by 5px */
-            margin-bottom: clamp(24px, 5vh, 35px); /* Increased to create a one-line gap */
+            font-size: clamp(24px, 6vw, 32px);
+            margin-bottom: clamp(12px, 2.5vh, 20px);
             font-weight: 500;
             width: 100%;
         }
         .welcome-message {
-            font-size: clamp(15px, 3.5vw, 18px); /* Increased font size by 3px */
-            margin-bottom: clamp(10px, 3vh, 20px); /* Use vh for vertical spacing */
+            font-size: clamp(14px, 3.2vw, 17px);
+            margin-bottom: clamp(8px, 2vh, 15px);
             line-height: 1.4;
             white-space: pre-line;
             width: 100%;
         }
         
-        /* Couple Container (Names + Parents) */
-        .couple-container {
-            width: 100%;
-            margin: clamp(10px, 3vh, 20px) 0 clamp(15px, 4vh, 30px); /* Use vh for vertical spacing */
-        }
-        
-        /* Side-by-Side Layout (<= 18 chars) */
-        .couple-container.side-by-side {
-            display: grid;
-            grid-template-columns: 1fr auto 1fr;
-            grid-template-rows: auto auto;
-            column-gap: clamp(10px, 2vw, 15px);
-            row-gap: clamp(8px, 1.5vh, 15px);
-            align-items: center;
-        }
-        .side-by-side .person-block {
-            display: contents;
-        }
-        .side-by-side .groom-block .name-text { grid-column: 1; grid-row: 1; white-space: nowrap; font-size: clamp(14px, 5vw, 50px); }
-        .side-by-side .groom-block .parent-text { grid-column: 1; grid-row: 2; align-self: start; }
-        .side-by-side .ampersand-block { grid-column: 2; grid-row: 1; display: flex; align-items: center; justify-content: center; }
-        .side-by-side .bride-block .name-text { grid-column: 3; grid-row: 1; white-space: nowrap; font-size: clamp(14px, 5vw, 50px); }
-        .side-by-side .bride-block .parent-text { grid-column: 3; grid-row: 2; align-self: start; }
-
-        /* Stacked Layout (> 18 chars) */
+        /* Couple Container (Stacked Layout: Groom + Parents, &, Bride + Parents) */
+        .couple-container,
+        .couple-container.side-by-side,
         .couple-container.stacked {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: clamp(15px, 3vh, 25px);
+            width: 100%;
+            gap: clamp(6px, 1.2vh, 12px);
+            margin: clamp(6px, 1.5vh, 15px) 0 clamp(8px, 2vh, 18px);
         }
+        .person-block,
+        .side-by-side .person-block,
         .stacked .person-block {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: clamp(4px, 1vh, 8px);
+            width: 100%;
+            gap: clamp(2px, 0.4vh, 4px);
         }
+        .ampersand-block,
+        .side-by-side .ampersand-block,
         .stacked .ampersand-block {
             display: flex;
             align-items: center;
             justify-content: center;
+            margin: clamp(2px, 0.5vh, 6px) 0;
         }
 
         /* Shared Text Styles */
-        .name-text {
+        .name-text,
+        .side-by-side .groom-block .name-text,
+        .side-by-side .bride-block .name-text {
             font-family: 'Great Vibes', cursive;
-            font-size: clamp(32px, 9vw, 50px);
+            font-size: clamp(32px, 8.5vw, 48px);
             line-height: 1.1;
             color: #5c0a28;
             word-break: break-word;
@@ -144,17 +132,23 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            text-align: center;
         }
-        .parent-text {
-            font-size: clamp(10px, 2.5vw, 13px);
+        .parent-text,
+        .side-by-side .groom-block .parent-text,
+        .side-by-side .bride-block .parent-text {
+            font-family: 'Lora', serif;
+            font-size: clamp(12px, 3.2vw, 16px);
+            color: #4a0e2e;
             word-break: break-word;
             width: 100%;
+            text-align: center;
+            line-height: 1.3;
         }
         .ampersand {
-            font-family: 'Lora', serif;
-            font-size: clamp(18px, 5vw, 26px);
+            font-family: 'Great Vibes', cursive;
+            font-size: clamp(22px, 5.5vw, 30px);
             font-style: italic;
-            font-weight: bold; /* Make ampersand bold */
             color: #5c0a28;
         }
         
@@ -195,7 +189,7 @@
             <div id="welcome-message" class="welcome-message">We are pleased to invite you
 to the wedding of</div>
             
-            <div class="couple-container side-by-side">
+            <div class="couple-container stacked">
                 <div class="person-block groom-block">
                     <!-- REPLACE: GROOM NAME -->
                     <div id="groom-name" class="name-text">Rahul</div>

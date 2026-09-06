@@ -7,6 +7,7 @@ import { useEffect, useState, useRef } from 'react';
 import { WelcomeDialog } from '@/components/dashboard/WelcomeDialog';
 import { InvitationCard, InvitationCardRef } from '@/components/preview/InvitationCard';
 import { PreviewCard } from '@/components/preview/PreviewCard';
+import { dataUrlToFile } from '@/lib/capture';
 import type { Theme } from '@/lib/constants/themes';
 import styles from './dashboard.module.css';
 import redesignStyles from './dashboard-redesign.module.css';
@@ -83,6 +84,9 @@ export default function DashboardPage() {
     const [theme, setTheme] = useState<Theme | null>(null);
     const [selectedPreviewIndex, setSelectedPreviewIndex] = useState<number | null>(null);
     const cardRef = useRef<InvitationCardRef>(null);
+    // Ref for the "Complete Suite Preview" modal's card — a distinct mounted instance from
+    // the hero preview above (cardRef), showing whichever event the user has paged to via
+    // suitePreviewIndex. Both Download Card and Share on WhatsApp capture *this* one.
     const suitePreviewCardRef = useRef<InvitationCardRef>(null);
     const assetCardRefs = useRef<Record<string, InvitationCardRef | null>>({});
     const [isDownloadingAssets, setIsDownloadingAssets] = useState(false);
@@ -211,7 +215,7 @@ export default function DashboardPage() {
         }
     };
 
-    const handleShareWhatsApp = async (item?: any) => {
+    const handleShareWhatsApp = async (item?: any, captureCardImage?: () => Promise<string | null | undefined>) => {
         const bride = formData.brideName || '';
         const groom = formData.groomName || '';
         const coupleName = [groom, bride].filter(Boolean).join(' & ') || 'Our Wedding';
@@ -274,31 +278,49 @@ export default function DashboardPage() {
         // Single link for both viewing the invitation and RSVP (same page).
         message += `\n🔗 View your invitation & RSVP:\n${rsvpUrl}`;
 
-        // Preferred: Native Web Share API with attached invitation image file.
-        // Only attach when we actually have a raster image URL — an .html template
-        // (or a structured: marker) would attach a broken/non-image file.
+        // Get the selected card as an actual image file — from a pre-existing raster asset
+        // (legacy image-based bundles) or, for the normal case of an HTML/structured
+        // template, by capturing the *currently rendered* preview via the same
+        // html2canvas mechanism InvitationCard's own captureDataUrl/downloadImage already
+        // use (PreviewCard forwards this through its ref for both HTML and designed cards).
+        // This — not the raw templatePath — is what makes the shared image the right one
+        // per event (Haldi vs Mehendi vs ...) with the couple's real data baked in.
         const isRasterImage = (u: any) => typeof u === 'string' && /\.(png|jpe?g|webp)(\?|$)/i.test(u);
-        if (typeof navigator !== 'undefined' && navigator.share && isRasterImage(item?.image)) {
-            try {
+        const fileName = `${eventName.toLowerCase().replace(/\s+/g, '_')}_invitation.png`;
+        let cardFile: File | null = null;
+        try {
+            if (isRasterImage(item?.image)) {
                 const response = await fetch(item.image);
                 const blob = await response.blob();
-                const fileName = `${eventName.toLowerCase().replace(/\s+/g, '_')}_invitation.png`;
-                const file = new File([blob], fileName, { type: blob.type || 'image/png' });
+                cardFile = new File([blob], fileName, { type: blob.type || 'image/png' });
+            } else if (captureCardImage) {
+                const dataUrl = await captureCardImage();
+                if (dataUrl) cardFile = dataUrlToFile(dataUrl, fileName);
+            }
+        } catch (err) {
+            console.log('Card image capture failed, continuing with text-only share:', err);
+        }
 
-                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        // Preferred: native Web Share API with the card attached as a file — the only
+        // mechanism that can hand WhatsApp an actual image. WhatsApp's own click-to-chat
+        // URLs (wa.me / api.whatsapp.com) only ever support pre-filled text; there is no
+        // URL parameter for a file attachment, so a URL-based approach cannot do this.
+        if (cardFile && typeof navigator !== 'undefined' && navigator.share) {
+            try {
+                if (navigator.canShare && navigator.canShare({ files: [cardFile] })) {
                     await navigator.share({
                         title: `${eventName} - ${coupleName}`,
                         text: message,
-                        files: [file]
+                        files: [cardFile]
                     });
                     return;
                 }
             } catch (err) {
-                console.log('Web share with image attempt bypassed:', err);
+                // User cancelled, or the platform rejected the file share — fall through.
             }
         }
 
-        // Native Web Share text fallback
+        // Native Web Share text fallback (no file support on this platform, still a real share sheet)
         if (typeof navigator !== 'undefined' && navigator.share) {
             try {
                 await navigator.share({
@@ -312,7 +334,18 @@ export default function DashboardPage() {
             }
         }
 
-        // Desktop Fallback: Open WhatsApp directly
+        // Desktop fallback: WhatsApp's click-to-chat has no file-attach capability at all,
+        // so when we do have the card image, download it first — the user lands in
+        // WhatsApp with the message ready and the card already saved to attach manually,
+        // rather than only ever receiving a link.
+        if (cardFile) {
+            const objectUrl = URL.createObjectURL(cardFile);
+            const a = document.createElement('a');
+            a.href = objectUrl;
+            a.download = fileName;
+            a.click();
+            URL.revokeObjectURL(objectUrl);
+        }
         const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
         window.open(whatsappUrl, '_blank');
     };
@@ -1484,7 +1517,7 @@ export default function DashboardPage() {
                                         <button
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                handleShareWhatsApp(currentItem);
+                                                handleShareWhatsApp(currentItem, () => suitePreviewCardRef.current?.captureDataUrl() ?? Promise.resolve(null));
                                             }}
                                             style={{
                                                 background: '#16A34A',
@@ -1511,7 +1544,7 @@ export default function DashboardPage() {
                                         </button>
 
                                         <button
-                                            onClick={(e) => {
+                                            onClick={async (e) => {
                                                 e.stopPropagation();
                                                 const filename = `${(currentItem.name || 'invitation').toLowerCase().replace(/\s+/g, '_')}_invitation.png`;
                                                 suitePreviewCardRef.current?.downloadImage(filename);
