@@ -48,7 +48,8 @@ import {
     ChevronRight,
     Search,
     X,
-    Phone
+    Phone,
+    Loader2
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -82,6 +83,9 @@ export default function DashboardPage() {
     const [theme, setTheme] = useState<Theme | null>(null);
     const [selectedPreviewIndex, setSelectedPreviewIndex] = useState<number | null>(null);
     const cardRef = useRef<InvitationCardRef>(null);
+    const suitePreviewCardRef = useRef<InvitationCardRef>(null);
+    const assetCardRefs = useRef<Record<string, InvitationCardRef | null>>({});
+    const [isDownloadingAssets, setIsDownloadingAssets] = useState(false);
     const carouselTrackRef = useRef<HTMLDivElement>(null);
     const [isCarouselHovered, setIsCarouselHovered] = useState(false);
     const [lightbox, setLightbox] = useState<{ image: string | null; title: string } | null>(null);
@@ -608,6 +612,28 @@ export default function DashboardPage() {
 
     const previewItems = buildPreviewItems();
 
+    // Bundle items are HTML-template or structured-card markers, never plain
+    // raster images — a raw <a href={item.image}> download just saves the
+    // template source. Real downloads have to go through the same html2canvas
+    // capture each card already exposes via its ref (see the hidden render
+    // block below), one at a time so the browser doesn't choke on many
+    // simultaneous downloads.
+    const handleDownloadAllAssets = async () => {
+        if (isDownloadingAssets) return;
+        setIsDownloadingAssets(true);
+        try {
+            for (const item of previewItems) {
+                const ref = assetCardRefs.current[item.id];
+                if (!ref) continue;
+                const filename = `${(item.name || 'invitation').toLowerCase().replace(/\s+/g, '_')}_invitation.png`;
+                ref.downloadImage(filename);
+                await new Promise((r) => setTimeout(r, 600));
+            }
+        } finally {
+            setIsDownloadingAssets(false);
+        }
+    };
+
     const getEventImage = (event: { name?: string; eventType?: string }) => {
         const tryKeys = [
             `${(event.name || '').toLowerCase()} invitation`,
@@ -727,7 +753,7 @@ export default function DashboardPage() {
                             groomParents={formData.groomParents || undefined}
                             brideParents={formData.brideParents || undefined}
                             welcomeMessage={formData.invitationMessage || undefined}
-                            isPlaceholder={true}
+                            isPlaceholder={false}
                             isRawPreview={false}
                             type='image'
                             customImage={previewItems[selectedPreviewIndex]?.image}
@@ -737,7 +763,32 @@ export default function DashboardPage() {
                     </div>
                 </div>
             )}
-            
+
+            {/* Hidden, always-mounted full-size render of every card — gives
+                "Download Assets" a real ref to capture per card, since the
+                visible carousel thumbnails are duplicated 4x for the scroll
+                loop and are too small/inert to capture reliably. */}
+            <div aria-hidden style={{ position: 'fixed', left: '-99999px', top: 0, width: '500px', zIndex: -1, pointerEvents: 'none', opacity: 0 }}>
+                {previewItems.map((item) => (
+                    <div key={item.id}>
+                        <PreviewCard
+                            ref={(el) => { assetCardRefs.current[item.id] = el; }}
+                            event={item.event}
+                            theme={theme}
+                            groomName={formData.groomName || ''}
+                            brideName={formData.brideName || ''}
+                            groomParents={formData.groomParents}
+                            brideParents={formData.brideParents}
+                            welcomeMessage={formData.invitationMessage}
+                            isPlaceholder={false}
+                            isRawPreview={false}
+                            customImage={item.image}
+                            isSecured={false}
+                        />
+                    </div>
+                ))}
+            </div>
+
             <main className={styles.mainContent}>
                 {/* 1. Clean Full-Width Dashboard Welcome Header */}
                 <div className={styles.dashboardHeader} style={{ marginBottom: '1.5rem' }}>
@@ -800,16 +851,8 @@ export default function DashboardPage() {
                             <motion.button
                                 whileTap={{ scale: 0.95 }}
                                 transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                                onClick={() => {
-                                    previewItems.forEach((item) => {
-                                        if (item.image) {
-                                            const a = document.createElement('a');
-                                            a.href = item.image;
-                                            a.download = `${(item.name || 'invitation').toLowerCase().replace(/\s+/g, '_')}_invitation.png`;
-                                            a.click();
-                                        }
-                                    });
-                                }}
+                                onClick={handleDownloadAllAssets}
+                                disabled={isDownloadingAssets}
                                 style={{
                                     background: '#FFFFFF',
                                     border: '1px solid #E5E7EB',
@@ -818,7 +861,8 @@ export default function DashboardPage() {
                                     borderRadius: '100px',
                                     fontSize: '0.85rem',
                                     fontWeight: 600,
-                                    cursor: 'pointer',
+                                    cursor: isDownloadingAssets ? 'default' : 'pointer',
+                                    opacity: isDownloadingAssets ? 0.6 : 1,
                                     display: 'inline-flex',
                                     alignItems: 'center',
                                     gap: '0.5rem',
@@ -827,8 +871,18 @@ export default function DashboardPage() {
                                 }}
                                 className={redesignStyles.footerActionBtn}
                             >
-                                <Download size={15} />
-                                <span>Download Assets</span>
+                                {isDownloadingAssets ? (
+                                    <motion.span
+                                        style={{ display: 'flex' }}
+                                        animate={{ rotate: 360 }}
+                                        transition={{ repeat: Infinity, duration: 0.8, ease: 'linear' }}
+                                    >
+                                        <Loader2 size={15} />
+                                    </motion.span>
+                                ) : (
+                                    <Download size={15} />
+                                )}
+                                <span>{isDownloadingAssets ? 'Downloading…' : 'Download Assets'}</span>
                             </motion.button>
 
                             {/* Share on WhatsApp Button */}
@@ -948,7 +1002,7 @@ export default function DashboardPage() {
                                                         groomParents={formData.groomParents}
                                                         brideParents={formData.brideParents}
                                                         welcomeMessage={formData.invitationMessage}
-                                                        isPlaceholder={true}
+                                                        isPlaceholder={false}
                                                         isRawPreview={false}
                                                         customImage={item.image}
                                                         className={styles.dashboardThumbCard}
@@ -1398,6 +1452,7 @@ export default function DashboardPage() {
                                             style={{ height: '75vh', aspectRatio: '9 / 16', maxWidth: '85vw', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 24px 80px rgba(0,0,0,0.6)' }}
                                         >
                                             <PreviewCard
+                                                ref={suitePreviewCardRef}
                                                 event={currentItem.event}
                                                 theme={theme}
                                                 groomName={formData.groomName || ''}
@@ -1405,9 +1460,9 @@ export default function DashboardPage() {
                                                 groomParents={formData.groomParents}
                                                 brideParents={formData.brideParents}
                                                 welcomeMessage={formData.invitationMessage}
-                                                isPlaceholder={true}
+                                                isPlaceholder={false}
                                                 isSecured={false}
-                                                customImage={currentItem.image && typeof currentItem.image === 'string' && !currentItem.image.startsWith('structured:') ? currentItem.image : undefined}
+                                                customImage={currentItem.image}
                                             />
                                         </div>
                                         <button 
@@ -1458,18 +1513,8 @@ export default function DashboardPage() {
                                         <button
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                if (currentItem.image && typeof currentItem.image === 'string' && !currentItem.image.startsWith('structured:')) {
-                                                    const a = document.createElement('a');
-                                                    a.href = currentItem.image;
-                                                    a.download = `${(currentItem.name || 'invitation').toLowerCase().replace(/\s+/g, '_')}_invitation.png`;
-                                                    a.click();
-                                                } else {
-                                                    // Fallback download
-                                                    const a = document.createElement('a');
-                                                    a.href = currentItem.image || '/assets/themes/sample-card.png';
-                                                    a.download = `${(currentItem.name || 'invitation').toLowerCase().replace(/\s+/g, '_')}_invitation.png`;
-                                                    a.click();
-                                                }
+                                                const filename = `${(currentItem.name || 'invitation').toLowerCase().replace(/\s+/g, '_')}_invitation.png`;
+                                                suitePreviewCardRef.current?.downloadImage(filename);
                                             }}
                                             style={{
                                                 background: 'rgba(255, 255, 255, 0.15)',

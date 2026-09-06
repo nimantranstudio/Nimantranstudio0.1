@@ -13,7 +13,7 @@ import { clsx } from 'clsx';
 
 export interface InvitationCardRef {
     saveEdits: () => Record<string, string>;
-    downloadImage: () => void;
+    downloadImage: (filename?: string) => void;
     /** Capture the rendered card to a PNG data URL (null on failure). Never throws. */
     captureDataUrl: () => Promise<string | null>;
     sendMessage: (payload: any) => void;
@@ -166,7 +166,7 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
             console.log("InvitationCard extracted edits:", values);
             return values;
         },
-        downloadImage: () => {
+        downloadImage: (filename?: string) => {
             const executeDownload = () => {
                 if (isHTMLDesign) {
                     if (!iframeRef.current) return;
@@ -234,7 +234,7 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                         backgroundColor: null 
                     }).then((canvas: HTMLCanvasElement) => {
                         const link = document.createElement('a');
-                        link.download = `Wedding-Invitation-Design.png`;
+                        link.download = filename || `Wedding-Invitation-Design.png`;
                         link.href = canvas.toDataURL('image/png');
                         link.click();
                         
@@ -266,7 +266,7 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                             backgroundColor: null
                         }).then((canvas: HTMLCanvasElement) => {
                             const link = document.createElement('a');
-                            link.download = `Wedding-Invitation-Design.png`;
+                            link.download = filename || `Wedding-Invitation-Design.png`;
                             link.href = canvas.toDataURL('image/png');
                             link.click();
                         }).catch((e: any) => {

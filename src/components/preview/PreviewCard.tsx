@@ -32,11 +32,11 @@ const StructuredPreviewCard = forwardRef<
     useImperativeHandle(ref, () => ({
         saveEdits: () => ({}),
         captureDataUrl: capture,
-        downloadImage: async () => {
+        downloadImage: async (filename?: string) => {
             const url = await capture();
             if (!url) return;
             const a = document.createElement('a');
-            a.download = 'Wedding-Invitation.png';
+            a.download = filename || 'Wedding-Invitation.png';
             a.href = url;
             a.click();
         },

@@ -46,7 +46,7 @@
   /* Spacing & Forms */
   --radius: 8px;
   /* Standardized 8px radius */
-  --container-width: 1200px;
+  --container-width: 1360px;
 }
 
 * {
@@ -98,7 +98,13 @@ a {
 .container {
   max-width: var(--container-width);
   margin: 0 auto;
-  padding: 0 1.5rem;
+  padding: 0 2rem;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0 1.25rem;
+  }
 }
 
 /* Standardized Button System */
