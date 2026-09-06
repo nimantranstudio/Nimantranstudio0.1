@@ -34,7 +34,10 @@ const StructuredPreviewCard = forwardRef<
         captureDataUrl: capture,
         downloadImage: async (filename?: string) => {
             const url = await capture();
-            if (!url) return;
+            if (!url) {
+                alert('Could not generate this image — please check your connection and try again.');
+                return;
+            }
             const a = document.createElement('a');
             a.download = filename || 'Wedding-Invitation.png';
             a.href = url;

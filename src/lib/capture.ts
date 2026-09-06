@@ -36,9 +36,16 @@ export async function captureElementToDataUrl(el: HTMLElement | null): Promise<s
     try {
         const html2canvas = await loadHtml2Canvas();
         if (!html2canvas) return null;
+        // Custom @font-face fonts (used heavily by designed templates) can still be
+        // loading when html2canvas reads computed styles, producing a fallback-font
+        // capture or, with some background images, a stalled/tainted render.
+        if (document.fonts?.ready) {
+            await document.fonts.ready.catch(() => {});
+        }
         const canvas = await html2canvas(el, { useCORS: true, scale: 2, backgroundColor: null, logging: false });
         return canvas.toDataURL('image/png');
-    } catch {
+    } catch (err) {
+        console.error('captureElementToDataUrl failed:', err);
         return null;
     }
 }
