@@ -49,3 +49,16 @@ export async function captureElementToDataUrl(el: HTMLElement | null): Promise<s
         return null;
     }
 }
+
+/** Convert a `data:image/...;base64,...` URL (from captureElementToDataUrl / an
+ * InvitationCardRef's captureDataUrl) into a File, for navigator.share({ files })
+ * or a programmatic download. Returns null for a malformed data URL. */
+export function dataUrlToFile(dataUrl: string, filename: string): File | null {
+    const match = dataUrl.match(/^data:([^;]+);base64,(.+)$/);
+    if (!match) return null;
+    const [, mime, base64] = match;
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return new File([bytes], filename, { type: mime });
+}

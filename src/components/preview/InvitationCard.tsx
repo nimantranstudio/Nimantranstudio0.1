@@ -746,14 +746,15 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                     const currentText = el.textContent?.replace(/[\n\r]+|[\s]{2,}/g, ' ').trim() || '';
                     const newText = displayValue.replace(/[\n\r]+|[\s]{2,}/g, ' ').trim();
                     
-                    if (currentText !== newText || (!el.querySelector('.name-animate') && (id === 'groom-name' || id === 'bride-name'))) {
+                    // Write only when the text actually changed — this was previously forced to
+                    // always-true for groom-name/bride-name (to re-detect a decorative wrapper
+                    // span that has since been removed), which combined with the reactive
+                    // data-field postMessage bridge stripping that same wrapper on every
+                    // keystroke to cause a write/strip/rewrite cycle: the visible "blink".
+                    if (currentText !== newText) {
                         // Preserve handles if they exist inside the element
                         const handles = Array.from(el.querySelectorAll('.resize-handle, .drag-handle, .delete-handle'));
-                        
-                        if (id === 'groom-name' || id === 'bride-name') {
-                            formattedValue = `<span class="name-animate" style="display:inline-block; position:relative; animation: fadeUpIn 220ms cubic-bezier(0.23, 1, 0.32, 1) forwards;">${formattedValue}<span class="gold-underline" style="position:absolute; bottom:0; left:0; height:1px; background:#D4AF37; width:0; opacity:0; animation: drawUnderline 350ms cubic-bezier(0.77, 0, 0.175, 1) 150ms forwards;"></span></span>`;
-                        }
-                        
+
                         el.innerHTML = formattedValue;
                         handles.forEach(h => el.appendChild(h));
                     }
@@ -844,16 +845,7 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                 }
                 * { hyphens: none !important; -webkit-hyphens: none !important; }
                 .text-overlay { padding-top: 15vh !important; }
-                
-                @keyframes fadeUpIn {
-                    from { opacity: 0; transform: translateY(4px); }
-                    to { opacity: 1; transform: translateY(0); }
-                }
-                @keyframes drawUnderline {
-                    from { width: 0; opacity: 0; }
-                    to { width: 100%; opacity: 1; }
-                }
-                
+
                 ${showSizingBoxes ? `
                  .sizing-box {
                     position: relative;
