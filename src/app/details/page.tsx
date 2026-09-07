@@ -18,9 +18,8 @@ import {
     Users, 
     ArrowUp, 
     ArrowDown, 
-    Trash2, 
-    Plus, 
-    Clock, 
+    Trash2,
+    Clock,
     CheckCircle2, 
     Loader2, 
     X,
@@ -39,8 +38,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { InvitationCard, InvitationCardRef } from '@/components/preview/InvitationCard';
 import { PreviewCard } from '@/components/preview/PreviewCard';
 import { IntricateMandalaSvg } from '@/components/ui/IntricateMandala';
-import { classifyEventType } from '@/lib/templates/event-type';
 import confetti from 'canvas-confetti';
+import { resolveEventSections } from '@/lib/templates/event-type';
 
 // Motion variants for welcome popup transitions (apple-design / emil-design-eng - crisp without background blur)
 const overlayVariants = {
@@ -98,7 +97,6 @@ function DetailsContent() {
         bundleItems,
         selectedPlan,
         setBundleData,
-        addEvent,
         removeEvent,
         updateEvent
     } = useWeddingStore();
@@ -123,41 +121,46 @@ function DetailsContent() {
     const [isCrafting, setIsCrafting] = useState(false);
     const cardRef = useRef<InvitationCardRef>(null);
 
-    // Resolves which bundleItem (and therefore which saved template file) belongs to the
-    // currently selected event. `bundleItems` is already scoped to exactly one bundle (the
-    // theme's own — fetched per selectedThemeId), so this never needs to guard against
-    // cross-bundle leakage; the only question is *which item within it*.
+    // Step 1 — ASSIGN: give every "Celebrate Every Moment" section its Event.id.
+    // `bundleItems` is already scoped to exactly one bundle (the theme's own, fetched per
+    // selectedThemeId), so nothing here needs to guard against cross-bundle leakage — only
+    // *which item within it* belongs to *which section*.
     //
-    // Matched by classified event TYPE against the DB's own `event.eventName` — not by
-    // substring-matching the (admin-controlled, sanitized) templatePath filename. The wedding
-    // form's local event ids ('haldi', 'mehendi', ...) have no direct link to the DB's opaque
-    // `evt_N` ids, so both sides are classified down to the same small set of stable type
-    // strings and compared exactly. This is immune to filename formatting differences
-    // (spaces vs underscores, extra words) that broke the old templatePath.includes() check.
+    // bundleItem.eventId already *is* Event.id (it's the Prisma foreign key) — that part of
+    // the join needs no resolving. The actual gap is that the wedding form's own event list
+    // (formData.events) carries no field linking a local event ('haldi') back to that id at
+    // all, so classification runs once here, per bundleItem, to bridge it (see
+    // resolveEventSections). Every lookup after this point is a plain eventId equality
+    // check — no more name or filename comparisons.
+    const eventSections = useMemo(
+        () => resolveEventSections(bundleItems, formData.events),
+        [bundleItems, formData.events]
+    );
+
+    // Step 2 — SELECT: which local section is currently active, from UI state alone.
+    const activeLocalEventId = (activeChapter === 3 && activePreviewEventId && activePreviewEventId !== 'wedding')
+        ? activePreviewEventId
+        : 'wedding';
+
+    // Step 3 — MATCH: bundleItem.eventId === section.eventId. This is the only place a
+    // BundleItem is looked up by id from here on.
     const targetBundleItem = useMemo(() => {
         if (!bundleItems || bundleItems.length === 0) return null;
 
-        let targetType: ReturnType<typeof classifyEventType> = 'wedding';
-        if (activeChapter === 3 && activePreviewEventId && activePreviewEventId !== 'wedding') {
-            const foundEvent = formData.events?.find(e => e.id === activePreviewEventId);
-            const nameForClassification = foundEvent?.name || activePreviewEventId;
-            targetType = classifyEventType(nameForClassification);
-        }
-
-        const classify = (item: any) => classifyEventType(item.event?.eventName || item.templateName || item.eventType);
-
-        let match = targetType ? bundleItems.find(item => item.templatePath && classify(item) === targetType) : undefined;
+        const activeSection = eventSections.find(s => s.localEventId === activeLocalEventId);
+        let match = activeSection ? bundleItems.find(item => item.eventId === activeSection.eventId) : undefined;
 
         // Fall back to the wedding template if this specific event has no template of its own.
         if (!match) {
-            match = bundleItems.find(item => item.templatePath && classify(item) === 'wedding');
+            const weddingSection = eventSections.find(s => s.localEventId === 'wedding');
+            match = weddingSection ? bundleItems.find(item => item.eventId === weddingSection.eventId) : undefined;
         }
 
         return match || null;
-    }, [bundleItems, activeChapter, activePreviewEventId, formData.events]);
+    }, [bundleItems, eventSections, activeLocalEventId]);
 
     const templateUrl = useMemo(() => {
-        // 1. The classified bundleItem match, when one exists.
+        // 1. The eventId-matched bundleItem, when one exists.
         if (targetBundleItem?.templatePath) return targetBundleItem.templatePath;
 
         // 2. Any HTML item at all, then any item — better than a blank preview.
@@ -376,19 +379,6 @@ function DetailsContent() {
         newEvents[targetIndex] = temp;
 
         updateFormData({ events: newEvents });
-    };
-
-    // Add new custom event helper
-    const handleAddCeremony = () => {
-        const id = `custom_${Date.now()}`;
-        const newEvent: WeddingEvent = {
-            id,
-            name: 'New Ceremony',
-            date: formData.primaryDate || '',
-            time: '18:30',
-            venue: '',
-        };
-        addEvent(newEvent);
     };
 
     // Focus state listeners
@@ -921,12 +911,18 @@ function DetailsContent() {
                                 >
                                     <div className={styles.chapterBody}>
                                         <div className={styles.timelineBuilder}>
-                                            {(formData.events || []).map((event, index) => (
-                                                <div 
+                                            {(formData.events || []).map((event, index) => {
+                                                // The heading is the event's identity — carries the real Event.id from the
+                                                // BundleItem/Event relationship (via eventSections, resolved above) rather
+                                                // than the editable name, which is no longer editable here for exactly that
+                                                // reason: renaming it must never be able to break the eventId/template link.
+                                                const matchedSection = eventSections.find(s => s.localEventId === event.id);
+                                                return (
+                                                <div
                                                     className={clsx(
                                                         styles.timelineCard,
                                                         (focusedField === event.id || activePreviewEventId === event.id) && styles.timelineCardActive
-                                                    )} 
+                                                    )}
                                                     key={event.id}
                                                     onClick={(e) => {
                                                         e.stopPropagation();
@@ -934,7 +930,7 @@ function DetailsContent() {
                                                     }}
                                                 >
                                                     <div className={styles.timelineCardHeader}>
-                                                        <div className={styles.timelineCardTitle}>{event.name}</div>
+                                                        <div className={styles.timelineCardTitle} data-event-id={matchedSection?.eventId}>{event.name}</div>
                                                         <div className={styles.timelineCardControls}>
                                                             <button 
                                                                 className={styles.timelineBtn}
@@ -962,18 +958,7 @@ function DetailsContent() {
                                                         </div>
                                                     </div>
 
-                                                    <div className={clsx(styles.studioInputGroup, styles.split)}>
-                                                        <div>
-                                                            <label className={styles.studioLabel}>Event Name</label>
-                                                            <Input
-                                                                label="Event Name"
-                                                                hideLabel
-                                                                value={event.name}
-                                                                onFocus={() => { handleFocus(event.id); setActivePreviewEventId(event.id); }}
-                                                                onBlur={handleBlur}
-                                                                onChange={(e) => updateEvent(event.id, { name: e.target.value })}
-                                                            />
-                                                        </div>
+                                                    <div className={styles.studioInputGroup}>
                                                         <div>
                                                             <label className={styles.studioLabel}>Date</label>
                                                             <Input
@@ -1015,12 +1000,9 @@ function DetailsContent() {
                                                         </div>
                                                     </div>
                                                 </div>
-                                            ))}
+                                                );
+                                            })}
                                         </div>
-
-                                        <button className={styles.addCeremonyBtn} onClick={handleAddCeremony}>
-                                            <Plus size={16} /> Add Ceremony Card
-                                        </button>
                                     </div>
                                 </motion.div>
                             )}
