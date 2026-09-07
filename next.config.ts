@@ -1,12 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // A stray package-lock.json one directory up (/Users/vivek/) makes Next.js
-  // guess the wrong workspace root, which crashes Turbopack outright when it
-  // then can't resolve the `next` package from there. Pin it explicitly.
-  turbopack: {
-    root: "/Users/vivek/Desktop/final nimantran studio ",
-  },
   // Console logging for debugging fetches in development
   logging: {
     fetches: {
