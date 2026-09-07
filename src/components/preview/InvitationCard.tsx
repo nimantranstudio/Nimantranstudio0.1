@@ -9,6 +9,7 @@ import Image from 'next/image';
 
 import { useState, useEffect, useRef, forwardRef, useImperativeHandle, useMemo } from 'react';
 import { buildFieldPayload } from '@/lib/templates/field-contract';
+import { getIntricateMandalaSvgHtml, IntricateMandalaSvg } from '@/components/ui/IntricateMandala';
 import { clsx } from 'clsx';
 
 export interface InvitationCardRef {
@@ -520,6 +521,183 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
             const doc = iframeRef.current?.contentDocument || iframeRef.current?.contentWindow?.document;
             if (!doc || !doc.body || !doc.head) return;
 
+            const ensureMandalaAndRuntimeFixes = (docTarget: Document) => {
+                if (!docTarget || !docTarget.body || !docTarget.head) return;
+
+                // 1. INJECT RUNTIME FIXES (Doesn't touch original file)
+                let styleEl = docTarget.getElementById('runtime-preview-fix');
+                if (!styleEl) {
+                    styleEl = docTarget.createElement('style');
+                    styleEl.id = 'runtime-preview-fix';
+                    docTarget.head.appendChild(styleEl);
+                }
+                
+                // Fix viewport units and legacy 500/705 aspect ratios:
+                if (!docTarget.body.dataset.vwFixed) {
+                    const styleTags = docTarget.querySelectorAll('style:not(#runtime-preview-fix)');
+                    styleTags.forEach(tag => {
+                        if (tag.innerHTML.includes('500 / 705') || tag.innerHTML.includes('500/705')) {
+                            tag.innerHTML = tag.innerHTML.replace(/500\s*\/\s*705/g, '9 / 16');
+                        }
+                        if (tag.innerHTML.includes('vw')) {
+                            tag.innerHTML = tag.innerHTML.replace(/([\d.]+)vw(?=[\s;},!)])/g, '$1vmax');
+                        }
+                    });
+                    docTarget.body.dataset.vwFixed = "true";
+                }
+
+                styleEl.textContent = `
+                    html, body { 
+                        margin: 0 !important; 
+                        padding: 0 !important;
+                        width: 100% !important;
+                        height: 100% !important;
+                        overflow: hidden !important;
+                    }
+                    body {
+                        background-size: cover !important;
+                        background-position: center !important;
+                        background-repeat: no-repeat !important;
+                    }
+                    .invitation-wrapper, .invite-wrapper {
+                        max-height: none !important;
+                        aspect-ratio: 9/16 !important;
+                        width: 100% !important;
+                        height: 100% !important;
+                        box-shadow: none !important;
+                        margin: 0 !important;
+                        position: relative !important;
+                        overflow: hidden !important;
+                    }
+                    * { hyphens: none !important; -webkit-hyphens: none !important; }
+                    .text-overlay { padding-top: 15vh !important; }
+
+                    ${showSizingBoxes ? `
+                     .sizing-box {
+                        position: relative;
+                        outline: 2px solid transparent;
+                        outline-offset: 4px;
+                        border-radius: 2px;
+                        transition: outline 0.2s, background 0.2s;
+                        cursor: pointer;
+                        flex: none !important;
+                        min-width: 20px;
+                        min-height: 20px;
+                        z-index: 10;
+                        user-select: none;
+                        -webkit-user-select: none;
+                    }
+                    .sizing-box.selected {
+                        outline: 2px dotted #3B82F6 !important;
+                        outline-offset: 4px;
+                        background: rgba(59, 130, 246, 0.05);
+                        cursor: move;
+                        z-index: 20;
+                    }
+                    .sizing-box.editing {
+                        cursor: text;
+                        background: rgba(255, 255, 255, 0.9);
+                        user-select: text;
+                        -webkit-user-select: text;
+                    }
+
+                    /* Drag Handle (big, clear move affordance) */
+                    .drag-handle {
+                        position: absolute;
+                        top: -44px; left: 50%;
+                        transform: translateX(-50%);
+                        width: 36px; height: 36px;
+                        background: #F59E0B;
+                        border: 3px solid white;
+                        border-radius: 50%;
+                        display: none;
+                        align-items: center;
+                        justify-content: center;
+                        cursor: move;
+                        z-index: 30;
+                        box-shadow: 0 3px 10px rgba(0,0,0,0.35);
+                        touch-action: none;
+                    }
+                    .sizing-box.selected .drag-handle { display: flex; }
+                    .drag-handle:hover { background: #D97706; transform: translateX(-50%) scale(1.1); }
+                    
+                    /* Custom Handles */
+                    .resize-handle {
+                        position: absolute;
+                        width: 12px; height: 12px;
+                        background: #3B82F6;
+                        border: 2px solid white;
+                        border-radius: 50%;
+                        z-index: 10;
+                        display: none;
+                    }
+                    .sizing-box.selected .resize-handle { display: block; }
+                    .resize-handle.tl { top: -6px; left: -6px; cursor: nwse-resize; }
+                    .resize-handle.tr { top: -6px; right: -6px; cursor: nesw-resize; }
+                    .resize-handle.bl { bottom: -6px; left: -6px; cursor: nesw-resize; }
+                    .resize-handle.br { bottom: -6px; right: -6px; cursor: nwse-resize; }
+
+                    /* Delete Handle */
+                    .delete-handle {
+                        position: absolute;
+                        top: -10px; right: -10px;
+                        width: 20px; height: 20px;
+                        background: #EF4444;
+                        border-radius: 50%;
+                        display: none;
+                        align-items: center;
+                        justify-content: center;
+                        cursor: pointer;
+                        z-index: 11;
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                    }
+                    .sizing-box.selected .delete-handle { display: flex; }
+                    .delete-handle:hover {
+                        background: #DC2626;
+                        transform: scale(1.1);
+                    }
+
+                    /* Snap Guides */
+                    .snap-guide {
+                        position: absolute;
+                        background: #EF4444;
+                        z-index: 5;
+                        display: none;
+                    }
+                    .snap-guide.x { top: 0; bottom: 0; width: 1px; left: 50%; }
+                    .snap-guide.y { left: 0; right: 0; height: 1px; top: 50%; }
+                    .snap-guide.visible { display: block; }
+                    ` : ''}
+                `;
+
+                // Auto-adjust height based on content
+                const wrapper = docTarget.querySelector('.invitation-wrapper') || 
+                               docTarget.querySelector('.invite-wrapper') || 
+                               docTarget.body.firstElementChild;
+                if (wrapper) {
+                    setTimeout(() => {
+                        const h = (wrapper as HTMLElement).offsetHeight;
+                        if (h > 0 && h !== iframeHeight) {
+                            setIframeHeight(h);
+                            onLayoutMeasure?.({
+                                width: 500,
+                                height: h,
+                                aspectRatio: 500 / h
+                            });
+                        }
+                    }, 100);
+                } else {
+                    if (iframeHeight !== 889) {
+                        setIframeHeight(889);
+                        onLayoutMeasure?.({
+                            width: 500,
+                            height: 889,
+                            aspectRatio: 500 / 889
+                        });
+                    }
+                }
+            };
+
             // Load saved layout from localStorage if it exists and hasn't been loaded in this render session
             const storageKey = `wedding-card-edits-${event.id}-${theme.id}`;
             const savedLayout = typeof window !== 'undefined' ? localStorage.getItem(storageKey) : null;
@@ -541,15 +719,17 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                             console.error("Error re-initializing editor:", e);
                         }
                     }
-                    // The saved layout already has finalized content — skip the mapping
-                    // loop below so user's visual edits (positions, styles, text) are preserved.
+                    // Ensure runtime preview fix and intricate mandala are attached even with saved layout
+                    ensureMandalaAndRuntimeFixes(doc);
                     return;
                 }
             }
 
             // If a saved layout was already applied in a previous call within this session,
-            // skip re-running the content mapping so user edits aren't overwritten.
+            // skip re-running the content mapping so user edits aren't overwritten,
+            // but guarantee runtime fixes and rotating mandala are active.
             if (hasLoadedSavedLayout.current && typeof window !== 'undefined' && localStorage.getItem(storageKey)) {
+                ensureMandalaAndRuntimeFixes(doc);
                 return;
             }
 
@@ -797,182 +977,8 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
             }
 
 
-            // INJECT RUNTIME FIXES (Doesn't touch original file)
-            let styleEl = doc.getElementById('runtime-preview-fix');
-            if (!styleEl) {
-                styleEl = doc.createElement('style');
-                styleEl.id = 'runtime-preview-fix';
-                doc.head.appendChild(styleEl);
-            }
-            
-            // Fix viewport units and legacy 500/705 aspect ratios:
-            // Inside our 500px iframe, 'vw' causes fonts to shrink massively. Replacing 'vw' with 'vmax' 
-            // forces the fonts back up, letting their 'clamp()' max values take over naturally.
-            if (!doc.body.dataset.vwFixed) {
-                const styleTags = doc.querySelectorAll('style:not(#runtime-preview-fix)');
-                styleTags.forEach(tag => {
-                    if (tag.innerHTML.includes('500 / 705') || tag.innerHTML.includes('500/705')) {
-                        tag.innerHTML = tag.innerHTML.replace(/500\s*\/\s*705/g, '9 / 16');
-                    }
-                    if (tag.innerHTML.includes('vw')) {
-                        // Use lookahead to ensure we only replace CSS values and not base64 strings
-                        tag.innerHTML = tag.innerHTML.replace(/([\d.]+)vw(?=[\s;},!)])/g, '$1vmax');
-                    }
-                });
-                doc.body.dataset.vwFixed = "true";
-            }
-
-            styleEl.textContent = `
-                html, body { 
-                    margin: 0 !important; 
-                    padding: 0 !important;
-                    width: 100% !important;
-                    height: 100% !important;
-                    overflow: hidden !important;
-                }
-                body {
-                    background-size: cover !important;
-                    background-position: center !important;
-                    background-repeat: no-repeat !important;
-                }
-                .invitation-wrapper, .invite-wrapper {
-                    max-height: none !important;
-                    aspect-ratio: 9/16 !important;
-                    width: 100% !important;
-                    height: 100% !important;
-                    box-shadow: none !important;
-                    margin: 0 !important;
-                }
-                * { hyphens: none !important; -webkit-hyphens: none !important; }
-                .text-overlay { padding-top: 15vh !important; }
-
-                ${showSizingBoxes ? `
-                 .sizing-box {
-                    position: relative;
-                    outline: 2px solid transparent;
-                    outline-offset: 4px;
-                    border-radius: 2px;
-                    transition: outline 0.2s, background 0.2s;
-                    cursor: pointer;
-                    flex: none !important;
-                    min-width: 20px;
-                    min-height: 20px;
-                    z-index: 10;
-                    user-select: none;
-                    -webkit-user-select: none;
-                }
-                .sizing-box.selected {
-                    outline: 2px dotted #3B82F6 !important;
-                    outline-offset: 4px;
-                    background: rgba(59, 130, 246, 0.05);
-                    cursor: move;
-                    z-index: 20;
-                }
-                .sizing-box.editing {
-                    cursor: text;
-                    background: rgba(255, 255, 255, 0.9);
-                    user-select: text;
-                    -webkit-user-select: text;
-                }
-
-                /* Drag Handle (big, clear move affordance) */
-                .drag-handle {
-                    position: absolute;
-                    top: -44px; left: 50%;
-                    transform: translateX(-50%);
-                    width: 36px; height: 36px;
-                    background: #F59E0B;
-                    border: 3px solid white;
-                    border-radius: 50%;
-                    display: none;
-                    align-items: center;
-                    justify-content: center;
-                    cursor: move;
-                    z-index: 30;
-                    box-shadow: 0 3px 10px rgba(0,0,0,0.35);
-                    touch-action: none;
-                }
-                .sizing-box.selected .drag-handle { display: flex; }
-                .drag-handle:hover { background: #D97706; transform: translateX(-50%) scale(1.1); }
-                
-                /* Custom Handles */
-                .resize-handle {
-                    position: absolute;
-                    width: 12px; height: 12px;
-                    background: #3B82F6;
-                    border: 2px solid white;
-                    border-radius: 50%;
-                    z-index: 10;
-                    display: none;
-                }
-                .sizing-box.selected .resize-handle { display: block; }
-                .resize-handle.tl { top: -6px; left: -6px; cursor: nwse-resize; }
-                .resize-handle.tr { top: -6px; right: -6px; cursor: nesw-resize; }
-                .resize-handle.bl { bottom: -6px; left: -6px; cursor: nesw-resize; }
-                .resize-handle.br { bottom: -6px; right: -6px; cursor: nwse-resize; }
-
-                /* Delete Handle */
-                .delete-handle {
-                    position: absolute;
-                    top: -10px; right: -10px;
-                    width: 20px; height: 20px;
-                    background: #EF4444;
-                    border-radius: 50%;
-                    display: none;
-                    align-items: center;
-                    justify-content: center;
-                    cursor: pointer;
-                    z-index: 11;
-                    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-                }
-                .sizing-box.selected .delete-handle { display: flex; }
-                .delete-handle:hover {
-                    background: #DC2626;
-                    transform: scale(1.1);
-                }
-
-                /* Snap Guides */
-                .snap-guide {
-                    position: absolute;
-                    background: #EF4444;
-                    z-index: 5;
-                    display: none;
-                }
-                .snap-guide.x { top: 0; bottom: 0; width: 1px; left: 50%; }
-                .snap-guide.y { left: 0; right: 0; height: 1px; top: 50%; }
-                .snap-guide.visible { display: block; }
-                ` : ''}
-            `;
-
-            // Auto-adjust height based on content
-            const wrapper = doc.querySelector('.invitation-wrapper') || 
-                           doc.querySelector('.invite-wrapper') || 
-                           doc.body.firstElementChild;
-            if (wrapper) {
-                // Wait a split second to measure height to prevent layout glitching before CSS is applied
-                setTimeout(() => {
-                    const h = (wrapper as HTMLElement).offsetHeight;
-                    if (h > 0) {
-                        if (h !== iframeHeight) {
-                            setIframeHeight(h);
-                            onLayoutMeasure?.({
-                                width: 500,
-                                height: h,
-                                aspectRatio: 500 / h
-                            });
-                        }
-                    }
-                }, 100);
-            } else {
-                if (iframeHeight !== 889) {
-                    setIframeHeight(889);
-                    onLayoutMeasure?.({
-                        width: 500,
-                        height: 889,
-                        aspectRatio: 500 / 889
-                    });
-                }
-            }
+            // INJECT RUNTIME FIXES AND ROTATING INTRICATE MANDALA
+            ensureMandalaAndRuntimeFixes(doc);
 
             if (showSizingBoxes) {
                 Object.keys(fullMapping).forEach(id => {
@@ -1672,6 +1678,8 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                         preserveAspectRatio="xMidYMid meet"
                     />
                 )}
+
+
 
                 {/* Content Group */}
                 <g textAnchor="middle" fontFamily="serif">

@@ -12,6 +12,7 @@ import { motion } from 'framer-motion';
 
 interface RSVPFormProps {
     wedding: any;
+    isPreview?: boolean;
 }
 
 type Step = 'INVITE' | 'SUCCESS' | 'ALREADY_REGISTERED';
@@ -22,7 +23,7 @@ const WhatsAppIcon = () => (
     </svg>
 );
 
-export const RSVPForm = ({ wedding }: RSVPFormProps) => {
+export const RSVPForm = ({ wedding, isPreview = false }: RSVPFormProps) => {
     const [step, setStep] = useState<Step>('INVITE');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showSuccessPetals, setShowSuccessPetals] = useState(false);
@@ -37,12 +38,13 @@ export const RSVPForm = ({ wedding }: RSVPFormProps) => {
     const [message, setMessage] = useState('');
 
     useEffect(() => {
-        const eventId = wedding.events[0]?.id;
+        if (isPreview) return;
+        const eventId = wedding.events?.[0]?.id;
         if (eventId) {
             const hasSubmitted = localStorage.getItem(`rsvp_submitted_${eventId}`);
             if (hasSubmitted) setStep('ALREADY_REGISTERED');
         }
-    }, [wedding]);
+    }, [wedding, isPreview]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -110,8 +112,8 @@ export const RSVPForm = ({ wedding }: RSVPFormProps) => {
 
     const renderFlowers = () => (
         <>
-            <MandalaBackground />
-            <FloatingFlowers />
+            <MandalaBackground isPreview={isPreview} />
+            <FloatingFlowers isPreview={isPreview} />
         </>
     );
 
@@ -125,10 +127,10 @@ export const RSVPForm = ({ wedding }: RSVPFormProps) => {
     // ─── ALREADY REGISTERED ───────────────────────────────────────────────
     if (step === 'ALREADY_REGISTERED') {
         return (
-            <div className={styles.wrapper}>
+            <div className={clsx(styles.wrapper, isPreview && styles.previewWrapper)}>
                 {renderFlowers()}
                 <motion.div
-                    className={styles.card}
+                    className={clsx(styles.card, isPreview && styles.previewCard)}
                     initial={{ opacity: 0, scale: 0.96 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ type: 'spring', bounce: 0, duration: 0.5 }}
@@ -160,11 +162,11 @@ export const RSVPForm = ({ wedding }: RSVPFormProps) => {
             : 'Your response has been confirmed. We cannot wait to celebrate with you!';
 
         return (
-            <div className={styles.wrapper}>
+            <div className={clsx(styles.wrapper, isPreview && styles.previewWrapper)}>
                 {renderFlowers()}
                 {showSuccessPetals && <FlowerPetalDrift />}
                 <motion.div
-                    className={styles.card}
+                    className={clsx(styles.card, isPreview && styles.previewCard)}
                     initial={{ opacity: 0, scale: 0.96 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ type: 'spring', bounce: 0, duration: 0.5 }}
@@ -231,11 +233,11 @@ export const RSVPForm = ({ wedding }: RSVPFormProps) => {
         }];
 
     return (
-        <div className={styles.wrapper}>
+        <div className={clsx(styles.wrapper, isPreview && styles.previewWrapper)}>
             {renderFlowers()}
             {showSuccessPetals && <FlowerPetalDrift />}
             <motion.div
-                className={styles.card}
+                className={clsx(styles.card, isPreview && styles.previewCard)}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ type: 'spring', bounce: 0, duration: 0.6 }}

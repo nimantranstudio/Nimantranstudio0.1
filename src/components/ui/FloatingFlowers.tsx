@@ -17,7 +17,7 @@ const RosePetal = ({ color }: { color: string }) => (
     </svg>
 );
 
-export const FloatingFlowers = () => {
+export const FloatingFlowers = ({ isPreview = false }: { isPreview?: boolean }) => {
     const [petals, setPetals] = useState<{
         id: number;
         left: string;
@@ -52,7 +52,7 @@ export const FloatingFlowers = () => {
     }, []);
 
     return (
-        <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', overflow: 'hidden', zIndex: 2 }} aria-hidden="true">
+        <div style={{ position: isPreview ? 'absolute' : 'fixed', inset: 0, pointerEvents: 'none', overflow: 'hidden', zIndex: 2 }} aria-hidden="true">
             <style>{`
                 @keyframes flowerFall {
                     0%   { transform: translateY(-8vh) rotate(0deg) translateX(0);   opacity: 0; }

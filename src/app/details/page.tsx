@@ -38,54 +38,51 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { InvitationCard, InvitationCardRef } from '@/components/preview/InvitationCard';
 import { PreviewCard } from '@/components/preview/PreviewCard';
+import { IntricateMandalaSvg } from '@/components/ui/IntricateMandala';
 import { classifyEventType } from '@/lib/templates/event-type';
+import confetti from 'canvas-confetti';
 
-// Motion variants for welcome popup transitions (animation-vocabulary / apple-design / emil-design-eng)
+// Motion variants for welcome popup transitions (apple-design / emil-design-eng - crisp without background blur)
 const overlayVariants = {
-    hidden: { opacity: 0, backdropFilter: "blur(0px)" },
+    hidden: { opacity: 0 },
     visible: { 
         opacity: 1, 
-        backdropFilter: "blur(8px)",
-        transition: { duration: 0.4, ease: [0.23, 1, 0.32, 1] } 
+        transition: { duration: 0.25, ease: [0.23, 1, 0.32, 1] as const } 
     },
     exit: { 
         opacity: 0, 
-        backdropFilter: "blur(0px)",
-        transition: { duration: 0.2, ease: [0.23, 1, 0.32, 1] } 
+        transition: { duration: 0.2, ease: [0.23, 1, 0.32, 1] as const } 
     }
 };
 
 const cardVariants = {
-    hidden: { scale: 0.95, opacity: 0, y: 16, filter: "blur(12px)" },
+    hidden: { scale: 0.94, opacity: 0, y: 12 },
     visible: { 
         scale: 1, 
-        opacity: 1,
-        y: 0,
-        filter: "blur(0px)",
+        opacity: 1, 
+        y: 0, 
         transition: { 
-            type: "spring", 
+            type: "spring" as const, 
             bounce: 0.15,
-            duration: 0.5,
-            staggerChildren: 0.05,
-            delayChildren: 0.1
+            duration: 0.4,
+            staggerChildren: 0.04,
+            delayChildren: 0.05
         }
     },
     exit: { 
-        scale: 0.95, 
+        scale: 0.97, 
         opacity: 0,
-        y: 8,
-        filter: "blur(8px)",
-        transition: { duration: 0.2, ease: [0.23, 1, 0.32, 1] } 
+        y: -6,
+        transition: { duration: 0.18, ease: [0.23, 1, 0.32, 1] as const } 
     }
 };
 
 const itemVariants = {
-    hidden: { y: 12, opacity: 0, filter: "blur(8px)" },
+    hidden: { y: 8, opacity: 0 },
     visible: { 
         y: 0, 
-        opacity: 1,
-        filter: "blur(0px)",
-        transition: { type: "spring", bounce: 0.2, duration: 0.4 }
+        opacity: 1, 
+        transition: { type: "spring" as const, bounce: 0.2, duration: 0.35 }
     }
 };
 
@@ -237,19 +234,55 @@ function DetailsContent() {
                     activeChapter === 3 ? (noCameraPan ? '0%' : '-40%') :
                     activeChapter === 4 ? (noCameraPan ? '0%' : '-65%') : '0%';
 
+    const dismissWelcomeOverlay = () => {
+        setShowWelcomeOverlay(false);
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, '', newUrl);
+    };
+
+    const triggerCelebrationExplosion = () => {
+        // Crisp, elegant primary bloom centered over the modal heart icon
+        confetti({
+            particleCount: 38,
+            spread: 90,
+            startVelocity: 28,
+            origin: { x: 0.5, y: 0.46 },
+            colors: ['#D4AF37', '#F5D061', '#FDA4AF', '#FFFBEB', '#C5A059'],
+            shapes: ['circle', 'square'],
+            gravity: 0.72,
+            scalar: 0.95,
+            ticks: 160,
+            zIndex: 10005,
+        });
+
+        // Subtle secondary sparkle shimmer
+        setTimeout(() => {
+            confetti({
+                particleCount: 16,
+                spread: 110,
+                startVelocity: 22,
+                origin: { x: 0.5, y: 0.43 },
+                colors: ['#D4AF37', '#FFFBEB', '#FDA4AF'],
+                shapes: ['circle'],
+                gravity: 0.6,
+                scalar: 1.25,
+                ticks: 150,
+                zIndex: 10006,
+            });
+        }, 80);
+    };
+
     useEffect(() => {
         setIsMounted(true);
         if (searchParams.get('welcome') === 'true') {
             setShowWelcomeOverlay(true);
             setShowConfetti(true);
+            triggerCelebrationExplosion();
             
-            // Auto dismiss welcome overlay after 3.5s
+            // Fast, punchy auto-dismiss after 1.6s so user can start filling immediately
             const timer = setTimeout(() => {
-                setShowWelcomeOverlay(false);
-                // Clean up URL parameters
-                const newUrl = window.location.pathname;
-                window.history.replaceState({}, '', newUrl);
-            }, 3500);
+                dismissWelcomeOverlay();
+            }, 1600);
             return () => clearTimeout(timer);
         }
     }, [searchParams]);
@@ -399,6 +432,7 @@ function DetailsContent() {
                         exit="exit"
                         className={styles.transitionOverlay}
                         style={{ zIndex: 10000 }}
+                        onClick={dismissWelcomeOverlay}
                     >
                         {showConfetti && <WeddingCelebration />}
 
@@ -466,116 +500,123 @@ function DetailsContent() {
             <main className={styles.studioContainer}>
                 {/* Sticky Left Preview Column (40%) */}
                 <section className={styles.previewCol}>
-                    <div className={styles.inviteFrame}>
-                        <div className={styles.paperSurface}>
-                            <div className={styles.goldFoilOrnament}>
-                                <Sparkles size={28} />
-                            </div>
+                    <div className={styles.previewCardStage}>
+                        {/* Outside Rotating Intricate Mandala on Left Side behind Card */}
+                        <div className={styles.outsideMandala} aria-hidden="true">
+                            <IntricateMandalaSvg idPrefix="details-outside-mandala" />
+                        </div>
 
-                            {/* Live Invitation Continuous Camera System */}
-                            <motion.div
-                                animate={{ y: activeChapter === 4 ? 0 : cameraY }}
-                                transition={isCrafting ? { ease: "linear", duration: 3.5 } : { type: "spring", bounce: 0, duration: 0.6 }}
-                                style={{ width: '100%', height: '100%' }}
-                            >
-                                <AnimatePresence mode="wait">
-                                    {activeChapter === 4 ? (
-                                        <motion.div
-                                            key="rsvp-preview"
-                                            initial={{ opacity: 0, scale: 0.95 }}
-                                            animate={{ opacity: 1, scale: 1 }}
-                                            exit={{ opacity: 0, scale: 0.95 }}
-                                            transition={{ type: "spring", bounce: 0, duration: 0.4 }}
-                                            style={{ height: '100%', width: '100%', overflowY: 'auto', background: '#FDFBF7' }}
-                                        >
-                                            <RSVPForm wedding={{
-                                                id: 'preview',
-                                                groomName: formData.groomName || 'Groom',
-                                                brideName: formData.brideName || 'Bride',
-                                                themeId: 'default',
-                                                invitationMessage: formData.invitationMessage || "Please join us for our special day!",
-                                                allowCompanions: formData.allowCompanions || false,
-                                                collectDietary: formData.collectDietary || false,
-                                                events: [
-                                                    {
-                                                        id: 'wedding-ceremony',
-                                                        name: 'Wedding Ceremony',
-                                                        eventName: 'Wedding Ceremony',
-                                                        date: formData.primaryDate,
-                                                        time: formData.primaryTime,
-                                                        venue: formData.defaultVenueName,
-                                                        eventType: 'Wedding',
-                                                        description: '',
-                                                        heading: 'Wedding Ceremony',
-                                                        isCustomVenue: false
-                                                    },
-                                                    ...(formData.events || [])
-                                                ]
-                                            }} />
-                                        </motion.div>
-                                    ) : templateMissing ? (
-                                        <motion.div
-                                            key={`invite-preview-missing-${previewEvent?.id || 'wedding'}`}
-                                            initial={{ opacity: 0 }}
-                                            animate={{ opacity: 1 }}
-                                            exit={{ opacity: 0 }}
-                                            transition={{ duration: 0.3 }}
-                                            style={{
-                                                width: '100%',
-                                                height: '100%',
-                                                aspectRatio: '9 / 16',
-                                                display: 'flex',
-                                                flexDirection: 'column',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                gap: '8px',
-                                                textAlign: 'center',
-                                                padding: '32px',
-                                                background: '#FAF7F2',
-                                                border: '1px dashed #D4AF37',
-                                                borderRadius: '8px',
-                                                color: '#8A7B5C',
-                                            }}
-                                        >
-                                            <span style={{ fontSize: '14px', fontWeight: 600 }}>Preview unavailable</span>
-                                            <span style={{ fontSize: '12.5px', opacity: 0.85 }}>
-                                                The template for this event hasn&apos;t been uploaded yet. It will appear here once it&apos;s added in the theme&apos;s bundle.
-                                            </span>
-                                        </motion.div>
-                                    ) : (
-                                        <motion.div
-                                            key={`invite-preview-${previewEvent?.id || 'wedding'}-${templateUrl}`}
-                                            initial={{ opacity: 0, filter: 'blur(8px)', scale: 0.96 }}
-                                            animate={{ opacity: 1, filter: 'blur(0px)', scale: 1 }}
-                                            exit={{ opacity: 0, filter: 'blur(8px)', scale: 0.96 }}
-                                            transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
-                                            style={{ width: '100%', height: '100%' }}
-                                        >
-                                            <PreviewCard
-                                                ref={cardRef}
-                                                event={previewEvent}
-                                                theme={activeTheme || { id: 'default', name: 'Default', slug: 'default', category: 'traditional', thumbnailUrl: '', type: 'image' }}
-                                                groomName={displayGroomName}
-                                                brideName={displayBrideName}
-                                                groomParents={displayGroomParents}
-                                                brideParents={displayBrideParents}
-                                                customImage={templateUrl}
-                                                structuredLayout={activeStructuredLayout}
-                                                structuredCouple={{
-                                                    groomName: displayGroomName,
-                                                    brideName: displayBrideName,
-                                                    groomParents: displayGroomParents,
-                                                    brideParents: displayBrideParents,
-                                                    primaryDate: formData.primaryDate,
-                                                    primaryTime: formData.primaryTime,
-                                                    defaultVenueName: formData.defaultVenueName,
+                        <div className={styles.inviteFrame}>
+                            <div className={styles.paperSurface}>
+                                <div className={styles.goldFoilOrnament}>
+                                    <Sparkles size={28} />
+                                </div>
+
+                                {/* Live Invitation Continuous Camera System */}
+                                <motion.div
+                                    animate={{ y: activeChapter === 4 ? 0 : cameraY }}
+                                    transition={isCrafting ? { ease: "linear", duration: 3.5 } : { type: "spring", bounce: 0, duration: 0.6 }}
+                                    style={{ width: '100%', height: '100%' }}
+                                >
+                                    <AnimatePresence mode="wait">
+                                        {activeChapter === 4 ? (
+                                            <motion.div
+                                                key="rsvp-preview"
+                                                initial={{ opacity: 0, scale: 0.95 }}
+                                                animate={{ opacity: 1, scale: 1 }}
+                                                exit={{ opacity: 0, scale: 0.95 }}
+                                                transition={{ type: "spring", bounce: 0, duration: 0.4 }}
+                                                className={styles.rsvpPagePreviewContainer}
+                                            >
+                                                <RSVPForm wedding={{
+                                                    id: 'preview',
+                                                    groomName: formData.groomName || 'Groom',
+                                                    brideName: formData.brideName || 'Bride',
+                                                    themeId: 'default',
+                                                    invitationMessage: formData.invitationMessage || "Please join us for our special day!",
+                                                    allowCompanions: formData.allowCompanions || false,
+                                                    collectDietary: formData.collectDietary || false,
+                                                    events: [
+                                                        {
+                                                            id: 'wedding-ceremony',
+                                                            name: 'Wedding Ceremony',
+                                                            eventName: 'Wedding Ceremony',
+                                                            date: formData.primaryDate,
+                                                            time: formData.primaryTime,
+                                                            venue: formData.defaultVenueName,
+                                                            eventType: 'Wedding',
+                                                            description: '',
+                                                            heading: 'Wedding Ceremony',
+                                                            isCustomVenue: false
+                                                        },
+                                                        ...(formData.events || [])
+                                                    ]
+                                                }} isPreview={true} />
+                                            </motion.div>
+                                        ) : templateMissing ? (
+                                            <motion.div
+                                                key={`invite-preview-missing-${previewEvent?.id || 'wedding'}`}
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: 1 }}
+                                                exit={{ opacity: 0 }}
+                                                transition={{ duration: 0.3 }}
+                                                style={{
+                                                    width: '100%',
+                                                    height: '100%',
+                                                    aspectRatio: '9 / 16',
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    gap: '8px',
+                                                    textAlign: 'center',
+                                                    padding: '32px',
+                                                    background: '#FAF7F2',
+                                                    border: '1px dashed #D4AF37',
+                                                    borderRadius: '8px',
+                                                    color: '#8A7B5C',
                                                 }}
-                                                isRawPreview={false}
-                                            />
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
-                            </motion.div>
+                                            >
+                                                <span style={{ fontSize: '14px', fontWeight: 600 }}>Preview unavailable</span>
+                                                <span style={{ fontSize: '12.5px', opacity: 0.85 }}>
+                                                    The template for this event hasn&apos;t been uploaded yet. It will appear here once it&apos;s added in the theme&apos;s bundle.
+                                                </span>
+                                            </motion.div>
+                                        ) : (
+                                            <motion.div
+                                                key={`invite-preview-${previewEvent?.id || 'wedding'}-${templateUrl}`}
+                                                initial={{ opacity: 0, filter: 'blur(8px)', scale: 0.96 }}
+                                                animate={{ opacity: 1, filter: 'blur(0px)', scale: 1 }}
+                                                exit={{ opacity: 0, filter: 'blur(8px)', scale: 0.96 }}
+                                                transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
+                                                style={{ width: '100%', height: '100%' }}
+                                            >
+                                                <PreviewCard
+                                                    ref={cardRef}
+                                                    event={previewEvent}
+                                                    theme={activeTheme || { id: 'default', name: 'Default', description: '', thumbnail: '', previewImages: [] }}
+                                                    groomName={displayGroomName}
+                                                    brideName={displayBrideName}
+                                                    groomParents={displayGroomParents}
+                                                    brideParents={displayBrideParents}
+                                                    customImage={templateUrl}
+                                                    structuredLayout={activeStructuredLayout}
+                                                    structuredCouple={{
+                                                        groomName: displayGroomName,
+                                                        brideName: displayBrideName,
+                                                        groomParents: displayGroomParents,
+                                                        brideParents: displayBrideParents,
+                                                        primaryDate: formData.primaryDate,
+                                                        primaryTime: formData.primaryTime,
+                                                        defaultVenueName: formData.defaultVenueName,
+                                                    }}
+                                                    isRawPreview={false}
+                                                />
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </motion.div>
+                            </div>
                         </div>
                     </div>
 
@@ -1096,20 +1137,20 @@ export default function DetailsPage() {
 // --- Confetti Particles Subcomponent ---
 function WeddingCelebration() {
     const [particles] = useState(() => 
-        Array.from({ length: 40 }).map((_, i) => {
+        Array.from({ length: 24 }).map((_, i) => {
             const angle = Math.random() * Math.PI * 2;
-            const distance = 15 + Math.random() * 35;
+            const distance = 10 + Math.random() * 22;
             return {
                 id: i,
                 endX: 50 + Math.cos(angle) * distance,
-                endY: 50 + Math.sin(angle) * distance + 10,
+                endY: 46 + Math.sin(angle) * distance,
                 size: 6 + Math.random() * 8,
                 type: ['heart', 'petal', 'sparkle'][Math.floor(Math.random() * 3)],
-                color: ['#B39D73', '#FDFBF7', '#FDA4AF', '#EBCDC3'][Math.floor(Math.random() * 4)],
-                duration: 2.0 + Math.random() * 1.5,
-                delay: Math.random() * 0.1,
+                color: ['#D4AF37', '#F5D061', '#FDA4AF', '#FFFBEB', '#C5A059'][Math.floor(Math.random() * 5)],
+                duration: 1.2 + Math.random() * 0.6,
+                delay: Math.random() * 0.06,
                 rotation: Math.random() * 360,
-                endRotation: Math.random() * 360 + 180
+                endRotation: Math.random() * 360 + 90
             };
         })
     );
@@ -1127,17 +1168,17 @@ function WeddingCelebration() {
                     key={p.id}
                     initial={{
                         x: '50vw',
-                        y: '50vh',
+                        y: '46vh',
                         rotate: p.rotation,
                         opacity: 0,
-                        scale: 0
+                        scale: 0.4
                     }}
                     animate={{
                         x: `${p.endX}vw`,
                         y: `${p.endY}vh`,
                         rotate: p.endRotation,
-                        opacity: [0, 1, 1, 0],
-                        scale: [0, 1, 1, 0.8]
+                        opacity: [0, 1, 0.9, 0],
+                        scale: [0.4, 1.1, 0.9, 0]
                     }}
                     transition={{
                         duration: p.duration,
@@ -1162,8 +1203,8 @@ function WeddingCelebration() {
                     )}
                     {p.type === 'sparkle' && (
                         <div style={{
-                            width: p.size * 2,
-                            height: p.size * 2,
+                            width: p.size * 1.6,
+                            height: p.size * 1.6,
                             background: 'currentColor',
                             clipPath: 'polygon(50% 0%, 65% 35%, 100% 50%, 65% 65%, 50% 100%, 35% 65%, 0% 50%, 35% 35%)'
                         }} />

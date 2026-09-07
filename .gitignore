@@ -65,4 +65,5 @@ public/Image/bundle/item-*.html
 # Local uploads
 /public/uploads/
 
-
+# Scratch & temporary scripts
+scratch/

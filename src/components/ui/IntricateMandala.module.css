@@ -1,0 +1,52 @@
+.mandalaContainer {
+    position: absolute;
+    aspect-ratio: 1 / 1;
+    pointer-events: none;
+    z-index: 1;
+    overflow: visible;
+    transform-origin: center center;
+    will-change: transform;
+    animation: slowSpinMandala 70s linear infinite;
+    filter: drop-shadow(0 0 12px rgba(212, 175, 55, 0.45));
+}
+
+.bottomLeft {
+    left: -20%;
+    bottom: -15%;
+}
+
+.bottomRight {
+    right: -20%;
+    bottom: -15%;
+}
+
+.topLeft {
+    left: -20%;
+    top: -15%;
+}
+
+.topRight {
+    right: -20%;
+    top: -15%;
+}
+
+.center {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+@keyframes slowSpinMandala {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .mandalaContainer {
+        animation-play-state: paused !important;
+    }
+}

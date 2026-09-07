@@ -12,6 +12,8 @@
     color: #1B3B2B; /* Deep forest green */
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     padding-bottom: 5rem;
+    position: relative;
+    overflow-x: hidden;
 }
 
 .header {
@@ -21,6 +23,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    position: relative;
+    z-index: 1;
 }
 
 /* Save Status Indicator */
@@ -56,6 +60,8 @@
     grid-template-columns: 1fr;
     gap: 3rem;
     align-items: start;
+    position: relative;
+    z-index: 1;
 }
 
 @media (min-width: 1024px) {
@@ -72,6 +78,50 @@
     flex-direction: column;
     align-items: center;
     width: 100%;
+    overflow: visible;
+}
+
+/* Stage container holding the outside mandala and the invitation card */
+.previewCardStage {
+    position: relative;
+    width: 100%;
+    max-width: 360px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow: visible;
+}
+
+/* Outside Rotating Golden Mandala - Positioned centered behind card frame */
+.outsideMandala {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 490px;
+    height: 490px;
+    aspect-ratio: 1 / 1;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.95;
+    filter: drop-shadow(0 0 25px rgba(212, 175, 55, 0.45));
+    will-change: transform;
+    animation: slowRotateOutsideMandala 70s linear infinite;
+}
+
+@keyframes slowRotateOutsideMandala {
+    from {
+        transform: translate(-50%, -50%) rotate(0deg);
+    }
+    to {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .outsideMandala {
+        animation: none;
+    }
 }
 
 /* Living Invitation Card Frame */
@@ -84,6 +134,7 @@
     box-shadow: 0 25px 60px -15px rgba(27, 59, 43, 0.08);
     border: 1px solid rgba(27, 59, 43, 0.06);
     position: relative;
+    z-index: 1;
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -114,6 +165,32 @@
     box-shadow: inset 0 0 40px rgba(179, 157, 115, 0.03);
     display: flex;
     flex-direction: column;
+}
+
+/* ─── RSVP FULL PAGE PREVIEW (Chapter 4) ─────────────────────────────────── */
+.rsvpPagePreviewContainer {
+    width: 100%;
+    height: 100%;
+    max-height: 100%;
+    background: radial-gradient(ellipse at 50% 25%, #FEFBF4 0%, #F9F3E5 55%, #EFE4CD 100%);
+    overflow-y: auto;
+    overflow-x: hidden;
+    position: relative;
+    padding: 1.5rem 0.85rem 2rem;
+    scrollbar-width: thin;
+    scrollbar-color: #E2D2AF transparent;
+    -webkit-overflow-scrolling: touch;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.rsvpPagePreviewContainer::-webkit-scrollbar {
+    width: 4px;
+}
+.rsvpPagePreviewContainer::-webkit-scrollbar-thumb {
+    background: #E2D2AF;
+    border-radius: 99px;
 }
 
 /* Watermark / Mandala Background */
@@ -773,15 +850,14 @@
 .transitionOverlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.4); /* Opaque and translucent black background */
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    background: rgba(0, 0, 0, 0.42);
     z-index: 9999;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     padding: 2rem;
+    cursor: pointer;
 }
 
 .transitionContent {

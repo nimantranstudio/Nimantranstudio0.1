@@ -118,6 +118,8 @@ export function CardRenderer({
                 />
             )}
 
+            {/* Background Image if present */}
+
             {doc.layers.map((layer) => {
                 const text = resolveText(layer, data);
                 const isSelected = mode === 'edit' && layer.id === selectedLayerId;

@@ -3,9 +3,12 @@
 import React from 'react';
 import styles from './MandalaBackground.module.css';
 
-export const MandalaBackground = () => {
+export const MandalaBackground = ({ isPreview = false }: { isPreview?: boolean }) => {
     return (
-        <div className={styles.mandalaWrapper}>
+        <div
+            className={styles.mandalaWrapper}
+            style={isPreview ? { position: 'absolute', width: '380px', height: '380px', opacity: 0.3 } : undefined}
+        >
             <svg
                 width="1000"
                 height="1000"

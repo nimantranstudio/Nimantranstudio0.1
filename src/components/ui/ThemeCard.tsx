@@ -20,8 +20,8 @@ export const ThemeCard = ({ theme }: ThemeCardProps) => {
     try {
         if (Array.isArray(theme.previewImages)) {
             parsedImages = theme.previewImages;
-        } else if (typeof theme.previewImages === 'string' && theme.previewImages.length > 0) {
-            const parsed = JSON.parse(theme.previewImages);
+        } else if (typeof (theme.previewImages as any) === 'string' && (theme.previewImages as any).length > 0) {
+            const parsed = JSON.parse(theme.previewImages as any);
             parsedImages = Array.isArray(parsed) ? parsed : [];
         }
     } catch {
