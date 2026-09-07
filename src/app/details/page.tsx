@@ -587,6 +587,7 @@ function DetailsContent() {
                                                     theme={activeTheme || { id: 'default', name: 'Default', description: '', thumbnail: '', previewImages: [] }}
                                                     groomName={displayGroomName}
                                                     brideName={displayBrideName}
+                                                    invitationFor={formData.invitationFor}
                                                     groomParents={displayGroomParents}
                                                     brideParents={displayBrideParents}
                                                     customImage={templateUrl}
@@ -756,6 +757,48 @@ function DetailsContent() {
                                                     />
                                                 </div>
                                             </div>
+                                        </div>
+
+                                        <div style={{ marginTop: '1.5rem' }}>
+                                            <label className={styles.studioLabel}>Creating Invite For</label>
+                                            <div style={{ display: 'flex', gap: '0.75rem' }} role="radiogroup" aria-label="Creating invite for">
+                                                {(['bride', 'groom'] as const).map((side) => {
+                                                    const isSelected = (formData.invitationFor || 'bride') === side;
+                                                    return (
+                                                        <label
+                                                            key={side}
+                                                            style={{
+                                                                flex: 1,
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                gap: '0.5rem',
+                                                                padding: '0.7rem 1rem',
+                                                                border: `1px solid ${isSelected ? '#D4AF37' : '#E5E7EB'}`,
+                                                                borderRadius: '10px',
+                                                                background: isSelected ? '#FFFBEB' : '#fff',
+                                                                color: isSelected ? '#92702A' : '#374151',
+                                                                fontWeight: isSelected ? 600 : 500,
+                                                                cursor: 'pointer',
+                                                                transition: 'all 0.15s ease',
+                                                            }}
+                                                        >
+                                                            <input
+                                                                type="radio"
+                                                                name="invitationFor"
+                                                                value={side}
+                                                                checked={isSelected}
+                                                                onChange={() => updateFormData({ invitationFor: side })}
+                                                                style={{ accentColor: '#D4AF37' }}
+                                                            />
+                                                            {side === 'bride' ? 'Bride' : 'Groom'}
+                                                        </label>
+                                                    );
+                                                })}
+                                            </div>
+                                            <p style={{ margin: '0.5rem 0 0', fontSize: '0.8rem', color: '#6B7280' }}>
+                                                Decides whose name fills the Haldi, Mehendi, and Sangeet cards — e.g. &ldquo;{(formData.invitationFor || 'bride') === 'groom' ? (formData.groomName || 'Groom') : (formData.brideName || 'Bride')} ke haldi&rdquo;.
+                                            </p>
                                         </div>
                                     </div>
                                 </motion.div>

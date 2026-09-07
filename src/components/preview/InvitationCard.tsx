@@ -9,6 +9,7 @@ import Image from 'next/image';
 
 import { useState, useEffect, useRef, forwardRef, useImperativeHandle, useMemo } from 'react';
 import { buildFieldPayload } from '@/lib/templates/field-contract';
+import { classifyEventType } from '@/lib/templates/event-type';
 import { getIntricateMandalaSvgHtml, IntricateMandalaSvg } from '@/components/ui/IntricateMandala';
 import { clsx } from 'clsx';
 
@@ -28,6 +29,10 @@ interface InvitationCardProps {
     theme: Theme;
     groomName: string;
     brideName: string;
+    /** Which side's name fills the single-name "{name} ke haldi/mehendi/sangeet" slot on
+     * those three ceremony templates ('bride' by default). No effect on any other event —
+     * Wedding/Reception/Save the Date always show both names via their own separate fields. */
+    invitationFor?: 'bride' | 'groom';
     groomParents?: string;
     brideParents?: string;
     welcomeMessage?: string;
@@ -49,6 +54,7 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
     theme,
     groomName,
     brideName,
+    invitationFor = 'bride',
     groomParents,
     brideParents,
     welcomeMessage,
@@ -69,6 +75,14 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
     const [containerScale, setContainerScale] = useState(1);
     const [iframeHeight, setIframeHeight] = useState(889);
     const isHTMLDesign = !!srcDoc || customImage?.toLowerCase().endsWith('.html') || (customImage?.includes('item-Wedding_Invitation') && customImage.toLowerCase().includes('.html')); // Robust check
+
+    // Haldi/Mehendi/Sangeet templates carry one single-name "{name} ke {event}" slot
+    // (id/data-field="bride-name") — invitationFor picks whose name fills it. Every other
+    // event (Wedding, Reception, Save the Date) always shows both names via their own
+    // separate groom-name/bride-name fields, so this only ever substitutes here.
+    const currentEventType = classifyEventType(event?.heading || event?.name);
+    const isSingleNameCeremony = currentEventType === 'haldi' || currentEventType === 'mehendi' || currentEventType === 'sangeet';
+    const effectiveBrideName = (isSingleNameCeremony && invitationFor === 'groom') ? groomName : brideName;
     const [imageDimensions, setImageDimensions] = useState<{ width: number; height: number }>({ width: 600, height: 800 });
     const [imageRatio, setImageRatio] = useState<number>(3/4);
 
@@ -756,7 +770,7 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                 // "{name} ke {event}" line wrapping a data-field="bride-name" span, never a tagline
                 // slot. See the data-field guard below for the general form of this protection.
                 'groom-name': groomName || 'Groom Name',
-                'bride-name': brideName || 'Bride Name',
+                'bride-name': effectiveBrideName || 'Bride Name',
                 'groom-parents': groomParents || 'Groom Parents',
                 'groom-parent-name': groomParents || 'Groom Parents',
                 'bride-parents': brideParents || 'Bride Parents',
@@ -953,7 +967,7 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                 let changed = false;
                 
                 if (text.includes('Anjali')) {
-                    text = text.replace(/Anjali/g, brideName || 'Bride');
+                    text = text.replace(/Anjali/g, effectiveBrideName || 'Bride');
                     changed = true;
                 }
                 if (text.includes('Rahul')) {
@@ -1506,7 +1520,7 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
             clearTimeout(debounceTimer);
             (currentIframe as any)._onLoadCallback = null;
         };
-    }, [isHTMLDesign, event, welcomeMessage, groomName, brideName, groomParents, brideParents, customImage, isRawPreview, onLayoutMeasure, isReady]);
+    }, [isHTMLDesign, event, welcomeMessage, groomName, brideName, invitationFor, groomParents, brideParents, customImage, isRawPreview, onLayoutMeasure, isReady]);
 
     // Reactive postMessage bridge — fires on every prop change once the iframe is ready.
     // Sends field updates to the iframe so new templates (data-field attributes) update
@@ -1516,7 +1530,7 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
         if (!isHTMLDesign || !isReady || !iframeRef.current?.contentWindow) return;
         const payload = buildFieldPayload({
             groomName:    groomName   || undefined,
-            brideName:    brideName   || undefined,
+            brideName:    effectiveBrideName || undefined,
             groomParents: groomParents || undefined,
             brideParents: brideParents || undefined,
             eventName:    event?.name  || undefined,
@@ -1525,7 +1539,7 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
             eventVenue:   event?.venue || undefined,
         });
         iframeRef.current.contentWindow.postMessage({ type: 'NIMANTRAN_UPDATE', payload }, '*');
-    }, [isHTMLDesign, isReady, groomName, brideName, groomParents, brideParents, event]);
+    }, [isHTMLDesign, isReady, groomName, brideName, invitationFor, groomParents, brideParents, event]);
 
     // Separate effect to apply/remove sizing-box class when edit mode toggles.
     // This does NOT re-run the full content mapping, so saved edits are never overwritten.

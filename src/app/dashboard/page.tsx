@@ -783,6 +783,7 @@ export default function DashboardPage() {
                             theme={theme}
                             groomName={formData.groomName || undefined}
                             brideName={formData.brideName || undefined}
+                            invitationFor={formData.invitationFor}
                             groomParents={formData.groomParents || undefined}
                             brideParents={formData.brideParents || undefined}
                             welcomeMessage={formData.invitationMessage || undefined}
@@ -810,6 +811,7 @@ export default function DashboardPage() {
                             theme={theme}
                             groomName={formData.groomName || ''}
                             brideName={formData.brideName || ''}
+                            invitationFor={formData.invitationFor}
                             groomParents={formData.groomParents}
                             brideParents={formData.brideParents}
                             welcomeMessage={formData.invitationMessage}
@@ -1032,6 +1034,7 @@ export default function DashboardPage() {
                                                         theme={theme}
                                                         groomName={formData.groomName || ''}
                                                         brideName={formData.brideName || ''}
+                                                        invitationFor={formData.invitationFor}
                                                         groomParents={formData.groomParents}
                                                         brideParents={formData.brideParents}
                                                         welcomeMessage={formData.invitationMessage}
@@ -1490,6 +1493,7 @@ export default function DashboardPage() {
                                                 theme={theme}
                                                 groomName={formData.groomName || ''}
                                                 brideName={formData.brideName || ''}
+                                                invitationFor={formData.invitationFor}
                                                 groomParents={formData.groomParents}
                                                 brideParents={formData.brideParents}
                                                 welcomeMessage={formData.invitationMessage}

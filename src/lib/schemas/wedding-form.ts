@@ -33,6 +33,10 @@ export const WeddingFormSchema = z.object({
     groomParents: z.string().max(100, "Maximum 100 characters").optional(),
     brideParents: z.string().max(100, "Maximum 100 characters").optional(),
     nameOrder: z.enum(['groom_first', 'bride_first']).default('groom_first').optional(),
+    // Which side's name fills the single-name "{name} ke haldi/mehendi/sangeet" slot in
+    // those three ceremony templates. Purely a display choice — doesn't affect groomName/
+    // brideName themselves, or the couple display on Wedding/Reception/Save the Date.
+    invitationFor: z.enum(['bride', 'groom']).default('bride').optional(),
     // Step 2: Ceremony Details
     primaryDate: z.string().optional(),
     primaryTime: z.string().optional(),
