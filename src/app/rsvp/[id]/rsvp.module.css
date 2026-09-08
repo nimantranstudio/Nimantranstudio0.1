@@ -1,345 +1,958 @@
-/* ─── VARIABLES ──────────────────────────────────────────────────────────── */
+/* ─── VARIABLES & DESIGN TOKENS ────────────────────────────────────────── */
 :root {
-    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
-    --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+    --gold-primary: #C5A059;
+    --gold-light: #F3E5AB;
+    --gold-dark: #8C6D34;
+    --gold-gradient: linear-gradient(135deg, #ECC878 0%, #C5A059 50%, #A88034 100%);
+    --gold-metallic: linear-gradient(135deg, #FBF4DB 0%, #C5A059 50%, #9E7418 100%);
+    --gold-border: rgba(197, 160, 89, 0.35);
+    --gold-shadow: rgba(197, 160, 89, 0.18);
+    --bg-ivory: #FAF7F2;
+    --bg-cream: #F5EFE6;
+    --bg-surface: #FAF7F2;
+    --text-primary: #382A22;
+    --text-secondary: #5C4B40;
+    --text-muted: #7A6858;
+    --text-golden: #9E7B48;
+    --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* ─── PAGE SHELL ─────────────────────────────────────────────────────────── */
+/* ─── FULL PAGE SHELL ────────────────────────────────────────────────────── */
 .page {
     min-height: 100vh;
-    background: radial-gradient(ellipse at 50% 25%, #FEFBF4 0%, #F9F3E5 55%, #EFE4CD 100%);
-    padding: 2.5rem 1.25rem;
+    background: radial-gradient(ellipse at 50% 12%, #FAF7F2 0%, #F4ECE0 55%, #E8DDC8 100%);
+    padding: 3.5rem 1.25rem 6.5rem;
     display: flex;
     justify-content: center;
-    align-items: center;
-    font-family: var(--font-sans);
+    align-items: flex-start;
+    font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, sans-serif;
+    color: #382A22;
+    position: relative;
 }
 
 /* ─── WRAPPER ────────────────────────────────────────────────────────────── */
 .wrapper {
     width: 100%;
-    max-width: 500px;
+    max-width: 540px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2rem;
+    position: relative;
+    z-index: 10;
 }
 
-/* ─── CARD (Apple Luxury Surface) ─────────────────────────────────────────── */
-.card {
+/* ─── MAIN WEDDING WEBSITE CARD SURFACE ──────────────────────────────────── */
+.websiteCard {
     background: #FFFFFF;
-    border-radius: 36px;
+    border-radius: 44px;
     width: 100%;
-    max-height: 88vh;
     display: flex;
     flex-direction: column;
     box-shadow:
-        0 24px 80px -12px rgba(197, 160, 89, 0.25),
-        0 4px 16px rgba(0, 0, 0, 0.02),
-        inset 0 0 0 1px rgba(226, 210, 175, 0.5);
-    z-index: 10;
-    overflow-y: auto;
-    overflow-x: hidden;
-    padding: 2.5rem 2.5rem 2.25rem;
-    text-align: center;
+        0 24px 70px -12px rgba(140, 105, 55, 0.12),
+        0 4px 18px rgba(0, 0, 0, 0.02),
+        inset 0 0 0 1px rgba(197, 160, 89, 0.35);
     position: relative;
-    scrollbar-width: thin;
-    scrollbar-color: #E2D2AF transparent;
+    padding: 5.5rem 3rem 4.5rem;
+    text-align: center;
+    overflow: hidden;
 }
 
-.card::-webkit-scrollbar {
-    width: 5px;
+/* ─── CORNER BOTANICAL FLOURISHES ────────────────────────────────────────── */
+.cornerFlourishTL {
+    position: absolute;
+    top: 1.75rem;
+    left: 1.75rem;
+    opacity: 0.65;
+    pointer-events: none;
+    z-index: 2;
 }
-.card::-webkit-scrollbar-thumb {
-    background: #E2D2AF;
+
+.cornerFlourishTR {
+    position: absolute;
+    top: 1.75rem;
+    right: 1.75rem;
+    opacity: 0.65;
+    pointer-events: none;
+    z-index: 2;
+}
+
+/* ─── FLOATING BACKGROUND AUDIO PLAYER ───────────────────────────────────── */
+.audioPlayerContainer {
+    position: fixed;
+    bottom: 1.75rem;
+    right: 1.75rem;
+    z-index: 999;
+}
+
+.audioPlayerBtn {
+    background: rgba(250, 247, 242, 0.92);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(197, 160, 89, 0.4);
+    box-shadow:
+        0 4px 20px rgba(140, 105, 55, 0.14),
+        0 1px 3px rgba(0, 0, 0, 0.03),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    color: #6B5330;
+    padding: 0.6rem 1.1rem;
     border-radius: 99px;
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    cursor: pointer;
+    transition: all 0.25s var(--ease-spring);
+    font-family: inherit;
+    font-size: 0.82rem;
+    font-weight: 600;
 }
 
-/* ─── PROGRESS DOTS ─────────────────────────────────────────────────────── */
-.progressDots {
+.audioPlayerBtn:hover {
+    background: #FAF7F2;
+    border-color: #C5A059;
+    transform: translateY(-2px);
+    box-shadow:
+        0 8px 24px rgba(140, 105, 55, 0.22),
+        0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.audioPlayerBtn:active {
+    transform: scale(0.96);
+}
+
+.audioIcon {
+    color: #C5A059;
+}
+
+.audioLabel {
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.equalizerBars {
+    display: flex;
+    align-items: flex-end;
+    gap: 2.5px;
+    height: 14px;
+}
+
+.bar {
+    width: 2.5px;
+    height: 100%;
+    background: linear-gradient(to top, #A88034, #ECC878);
+    border-radius: 99px;
+    animation: bounceBar 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes bounceBar {
+    0% { height: 20%; }
+    100% { height: 100%; }
+}
+
+/* ─── DETAILED FIRST SECTION HERO (Spacious Apple Design) ───────────────── */
+.heroDetailedSection {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 3.5rem;
+    position: relative;
+}
+
+.heroGaneshaWrap {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    transition: transform 0.3s ease;
+}
+
+.heroGaneshaWrap:hover {
+    transform: scale(1.04);
+}
+
+.heroDiamondDivider {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    margin-bottom: 1.75rem;
+    gap: 1.35rem;
+    width: 85%;
+    max-width: 320px;
+    margin: 0 auto 2.5rem;
 }
 
-.progressDot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #E5DDD0;
-    transition: all 0.35s ease;
-}
-
-.progressDotActive {
-    width: 20px;
-    height: 6px;
-    border-radius: 99px;
-    background: #C5A059;
-}
-
-.progressDotDone {
+.diamondLine {
+    flex: 1;
+    height: 1px;
     background: #C5A059;
     opacity: 0.45;
 }
 
-/* ─── HEADER (INVITE STEP) ───────────────────────────────────────────────── */
-.header {
+.diamondSymbol {
+    color: #C5A059;
+    font-size: 0.85rem;
+    line-height: 1;
+    opacity: 0.85;
+    transform: scale(1.1);
+}
+
+.heroBlessingText {
+    font-family: var(--font-playfair), 'Playfair Display', Georgia, serif;
+    font-style: italic;
+    font-size: 1.18rem;
+    line-height: 2.0;
+    color: #685648;
+    text-align: center;
+    margin: 1.5rem 0 0;
+    max-width: 440px;
+}
+
+.heroBlessingText p {
+    margin: 0;
+}
+
+.heroInviteTag {
+    font-size: 0.74rem;
+    font-weight: 600;
+    letter-spacing: 0.24em;
+    color: #9E7B48;
+    text-transform: uppercase;
+    margin-top: 2.75rem;
+    margin-bottom: 1.25rem;
+}
+
+/* ─── VERTICAL ROYAL LINEAGE & COUPLE HIERARCHY ──────────────────────────── */
+.heroVerticalCoupleBlock {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 480px;
+    margin: 1.25rem 0 2.85rem;
+}
+
+.heroPersonBlock {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 100%;
+}
+
+.heroPersonName {
+    font-family: var(--font-playfair), 'Playfair Display', Georgia, serif;
+    font-style: italic;
+    font-size: clamp(2.75rem, 7vw, 3.75rem);
+    font-weight: 500;
+    color: #382A22;
+    line-height: 1.15;
+    letter-spacing: 0.01em;
+    margin: 0 0 0.55rem;
+}
+
+.heroPersonLineage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+    margin-top: 0.25rem;
+}
+
+.heroPersonRole {
+    font-family: var(--font-playfair), 'Playfair Display', Georgia, serif;
+    font-style: italic;
+    font-size: 1.08rem;
+    color: #7A6858;
+}
+
+.heroPersonParents {
+    font-size: 1.08rem;
+    font-weight: 500;
+    color: #4A3C32;
+    line-height: 1.45;
+    letter-spacing: 0.015em;
+}
+
+.heroVerticalAmpersandWrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 1.75rem 0;
+    position: relative;
+    width: 100%;
+}
+
+.heroAmpersand {
+    font-family: var(--font-playfair), 'Playfair Display', Georgia, serif;
+    font-style: italic;
+    font-size: clamp(2.2rem, 5.5vw, 2.75rem);
+    color: #C5A059;
+    font-weight: 400;
+    line-height: 1;
+}
+
+.heroOccasionsText {
+    font-family: var(--font-playfair), 'Playfair Display', Georgia, serif;
+    font-style: italic;
+    font-size: 1.15rem;
+    color: #685648;
+    margin-top: 0.75rem;
+    margin-bottom: 2rem;
+}
+
+/* ─── INTERACTIVE 3D ROYAL SANCTUARY GATES & COUNTDOWN SECTION ───────────── */
+.sanctuarySection {
+    width: 100%;
+    margin: 2rem 0 4.5rem;
     display: flex;
     flex-direction: column;
     align-items: center;
 }
 
-.joyfullyText {
+.sanctuaryHeader {
+    text-align: center;
+    margin-bottom: 2.25rem;
+}
+
+.sanctuaryBadge {
     font-size: 0.72rem;
-    letter-spacing: 0.18em;
-    line-height: 1.6;
-    color: #8A7B66;
     font-weight: 600;
-    margin-bottom: 0.6rem;
+    letter-spacing: 0.22em;
+    color: #9E7B48;
+    text-transform: uppercase;
+    margin-bottom: 0.55rem;
+    display: inline-block;
+}
+
+.sanctuaryTitle {
+    font-family: var(--font-playfair), 'Playfair Display', Georgia, serif;
+    font-style: italic;
+    font-size: clamp(2.1rem, 5.5vw, 2.75rem);
+    font-weight: 600;
+    color: #382A22;
+    margin: 0 0 0.55rem;
+    line-height: 1.18;
+}
+
+.sanctuarySubtitle {
+    font-family: var(--font-playfair), 'Playfair Display', Georgia, serif;
+    font-style: italic;
+    font-size: 1.05rem;
+    color: #756456;
+    max-width: 440px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+.sanctuaryStageWrap {
+    position: relative;
+    width: 100%;
+    border-radius: 32px;
+    padding: 2.25rem 1.4rem;
+    background: #FAF7F2;
+    border: 1.5px solid rgba(197, 160, 89, 0.35);
+    box-shadow:
+        0 14px 40px rgba(160, 120, 50, 0.08),
+        0 2px 6px rgba(0, 0, 0, 0.02);
+    overflow: hidden;
+}
+
+.sanctuaryTempleBg {
+    position: absolute;
+    inset: 0;
+    opacity: 0.16;
+    background-image:
+        radial-gradient(rgba(197, 160, 89, 0.45) 1px, transparent 1px);
+    background-size: 24px 24px;
+    pointer-events: none;
+}
+
+.sanctuaryPerspectiveBox {
+    position: relative;
+    width: 100%;
+    max-width: 460px;
+    min-height: 270px;
+    margin: 0 auto;
+    perspective: 1400px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* ─── INNER CARD (WEDDING DATE & COUNTDOWN) ──────────────────────────────── */
+.sanctuaryInnerCard {
+    background: #FAF7F2;
+    border: 1px solid rgba(197, 160, 89, 0.38);
+    border-radius: 26px;
+    padding: 2.25rem 1.5rem 1.85rem;
+    width: 100%;
+    text-align: center;
+    box-shadow:
+        0 14px 40px rgba(160, 120, 50, 0.1),
+        0 2px 6px rgba(0, 0, 0, 0.02);
+    position: relative;
+    z-index: 1;
+}
+
+.innerCardDateTag {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    color: #9E7B48;
+    text-transform: uppercase;
+    margin-bottom: 0.65rem;
+}
+
+.innerCardDateMain {
+    font-family: var(--font-playfair), 'Playfair Display', Georgia, serif;
+    font-style: italic;
+    font-size: clamp(1.75rem, 4.5vw, 2.3rem);
+    font-weight: 600;
+    color: #382A22;
+    margin: 0 0 0.4rem;
+    line-height: 1.22;
+}
+
+.innerCardDateSub {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    color: #7A6858;
+    text-transform: uppercase;
+    margin-bottom: 1.35rem;
+}
+
+.innerCardDivider {
+    width: 90%;
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(197, 160, 89, 0.4), transparent);
+    margin: 0 auto 1.5rem;
+}
+
+.sanctuaryTimerGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.6rem;
+    width: 100%;
+}
+
+.sanctuaryTimerBox {
+    background: #FAF7F2;
+    border: 1px solid rgba(197, 160, 89, 0.28);
+    border-radius: 16px;
+    padding: 0.95rem 0.35rem 0.8rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 3px 12px rgba(160, 120, 50, 0.08);
+}
+
+.sanctuaryTimerNum {
+    font-family: var(--font-playfair), 'Playfair Display', Georgia, serif;
+    font-size: clamp(1.55rem, 3.8vw, 1.95rem);
+    font-weight: 600;
+    color: #382A22;
+    line-height: 1;
+    margin-bottom: 0.35rem;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+}
+
+.sanctuaryTimerLabel {
+    font-size: 0.62rem;
+    font-weight: 600;
+    color: #9E7B48;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
 }
 
-.namesContainer {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.6rem;
-    flex-wrap: wrap;
-    margin-bottom: 0;
-}
-
-.groomName,
-.brideName {
-    font-size: 3.1rem;
-    color: #1A1A1A;
-    font-family: var(--font-serif), serif;
-    font-weight: 600;
-    line-height: 1.05;
-    letter-spacing: -0.03em;
-}
-
-.ampersand {
-    font-size: 2.2rem;
-    color: #C5A059;
-    font-family: var(--font-serif), serif;
+.innerCardTapNotice {
+    font-size: 0.78rem;
+    color: #9E7B48;
     font-style: italic;
-    margin: 0 0.2rem;
-    font-weight: 400;
+    margin-top: 1.15rem;
+    opacity: 0.85;
 }
 
-/* ─── ORNAMENTAL DIVIDER ─────────────────────────────────────────────────── */
+/* ─── SLIDING ROYAL DOUBLE GATES ─────────────────────────────────────────── */
+.sanctuaryDoorsWrapper {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    overflow: hidden;
+    border-radius: 26px;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.sanctuaryDoorLeft,
+.sanctuaryDoorRight {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 50%;
+    background:
+        radial-gradient(circle at 50% 50%, rgba(180, 40, 40, 0.35) 0%, transparent 80%),
+        linear-gradient(135deg, #7A1919 0%, #5E1010 60%, #440A0A 100%);
+    border: 2px solid #C5A059;
+    box-shadow:
+        0 14px 40px rgba(0, 0, 0, 0.35),
+        inset 0 0 25px rgba(0, 0, 0, 0.55);
+    overflow: hidden;
+}
+
+.sanctuaryDoorLeft {
+    left: 0;
+    border-top-left-radius: 26px;
+    border-bottom-left-radius: 26px;
+    border-right: none;
+}
+
+.sanctuaryDoorRight {
+    right: 0;
+    border-top-right-radius: 26px;
+    border-bottom-right-radius: 26px;
+    border-left: none;
+}
+
+.doorInnerBorder {
+    position: absolute;
+    inset: 10px;
+    border: 1.2px solid rgba(197, 160, 89, 0.45);
+    border-radius: 18px;
+    pointer-events: none;
+}
+
+.doorWatermarkLeft,
+.doorWatermarkRight {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.55;
+    pointer-events: none;
+}
+
+.doorWatermarkLeft {
+    right: -20px;
+}
+
+.doorWatermarkRight {
+    left: -20px;
+}
+
+.doorCenterSeam {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 3px;
+    transform: translateX(-50%);
+    background: linear-gradient(to bottom, #F5D399, #C5A059, #9E7418, #F5D399);
+    z-index: 12;
+    box-shadow: 0 0 10px rgba(197, 160, 89, 0.6);
+}
+
+/* ─── SACRED GOLDEN CENTER SEAL (OPEN BUTTON) ────────────────────────────── */
+.sacredSealContainer {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+    z-index: 20;
+}
+
+.sacredSealWrap {
+    position: relative;
+    width: 110px;
+    height: 110px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: auto;
+    cursor: pointer;
+    transition: transform 0.25s var(--ease-spring);
+}
+
+.sacredSealWrap:hover {
+    transform: scale(1.06);
+}
+
+.sacredSealWrap:active {
+    transform: scale(0.95);
+}
+
+.sealOuterRing {
+    position: absolute;
+    width: 108px;
+    height: 108px;
+    border-radius: 50%;
+    border: 2px solid #C5A059;
+    box-shadow:
+        0 0 22px rgba(197, 160, 89, 0.45),
+        inset 0 0 12px rgba(197, 160, 89, 0.25);
+    animation: pulseSealGlow 2.5s ease-in-out infinite alternate;
+}
+
+@keyframes pulseSealGlow {
+    0% {
+        box-shadow: 0 0 12px rgba(197, 160, 89, 0.35), inset 0 0 8px rgba(197, 160, 89, 0.2);
+        transform: scale(0.98);
+    }
+    100% {
+        box-shadow: 0 0 26px rgba(197, 160, 89, 0.65), inset 0 0 14px rgba(197, 160, 89, 0.35);
+        transform: scale(1.02);
+    }
+}
+
+.sealMiddleRing {
+    position: absolute;
+    width: 86px;
+    height: 86px;
+    border-radius: 50%;
+    border: 1.5px dashed rgba(197, 160, 89, 0.65);
+}
+
+.sealCenterDisk {
+    position: relative;
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #FFFFFF 0%, #FAF3E6 60%, #F5E6CC 100%);
+    border: 2px solid #C5A059;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow:
+        0 4px 16px rgba(0, 0, 0, 0.25),
+        inset 0 1px 2px #FFFFFF;
+}
+
+.sealOpenText {
+    font-family: var(--font-playfair), 'Playfair Display', Georgia, serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    color: #6B1515;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+/* ─── ORNAMENTAL DIVIDERS ────────────────────────────────────────────────── */
 .ornamentDivider {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 1rem;
-    margin: 2.25rem 0;
-    color: #D4AF37;
-    font-size: 0.65rem;
-    opacity: 0.65;
+    margin: 3.75rem 0;
+    color: #C5A059;
+    font-size: 0.8rem;
+    opacity: 0.75;
 }
 
 .ornamentLine {
     flex: 1;
     height: 1px;
-    background: linear-gradient(to right, transparent, rgba(212, 175, 55, 0.4), transparent);
+    background: linear-gradient(to right, transparent, rgba(197, 160, 89, 0.45), transparent);
 }
 
-/* ─── MAIN (flex grow) ───────────────────────────────────────────────────── */
-.main {
-    flex: 1;
+/* ─── SECTION HEADERS ────────────────────────────────────────────────────── */
+.sectionHeaderWrap {
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    gap: 0;
-}
-
-/* ─── WELCOME / INVITATION MESSAGE ──────────────────────────────────────── */
-.welcomeBox {
-    margin-top: 1rem;
-    margin-bottom: 2.25rem;
+    align-items: center;
+    margin-bottom: 2.5rem;
     text-align: center;
 }
 
-.welcomeText {
-    font-size: 1.15rem;
-    line-height: 1.65;
-    color: #4A4A4A;
-    font-family: var(--font-serif), serif;
+.sectionSubHead {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.24em;
+    color: #9E7B48;
+    text-transform: uppercase;
+    margin-bottom: 0.65rem;
+}
+
+.sectionTitle {
+    font-family: var(--font-playfair), 'Playfair Display', Georgia, serif;
     font-style: italic;
+    font-size: 2.35rem;
+    font-weight: 600;
+    color: #382A22;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    margin: 0 0 0.65rem;
+}
+
+.sectionSubtitle {
+    font-family: var(--font-playfair), 'Playfair Display', Georgia, serif;
+    font-style: italic;
+    font-size: 0.95rem;
+    color: #756456;
+    line-height: 1.6;
+    margin: 0;
+    max-width: 380px;
+}
+
+/* ─── QUOTE CARD ─────────────────────────────────────────────────────────── */
+.quoteCard {
+    background: #FAF7F2;
+    border-left: 3px solid #C5A059;
+    border-radius: 0 20px 20px 0;
+    padding: 1.85rem 1.75rem;
+    margin-bottom: 2.5rem;
+    text-align: center;
+    box-shadow: 0 6px 18px rgba(160, 120, 50, 0.06);
+}
+
+.quoteText {
+    font-family: var(--font-playfair), 'Playfair Display', Georgia, serif;
+    font-size: 1.15rem;
+    font-style: italic;
+    line-height: 1.8;
+    color: #5C4B40;
     margin: 0;
 }
 
-/* ─── EVENT CARD ─────────────────────────────────────────────────────────── */
-.eventCard {
-    background: #FFFCF7;
-    border: 1px solid rgba(226, 210, 175, 0.4);
-    border-radius: 20px;
-    padding: 1.25rem 1.5rem;
-    margin-bottom: 0.75rem;
-    box-shadow: 0 4px 14px rgba(197, 160, 89, 0.05);
-}
-
-.rsvpTitle {
-    font-size: 0.7rem;
-    letter-spacing: 0.32em;
-    color: #94a3b8;
-    margin-bottom: 1rem;
-    font-weight: 700;
-    text-transform: uppercase;
-}
-
-.eventRoleTitle {
-    font-size: 0.85rem;
-    font-weight: 700;
-    letter-spacing: 0.18em;
-    color: #1A1A1A;
-    margin-bottom: 0.4rem;
-    text-transform: uppercase;
-}
-
-.eventRowSimple {
-    font-size: 0.95rem;
-    color: #666666;
-    font-weight: 500;
-    line-height: 1.5;
-}
-
-/* ─── VENUE ROW ──────────────────────────────────────────────────────────── */
-.venueRow {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.4rem;
-    font-size: 0.875rem;
-    color: #8A7B66;
-    margin-top: 0.5rem;
-    font-weight: 500;
-}
-
-/* ─── DEADLINE TEXT ──────────────────────────────────────────────────────── */
-.deadlineText {
-    font-size: 0.72rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: #8A7B66;
-    margin-top: 1.25rem;
-    font-weight: 600;
-}
-
-/* ─── BUTTON WRAPPER ─────────────────────────────────────────────────────── */
-.buttonWrapper {
+/* ─── CELEBRATIONS & TIMELINE ITINERARY ──────────────────────────────────── */
+.eventsSection {
     width: 100%;
+}
+
+.eventsTimeline {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 0.75rem;
-    padding-top: 1.5rem;
+    gap: 2rem;
+    position: relative;
 }
 
-/* ─── PRIMARY CTA ───────────────────────────────────────────────────────── */
-.respondBtn {
-    background: linear-gradient(135deg, #D4AF37 0%, #B68D40 100%);
-    color: white;
-    padding: 1rem 2.75rem;
-    width: auto;
-    min-width: 260px;
-    border-radius: 99px;
-    font-weight: 600;
-    font-size: 0.975rem;
+.timelineCard {
+    position: relative;
+    background: #FAF7F2;
+    border: 1px solid rgba(197, 160, 89, 0.35);
+    border-radius: 26px;
+    padding: 2rem 1.75rem;
+    text-align: left;
+    box-shadow:
+        0 8px 24px rgba(160, 120, 50, 0.07),
+        0 2px 4px rgba(0, 0, 0, 0.02);
+    transition: transform 0.25s var(--ease-spring), box-shadow 0.25s var(--ease-spring);
+}
+
+.timelineCard:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(160, 120, 50, 0.14);
+}
+
+.timelineNode {
+    position: absolute;
+    top: 1.75rem;
+    right: 1.75rem;
+    width: 28px;
+    height: 28px;
+    background: linear-gradient(135deg, #ECC878, #C5A059);
+    color: #2A1E14;
+    font-size: 0.78rem;
+    font-weight: 700;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-    border: none;
-    cursor: pointer;
-    box-shadow: 0 8px 25px rgba(197, 160, 89, 0.35);
-    letter-spacing: 0.03em;
+    box-shadow: 0 2px 8px rgba(197, 160, 89, 0.3);
 }
 
-.respondBtn:hover {
-    background: linear-gradient(135deg, #C5A059 0%, #A57D32 100%);
-    box-shadow: 0 12px 30px rgba(197, 160, 89, 0.45);
-    transform: translateY(-2px);
+.timelineNodeNum {
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
 }
 
-.respondBtn:active {
-    transform: scale(0.96);
+.eventCardBody {
+    display: flex;
+    flex-direction: column;
 }
 
-/* ─── BACK BUTTON (ghost pill) ───────────────────────────────────────────── */
-.backButton {
-    background: transparent;
-    border: 1px solid #E5DDD0;
-    color: #86868b;
-    padding: 0.6rem 1.75rem;
+.eventCardHeader {
+    margin-bottom: 0.85rem;
+}
+
+.eventThemeTag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.32rem 0.85rem;
     border-radius: 99px;
-    font-size: 0.85rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-    text-decoration: none;
-    letter-spacing: 0.01em;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
 }
 
-.backButton:hover {
-    border-color: #C5A059;
+.tagIcon {
+    font-size: 0.9rem;
+}
+
+/* Event Color Variations */
+.tagHaldi {
+    background: #FEF3C7;
+    color: #8C5310;
+    border: 1px solid #FCD34D;
+}
+
+.tagMehendi {
+    background: #DCFCE7;
+    color: #166534;
+    border: 1px solid #86EFAC;
+}
+
+.tagSangeet {
+    background: #F3E8FF;
+    color: #6B21A8;
+    border: 1px solid #D8B4FE;
+}
+
+.tagWedding {
+    background: #FEE2E2;
+    color: #991B1B;
+    border: 1px solid #FCA5A5;
+}
+
+.tagReception {
+    background: #E0E7FF;
+    color: #3730A3;
+    border: 1px solid #A5B4FC;
+}
+
+.tagCocktail {
+    background: #FDF4FF;
+    color: #86198F;
+    border: 1px solid #F0ABFC;
+}
+
+.tagGeneral {
+    background: #FEF9C3;
+    color: #854D0E;
+    border: 1px solid #FDE047;
+}
+
+.eventCardTitle {
+    font-family: var(--font-playfair), 'Playfair Display', Georgia, serif;
+    font-size: 1.65rem;
+    font-weight: 600;
+    color: #382A22;
+    margin: 0 0 0.65rem;
+    line-height: 1.2;
+}
+
+.eventCardDesc {
+    font-size: 0.95rem;
+    color: #685648;
+    line-height: 1.65;
+    margin: 0 0 1.35rem;
+    font-style: italic;
+}
+
+.eventDetailsList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    background: #F4EDE0;
+    border: 1px solid rgba(197, 160, 89, 0.28);
+    border-radius: 16px;
+    padding: 1rem 1.25rem;
+}
+
+.eventDetailRow {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    font-size: 0.9rem;
+    color: #4A3C32;
+}
+
+.eventDetailIcon {
     color: #C5A059;
-    background: #FFFDF9;
+    flex-shrink: 0;
 }
 
-.backButton:active {
+.eventDetailText {
+    font-weight: 500;
+}
+
+.eventActionButtons {
+    display: flex;
+    gap: 0.85rem;
+    flex-wrap: wrap;
+}
+
+.eventSecondaryBtn {
+    flex: 1;
+    min-width: 140px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    padding: 0.75rem 1.15rem;
+    background: #FAF7F2;
+    border: 1px solid rgba(197, 160, 89, 0.38);
+    border-radius: 99px;
+    color: #6B5330;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s var(--ease-spring);
+    font-family: inherit;
+}
+
+.eventSecondaryBtn:hover {
+    background: #FFFFFF;
+    border-color: #C5A059;
+    color: #4B3815;
+    transform: translateY(-1px);
+}
+
+.eventSecondaryBtn:active {
     transform: scale(0.96);
 }
 
-/* ─── FORM VIEW ──────────────────────────────────────────────────────────── */
-.formHeader {
-    margin-bottom: 2rem;
-    text-align: center;
-}
-
-.formTitle {
-    font-size: 2.35rem;
-    font-family: var(--font-serif), serif;
-    color: #1A1A1A;
-    font-weight: 600;
-    margin-bottom: 0.4rem;
-    line-height: 1.15;
-    letter-spacing: -0.02em;
-}
-
-.formSubtitle {
-    color: #71717A;
-    font-size: 0.95rem;
-    line-height: 1.5;
-    font-weight: 400;
+/* ─── INTERACTIVE RSVP FORM SECTION ──────────────────────────────────────── */
+.rsvpSection {
+    width: 100%;
+    scroll-margin-top: 3rem;
 }
 
 .form {
-    flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 1.35rem;
+    gap: 1.85rem;
     text-align: left;
 }
 
-.field label {
+.field {
+    display: flex;
+    flex-direction: column;
+}
+
+.fieldLabel {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 0.72rem;
-    font-weight: 700;
-    color: #8A7B66;
+    font-size: 0.74rem;
+    font-weight: 600;
+    color: #8A6D3B;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.65rem;
 }
 
 .fieldErrorText {
-    color: #EF4444;
-    font-size: 0.72rem;
+    color: #DC2626;
+    font-size: 0.75rem;
     font-weight: 600;
     text-transform: none;
     letter-spacing: 0;
@@ -347,20 +960,24 @@
 
 .input {
     width: 100%;
-    padding: 0.95rem 1.15rem;
-    border: 1.5px solid #EEDFBC;
-    border-radius: 14px;
-    font-size: 0.975rem;
+    padding: 1.05rem 1.35rem;
+    border: 1.5px solid #E5D7BE;
+    border-radius: 16px;
+    font-size: 1rem;
     outline: none;
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-    background-color: #FFFDF9;
-    color: #1A1A1A;
+    transition: all 0.2s var(--ease-spring);
+    background-color: #FAF7F2;
+    color: #382A22;
     font-family: inherit;
+}
+
+.input::placeholder {
+    color: #A89885;
 }
 
 .input:focus {
     border-color: #C5A059;
-    box-shadow: 0 0 0 4px rgba(197, 160, 89, 0.18);
+    box-shadow: 0 0 0 4px rgba(197, 160, 89, 0.15);
     background-color: #FFFFFF;
 }
 
@@ -372,175 +989,288 @@
 
 .textarea {
     resize: vertical;
-    min-height: 85px;
+    min-height: 105px;
     line-height: 1.6;
 }
 
-/* ─── FEEDBACK MESSAGE ───────────────────────────────────────────────────── */
-.feedbackMessage {
-    font-size: 0.85rem;
-    color: #C5A059;
-    margin-top: 0.5rem;
-    padding-left: 0.25rem;
-    font-style: italic;
-    font-weight: 500;
-    opacity: 0;
-    transform: translateY(-4px);
-    animation: fadeFeedback 0.3s forwards ease-out;
-}
-
-@keyframes fadeFeedback {
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* ─── STATUS CONTROL ─────────────────────────────────────────────────────── */
+/* Segmented Tabs for Attendance */
 .segmentedControl {
     display: flex;
     position: relative;
-    background: #F9F5EC;
-    border-radius: 16px;
-    padding: 5px;
-    border: 1px solid #EFE4CC;
+    background: #F0E8DC;
+    border-radius: 18px;
+    padding: 6px;
+    border: 1px solid #E2D5C0;
+    gap: 6px;
 }
 
 .segmentedTab {
     flex: 1;
     position: relative;
-    padding: 0.75rem 0.5rem;
-    font-size: 0.85rem;
-    line-height: 1.4;
+    padding: 0.95rem 0.5rem;
+    font-size: 0.88rem;
+    line-height: 1.3;
     text-align: center;
-    color: #71717A;
-    font-weight: 500;
+    color: #756456;
+    font-weight: 600;
     cursor: pointer;
     border: none;
     background: transparent;
-    transition: color 200ms var(--ease-out);
+    transition: color 200ms ease;
     z-index: 2;
     -webkit-tap-highlight-color: transparent;
+    border-radius: 14px;
 }
 
 .segmentedTab[data-active="true"] {
-    color: #1A1A1A;
-    font-weight: 700;
+    color: #382A22;
+    font-weight: 600;
 }
 
 .segmentedPill {
     position: absolute;
     inset: 0;
-    background: #FFFFFF;
-    border-radius: 12px;
-    box-shadow: 0 3px 12px rgba(197, 160, 89, 0.15), 0 1px 3px rgba(0, 0, 0, 0.04);
+    background: #FAF7F2;
+    border-radius: 14px;
+    box-shadow: 0 3px 12px rgba(140, 105, 55, 0.12), 0 1px 3px rgba(0, 0, 0, 0.03);
     z-index: 1;
 }
 
-/* ─── ROW LAYOUT ─────────────────────────────────────────────────────────── */
+.segmentedLabel {
+    position: relative;
+    z-index: 2;
+}
+
+.feedbackMessage {
+    font-size: 0.88rem;
+    color: #8A6D3B;
+    margin-top: 0.65rem;
+    padding-left: 0.25rem;
+    font-style: italic;
+    font-weight: 500;
+    animation: fadeFeedback 0.3s forwards ease-out;
+}
+
+@keyframes fadeFeedback {
+    from { opacity: 0; transform: translateY(-3px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Stepper Component */
+.stepperWrap {
+    display: flex;
+    align-items: center;
+    background: #FAF7F2;
+    border: 1.5px solid #E5D7BE;
+    border-radius: 16px;
+    padding: 0.35rem 0.5rem;
+    height: 54px;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.stepperBtn {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: #F0E8DC;
+    border: 1px solid #E2D5C0;
+    color: #382A22;
+    font-size: 1.35rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.stepperBtn:hover:not(:disabled) {
+    background: #C5A059;
+    color: white;
+}
+
+.stepperBtn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.stepperValueBox {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    height: 100%;
+    position: relative;
+    width: 44px;
+}
+
+.stepperValue {
+    text-align: center;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #382A22;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+}
+
 .row {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 1.15rem;
 }
 
-/* ─── SUBMIT BUTTON ──────────────────────────────────────────────────────── */
-.submit {
-    background: linear-gradient(135deg, #D4AF37 0%, #B68D40 100%);
-    color: white;
-    padding: 1rem 2.75rem;
+.deadlineNotice {
+    font-size: 0.82rem;
+    color: #8A6D3B;
+    text-align: center;
+    margin: 0;
+    background: #F5EFE4;
+    padding: 0.75rem 1.15rem;
+    border-radius: 14px;
+    border: 1px solid rgba(197, 160, 89, 0.25);
+}
+
+.errorMessage {
+    background: #FEF2F2;
+    border: 1px solid #FCA5A5;
+    color: #DC2626;
+    padding: 0.85rem 1.15rem;
+    border-radius: 14px;
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+.submitButton {
+    background: linear-gradient(135deg, #ECC878 0%, #C5A059 50%, #A88034 100%);
+    color: #2A1E14;
+    padding: 1.2rem 2.25rem;
     width: 100%;
     border-radius: 99px;
-    font-size: 1rem;
+    font-size: 1.05rem;
     font-weight: 600;
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    letter-spacing: 0.03em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem;
     border: none;
     cursor: pointer;
-    box-shadow: 0 8px 25px rgba(197, 160, 89, 0.35);
+    box-shadow: 0 8px 24px rgba(168, 128, 52, 0.28);
+    transition: all 0.25s var(--ease-spring);
     font-family: inherit;
-    letter-spacing: 0.03em;
+    margin-top: 0.75rem;
 }
 
-.submit:hover {
-    background: linear-gradient(135deg, #C5A059 0%, #A57D32 100%);
-    box-shadow: 0 12px 30px rgba(197, 160, 89, 0.45);
+.submitButton:hover:not(:disabled) {
+    box-shadow: 0 12px 30px rgba(168, 128, 52, 0.38);
     transform: translateY(-2px);
+    filter: brightness(1.03);
 }
 
-.submit:active {
-    transform: scale(0.96);
+.submitButton:active:not(:disabled) {
+    transform: scale(0.97);
 }
 
-.submit:disabled {
+.submitButton:disabled {
     opacity: 0.65;
     cursor: not-allowed;
-    background: #C5A059;
 }
 
-/* ─── SUCCESS VIEW ───────────────────────────────────────────────────────── */
-@keyframes successPop {
-    0%   { transform: scale(0);   opacity: 0; }
-    60%  { transform: scale(1.2); opacity: 1; }
-    100% { transform: scale(1);   opacity: 1; }
+.submittingWrap {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
 }
 
+.spinner {
+    width: 20px;
+    height: 20px;
+    border: 2.5px solid rgba(42, 30, 20, 0.2);
+    border-top-color: #2A1E14;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ─── SUCCESS & CONFIRMATION STATES ──────────────────────────────────────── */
 .successContent {
-    flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
     text-align: center;
     width: 100%;
+    padding: 2.25rem 0;
 }
 
 .successIcon {
-    width: 96px;
-    height: 96px;
-    background: linear-gradient(135deg, #FEF9E7, #FFF3C4);
+    width: 104px;
+    height: 104px;
+    background: linear-gradient(135deg, #FAF4E6 0%, #F5E5BA 100%);
+    border: 2px solid #C5A059;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 2rem;
-    color: #C5A059;
-    box-shadow: 0 8px 30px rgba(197, 160, 89, 0.22);
+    margin-bottom: 2.25rem;
+    color: #9E7418;
+    box-shadow: 0 12px 36px rgba(160, 120, 50, 0.22);
     animation: successPop 0.55s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
+@keyframes successPop {
+    0% { transform: scale(0); opacity: 0; }
+    60% { transform: scale(1.15); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
 .successTitle {
-    font-size: 2.25rem;
-    font-family: var(--font-serif), serif;
-    color: #1A1A1A;
-    margin-bottom: 1rem;
-    font-weight: 700;
-    line-height: 1.2;
+    font-family: var(--font-playfair), 'Playfair Display', Georgia, serif;
+    font-style: italic;
+    font-size: 2.5rem;
+    font-weight: 600;
+    color: #382A22;
+    margin: 0 0 1.15rem;
+    line-height: 1.15;
 }
 
 .successText {
-    color: #4A4A4A;
-    line-height: 1.65;
-    margin-bottom: 0.75rem;
-    font-size: 1.05rem;
-    max-width: 320px;
+    color: #5C4B40;
+    line-height: 1.75;
+    font-size: 1.08rem;
+    max-width: 380px;
+    margin: 0 0 1.65rem;
 }
 
-.seeYouText {
-    font-size: 0.95rem;
-    color: #C5A059;
+.seeYouBadge {
+    display: inline-block;
+    background: #FAF7F2;
+    border: 1px solid rgba(197, 160, 89, 0.45);
+    border-radius: 99px;
+    padding: 0.6rem 1.5rem;
+    font-family: var(--font-playfair), 'Playfair Display', Georgia, serif;
+    font-size: 1rem;
     font-style: italic;
-    font-family: var(--font-serif), serif;
+    color: #8A6D3B;
     margin-bottom: 2rem;
 }
 
 .successDivider {
     width: 100%;
-    border-top: 1px solid rgba(212, 175, 55, 0.2);
-    margin-bottom: 1.75rem;
+    border-top: 1px solid rgba(197, 160, 89, 0.25);
+    margin-bottom: 2rem;
 }
 
 .actionButtons {
     display: flex;
-    gap: 0.75rem;
+    gap: 1rem;
     width: 100%;
-    margin-bottom: 0.75rem;
+    margin-bottom: 1rem;
 }
 
 .actionBtn {
@@ -548,23 +1278,23 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
-    padding: 0.85rem;
-    border: 1.5px solid #EEDFBC;
+    gap: 0.55rem;
+    padding: 1.05rem;
+    border: 1.5px solid #E5D7BE;
     border-radius: 99px;
-    background: #FFFDF9;
-    color: #4A4A4A;
-    font-size: 0.875rem;
+    background: #FAF7F2;
+    color: #5C4B40;
+    font-size: 0.95rem;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: all 0.2s var(--ease-spring);
     font-family: inherit;
 }
 
 .actionBtn:hover {
     border-color: #C5A059;
-    color: #C5A059;
-    background-color: #FEF9F0;
+    color: #8A6D3B;
+    background-color: #FFFFFF;
     transform: translateY(-1px);
 }
 
@@ -572,87 +1302,514 @@
     transform: scale(0.96);
 }
 
-/* ─── WHATSAPP SHARE BUTTON ──────────────────────────────────────────────── */
-.whatsappBtn {
+.buttonWrapper {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.backButton {
+    background: transparent;
+    border: 1px solid #E2D5C0;
+    color: #8A734C;
+    padding: 0.75rem 2.15rem;
+    border-radius: 99px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s var(--ease-spring);
+    text-decoration: none;
+}
+
+.backButton:hover {
+    border-color: #C5A059;
+    background: #FAF7F2;
+    color: #5A4318;
+}
+
+/* ─── BRAND FOOTER & LOGO ────────────────────────────────────────────────── */
+.websiteFooter {
+    margin-top: 4.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+.footerSeal {
+    width: 36px;
+    height: 36px;
+    border: 1px solid rgba(197, 160, 89, 0.45);
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.6rem;
-    padding: 0.85rem 1.5rem;
+    color: #C5A059;
+    font-size: 0.85rem;
+    margin-bottom: 0.35rem;
+}
+
+.footerThanks {
+    font-family: var(--font-playfair), 'Playfair Display', Georgia, serif;
+    font-style: italic;
+    font-size: 1.05rem;
+    color: #7A6858;
+    max-width: 360px;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* ─── SIGNATURE COUPLE NAMES & DATE BLOCK ────────────────────────────────── */
+.footerSignatureBlock {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 2rem;
+    margin-bottom: 0.5rem;
     width: 100%;
-    background: #25D366;
-    color: white;
-    border: none;
-    border-radius: 99px;
-    font-size: 0.875rem;
+    max-width: 440px;
+}
+
+.footerSignatureNames {
+    font-family: var(--font-playfair), 'Playfair Display', Georgia, serif;
+    font-style: italic;
+    font-size: clamp(1.75rem, 4.2vw, 2.35rem);
+    font-weight: 500;
+    color: #382A22;
+    letter-spacing: 0.015em;
+    line-height: 1.25;
+    margin: 0 0 0.85rem;
+    text-align: center;
+}
+
+.footerSignatureDivider {
+    width: 75px;
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(197, 160, 89, 0.5), transparent);
+    margin: 0 auto 0.85rem;
+}
+
+.footerSignatureDate {
+    font-size: 0.76rem;
     font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-    font-family: inherit;
-    box-shadow: 0 4px 14px rgba(37, 211, 102, 0.25);
+    letter-spacing: 0.22em;
+    color: #9E7B48;
+    text-transform: uppercase;
+    text-align: center;
 }
 
-.whatsappBtn:hover {
-    background: #1DAA57;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(37, 211, 102, 0.35);
-}
-
-.whatsappBtn:active {
-    transform: scale(0.96);
-}
-
-/* ─── POWERED BY / BRANDING ──────────────────────────────────────────────── */
 .poweredByCard {
-    margin-top: auto;
-    padding-top: 1.5rem;
-    border-top: 1px solid rgba(212, 175, 55, 0.15);
-    color: #1A1A1A;
-    font-size: 0.65rem;
+    margin-top: 2.25rem;
+    padding-top: 1.85rem;
+    border-top: 1px solid rgba(197, 160, 89, 0.2);
+    width: 100%;
+    color: #7A6858;
+    font-size: 0.7rem;
     font-weight: 600;
-    letter-spacing: 0.1em;
-    font-style: normal;
-    opacity: 0.55;
+    letter-spacing: 0.14em;
+    opacity: 0.75;
     text-decoration: none;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.4rem;
+    gap: 0.45rem;
     transition: opacity 0.2s;
     text-transform: uppercase;
 }
 
 .poweredByCard:hover {
-    opacity: 0.85;
+    opacity: 1;
 }
 
 .brandLogo {
-    height: 16px;
+    height: 17px;
     width: auto;
     object-fit: contain;
-    opacity: 0.75;
-    transition: opacity 0.2s;
-}
-
-.poweredByCard:hover .brandLogo {
-    opacity: 1;
 }
 
 /* ─── PREVIEW ADAPTATIONS ────────────────────────────────────────────────── */
 .previewWrapper {
     max-width: 100% !important;
     padding: 0 !important;
-    gap: 1.25rem !important;
     width: 100% !important;
 }
 
 .previewCard {
     max-height: none !important;
     overflow: visible !important;
-    padding: 1.6rem 1.15rem 1.4rem !important;
-    border-radius: 26px !important;
+    padding: 2.25rem 1.5rem !important;
+    border-radius: 28px !important;
+    background: #FFFFFF !important;
     box-shadow:
-        0 16px 40px -8px rgba(197, 160, 89, 0.22),
+        0 16px 40px -8px rgba(160, 120, 50, 0.14),
         0 2px 6px rgba(0, 0, 0, 0.02),
-        inset 0 0 0 1px rgba(226, 210, 175, 0.5) !important;
+        inset 0 0 0 1px rgba(197, 160, 89, 0.35) !important;
+}
+
+/* ─── RESPONSIVE BREAKPOINTS ─────────────────────────────────────────────── */
+@media (max-width: 480px) {
+    .page {
+        padding: 1.5rem 0.65rem 7rem;
+    }
+
+    .websiteCard {
+        padding: 4.25rem 1.65rem 3rem;
+        border-radius: 36px;
+    }
+
+    .heroPersonName {
+        font-size: clamp(2.35rem, 6.5vw, 3.1rem);
+    }
+
+    .heroPersonParents {
+        font-size: 1rem;
+    }
+
+    .sectionTitle {
+        font-size: 2rem;
+    }
+
+    .sanctuaryTitle {
+        font-size: 1.95rem;
+    }
+
+    .row {
+        grid-template-columns: 1fr;
+        gap: 1.25rem;
+    }
+
+    .audioPlayerContainer {
+        bottom: 1.15rem;
+        right: 1.15rem;
+    }
+}
+
+/* ─── ROYAL COVER SCREEN & WHITE WASH TRANSITION ─────────────────────────── */
+.coverScreenWrapper {
+    width: 100%;
+    max-width: 540px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 10;
+    min-height: 80vh;
+    justify-content: center;
+}
+
+.coverCard {
+    background: #FFFFFF;
+    border-radius: 44px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow:
+        0 24px 70px -12px rgba(140, 105, 55, 0.14),
+        0 4px 18px rgba(0, 0, 0, 0.02),
+        inset 0 0 0 1px rgba(197, 160, 89, 0.38);
+    position: relative;
+    padding: 3.75rem 2rem 3.25rem;
+    min-height: 590px;
+    text-align: center;
+    overflow: hidden;
+}
+
+.coverFlourishTL {
+    position: absolute;
+    top: 1.6rem;
+    left: 1.6rem;
+    opacity: 0.65;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.coverFlourishTR {
+    position: absolute;
+    top: 1.6rem;
+    right: 1.6rem;
+    opacity: 0.65;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.coverHeaderBlock {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    z-index: 5;
+    position: relative;
+}
+
+.coverPreTag {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: #9E7B48;
+}
+
+.coverBlessing {
+    font-family: var(--font-playfair), 'Playfair Display', Georgia, serif;
+    font-style: italic;
+    font-size: 1.05rem;
+    color: #685648;
+    margin: 0;
+}
+
+.coverCenterStage {
+    position: relative;
+    width: 100%;
+    height: 350px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 1rem 0;
+}
+
+/* Outside Rotating Mandala (Exact match to Details Page) */
+.coverRotatingMandala {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 440px;
+    height: 440px;
+    aspect-ratio: 1 / 1;
+    z-index: 2;
+    pointer-events: none;
+    opacity: 0.95;
+    filter: drop-shadow(0 0 24px rgba(197, 160, 89, 0.4));
+    will-change: transform;
+    animation: slowRotateCoverMandala 65s linear infinite;
+}
+
+@keyframes slowRotateCoverMandala {
+    from {
+        transform: translate(-50%, -50%) rotate(0deg);
+    }
+    to {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .coverRotatingMandala {
+        animation: none;
+    }
+}
+
+/* Ambient Pulsing Halo around Seal */
+.coverSealHalo {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 230px;
+    height: 230px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(251, 242, 183, 0.5) 0%, rgba(197, 160, 89, 0.16) 50%, transparent 70%);
+    z-index: 3;
+    pointer-events: none;
+    animation: haloPulse 3s ease-in-out infinite;
+}
+
+@keyframes haloPulse {
+    0%, 100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0.65;
+    }
+    50% {
+        transform: translate(-50%, -50%) scale(1.12);
+        opacity: 0.95;
+    }
+}
+
+/* Royal Interactive Seal Disc */
+.coverSealDisc {
+    position: relative;
+    z-index: 6;
+    width: 215px;
+    height: 215px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 35%, #FFFFFF 0%, #FAF7F2 65%, #F5EDE0 100%);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem;
+    box-shadow:
+        0 0 0 2px #ECC878,
+        0 0 0 4.5px #FAF7F2,
+        0 0 0 6.5px #C5A059,
+        0 16px 44px rgba(140, 105, 55, 0.2),
+        inset 0 2px 6px rgba(255, 255, 255, 0.9);
+    outline: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.coverSealDisc::before {
+    content: '';
+    position: absolute;
+    inset: 9px;
+    border: 1px dashed rgba(197, 160, 89, 0.55);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.coverSealStar {
+    color: #C5A059;
+    margin-bottom: 0.15rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.coverMonogram {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 0.25rem;
+    font-family: var(--font-playfair), 'Playfair Display', Georgia, serif;
+    font-size: 2.65rem;
+    font-weight: 500;
+    line-height: 1;
+    color: #382A22;
+    font-style: italic;
+    letter-spacing: -0.01em;
+}
+
+.coverMonogramInitial {
+    display: inline-block;
+}
+
+.coverMonogramAmp {
+    font-size: 1.9rem;
+    font-style: italic;
+    color: #C5A059;
+    font-weight: 400;
+    margin: 0 0.1rem;
+}
+
+.coverDiscDivider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    width: 65px;
+    margin: 0.45rem 0 0.35rem;
+}
+
+.coverDiscLine {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(197, 160, 89, 0.8), transparent);
+}
+
+.coverDiscDiamond {
+    font-size: 0.45rem;
+    color: #C5A059;
+}
+
+.coverTapText {
+    font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: #8A6D3B;
+    line-height: 1;
+}
+
+.coverFooterBlock {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    z-index: 5;
+    position: relative;
+}
+
+.coverCoupleNames {
+    font-family: var(--font-playfair), 'Playfair Display', Georgia, serif;
+    font-size: 1.25rem;
+    color: #382A22;
+    letter-spacing: 0.02em;
+    margin: 0;
+}
+
+.coverPromptHint {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.78rem;
+    color: #8A734C;
+    letter-spacing: 0.04em;
+}
+
+.coverPulseDot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #C5A059;
+    animation: dotPulse 2s ease-in-out infinite;
+}
+
+@keyframes dotPulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 0.7;
+    }
+    50% {
+        transform: scale(1.4);
+        opacity: 1;
+    }
+}
+
+/* White Wash Radiant Expansion Transition */
+.whiteWashOverlay {
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200vw;
+    height: 200vh;
+    z-index: 99999;
+    pointer-events: none;
+    background: radial-gradient(circle at center, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.98) 45%, rgba(253, 251, 247, 0.92) 75%, rgba(245, 238, 220, 0.75) 100%);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+}
+
+@media (max-width: 480px) {
+    .coverCard {
+        padding: 3rem 1.5rem 2.5rem;
+        min-height: 520px;
+        border-radius: 36px;
+    }
+
+    .coverRotatingMandala {
+        width: 360px;
+        height: 360px;
+    }
+
+    .coverSealDisc {
+        width: 195px;
+        height: 195px;
+    }
+
+    .coverMonogram {
+        font-size: 2.35rem;
+    }
+
+    .coverCenterStage {
+        height: 300px;
+    }
 }

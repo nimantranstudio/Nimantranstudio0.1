@@ -3,7 +3,7 @@
 import { useWeddingStore } from '@/store/wedding-store';
 import { formatDisplayDate, formatLongDisplayDate, formatDisplayTime, parseWeddingDate, calculateDaysRemaining } from '@/lib/format-date';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { WelcomeDialog } from '@/components/dashboard/WelcomeDialog';
 import { InvitationCard, InvitationCardRef } from '@/components/preview/InvitationCard';
 import { PreviewCard } from '@/components/preview/PreviewCard';
@@ -588,10 +588,10 @@ export default function DashboardPage() {
         }
     }, []);
 
-    const closeWelcome = () => {
+    const closeWelcome = useCallback(() => {
         setShowWelcome(false);
         window.history.replaceState({}, '', window.location.pathname);
-    };
+    }, []);
 
     // Load real RSVP responses for the summary card (same definitions as the RSVP
     // Manager: attending = headcount of accepted guests, not-attending = declines).

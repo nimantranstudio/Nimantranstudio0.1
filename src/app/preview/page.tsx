@@ -6,7 +6,6 @@ import { useWeddingStore } from '@/store/wedding-store';
 import type { Theme } from '@/lib/constants/themes';
 import { InvitationCard, InvitationCardRef } from '@/components/preview/InvitationCard';
 import { PreviewCard } from '@/components/preview/PreviewCard';
-import { WelcomeDialog } from '@/components/dashboard/WelcomeDialog';
 import styles from '@/components/preview/Preview.module.css';
 import { ChevronLeft, ChevronRight, X, Headphones, Play, Edit, Download, Share2, Check, Lock, Link as LinkIcon, Copy, Sparkles, MessageCircle, Activity, ShieldCheck, Type, Image as ImageIcon, MapPin, Bold, AlignLeft, AlignCenter, AlignRight, Type as FormatIcon, Maximize, Sticker, Trash2, Palette, Square, AlignJustify, ChevronDown, Users, Star, Loader2 } from 'lucide-react';
 import Link from 'next/link';
@@ -348,7 +347,7 @@ function PreviewContent() {
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ bundleId: bundleItems?.[0]?.id })
                         });
-                        router.push('/dashboard');
+                        router.push('/dashboard?welcome=true');
                         return;
                     }
                 }
@@ -441,10 +440,8 @@ function PreviewContent() {
                                 body: JSON.stringify({ bundleId: bundleItems?.[0]?.id })
                             }).catch(() => {});
 
-                            // Brief celebration time on screen, then automatically navigate to dashboard
-                            setTimeout(() => {
-                                router.push('/dashboard');
-                            }, 2600);
+                            // Seamlessly navigate to dashboard where celebration WelcomeDialog appears over the dashboard
+                            router.push('/dashboard?welcome=true');
                         } else {
                             throw new Error(verifyData.error || 'Payment verification failed');
                         }
@@ -684,20 +681,6 @@ function PreviewContent() {
         <div className={styles.previewPage}>
             <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="afterInteractive" onLoad={() => console.log('Razorpay script loaded')} />
             
-            {/* Success Celebration Overlay with Flower Shower */}
-            <WelcomeDialog
-                open={paymentStatus === 'success'}
-                autoDismiss={false}
-                onClose={() => router.push('/dashboard')}
-                coupleNames={[formData.groomName, formData.brideName].filter(Boolean).join(' & ') || undefined}
-                orderId={receiptInfo?.orderId}
-                amount={receiptInfo?.amount}
-                planName={selectedPlan}
-                themeName={theme?.name}
-                receiptNumber={receiptInfo?.invoiceNumber}
-                paymentMethod={receiptInfo?.paymentMethod}
-            />
-
             {/* Hidden, always-mounted hero card — captured to a PNG at payment success
                 for the WhatsApp welcome (so it's the couple's REAL card, not a theme sample). */}
             {heroItem && theme && (

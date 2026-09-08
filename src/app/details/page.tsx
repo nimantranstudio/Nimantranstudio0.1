@@ -36,53 +36,73 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { InvitationCard, InvitationCardRef } from '@/components/preview/InvitationCard';
 import { PreviewCard } from '@/components/preview/PreviewCard';
-import { IntricateMandalaSvg } from '@/components/ui/IntricateMandala';
-import confetti from 'canvas-confetti';
 import { resolveEventSections } from '@/lib/templates/event-type';
+import { IntricateMandalaSvg } from '@/components/ui/IntricateMandala';
 
-// Motion variants for welcome popup transitions (apple-design / emil-design-eng / ui-ux-pro-max)
+// Motion variants for welcome popup transitions (animation-vocabulary / emil-design-eng / review-animations)
 const overlayVariants = {
     hidden: { opacity: 0 },
     visible: { 
         opacity: 1, 
-        transition: { duration: 0.35, ease: [0.23, 1, 0.32, 1] as const } 
+        transition: { duration: 0.3, ease: [0.23, 1, 0.32, 1] as const } 
     },
     exit: { 
         opacity: 0, 
-        transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] as const } 
+        transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] as const } 
     }
 };
 
 const cardVariants = {
-    hidden: { scale: 0.94, opacity: 0, y: 12 },
+    hidden: { scale: 0.88, opacity: 0, y: 24 },
     visible: { 
         scale: 1, 
         opacity: 1, 
         y: 0, 
         transition: { 
             type: "spring" as const, 
-            bounce: 0.15,
-            duration: 0.4,
-            staggerChildren: 0.04,
-            delayChildren: 0.05
+            stiffness: 440,
+            damping: 22,
+            mass: 0.85,
+            staggerChildren: 0.065,
+            delayChildren: 0.08
         }
     },
     exit: { 
-        scale: 0.96, 
+        scale: 0.95, 
         opacity: 0,
-        y: -10,
-        transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] as const } 
+        y: -12,
+        transition: { duration: 0.28, ease: [0.23, 1, 0.32, 1] as const } 
+    }
+};
+
+const iconVariants = {
+    hidden: { scale: 0.5, opacity: 0, rotate: -12 },
+    visible: { 
+        scale: 1, 
+        opacity: 1, 
+        rotate: 0,
+        transition: { 
+            type: "spring" as const, 
+            stiffness: 500, 
+            damping: 18,
+            delay: 0.1
+        }
     }
 };
 
 const itemVariants = {
-    hidden: { y: 8, opacity: 0 },
+    hidden: { y: 14, opacity: 0 },
     visible: { 
         y: 0, 
         opacity: 1, 
-        transition: { type: "spring" as const, bounce: 0.2, duration: 0.35 }
+        transition: { 
+            type: "spring" as const, 
+            stiffness: 420, 
+            damping: 24 
+        }
     }
 };
+
 
 function DetailsContent() {
     const router = useRouter();
@@ -246,44 +266,10 @@ function DetailsContent() {
         window.history.replaceState({}, '', newUrl);
     };
 
-    const triggerCelebrationExplosion = () => {
-        // Refined background confetti matching Success overlay
-        confetti({
-            particleCount: 75, 
-            spread: 140,
-            origin: { x: 0.5, y: 0.5 },
-            angle: 90, 
-            colors: ['#D4AF37', '#AA861E', '#FFFFFF', '#E5E4E2'],
-            shapes: ['circle', 'square'],
-            gravity: 0.5, 
-            scalar: 1.0, 
-            ticks: 190, 
-            startVelocity: 34, 
-            drift: 0.05, 
-            zIndex: 10005 
-        });
-        
-        // Refined foreground confetti (cinematic depth of field simulation)
-        confetti({
-            particleCount: 15, 
-            spread: 160,
-            origin: { x: 0.5, y: 0.5 },
-            angle: 90, 
-            colors: ['#D4AF37', '#FFFFFF'],
-            shapes: ['circle'],
-            gravity: 0.55, 
-            scalar: 1.8, 
-            ticks: 190, 
-            startVelocity: 42, 
-            zIndex: 10006 
-        });
-    };
-
     useEffect(() => {
         setIsMounted(true);
         if (searchParams.get('welcome') === 'true') {
             setShowWelcomeOverlay(true);
-            triggerCelebrationExplosion();
             
             // Smooth auto-dismiss after 2 seconds so user has time to read and enjoy the moment
             const timer = setTimeout(() => {
@@ -291,9 +277,6 @@ function DetailsContent() {
             }, 2000);
             return () => {
                 clearTimeout(timer);
-                try {
-                    confetti.reset();
-                } catch (_) {}
             };
         }
     }, [searchParams]);
@@ -456,7 +439,7 @@ function DetailsContent() {
 
     return (
         <div className={styles.page}>
-            <AnimatePresence onExitComplete={() => { try { confetti.reset(); } catch (_) {} }}>
+            <AnimatePresence>
                 {showWelcomeOverlay && (
                     <motion.div
                         variants={overlayVariants}
@@ -471,15 +454,28 @@ function DetailsContent() {
                             variants={cardVariants}
                             className={styles.transitionContent}
                         >
+                            {/* Golden Shine Beam - matching welcome popover */}
                             <motion.div
-                                variants={itemVariants}
+                                initial={{ x: '-150%', skewX: -30 }}
+                                animate={{ x: '250%', skewX: -30 }}
+                                transition={{
+                                    repeat: Infinity,
+                                    duration: 4,
+                                    ease: [0.4, 0, 0.2, 1],
+                                    repeatDelay: 1.5,
+                                }}
+                                className={styles.shineBeam}
+                            />
+
+                            <motion.div
+                                variants={iconVariants}
                                 className={styles.transitionIconWrapper}
                             >
                                 <motion.div
-                                    animate={{ y: [0, -8, 0], scale: [1, 1.05, 1] }}
-                                    transition={{ repeat: Infinity, repeatType: "reverse", duration: 2.5, ease: [0.77, 0, 0.175, 1] }}
+                                    animate={{ y: [0, -6, 0], scale: [1, 1.06, 1] }}
+                                    transition={{ repeat: Infinity, repeatType: "reverse", duration: 2.2, ease: [0.77, 0, 0.175, 1] }}
                                 >
-                                    <Heart className={styles.transitionHeartOutline} size={48} strokeWidth={0.75} />
+                                    <Heart className={styles.transitionHeartFilled} size={36} fill="#D4AF37" color="#D4AF37" />
                                 </motion.div>
                             </motion.div>
 
