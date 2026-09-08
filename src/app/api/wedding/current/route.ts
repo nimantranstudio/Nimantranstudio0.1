@@ -27,7 +27,11 @@ export async function GET(req: NextRequest) {
         const wedding = await prisma.wedding.findFirst({
             where: { ownerId: user.id },
             orderBy: { createdAt: 'desc' },
-            include: { events: true },
+            include: {
+                events: {
+                    include: { generatedCard: { select: { imageUrl: true, status: true } } },
+                },
+            },
         });
 
         if (!wedding) {

@@ -114,6 +114,12 @@ export default function DashboardPage() {
     const [cardEditNonce, setCardEditNonce] = useState(0);
     const [isSavingEdit, setIsSavingEdit] = useState(false);
     const [editSaveError, setEditSaveError] = useState<string | null>(null);
+    // previewItems[i].id (BundleItem id) -> whether that event's card is already stored
+    // in Firebase Storage (GeneratedCard.imageUrl). Seeded from the DB alongside
+    // dbEventIdByItemId; used to fire a one-time background capture+upload the first
+    // time a card without a stored image is viewed, and updated after any save so we
+    // never re-upload a card that's already current.
+    const [cardStoredByItemId, setCardStoredByItemId] = useState<Record<string, boolean>>({});
     const [bundleAssets, setBundleAssets] = useState<Record<string, string>>({});
     const [activeEventId, setActiveEventId] = useState<string>('save_the_date');
 
@@ -234,6 +240,33 @@ export default function DashboardPage() {
         }
     };
 
+    // Captures the currently-rendered Suite Preview card and persists it as that
+    // event's GeneratedCard (Firebase Storage + a DB row scoped to the owner).
+    // Best-effort: a failure here never blocks the caller — Download/Share/Edit
+    // all still work off the live client render regardless, this is purely the
+    // "save an artifact for next time" step. Skips work already done via
+    // cardStoredByItemId so viewing an already-stored card repeatedly doesn't
+    // re-upload it.
+    const persistCardImage = async (itemId: string, force = false) => {
+        if (!force && cardStoredByItemId[itemId]) return;
+        const dbEventId = dbEventIdByItemId[itemId];
+        if (!dbEventId) return;
+        try {
+            const dataUrl = await suitePreviewCardRef.current?.captureDataUrl();
+            if (!dataUrl) return;
+            const res = await fetch(`/api/wedding-event/${dbEventId}/card`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ dataUrl, bundleItemId: itemId }),
+            });
+            if (res.ok) {
+                setCardStoredByItemId((prev) => ({ ...prev, [itemId]: true }));
+            }
+        } catch {
+            // Non-fatal — the card still renders live; this only affects the cached copy.
+        }
+    };
+
     // Dashboard-only edit: Name/Date/Time/Venue for one card in the Suite Preview,
     // edited directly on the card itself (InvitationCard's dashboardEditMode). A real
     // PATCH against the existing WeddingEvent row — never creates a new event/card/
@@ -288,6 +321,10 @@ export default function DashboardPage() {
             // Backend confirmed the write — now it's safe to reflect it locally.
             setEventOverrides((prev) => ({ ...prev, [itemId]: payload }));
             setIsEditingCard(false);
+            // Re-capture the card once the dashed edit-mode outline has cleared (the
+            // dashboardEditMode cleanup effect runs on the next render) so the stored
+            // copy shows the clean, saved card rather than the mid-edit outline.
+            setTimeout(() => { persistCardImage(itemId, true); }, 600);
         } catch (err) {
             setEditSaveError('Network error — please try again.');
         } finally {
@@ -756,17 +793,20 @@ export default function DashboardPage() {
                 if (dbEvents.length === 0) return;
                 const overrides: Record<string, { name: string; date: string; time: string; venue: string }> = {};
                 const idMap: Record<string, string> = {};
+                const storedMap: Record<string, boolean> = {};
                 for (const item of items) {
                     const itemType = classifyEventType(item.event?.name || item.name);
                     const match = dbEvents.find((de) => classifyEventType(de.name) === itemType);
                     if (match) {
                         overrides[item.id] = { name: match.name, date: match.date, time: match.time, venue: match.venue };
                         idMap[item.id] = match.id;
+                        storedMap[item.id] = !!match.generatedCard?.imageUrl;
                     }
                 }
                 if (Object.keys(overrides).length > 0) {
                     setEventOverrides((prev) => ({ ...overrides, ...prev }));
                     setDbEventIdByItemId((prev) => ({ ...idMap, ...prev }));
+                    setCardStoredByItemId((prev) => ({ ...storedMap, ...prev }));
                 }
             })
             .catch(() => { /* Non-fatal — dashboard still works off local formData. */ });
@@ -780,6 +820,22 @@ export default function DashboardPage() {
         setIsEditingCard(false);
         setEditSaveError(null);
     }, [suitePreviewIndex, suitePreview]);
+
+    // First time a card is viewed in the Suite Preview modal, store a copy of it —
+    // this is what makes "we generated this card" mean something durable rather than
+    // only ever existing as a live client render. Skips cards that already have a
+    // stored copy (cardStoredByItemId) and re-fires per card as the user pages through.
+    useEffect(() => {
+        if (!suitePreview) return;
+        const items = previewItems;
+        if (items.length === 0) return;
+        const currentIndex = Math.min(suitePreviewIndex, items.length - 1);
+        const currentItem = items[currentIndex];
+        if (!currentItem || cardStoredByItemId[currentItem.id]) return;
+        const timer = setTimeout(() => { persistCardImage(currentItem.id); }, 1200);
+        return () => clearTimeout(timer);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [suitePreview, suitePreviewIndex, dbEventIdByItemId, cardStoredByItemId]);
 
     // Bundle items are HTML-template or structured-card markers, never plain
     // raster images — a raw <a href={item.image}> download just saves the

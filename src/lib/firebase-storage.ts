@@ -55,3 +55,24 @@ export async function uploadCardImage(
     const encodedPath = encodeURIComponent(objectPath);
     return `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodedPath}?alt=media&token=${token}`;
 }
+
+/**
+ * Deletes a previously-uploaded card image given the URL uploadCardImage()
+ * returned. Best-effort: swallows errors (a missing/already-deleted object,
+ * or a URL that isn't one of ours) rather than blocking whatever caller is
+ * replacing/cleaning up the image.
+ */
+export async function deleteCardImage(url: string): Promise<void> {
+    try {
+        const match = /\/o\/([^?]+)/.exec(url);
+        if (!match) return;
+        const objectPath = decodeURIComponent(match[1]);
+        if (!BUCKET) return;
+
+        initAdmin();
+        const bucket = getStorage().bucket(BUCKET);
+        await bucket.file(objectPath).delete({ ignoreNotFound: true });
+    } catch (error: any) {
+        console.error('Failed to delete card image:', error?.message);
+    }
+}
