@@ -2,7 +2,7 @@
 
 import { WeddingEvent } from '@/lib/schemas/wedding-form';
 import { Theme } from '@/lib/constants/themes';
-import { formatDisplayDate, formatDisplayTime } from '@/lib/format-date';
+import { formatLongDisplayDate, formatDisplayTime } from '@/lib/format-date';
 import styles from './Preview.module.css';
 import { Play } from 'lucide-react';
 import Image from 'next/image';
@@ -484,7 +484,10 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
     }));
 
     // Site-wide date/time formatting (DD-MM-YYYY, 12-hour) — shared with every surface.
-    const formatDate = (dateStr?: string) => formatDisplayDate(dateStr);
+    // Cards always show the full "15 February 2026" style (day/long-month/year), never
+    // the short DD-MM-YYYY form — editing a date changes which date it is, never the
+    // format it's shown in, so re-formatting after a save must land back in this style too.
+    const formatDate = (dateStr?: string) => formatLongDisplayDate(dateStr);
     const formatTime = (timeStr?: string) => formatDisplayTime(timeStr);
 
     // Handle scaling based on container width
@@ -1548,7 +1551,7 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
             groomParents: groomParents || undefined,
             brideParents: brideParents || undefined,
             eventName:    event?.name  || undefined,
-            eventDate:    formatDisplayDate(event?.date)  || undefined,
+            eventDate:    formatLongDisplayDate(event?.date)  || undefined,
             eventTime:    formatDisplayTime(event?.time)  || undefined,
             eventVenue:   event?.venue || undefined,
         });
