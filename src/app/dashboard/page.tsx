@@ -8,6 +8,7 @@ import { WelcomeDialog } from '@/components/dashboard/WelcomeDialog';
 import { InvitationCard, InvitationCardRef } from '@/components/preview/InvitationCard';
 import { PreviewCard } from '@/components/preview/PreviewCard';
 import { dataUrlToFile } from '@/lib/capture';
+import { classifyEventType } from '@/lib/templates/event-type';
 import type { Theme } from '@/lib/constants/themes';
 import styles from './dashboard.module.css';
 import redesignStyles from './dashboard-redesign.module.css';
@@ -95,6 +96,19 @@ export default function DashboardPage() {
     const [lightbox, setLightbox] = useState<{ image: string | null; title: string } | null>(null);
     const [suitePreview, setSuitePreview] = useState(false);
     const [suitePreviewIndex, setSuitePreviewIndex] = useState(0);
+
+    // Dashboard-side event edits (Name/Date/Time/Venue), keyed by BundleItem id — the
+    // same id previewItems already uses as its own item.id, stable per card. Seeded from
+    // the DB on mount (the backend is the source of truth) and updated in place on Save,
+    // independent of the /details Zustand store (formData.events/primaryDate) so a
+    // Dashboard edit is never silently overwritten by that store re-rendering.
+    const [eventOverrides, setEventOverrides] = useState<Record<string, { name: string; date: string; time: string; venue: string }>>({});
+    // previewItems[i].id (BundleItem id) -> WeddingEvent.id (the real DB row PATCH targets).
+    const [dbEventIdByItemId, setDbEventIdByItemId] = useState<Record<string, string>>({});
+    const [isEditingCard, setIsEditingCard] = useState(false);
+    const [editDraft, setEditDraft] = useState<{ name: string; date: string; time: string; venue: string } | null>(null);
+    const [isSavingEdit, setIsSavingEdit] = useState(false);
+    const [editSaveError, setEditSaveError] = useState<string | null>(null);
     const [bundleAssets, setBundleAssets] = useState<Record<string, string>>({});
     const [activeEventId, setActiveEventId] = useState<string>('save_the_date');
 
@@ -212,6 +226,58 @@ export default function DashboardPage() {
             XLSX.writeFile(workbook, `wedding_guest_list.xlsx`);
         } catch (err) {
             console.error('Error exporting Excel file:', err);
+        }
+    };
+
+    // Dashboard-only edit: Name/Date/Time/Venue for one card in the Suite Preview.
+    // A real PATCH against the existing WeddingEvent row — never creates a new
+    // event/card/template. Template identity (bundleId+eventId) is untouched; this
+    // only ever updates the couple's own data for that ceremony.
+    const handleStartCardEdit = (item: { id: string; event: any }) => {
+        setEditSaveError(null);
+        setEditDraft({
+            name: item.event?.name || '',
+            date: item.event?.date || '',
+            time: item.event?.time || '',
+            venue: item.event?.venue || '',
+        });
+        setIsEditingCard(true);
+    };
+
+    const handleCancelCardEdit = () => {
+        setIsEditingCard(false);
+        setEditDraft(null);
+        setEditSaveError(null);
+    };
+
+    const handleSaveCardEdit = async (itemId: string) => {
+        if (!editDraft) return;
+        const dbEventId = dbEventIdByItemId[itemId];
+        if (!dbEventId) {
+            setEditSaveError("Couldn't find this event's saved record. Try refreshing the page.");
+            return;
+        }
+        setIsSavingEdit(true);
+        setEditSaveError(null);
+        try {
+            const res = await fetch(`/api/wedding-event/${dbEventId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(editDraft),
+            });
+            const data = await res.json().catch(() => null);
+            if (!res.ok) {
+                setEditSaveError(data?.error || 'Failed to save changes.');
+                return;
+            }
+            // Backend confirmed the write — now it's safe to reflect it locally.
+            setEventOverrides((prev) => ({ ...prev, [itemId]: { ...editDraft } }));
+            setIsEditingCard(false);
+            setEditDraft(null);
+        } catch (err) {
+            setEditSaveError('Network error — please try again.');
+        } finally {
+            setIsSavingEdit(false);
         }
     };
 
@@ -643,7 +709,56 @@ export default function DashboardPage() {
         return items;
     };
 
-    const previewItems = buildPreviewItems();
+    // Layer any Dashboard-saved edits on top of the base items — applied here, at the
+    // source, so the hero preview, carousel labels/dates, and Suite Preview modal all
+    // reflect a saved edit consistently, not just the modal it was made from.
+    const previewItems = buildPreviewItems().map((item) => {
+        const override = eventOverrides[item.id];
+        if (!override) return item;
+        return {
+            ...item,
+            name: override.name,
+            event: { ...item.event, name: override.name, date: override.date, time: override.time, venue: override.venue },
+        };
+    });
+
+    // Seed eventOverrides/dbEventIdByItemId from the backend once per mount — the DB is
+    // the source of truth for saved Name/Date/Time/Venue values, so this is what makes a
+    // Dashboard edit survive a refresh and stay ahead of whatever the (client-only,
+    // /details-facing) Zustand store happens to hold. Matches DB WeddingEvent rows to
+    // BundleItem-backed previewItems by classified event type — the same tool
+    // (classifyEventType) already used for the bundleId+eventId template mapping,
+    // reused here rather than inventing a second matching scheme — never by raw name
+    // string, which the admin/couple can freely edit.
+    useEffect(() => {
+        if (!isAuthenticated || bundleItems.length === 0) return;
+        let alive = true;
+        const items = buildPreviewItems();
+        fetch('/api/wedding/current')
+            .then((res) => (res.ok ? res.json() : null))
+            .then((data) => {
+                if (!alive) return;
+                const dbEvents: any[] = data?.wedding?.events || [];
+                if (dbEvents.length === 0) return;
+                const overrides: Record<string, { name: string; date: string; time: string; venue: string }> = {};
+                const idMap: Record<string, string> = {};
+                for (const item of items) {
+                    const itemType = classifyEventType(item.event?.name || item.name);
+                    const match = dbEvents.find((de) => classifyEventType(de.name) === itemType);
+                    if (match) {
+                        overrides[item.id] = { name: match.name, date: match.date, time: match.time, venue: match.venue };
+                        idMap[item.id] = match.id;
+                    }
+                }
+                if (Object.keys(overrides).length > 0) {
+                    setEventOverrides((prev) => ({ ...overrides, ...prev }));
+                    setDbEventIdByItemId((prev) => ({ ...idMap, ...prev }));
+                }
+            })
+            .catch(() => { /* Non-fatal — dashboard still works off local formData. */ });
+        return () => { alive = false; };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isAuthenticated, bundleItems.length]);
 
     // Bundle items are HTML-template or structured-card markers, never plain
     // raster images — a raw <a href={item.image}> download just saves the
@@ -1467,7 +1582,13 @@ export default function DashboardPage() {
                             if (!validItems || validItems.length === 0) return null;
                             const currentIndex = Math.min(suitePreviewIndex, validItems.length - 1);
                             const currentItem = validItems[currentIndex];
-                            
+                            // Live draft feeds the rendered card while editing, so typing updates the
+                            // preview immediately — the same reactive postMessage path /details uses.
+                            // Nothing is persisted (to the DB or to eventOverrides) until Save Changes.
+                            const displayEvent = (isEditingCard && editDraft)
+                                ? { ...currentItem.event, ...editDraft }
+                                : currentItem.event;
+
                             return (
                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.25rem', width: '100%' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '2rem', width: '100%', justifyContent: 'center' }}>
@@ -1489,7 +1610,7 @@ export default function DashboardPage() {
                                         >
                                             <PreviewCard
                                                 ref={suitePreviewCardRef}
-                                                event={currentItem.event}
+                                                event={displayEvent}
                                                 theme={theme}
                                                 groomName={formData.groomName || ''}
                                                 brideName={formData.brideName || ''}
@@ -1517,6 +1638,7 @@ export default function DashboardPage() {
                                     </div>
 
                                     {/* Action buttons directly below the card and above the carousel dots with equal sizing */}
+                                    {!isEditingCard && (
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', flexWrap: 'wrap', justifyContent: 'center', marginTop: '0.25rem' }}>
                                         <button
                                             onClick={(e) => {
@@ -1577,7 +1699,109 @@ export default function DashboardPage() {
                                             <Download size={15} />
                                             <span>Download Card</span>
                                         </button>
+
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); handleStartCardEdit(currentItem); }}
+                                            style={{
+                                                background: 'rgba(255, 255, 255, 0.15)',
+                                                border: '1px solid rgba(255, 255, 255, 0.35)',
+                                                color: '#FFFFFF',
+                                                minWidth: '120px',
+                                                height: '42px',
+                                                padding: '0 1.25rem',
+                                                borderRadius: '9999px',
+                                                fontSize: '0.85rem',
+                                                fontWeight: 600,
+                                                cursor: 'pointer',
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                gap: '0.5rem',
+                                                backdropFilter: 'blur(10px)',
+                                                boxShadow: '0 4px 14px rgba(0, 0, 0, 0.25)',
+                                                transition: 'all 0.15s ease',
+                                                boxSizing: 'border-box'
+                                            }}
+                                        >
+                                            <Edit3 size={15} />
+                                            <span>Edit</span>
+                                        </button>
                                     </div>
+                                    )}
+
+                                    {/* Dashboard-only edit form — Name/Date/Time/Venue only. The template/design
+                                        itself is never editable from here. */}
+                                    {isEditingCard && editDraft && (
+                                        <div
+                                            onClick={(e) => e.stopPropagation()}
+                                            style={{
+                                                width: '100%',
+                                                maxWidth: '360px',
+                                                background: 'rgba(255,255,255,0.08)',
+                                                border: '1px solid rgba(255,255,255,0.2)',
+                                                borderRadius: '14px',
+                                                padding: '1.1rem',
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                gap: '0.75rem',
+                                                backdropFilter: 'blur(10px)',
+                                            }}
+                                        >
+                                            {([
+                                                { key: 'name' as const, label: 'Name', type: 'text' },
+                                                { key: 'date' as const, label: 'Date', type: 'date' },
+                                                { key: 'time' as const, label: 'Time', type: 'time' },
+                                                { key: 'venue' as const, label: 'Venue', type: 'text' },
+                                            ]).map((field) => (
+                                                <label key={field.key} style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', fontSize: '0.78rem', color: 'rgba(255,255,255,0.75)' }}>
+                                                    {field.label}
+                                                    <input
+                                                        type={field.type}
+                                                        value={editDraft[field.key]}
+                                                        onChange={(e) => setEditDraft((prev) => prev ? { ...prev, [field.key]: e.target.value } : prev)}
+                                                        style={{
+                                                            background: 'rgba(255,255,255,0.1)',
+                                                            border: '1px solid rgba(255,255,255,0.25)',
+                                                            borderRadius: '8px',
+                                                            padding: '0.55rem 0.7rem',
+                                                            color: '#fff',
+                                                            fontSize: '0.9rem',
+                                                            colorScheme: 'dark',
+                                                        }}
+                                                    />
+                                                </label>
+                                            ))}
+
+                                            {editSaveError && (
+                                                <p style={{ margin: 0, color: '#FCA5A5', fontSize: '0.78rem' }}>{editSaveError}</p>
+                                            )}
+
+                                            <div style={{ display: 'flex', gap: '0.6rem', marginTop: '0.25rem' }}>
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); handleCancelCardEdit(); }}
+                                                    disabled={isSavingEdit}
+                                                    style={{
+                                                        flex: 1, background: 'transparent', border: '1px solid rgba(255,255,255,0.35)',
+                                                        color: '#fff', borderRadius: '9999px', padding: '0.6rem', fontSize: '0.85rem',
+                                                        fontWeight: 600, cursor: isSavingEdit ? 'default' : 'pointer', opacity: isSavingEdit ? 0.5 : 1,
+                                                    }}
+                                                >
+                                                    Cancel
+                                                </button>
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); handleSaveCardEdit(currentItem.id); }}
+                                                    disabled={isSavingEdit}
+                                                    style={{
+                                                        flex: 1, background: '#D4AF37', border: 'none',
+                                                        color: '#1a1a1a', borderRadius: '9999px', padding: '0.6rem', fontSize: '0.85rem',
+                                                        fontWeight: 700, cursor: isSavingEdit ? 'default' : 'pointer', opacity: isSavingEdit ? 0.7 : 1,
+                                                    }}
+                                                >
+                                                    {isSavingEdit ? 'Saving…' : 'Save Changes'}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
 
                                     <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.25rem', flexWrap: 'wrap', justifyContent: 'center' }}>
                                         {validItems.map((_, idx) => (
