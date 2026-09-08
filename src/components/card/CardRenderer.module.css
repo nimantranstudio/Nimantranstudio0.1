@@ -1,6 +1,7 @@
 .canvas {
     position: relative;
     width: 100%;
+    height: 100%;
     /* Establish a container so layer font sizes can use cqw (≈ % of canvas width),
        making the whole card resolution-independent. */
     container-type: size;

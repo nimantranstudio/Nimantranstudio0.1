@@ -26,7 +26,6 @@ import {
     ExternalLink,
     AlertCircle,
     ArrowRight,
-    ArrowDownUp,
     Play
 } from 'lucide-react';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
@@ -448,8 +447,8 @@ function DetailsContent() {
         router.push('/preview?processing=true');
     };
 
-    // Swap names logic
-    const isBrideFirst = formData.nameOrder === 'bride_first';
+    // Swap names logic - mapped to invitationFor / bride/groom selection
+    const isBrideFirst = formData.invitationFor ? formData.invitationFor === 'bride' : formData.nameOrder === 'bride_first';
     const displayGroomName = isBrideFirst ? formData.brideName : formData.groomName;
     const displayBrideName = isBrideFirst ? formData.groomName : formData.brideName;
     const displayGroomParents = isBrideFirst ? formData.brideParents : formData.groomParents;
@@ -785,115 +784,156 @@ function DetailsContent() {
                                     style={{ overflow: activeChapter === 1 ? 'visible' : 'hidden' }}
                                 >
                                     <div className={styles.chapterBody}>
-                                        <div style={{ display: 'flex', flexDirection: isBrideFirst ? 'column-reverse' : 'column', gap: '1.5rem', position: 'relative' }}>
-                                            <button 
-                                                onClick={() => updateFormData({ nameOrder: isBrideFirst ? 'groom_first' : 'bride_first' })}
-                                                className={styles.swapButton}
-                                                style={{ position: 'absolute', top: '-1.5rem', right: '0', zIndex: 10 }}
-                                                type="button"
-                                                title="Swap Order"
-                                            >
-                                                <ArrowDownUp size={14} color="#6B7280" />
-                                            </button>
-                                            
-                                            <div className={clsx(styles.studioInputGroup, styles.split)}>
-                                                <div>
-                                                    <label className={styles.studioLabel}>Who is the Groom?</label>
-                                                    <Input
-                                                        label="Groom's First Name"
-                                                        hideLabel
-                                                        value={formData.groomName}
-                                                        onFocus={() => handleFocus('groomName')}
-                                                        onBlur={handleBlur}
-                                                        onChange={(e) => updateFormData({ groomName: e.target.value })}
-                                                        placeholder="Groom Name"
-                                                        maxLength={25}
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label className={styles.studioLabel}>Groom's Parents</label>
-                                                    <Input
-                                                        label="Groom's Parents"
-                                                        hideLabel
-                                                        value={formData.groomParents || ''}
-                                                        onFocus={() => handleFocus('groomParents')}
-                                                        onBlur={handleBlur}
-                                                        onChange={(e) => updateFormData({ groomParents: e.target.value })}
-                                                        placeholder="e.g. Mr. & Mrs. Sharma"
-                                                    />
-                                                </div>
-                                            </div>
-                                            
-                                            <div className={clsx(styles.studioInputGroup, styles.split)}>
-                                                <div>
-                                                    <label className={styles.studioLabel}>Who is the Bride?</label>
-                                                    <Input
-                                                        label="Bride's First Name"
-                                                        hideLabel
-                                                        value={formData.brideName}
-                                                        onFocus={() => handleFocus('brideName')}
-                                                        onBlur={handleBlur}
-                                                        onChange={(e) => updateFormData({ brideName: e.target.value })}
-                                                        placeholder="Bride Name"
-                                                        maxLength={25}
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label className={styles.studioLabel}>Bride's Parents</label>
-                                                    <Input
-                                                        label="Bride's Parents"
-                                                        hideLabel
-                                                        value={formData.brideParents || ''}
-                                                        onFocus={() => handleFocus('brideParents')}
-                                                        onBlur={handleBlur}
-                                                        onChange={(e) => updateFormData({ brideParents: e.target.value })}
-                                                        placeholder="e.g. Mr. & Mrs. Patel"
-                                                    />
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div style={{ marginTop: '1.5rem' }}>
+                                        <div className={styles.inviteForWrapper}>
                                             <label className={styles.studioLabel}>Creating Invite For</label>
-                                            <div style={{ display: 'flex', gap: '0.75rem' }} role="radiogroup" aria-label="Creating invite for">
+                                            <div className={styles.segmentedControl} role="tablist" aria-label="Creating invite for">
                                                 {(['bride', 'groom'] as const).map((side) => {
-                                                    const isSelected = (formData.invitationFor || 'bride') === side;
+                                                    const isSelected = (formData.invitationFor || (isBrideFirst ? 'bride' : 'groom')) === side;
                                                     return (
-                                                        <label
+                                                        <button
                                                             key={side}
-                                                            style={{
-                                                                flex: 1,
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                justifyContent: 'center',
-                                                                gap: '0.5rem',
-                                                                padding: '0.7rem 1rem',
-                                                                border: `1px solid ${isSelected ? '#D4AF37' : '#E5E7EB'}`,
-                                                                borderRadius: '10px',
-                                                                background: isSelected ? '#FFFBEB' : '#fff',
-                                                                color: isSelected ? '#92702A' : '#374151',
-                                                                fontWeight: isSelected ? 600 : 500,
-                                                                cursor: 'pointer',
-                                                                transition: 'all 0.15s ease',
-                                                            }}
+                                                            type="button"
+                                                            role="tab"
+                                                            aria-selected={isSelected}
+                                                            className={clsx(styles.segmentBtn, isSelected && styles.segmentBtnActive)}
+                                                            onClick={() => updateFormData({
+                                                                invitationFor: side,
+                                                                nameOrder: side === 'bride' ? 'bride_first' : 'groom_first'
+                                                            })}
                                                         >
-                                                            <input
-                                                                type="radio"
-                                                                name="invitationFor"
-                                                                value={side}
-                                                                checked={isSelected}
-                                                                onChange={() => updateFormData({ invitationFor: side })}
-                                                                style={{ accentColor: '#D4AF37' }}
-                                                            />
-                                                            {side === 'bride' ? 'Bride' : 'Groom'}
-                                                        </label>
+                                                            {isSelected && (
+                                                                <motion.div
+                                                                    layoutId="activeInviteForIndicator"
+                                                                    className={styles.segmentIndicator}
+                                                                    transition={{ type: "spring", bounce: 0.12, duration: 0.35 }}
+                                                                />
+                                                            )}
+                                                            <span className={styles.segmentLabel}>
+                                                                {side === 'bride' ? 'Bride' : 'Groom'}
+                                                            </span>
+                                                        </button>
                                                     );
                                                 })}
                                             </div>
-                                            <p style={{ margin: '0.5rem 0 0', fontSize: '0.8rem', color: '#6B7280' }}>
-                                                Decides whose name fills the Haldi, Mehendi, and Sangeet cards — e.g. &ldquo;{(formData.invitationFor || 'bride') === 'groom' ? (formData.groomName || 'Groom') : (formData.brideName || 'Bride')} ke haldi&rdquo;.
-                                            </p>
                                         </div>
+
+                                        {isBrideFirst ? (
+                                            <>
+                                                <div className={clsx(styles.studioInputGroup, styles.split)}>
+                                                    <div>
+                                                        <label className={styles.studioLabel}>Who is the Bride?</label>
+                                                        <Input
+                                                            label="Bride's First Name"
+                                                            hideLabel
+                                                            value={formData.brideName}
+                                                            onFocus={() => handleFocus('brideName')}
+                                                            onBlur={handleBlur}
+                                                            onChange={(e) => updateFormData({ brideName: e.target.value })}
+                                                            placeholder="Bride Name"
+                                                            maxLength={25}
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className={styles.studioLabel}>Bride's Parents</label>
+                                                        <Input
+                                                            label="Bride's Parents"
+                                                            hideLabel
+                                                            value={formData.brideParents || ''}
+                                                            onFocus={() => handleFocus('brideParents')}
+                                                            onBlur={handleBlur}
+                                                            onChange={(e) => updateFormData({ brideParents: e.target.value })}
+                                                            placeholder="e.g. Mr. & Mrs. Patel"
+                                                        />
+                                                    </div>
+                                                </div>
+
+                                                <div className={clsx(styles.studioInputGroup, styles.split)}>
+                                                    <div>
+                                                        <label className={styles.studioLabel}>Who is the Groom?</label>
+                                                        <Input
+                                                            label="Groom's First Name"
+                                                            hideLabel
+                                                            value={formData.groomName}
+                                                            onFocus={() => handleFocus('groomName')}
+                                                            onBlur={handleBlur}
+                                                            onChange={(e) => updateFormData({ groomName: e.target.value })}
+                                                            placeholder="Groom Name"
+                                                            maxLength={25}
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className={styles.studioLabel}>Groom's Parents</label>
+                                                        <Input
+                                                            label="Groom's Parents"
+                                                            hideLabel
+                                                            value={formData.groomParents || ''}
+                                                            onFocus={() => handleFocus('groomParents')}
+                                                            onBlur={handleBlur}
+                                                            onChange={(e) => updateFormData({ groomParents: e.target.value })}
+                                                            placeholder="e.g. Mr. & Mrs. Sharma"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <div className={clsx(styles.studioInputGroup, styles.split)}>
+                                                    <div>
+                                                        <label className={styles.studioLabel}>Who is the Groom?</label>
+                                                        <Input
+                                                            label="Groom's First Name"
+                                                            hideLabel
+                                                            value={formData.groomName}
+                                                            onFocus={() => handleFocus('groomName')}
+                                                            onBlur={handleBlur}
+                                                            onChange={(e) => updateFormData({ groomName: e.target.value })}
+                                                            placeholder="Groom Name"
+                                                            maxLength={25}
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className={styles.studioLabel}>Groom's Parents</label>
+                                                        <Input
+                                                            label="Groom's Parents"
+                                                            hideLabel
+                                                            value={formData.groomParents || ''}
+                                                            onFocus={() => handleFocus('groomParents')}
+                                                            onBlur={handleBlur}
+                                                            onChange={(e) => updateFormData({ groomParents: e.target.value })}
+                                                            placeholder="e.g. Mr. & Mrs. Sharma"
+                                                        />
+                                                    </div>
+                                                </div>
+
+                                                <div className={clsx(styles.studioInputGroup, styles.split)}>
+                                                    <div>
+                                                        <label className={styles.studioLabel}>Who is the Bride?</label>
+                                                        <Input
+                                                            label="Bride's First Name"
+                                                            hideLabel
+                                                            value={formData.brideName}
+                                                            onFocus={() => handleFocus('brideName')}
+                                                            onBlur={handleBlur}
+                                                            onChange={(e) => updateFormData({ brideName: e.target.value })}
+                                                            placeholder="Bride Name"
+                                                            maxLength={25}
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className={styles.studioLabel}>Bride's Parents</label>
+                                                        <Input
+                                                            label="Bride's Parents"
+                                                            hideLabel
+                                                            value={formData.brideParents || ''}
+                                                            onFocus={() => handleFocus('brideParents')}
+                                                            onBlur={handleBlur}
+                                                            onChange={(e) => updateFormData({ brideParents: e.target.value })}
+                                                            placeholder="e.g. Mr. & Mrs. Patel"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </>
+                                        )}
                                     </div>
                                 </motion.div>
                             )}
@@ -1102,7 +1142,7 @@ function DetailsContent() {
                                                         </div>
                                                     </div>
 
-                                                    <div className={styles.studioInputGroup}>
+                                                    <div className={clsx(styles.studioInputGroup, styles.split)}>
                                                         <div>
                                                             <label className={styles.studioLabel}>Date</label>
                                                             <Input
@@ -1115,9 +1155,6 @@ function DetailsContent() {
                                                                 onChange={(e) => updateEvent(event.id, { date: e.target.value })}
                                                             />
                                                         </div>
-                                                    </div>
-
-                                                    <div className={clsx(styles.studioInputGroup, styles.split)}>
                                                         <div>
                                                             <label className={styles.studioLabel}>Time</label>
                                                             <Input
@@ -1130,6 +1167,9 @@ function DetailsContent() {
                                                                 onChange={(e) => updateEvent(event.id, { time: e.target.value })}
                                                             />
                                                         </div>
+                                                    </div>
+
+                                                    <div className={styles.studioInputGroup}>
                                                         <div>
                                                             <label className={styles.studioLabel}>Venue Name (Optional)</label>
                                                             <Input

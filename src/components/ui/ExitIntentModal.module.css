@@ -175,8 +175,9 @@
 .emotionalLine {
     font-family: var(--font-serif);
     font-style: italic;
-    color: #C8A951; /* Antique Gold */
+    color: #D4B038;
     font-size: 0.95rem;
+    font-weight: 500;
     margin-bottom: 1.15rem;
     text-align: center;
 }

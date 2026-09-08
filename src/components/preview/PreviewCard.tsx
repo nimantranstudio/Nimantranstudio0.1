@@ -51,7 +51,7 @@ const StructuredPreviewCard = forwardRef<
     return (
         <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <TemplateFonts />
-            <div ref={boxRef} style={{ width: '100%' }}>
+            <div ref={boxRef} style={{ width: '100%', height: '100%' }}>
                 <CardRenderer document={layout} data={data} mode="static" className={className} />
             </div>
         </div>

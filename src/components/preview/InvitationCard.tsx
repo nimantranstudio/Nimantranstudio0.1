@@ -83,8 +83,8 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
     const currentEventType = classifyEventType(event?.heading || event?.name);
     const isSingleNameCeremony = currentEventType === 'haldi' || currentEventType === 'mehendi' || currentEventType === 'sangeet';
     const effectiveBrideName = (isSingleNameCeremony && invitationFor === 'groom') ? groomName : brideName;
-    const [imageDimensions, setImageDimensions] = useState<{ width: number; height: number }>({ width: 600, height: 800 });
-    const [imageRatio, setImageRatio] = useState<number>(3/4);
+    const [imageDimensions, setImageDimensions] = useState<{ width: number; height: number }>({ width: 1080, height: 1920 });
+    const [imageRatio, setImageRatio] = useState<number>(9 / 16);
 
     useEffect(() => {
         if (customImage && !isHTMLDesign) {
@@ -104,9 +104,9 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                         });
                     } else {
                         onLayoutMeasure?.({
-                            width: 600,
-                            height: 800,
-                            aspectRatio: 600 / 800
+                            width: 1080,
+                            height: 1920,
+                            aspectRatio: 9 / 16
                         });
                     }
                 }
@@ -114,9 +114,9 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
         } else if (!isHTMLDesign && !customImage) {
             if (!isRawPreview) {
                 onLayoutMeasure?.({
-                    width: 600,
-                    height: 800,
-                    aspectRatio: 600 / 800
+                    width: 1080,
+                    height: 1920,
+                    aspectRatio: 9 / 16
                 });
             }
         }
@@ -1676,11 +1676,11 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                 boxShadow: 'none',
                 aspectRatio: `${vw} / ${vh}`,
                 width: '100%',
-                height: 'auto'
+                height: '100%'
             } as any}
             onClick={onClick}
         >
-            <svg viewBox={`0 0 ${vw} ${vh}`} width="100%" height="100%" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+            <svg viewBox={`0 0 ${vw} ${vh}`} width="100%" height="100%" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%', display: 'block' }}>
                 {/* Background Image */}
                 {customImage && (
                     <image
@@ -1689,7 +1689,7 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                         y="0"
                         width={vw}
                         height={vh}
-                        preserveAspectRatio="xMidYMid meet"
+                        preserveAspectRatio="xMidYMid slice"
                     />
                 )}
 

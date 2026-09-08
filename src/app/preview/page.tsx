@@ -1398,51 +1398,51 @@ function PreviewContent() {
                             </div>
                         )}
 
-                        {/* Bento Grid of Features */}
-                        <div className={styles.featuresGrid}>
-                            <div className={styles.featureCard}>
-                                <div className={styles.featureIconWrapper}>
-                                    <Sparkles size={22} />
+                        {/* Suite Highlights Container */}
+                        <div className={styles.highlightsContainer}>
+                            <div className={styles.highlightItem}>
+                                <div className={clsx(styles.highlightIcon, styles.iconGold)}>
+                                    <Sparkles size={18} />
                                 </div>
-                                <div className={styles.featureInfo}>
-                                    <h4 className={styles.featureTitle}>12 Premium Assets</h4>
-                                    <p className={styles.featureDesc}>Invitations tailored for every single wedding event</p>
-                                </div>
-                            </div>
-
-                            <div className={styles.featureCard}>
-                                <div className={styles.featureIconWrapper}>
-                                    <LinkIcon size={22} />
-                                </div>
-                                <div className={styles.featureInfo}>
-                                    <h4 className={styles.featureTitle}>RSVP Website</h4>
-                                    <p className={styles.featureDesc}>Track responses and attendance in real time</p>
+                                <div className={styles.highlightContent}>
+                                    <h4 className={styles.highlightTitle}>12 Premium Assets</h4>
+                                    <p className={styles.highlightDesc}>Custom invitations for every ceremony</p>
                                 </div>
                             </div>
 
-                            <div className={styles.featureCard}>
-                                <div className={styles.featureIconWrapper}>
-                                    <Users size={22} />
+                            <div className={styles.highlightItem}>
+                                <div className={clsx(styles.highlightIcon, styles.iconEmerald)}>
+                                    <LinkIcon size={18} />
                                 </div>
-                                <div className={styles.featureInfo}>
-                                    <h4 className={styles.featureTitle}>Guest Dashboard</h4>
-                                    <p className={styles.featureDesc}>Manage your guest list, dietary choices, and companions easily</p>
+                                <div className={styles.highlightContent}>
+                                    <h4 className={styles.highlightTitle}>RSVP Website</h4>
+                                    <p className={styles.highlightDesc}>Real-time guest tracking & confirmations</p>
                                 </div>
                             </div>
 
-                            <div className={styles.featureCard}>
-                                <div className={styles.featureIconWrapper}>
-                                    <MessageCircle size={22} />
+                            <div className={styles.highlightItem}>
+                                <div className={clsx(styles.highlightIcon, styles.iconSapphire)}>
+                                    <Users size={18} />
                                 </div>
-                                <div className={styles.featureInfo}>
-                                    <h4 className={styles.featureTitle}>WhatsApp Sharing</h4>
-                                    <p className={styles.featureDesc}>One click sharing for all guests directly from WhatsApp</p>
+                                <div className={styles.highlightContent}>
+                                    <h4 className={styles.highlightTitle}>Guest Dashboard</h4>
+                                    <p className={styles.highlightDesc}>Dietary choices, plus-ones & lists</p>
+                                </div>
+                            </div>
+
+                            <div className={styles.highlightItem}>
+                                <div className={clsx(styles.highlightIcon, styles.iconGreen)}>
+                                    <MessageCircle size={18} />
+                                </div>
+                                <div className={styles.highlightContent}>
+                                    <h4 className={styles.highlightTitle}>WhatsApp Sharing</h4>
+                                    <p className={styles.highlightDesc}>One-click 1-to-1 personalized delivery</p>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Trust Badges Section */}
-                        <div className={styles.trustSection}>
+                        {/* Social Proof & Trust Seal */}
+                        <div className={styles.trustBanner}>
                             <div className={styles.avatarGroup}>
                                 <img src="https://picsum.photos/seed/user1/100/100" alt="Couple" className={styles.avatarImg} />
                                 <img src="https://picsum.photos/seed/user2/100/100" alt="Couple" className={styles.avatarImg} />
@@ -1451,17 +1451,25 @@ function PreviewContent() {
                                 <img src="https://picsum.photos/seed/user5/100/100" alt="Couple" className={styles.avatarImg} />
                                 <div className={styles.avatarPlus}>+</div>
                             </div>
-                            <div className={styles.trustText}>
-                                Trusted by <span>1000+ families</span> across India
-                                <div className={styles.starsRow}>
-                                    <Star size={16} fill="currentColor" />
-                                    <Star size={16} fill="currentColor" />
-                                    <Star size={16} fill="currentColor" />
-                                    <Star size={16} fill="currentColor" />
-                                    <Star size={16} fill="currentColor" />
-                                    <span style={{ marginLeft: '6px', fontSize: '0.875rem', fontWeight: 600, color: '#4B5563' }}>4.9/5</span>
+
+                            <div className={styles.trustDivider} />
+
+                            <div className={styles.trustInfo}>
+                                <div className={styles.trustHeadline}>
+                                    Trusted by <strong>1,000+ couples</strong> across India
                                 </div>
-                                <span style={{ fontSize: '0.8125rem', color: '#6B7280', display: 'block', marginTop: '4px' }}>Loved for simplicity & design</span>
+                                <div className={styles.trustSubline}>
+                                    <div className={styles.starsRow}>
+                                        <Star size={13} fill="#F59E0B" color="#F59E0B" />
+                                        <Star size={13} fill="#F59E0B" color="#F59E0B" />
+                                        <Star size={13} fill="#F59E0B" color="#F59E0B" />
+                                        <Star size={13} fill="#F59E0B" color="#F59E0B" />
+                                        <Star size={13} fill="#F59E0B" color="#F59E0B" />
+                                    </div>
+                                    <span className={styles.ratingBadge}>4.9/5</span>
+                                    <span className={styles.ratingDot}>•</span>
+                                    <span className={styles.lovedText}>Loved for simplicity & design</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1577,7 +1585,7 @@ function PreviewContent() {
                                     </div>
                                     <div className={styles.featureItem}>
                                         <div className={styles.checkWrapper}><Check size={10} strokeWidth={4} /></div>
-                                        <span>Free edits for 15 days</span>
+                                        <span>Free edits</span>
                                     </div>
                                 </div>
 
