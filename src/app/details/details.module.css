@@ -714,7 +714,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1.5rem;
+    gap: 1.25rem;
     box-shadow: 0 15px 40px rgba(179, 157, 115, 0.05);
 }
 
@@ -728,9 +728,94 @@
 .actionSubtext {
     font-size: 0.95rem;
     color: #6B7280;
-    max-width: 420px;
-    line-height: 1.6;
-    margin: 0 0 0.5rem;
+    max-width: 600px;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.actionGroup {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    margin-top: 0.35rem;
+}
+
+/* Details Confirmation Checkbox (Clean inline checkbox) */
+.confirmationCheckboxRow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem;
+    cursor: pointer;
+    user-select: none;
+    margin: 0;
+    max-width: 520px;
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+    transition: opacity 150ms var(--ease-out);
+}
+
+.confirmationCheckboxRow:hover {
+    opacity: 0.95;
+}
+
+.confirmationCheckboxRow:active {
+    transform: scale(0.99);
+}
+
+.confirmationInput {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 19px;
+    min-width: 19px;
+    height: 19px;
+    border: 1.5px solid #71717A;
+    border-radius: 5px;
+    background-color: #FFFFFF;
+    display: grid;
+    place-content: center;
+    cursor: pointer;
+    margin: 0;
+    flex-shrink: 0;
+    transition: background-color 150ms var(--ease-out), border-color 150ms var(--ease-out), box-shadow 150ms var(--ease-out), transform 100ms var(--ease-out);
+}
+
+.confirmationInput:hover {
+    border-color: #18181B;
+}
+
+.confirmationInput:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(24, 24, 27, 0.15);
+}
+
+.confirmationInput:checked {
+    background-color: #18181B;
+    border-color: #18181B;
+}
+
+.confirmationInput:checked::before {
+    content: "";
+    width: 8.5px;
+    height: 4.5px;
+    border-left: 2px solid #FFFFFF;
+    border-bottom: 2px solid #FFFFFF;
+    transform: rotate(-45deg) translate(0.5px, -0.5px);
+}
+
+.confirmationLabelText {
+    font-size: 0.875rem;
+    color: #4B5563;
+    font-weight: 450;
+    line-height: 1.4;
+    text-align: left;
+    transition: color 150ms var(--ease-out);
+}
+
+.confirmationCheckboxRow:hover .confirmationLabelText {
+    color: #18181B;
 }
 
 .actionButtonRow {
@@ -739,6 +824,7 @@
     gap: 1rem;
     width: 100%;
     max-width: 380px;
+    margin: 0;
 }
 
 @media (min-width: 640px) {
@@ -753,26 +839,34 @@
     align-items: center;
     justify-content: center;
     gap: 0.75rem;
-    background: #000000;
-    color: #FCFAF7;
-    padding: 1rem 2rem;
-    border-radius: 100px;
+    background: linear-gradient(135deg, #ECC878 0%, #D4AF37 100%);
+    color: #111111;
+    padding: 0.95rem 2rem;
+    border-radius: 14px;
     font-size: 1rem;
     font-weight: 600;
     border: none;
     cursor: pointer;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-    transition: background-color 200ms var(--ease-out), transform 150ms var(--ease-out), box-shadow 200ms var(--ease-out);
+    box-shadow: 0 6px 20px rgba(212, 175, 55, 0.28);
+    transition: background 200ms var(--ease-out), transform 150ms var(--ease-out), box-shadow 200ms var(--ease-out), opacity 200ms var(--ease-out), filter 200ms var(--ease-out);
 }
 
-.actionBtnPrimary:hover {
-    background: #222222;
+.actionBtnPrimary:hover:not(:disabled) {
+    background: linear-gradient(135deg, #F0D59A 0%, #E0C15A 100%);
     transform: translateY(-1px);
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 8px 24px rgba(212, 175, 55, 0.38);
 }
 
-.actionBtnPrimary:active {
+.actionBtnPrimary:active:not(:disabled) {
     transform: translateY(0) scale(0.97);
+}
+
+.actionBtnPrimary:disabled {
+    opacity: 0.42;
+    cursor: not-allowed;
+    box-shadow: none;
+    filter: grayscale(0.35);
+    transform: none !important;
 }
 
 .actionBtnSecondary {
@@ -950,4 +1044,121 @@
 .reassuranceSecondary {
     font-size: 0.75rem;
     color: #B39D73;
+}
+
+/* ─── Event Delete Confirmation Modal (ui-ux-pro-max - subtle quiet luxury) ────────────────────────── */
+.deleteModalOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(18, 24, 20, 0.38);
+    z-index: 10001;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+}
+
+.deleteModalCard {
+    background: #FFFFFF;
+    border-radius: 20px;
+    max-width: 400px;
+    width: 100%;
+    padding: 1.85rem 1.75rem 1.6rem;
+    box-shadow: 0 24px 50px -12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.deleteIconWrapper {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #FEF2F2;
+    color: #DC2626;
+    border: 1px solid rgba(239, 68, 68, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+.deleteModalTitle {
+    font-family: Georgia, serif;
+    font-size: 1.35rem;
+    font-weight: 500;
+    color: #111827;
+    margin-bottom: 0.45rem;
+    letter-spacing: -0.01em;
+}
+
+.deleteModalText {
+    font-size: 0.875rem;
+    color: #6B7280;
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+}
+
+.deleteModalText strong {
+    color: #111827;
+    font-weight: 600;
+}
+
+.deleteModalActions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    width: 100%;
+}
+
+.deleteBtnCancel {
+    flex: 1;
+    padding: 0.7rem 1.15rem;
+    border-radius: 10px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    background: #FFFFFF;
+    color: #52525B;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 150ms var(--ease-out), border-color 150ms var(--ease-out), transform 150ms var(--ease-out);
+}
+
+.deleteBtnCancel:hover {
+    background: #F4F4F5;
+    border-color: rgba(0, 0, 0, 0.16);
+    color: #18181B;
+}
+
+.deleteBtnCancel:active {
+    transform: scale(0.97);
+}
+
+.deleteBtnConfirm {
+    flex: 1;
+    padding: 0.7rem 1.15rem;
+    border-radius: 10px;
+    border: 1px solid #18181B;
+    background: #18181B;
+    color: #FFFFFF;
+    font-size: 0.85rem;
+    font-weight: 550;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    transition: background-color 150ms var(--ease-out), box-shadow 150ms var(--ease-out), transform 150ms var(--ease-out);
+}
+
+.deleteBtnConfirm:hover {
+    background: #09090B;
+    border-color: #09090B;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+    transform: translateY(-1px);
+}
+
+.deleteBtnConfirm:active {
+    transform: scale(0.97);
 }

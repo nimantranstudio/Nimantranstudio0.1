@@ -41,16 +41,16 @@ import { IntricateMandalaSvg } from '@/components/ui/IntricateMandala';
 import confetti from 'canvas-confetti';
 import { resolveEventSections } from '@/lib/templates/event-type';
 
-// Motion variants for welcome popup transitions (apple-design / emil-design-eng - crisp without background blur)
+// Motion variants for welcome popup transitions (apple-design / emil-design-eng / ui-ux-pro-max)
 const overlayVariants = {
     hidden: { opacity: 0 },
     visible: { 
         opacity: 1, 
-        transition: { duration: 0.25, ease: [0.23, 1, 0.32, 1] as const } 
+        transition: { duration: 0.35, ease: [0.23, 1, 0.32, 1] as const } 
     },
     exit: { 
         opacity: 0, 
-        transition: { duration: 0.2, ease: [0.23, 1, 0.32, 1] as const } 
+        transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] as const } 
     }
 };
 
@@ -69,10 +69,10 @@ const cardVariants = {
         }
     },
     exit: { 
-        scale: 0.97, 
+        scale: 0.96, 
         opacity: 0,
-        y: -6,
-        transition: { duration: 0.18, ease: [0.23, 1, 0.32, 1] as const } 
+        y: -10,
+        transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] as const } 
     }
 };
 
@@ -97,6 +97,7 @@ function DetailsContent() {
         bundleItems,
         selectedPlan,
         setBundleData,
+        addEvent,
         removeEvent,
         updateEvent
     } = useWeddingStore();
@@ -114,10 +115,13 @@ function DetailsContent() {
     // Timeline Preview State
     const [activePreviewEventId, setActivePreviewEventId] = useState<string>('wedding');
 
+    // Event Delete Confirmation State
+    const [eventToDelete, setEventToDelete] = useState<{ id: string; name: string } | null>(null);
+
     // Welcome Overlay State
     const [showWelcomeOverlay, setShowWelcomeOverlay] = useState(false);
-    const [showConfetti, setShowConfetti] = useState(false);
     const [activeTheme, setActiveTheme] = useState<Theme | null>(null);
+    const [isDetailsConfirmed, setIsDetailsConfirmed] = useState(false);
     const [isCrafting, setIsCrafting] = useState(false);
     const cardRef = useRef<InvitationCardRef>(null);
 
@@ -244,49 +248,54 @@ function DetailsContent() {
     };
 
     const triggerCelebrationExplosion = () => {
-        // Crisp, elegant primary bloom centered over the modal heart icon
+        // Refined background confetti matching Success overlay
         confetti({
-            particleCount: 38,
-            spread: 90,
-            startVelocity: 28,
-            origin: { x: 0.5, y: 0.46 },
-            colors: ['#D4AF37', '#F5D061', '#FDA4AF', '#FFFBEB', '#C5A059'],
+            particleCount: 75, 
+            spread: 140,
+            origin: { x: 0.5, y: 0.5 },
+            angle: 90, 
+            colors: ['#D4AF37', '#AA861E', '#FFFFFF', '#E5E4E2'],
             shapes: ['circle', 'square'],
-            gravity: 0.72,
-            scalar: 0.95,
-            ticks: 160,
-            zIndex: 10005,
+            gravity: 0.5, 
+            scalar: 1.0, 
+            ticks: 190, 
+            startVelocity: 34, 
+            drift: 0.05, 
+            zIndex: 10005 
         });
-
-        // Subtle secondary sparkle shimmer
-        setTimeout(() => {
-            confetti({
-                particleCount: 16,
-                spread: 110,
-                startVelocity: 22,
-                origin: { x: 0.5, y: 0.43 },
-                colors: ['#D4AF37', '#FFFBEB', '#FDA4AF'],
-                shapes: ['circle'],
-                gravity: 0.6,
-                scalar: 1.25,
-                ticks: 150,
-                zIndex: 10006,
-            });
-        }, 80);
+        
+        // Refined foreground confetti (cinematic depth of field simulation)
+        confetti({
+            particleCount: 15, 
+            spread: 160,
+            origin: { x: 0.5, y: 0.5 },
+            angle: 90, 
+            colors: ['#D4AF37', '#FFFFFF'],
+            shapes: ['circle'],
+            gravity: 0.55, 
+            scalar: 1.8, 
+            ticks: 190, 
+            startVelocity: 42, 
+            zIndex: 10006 
+        });
     };
 
     useEffect(() => {
         setIsMounted(true);
         if (searchParams.get('welcome') === 'true') {
             setShowWelcomeOverlay(true);
-            setShowConfetti(true);
             triggerCelebrationExplosion();
             
-            // Fast, punchy auto-dismiss after 1.6s so user can start filling immediately
+            // Smooth auto-dismiss after 2 seconds so user has time to read and enjoy the moment
             const timer = setTimeout(() => {
                 dismissWelcomeOverlay();
-            }, 1600);
-            return () => clearTimeout(timer);
+            }, 2000);
+            return () => {
+                clearTimeout(timer);
+                try {
+                    confetti.reset();
+                } catch (_) {}
+            };
         }
     }, [searchParams]);
 
@@ -381,6 +390,41 @@ function DetailsContent() {
         updateFormData({ events: newEvents });
     };
 
+    // Confirm and execute event deletion
+    const handleConfirmDeleteEvent = () => {
+        if (!eventToDelete) return;
+        const deletedId = eventToDelete.id;
+        removeEvent(deletedId);
+        if (activePreviewEventId === deletedId) {
+            setActivePreviewEventId('wedding');
+        }
+        setEventToDelete(null);
+    };
+
+    // Keyboard support: dismiss delete confirmation on Escape
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape' && eventToDelete) {
+                setEventToDelete(null);
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [eventToDelete]);
+
+    // Add new custom event helper
+    const handleAddCeremony = () => {
+        const id = `custom_${Date.now()}`;
+        const newEvent: WeddingEvent = {
+            id,
+            name: 'New Ceremony',
+            date: formData.primaryDate || '',
+            time: '18:30',
+            venue: '',
+        };
+        addEvent(newEvent);
+    };
+
     // Focus state listeners
     const handleFocus = (fieldName: string) => {
         setFocusedField(fieldName);
@@ -413,7 +457,7 @@ function DetailsContent() {
 
     return (
         <div className={styles.page}>
-            <AnimatePresence>
+            <AnimatePresence onExitComplete={() => { try { confetti.reset(); } catch (_) {} }}>
                 {showWelcomeOverlay && (
                     <motion.div
                         variants={overlayVariants}
@@ -424,8 +468,6 @@ function DetailsContent() {
                         style={{ zIndex: 10000 }}
                         onClick={dismissWelcomeOverlay}
                     >
-                        {showConfetti && <WeddingCelebration />}
-
                         <motion.div
                             variants={cardVariants}
                             className={styles.transitionContent}
@@ -463,6 +505,58 @@ function DetailsContent() {
                                 <span className={styles.reassurancePrimary}>Setting up your wedding workspace…</span>
                                 <span className={styles.reassuranceSecondary}>Everything will be ready in a moment.</span>
                             </motion.div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Event Delete Confirmation Modal (ui-ux-pro-max) */}
+            <AnimatePresence>
+                {eventToDelete && (
+                    <motion.div 
+                        className={styles.deleteModalOverlay}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+                        onClick={() => setEventToDelete(null)}
+                    >
+                        <motion.div 
+                            className={styles.deleteModalCard}
+                            initial={{ scale: 0.94, opacity: 0, y: 14 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.96, opacity: 0, y: 8 }}
+                            transition={{ type: "spring", bounce: 0.15, duration: 0.35 }}
+                            onClick={(e) => e.stopPropagation()}
+                            role="dialog"
+                            aria-modal="true"
+                            aria-labelledby="delete-event-modal-title"
+                        >
+                            <div className={styles.deleteIconWrapper}>
+                                <Trash2 size={22} strokeWidth={2} />
+                            </div>
+                            <h3 id="delete-event-modal-title" className={styles.deleteModalTitle}>
+                                Delete Event?
+                            </h3>
+                            <p className={styles.deleteModalText}>
+                                Are you sure you want to delete <strong>&ldquo;{eventToDelete.name}&rdquo;</strong>? This event card and its schedule will be removed from your wedding suite.
+                            </p>
+                            <div className={styles.deleteModalActions}>
+                                <button 
+                                    type="button" 
+                                    className={styles.deleteBtnConfirm}
+                                    onClick={handleConfirmDeleteEvent}
+                                >
+                                    Yes, Delete Event
+                                </button>
+                                <button 
+                                    type="button" 
+                                    className={styles.deleteBtnCancel}
+                                    onClick={() => setEventToDelete(null)}
+                                >
+                                    Cancel
+                                </button>
+                            </div>
                         </motion.div>
                     </motion.div>
                 )}
@@ -992,8 +1086,15 @@ function DetailsContent() {
                                                                 <ArrowDown size={14} />
                                                             </button>
                                                             <button 
+                                                                type="button"
                                                                 className={styles.timelineDeleteBtn}
-                                                                onClick={() => removeEvent(event.id)}
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    setEventToDelete({
+                                                                        id: event.id,
+                                                                        name: event.name || `Event #${index + 1}`
+                                                                    });
+                                                                }}
                                                                 title="Delete Event"
                                                             >
                                                                 <Trash2 size={14} />
@@ -1137,12 +1238,30 @@ function DetailsContent() {
                     <div className={styles.actionCard}>
                         <h4 className={styles.actionHeadline}>Let's bring your invitation to life.</h4>
                         <p className={styles.actionSubtext}>
-                            Everything you shared is in place. We'll now craft your invitation with care, just as your guests will experience it.
+                            We'll craft your invitation with care, just as your guests will experience it.
                         </p>
-                        <div className={styles.actionButtonRow}>
-                            <button className={styles.actionBtnPrimary} onClick={handleFinish}>
-                                Review Your Wedding Suite <ArrowRight size={18} />
-                            </button>
+
+                        <div className={styles.actionGroup}>
+                            <label className={styles.confirmationCheckboxRow}>
+                                <input 
+                                    type="checkbox"
+                                    className={styles.confirmationInput}
+                                    checked={isDetailsConfirmed}
+                                    onChange={(e) => setIsDetailsConfirmed(e.target.checked)}
+                                />
+                                <span className={styles.confirmationLabelText}>
+                                    Please review all your details for accuracy and spelling before generating.
+                                </span>
+                            </label>
+
+                            <div className={styles.actionButtonRow}>
+                                <button 
+                                    className={styles.actionBtnPrimary} 
+                                    onClick={handleFinish}
+                                >
+                                    Generate My Nimantran
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -1156,86 +1275,5 @@ export default function DetailsPage() {
         <Suspense fallback={<div style={{ minHeight: '100vh', backgroundColor: '#FDFBF7' }} />}>
             <DetailsContent />
         </Suspense>
-    );
-}
-
-// --- Confetti Particles Subcomponent ---
-function WeddingCelebration() {
-    const [particles] = useState(() => 
-        Array.from({ length: 24 }).map((_, i) => {
-            const angle = Math.random() * Math.PI * 2;
-            const distance = 10 + Math.random() * 22;
-            return {
-                id: i,
-                endX: 50 + Math.cos(angle) * distance,
-                endY: 46 + Math.sin(angle) * distance,
-                size: 6 + Math.random() * 8,
-                type: ['heart', 'petal', 'sparkle'][Math.floor(Math.random() * 3)],
-                color: ['#D4AF37', '#F5D061', '#FDA4AF', '#FFFBEB', '#C5A059'][Math.floor(Math.random() * 5)],
-                duration: 1.2 + Math.random() * 0.6,
-                delay: Math.random() * 0.06,
-                rotation: Math.random() * 360,
-                endRotation: Math.random() * 360 + 90
-            };
-        })
-    );
-
-    return (
-        <div style={{
-            position: 'absolute',
-            inset: 0,
-            pointerEvents: 'none',
-            overflow: 'hidden',
-            zIndex: 0
-        }}>
-            {particles.map((p) => (
-                <motion.div
-                    key={p.id}
-                    initial={{
-                        x: '50vw',
-                        y: '46vh',
-                        rotate: p.rotation,
-                        opacity: 0,
-                        scale: 0.4
-                    }}
-                    animate={{
-                        x: `${p.endX}vw`,
-                        y: `${p.endY}vh`,
-                        rotate: p.endRotation,
-                        opacity: [0, 1, 0.9, 0],
-                        scale: [0.4, 1.1, 0.9, 0]
-                    }}
-                    transition={{
-                        duration: p.duration,
-                        delay: p.delay,
-                        ease: [0.16, 1, 0.3, 1]
-                    }}
-                    style={{
-                        position: 'absolute',
-                        color: p.color,
-                        opacity: 0.9
-                    }}
-                >
-                    {p.type === 'heart' && <Heart size={p.size} fill="currentColor" stroke="none" />}
-                    {p.type === 'petal' && (
-                        <div style={{
-                            width: p.size,
-                            height: p.size * 0.7,
-                            background: 'currentColor',
-                            borderRadius: '50% 0 50% 0',
-                            transform: 'rotate(45deg)'
-                        }} />
-                    )}
-                    {p.type === 'sparkle' && (
-                        <div style={{
-                            width: p.size * 1.6,
-                            height: p.size * 1.6,
-                            background: 'currentColor',
-                            clipPath: 'polygon(50% 0%, 65% 35%, 100% 50%, 65% 65%, 50% 100%, 35% 65%, 0% 50%, 35% 35%)'
-                        }} />
-                    )}
-                </motion.div>
-            ))}
-        </div>
     );
 }
