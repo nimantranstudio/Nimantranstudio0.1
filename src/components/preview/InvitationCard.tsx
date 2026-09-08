@@ -47,6 +47,11 @@ interface InvitationCardProps {
     showSizingBoxes?: boolean; // Added showSizingBoxes
     isRawPreview?: boolean; // Added to just show the HTML as is
     onLayoutMeasure?: (layout: { width: number; height: number; aspectRatio: number }) => void;
+    /** Dashboard-only inline edit mode: makes the event-name/date/time/venue elements
+     * already on the card directly contentEditable (dashed outline, no layout/JS drag
+     * machinery) so the couple's own card is the editor — distinct from showSizingBoxes,
+     * which is the full admin template-layout editor (drag/resize/delete). */
+    dashboardEditMode?: boolean;
 }
 
 export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>(({
@@ -68,7 +73,8 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
     isSecured = false,
     showSizingBoxes = false,
     isRawPreview = false,
-    onLayoutMeasure
+    onLayoutMeasure,
+    dashboardEditMode = false
 }, ref) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -532,6 +538,12 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
         };
 
         const updateContent = () => {
+            // While the user is actively editing on the card (dashboardEditMode), never
+            // re-run the field mapping: `event`/`groomName`/etc. get new object/string
+            // identities on nearly every parent re-render (even unrelated ones), which
+            // would otherwise re-fire this on every keystroke elsewhere in the app and
+            // stomp the user's in-progress typing back to the last-saved value.
+            if (dashboardEditMode) return;
             const doc = iframeRef.current?.contentDocument || iframeRef.current?.contentWindow?.document;
             if (!doc || !doc.body || !doc.head) return;
 
@@ -1520,14 +1532,16 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
             clearTimeout(debounceTimer);
             (currentIframe as any)._onLoadCallback = null;
         };
-    }, [isHTMLDesign, event, welcomeMessage, groomName, brideName, invitationFor, groomParents, brideParents, customImage, isRawPreview, onLayoutMeasure, isReady]);
+    }, [isHTMLDesign, event, welcomeMessage, groomName, brideName, invitationFor, groomParents, brideParents, customImage, isRawPreview, onLayoutMeasure, isReady, dashboardEditMode]);
 
     // Reactive postMessage bridge — fires on every prop change once the iframe is ready.
     // Sends field updates to the iframe so new templates (data-field attributes) update
     // on every keystroke without re-running the full DOM-scraping updateContent().
     // Legacy templates also benefit via the getElementById fallback in the listener.
     useEffect(() => {
-        if (!isHTMLDesign || !isReady || !iframeRef.current?.contentWindow) return;
+        // Same reasoning as updateContent's dashboardEditMode guard above — this fires on
+        // every prop-reference change too, and would otherwise stomp in-progress card edits.
+        if (!isHTMLDesign || !isReady || !iframeRef.current?.contentWindow || dashboardEditMode) return;
         const payload = buildFieldPayload({
             groomName:    groomName   || undefined,
             brideName:    effectiveBrideName || undefined,
@@ -1539,7 +1553,7 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
             eventVenue:   event?.venue || undefined,
         });
         iframeRef.current.contentWindow.postMessage({ type: 'NIMANTRAN_UPDATE', payload }, '*');
-    }, [isHTMLDesign, isReady, groomName, brideName, invitationFor, groomParents, brideParents, event]);
+    }, [isHTMLDesign, isReady, groomName, brideName, invitationFor, groomParents, brideParents, event, dashboardEditMode]);
 
     // Separate effect to apply/remove sizing-box class when edit mode toggles.
     // This does NOT re-run the full content mapping, so saved edits are never overwritten.
@@ -1578,6 +1592,68 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
             doc.querySelectorAll('.resize-handle, .delete-handle, .drag-handle, .snap-guide').forEach(el => el.remove());
         }
     }, [showSizingBoxes, isHTMLDesign]);
+
+    // Dashboard inline edit mode: make the card's own event-name/date/time/venue
+    // elements directly editable in place — no separate form, no drag/resize handles.
+    // A dashed outline is the only visual change; typing, backspace, cursor placement
+    // all use the browser's native contentEditable behavior on the real template element,
+    // so position/font/styling are preserved automatically. Values are read back out via
+    // the existing saveEdits() ref method (it already targets these same element ids).
+    useEffect(() => {
+        if (!isHTMLDesign || !iframeRef.current || !isReady) return;
+        const doc = iframeRef.current.contentDocument || iframeRef.current.contentWindow?.document;
+        if (!doc || !doc.body) return;
+
+        const styleId = 'dashboard-inline-edit-style';
+        if (dashboardEditMode && !doc.getElementById(styleId)) {
+            const style = doc.createElement('style');
+            style.id = styleId;
+            style.textContent = `
+                .dashboard-editable {
+                    outline: 1.5px dashed rgba(212, 175, 55, 0.85) !important;
+                    outline-offset: 4px;
+                    border-radius: 2px;
+                    cursor: text;
+                    text-decoration: none !important;
+                    -webkit-text-decoration: none !important;
+                }
+                .dashboard-editable:focus { outline-color: rgba(212, 175, 55, 1); }
+            `;
+            doc.head.appendChild(style);
+        }
+
+        const editableEls: HTMLElement[] = [];
+        const nameEl = doc.getElementById('event-name');
+        if (nameEl) editableEls.push(nameEl);
+        const dateEl = doc.getElementById('event-date');
+        if (dateEl) editableEls.push(dateEl);
+        const timeEl = doc.getElementById('event-time');
+        if (timeEl) editableEls.push(timeEl);
+        const venueEl = doc.getElementById('event-venue') || doc.getElementById('venue');
+        if (venueEl) editableEls.push(venueEl);
+
+        if (dashboardEditMode) {
+            editableEls.forEach(el => {
+                el.classList.add('dashboard-editable');
+                el.setAttribute('contenteditable', 'true');
+                el.setAttribute('spellcheck', 'false');
+            });
+        } else {
+            editableEls.forEach(el => {
+                el.classList.remove('dashboard-editable');
+                el.removeAttribute('contenteditable');
+                el.removeAttribute('spellcheck');
+            });
+        }
+
+        return () => {
+            editableEls.forEach(el => {
+                el.classList.remove('dashboard-editable');
+                el.removeAttribute('contenteditable');
+                el.removeAttribute('spellcheck');
+            });
+        };
+    }, [dashboardEditMode, isHTMLDesign, isReady]);
 
     const isHaldi = event.name?.toLowerCase().includes('haldi');
     const isContract = variant === 'contract';
