@@ -1475,7 +1475,7 @@ export default function DashboardPage() {
                                                     ) : (
                                                         filteredRsvpsList.map(r => (
                                                             <tr key={r.id}>
-                                                                <td className={rsvpStyles.guestName}>{r.guestName}</td>
+                                                                <td className={rsvpStyles.guestName}>{(r.guestName || '').replace(/&amp;/g, '&')}</td>
                                                                 <td>
                                                                     <span className={`${rsvpStyles.statusBadge} ${
                                                                         r.status === 'attending' ? rsvpStyles.statusYes

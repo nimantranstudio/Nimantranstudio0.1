@@ -212,56 +212,58 @@ export default function GuestListPage() {
                         </div>
                     </div>
 
-                    <table className={styles.table}>
-                        <thead>
-                            <tr>
-                                <th>GUEST NAME</th>
-                                <th>STATUS</th>
-                                <th>ADULTS</th>
-                                <th>DIETARY</th>
-                                <th>PHONE</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {loading ? (
+                    <div className={styles.tableWrapper}>
+                        <table className={styles.table}>
+                            <thead>
                                 <tr>
-                                    <td colSpan={5} style={{ textAlign: 'center', color: '#999' }}>Loading responses...</td>
+                                    <th>GUEST NAME</th>
+                                    <th>STATUS</th>
+                                    <th>ADULTS</th>
+                                    <th>DIETARY</th>
+                                    <th>PHONE</th>
                                 </tr>
-                            ) : filteredRsvps.length === 0 ? (
-                                <tr>
-                                    <td colSpan={5} style={{ textAlign: 'center', color: '#999' }}>
-                                        {rsvps.length === 0 ? "No guests have RSVP'd yet." : 'No matching guests found.'}
-                                    </td>
-                                </tr>
-                            ) : (
-                                filteredRsvps.map(r => {
-                                    const statusClass =
-                                        r.status === 'attending' ? styles.statusYes
-                                        : r.status === 'declined' ? styles.statusNo
-                                        : styles.statusPending;
-                                    const statusLabel =
-                                        r.status === 'attending' ? 'YES'
-                                        : r.status === 'declined' ? 'NO'
-                                        : r.status === 'maybe' ? 'MAYBE'
-                                        : 'PENDING';
+                            </thead>
+                            <tbody>
+                                {loading ? (
+                                    <tr>
+                                        <td colSpan={5} style={{ textAlign: 'center', color: '#999' }}>Loading responses...</td>
+                                    </tr>
+                                ) : filteredRsvps.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={5} style={{ textAlign: 'center', color: '#999' }}>
+                                            {rsvps.length === 0 ? "No guests have RSVP'd yet." : 'No matching guests found.'}
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    filteredRsvps.map(r => {
+                                        const statusClass =
+                                            r.status === 'attending' ? styles.statusYes
+                                            : r.status === 'declined' ? styles.statusNo
+                                            : styles.statusPending;
+                                        const statusLabel =
+                                            r.status === 'attending' ? 'YES'
+                                            : r.status === 'declined' ? 'NO'
+                                            : r.status === 'maybe' ? 'MAYBE'
+                                            : 'PENDING';
 
-                                    return (
-                                        <tr key={r.id}>
-                                            <td className={styles.guestName}>{r.guestName}</td>
-                                            <td>
-                                                <span className={`${styles.statusBadge} ${statusClass}`}>
-                                                    {statusLabel}
-                                                </span>
-                                            </td>
-                                            <td className={styles.pax}>{r.adultCount || 1}</td>
-                                            <td className={styles.dietary}>{r.dietary || '-'}</td>
-                                            <td>{r.phone || '-'}</td>
-                                        </tr>
-                                    );
-                                })
-                            )}
-                        </tbody>
-                    </table>
+                                        return (
+                                            <tr key={r.id}>
+                                                <td className={styles.guestName}>{(r.guestName || '').replace(/&amp;/g, '&')}</td>
+                                                <td>
+                                                    <span className={`${styles.statusBadge} ${statusClass}`}>
+                                                        {statusLabel}
+                                                    </span>
+                                                </td>
+                                                <td className={styles.pax}>{r.adultCount || 1}</td>
+                                                <td className={styles.dietary}>{r.dietary || '-'}</td>
+                                                <td>{r.phone || '-'}</td>
+                                            </tr>
+                                        );
+                                    })
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </main>
         </div>

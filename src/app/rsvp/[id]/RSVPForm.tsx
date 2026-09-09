@@ -510,12 +510,6 @@ export const RSVPForm = ({ wedding, isPreview = false }: RSVPFormProps) => {
                     </div>
                 </section>
 
-                <div className={styles.ornamentDivider}>
-                    <div className={styles.ornamentLine} />
-                    <span>✦ ❦ ✦</span>
-                    <div className={styles.ornamentLine} />
-                </div>
-
                 {/* 4. INTERACTIVE RSVP FORM */}
                 <section id="rsvp-section" className={styles.rsvpSection}>
                     <div className={styles.sectionHeaderWrap}>
@@ -640,19 +634,7 @@ export const RSVPForm = ({ wedding, isPreview = false }: RSVPFormProps) => {
                             </div>
                         </div>
 
-                        {/* Warm Wishes */}
-                        <div className={styles.field}>
-                            <label className={styles.fieldLabel}>
-                                <span>Send Your Blessings & Warm Wishes</span>
-                            </label>
-                            <textarea
-                                placeholder="Write a heartfelt message for the couple…"
-                                className={clsx(styles.input, styles.textarea)}
-                                value={message}
-                                onChange={(e) => setMessage(e.target.value)}
-                                rows={3}
-                            />
-                        </div>
+
 
                         {/* RSVP Deadline */}
                         {wedding.rsvpDeadline && (
@@ -689,11 +671,14 @@ export const RSVPForm = ({ wedding, isPreview = false }: RSVPFormProps) => {
                     </form>
                 </section>
 
+                <div className={styles.ornamentDivider}>
+                    <div className={styles.ornamentLine} />
+                    <span>✦ ❦ ✦</span>
+                    <div className={styles.ornamentLine} />
+                </div>
+
                 {/* 5. BRAND FOOTER & SIGNATURE */}
                 <footer className={styles.websiteFooter}>
-                    <div className={styles.footerSeal}>
-                        <span>✦</span>
-                    </div>
                     <p className={styles.footerThanks}>
                         We look forward to celebrating this unforgettable occasion with you!
                     </p>

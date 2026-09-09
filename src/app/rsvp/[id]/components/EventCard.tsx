@@ -49,28 +49,6 @@ export const EventCard: React.FC<EventCardProps> = ({ event, coupleNames, index 
         }
     }
 
-    // Determine theme accent based on event type or name
-    const lowerName = eventTitle.toLowerCase();
-    let themeBadge = {
-        label: 'Ceremony',
-        tagClass: styles.tagGeneral,
-        iconEmoji: '✨',
-    };
-
-    if (lowerName.includes('haldi')) {
-        themeBadge = { label: 'Haldi', tagClass: styles.tagHaldi, iconEmoji: '🌼' };
-    } else if (lowerName.includes('mehendi') || lowerName.includes('mehndi')) {
-        themeBadge = { label: 'Mehendi', tagClass: styles.tagMehendi, iconEmoji: '🌿' };
-    } else if (lowerName.includes('sangeet')) {
-        themeBadge = { label: 'Sangeet', tagClass: styles.tagSangeet, iconEmoji: '🪕' };
-    } else if (lowerName.includes('wedding') || lowerName.includes('phera') || lowerName.includes('shaadi') || lowerName.includes('varmala')) {
-        themeBadge = { label: 'Wedding Ceremony', tagClass: styles.tagWedding, iconEmoji: '🪔' };
-    } else if (lowerName.includes('reception')) {
-        themeBadge = { label: 'Reception', tagClass: styles.tagReception, iconEmoji: '🥂' };
-    } else if (lowerName.includes('cocktail')) {
-        themeBadge = { label: 'Cocktail Night', tagClass: styles.tagCocktail, iconEmoji: '🍸' };
-    }
-
     const handleOpenMaps = () => {
         if (event.mapLink && event.mapLink.startsWith('http')) {
             window.open(event.mapLink, '_blank');
@@ -96,20 +74,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event, coupleNames, index 
                 delay: Math.min(index * 0.08, 0.4),
             }}
         >
-            {/* Step Number / Node Accent */}
-            <div className={styles.timelineNode}>
-                <span className={styles.timelineNodeNum}>{index + 1}</span>
-            </div>
-
             <div className={styles.eventCardBody}>
-                {/* Event Tag / Badge */}
-                <div className={styles.eventCardHeader}>
-                    <span className={`${styles.eventThemeTag} ${themeBadge.tagClass}`}>
-                        <span className={styles.tagIcon}>{themeBadge.iconEmoji}</span>
-                        {themeBadge.label}
-                    </span>
-                </div>
-
                 {/* Event Title */}
                 <h3 className={styles.eventCardTitle}>{eventTitle}</h3>
 
