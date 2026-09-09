@@ -16,14 +16,49 @@ interface LoginModalProps {
 }
 
 export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
-    const { userPhone, isAuthenticated } = useWeddingStore();
+    const { userPhone, isAuthenticated, login } = useWeddingStore();
     const [step, setStep] = useState<'phone' | 'otp'>('phone');
     const [phoneNumber, setPhoneNumber] = useState('');
     const [otp, setOtp] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [isVerifying, setIsVerifying] = useState(false);
+    const [isResending, setIsResending] = useState(false);
     const [error, setError] = useState('');
+    const [resendCooldown, setResendCooldown] = useState(0);
     const recaptchaRef = useRef<RecaptchaVerifier | null>(null);
     const confirmationRef = useRef<ConfirmationResult | null>(null);
+
+    // Resend cooldown ticker — a plain visual throttle; Firebase enforces the
+    // real rate limiting server-side regardless.
+    useEffect(() => {
+        if (resendCooldown <= 0) return;
+        const t = setTimeout(() => setResendCooldown((s) => s - 1), 1000);
+        return () => clearTimeout(t);
+    }, [resendCooldown]);
+
+    /** Maps a Firebase Auth error code to a message a user can act on. Never
+     * surfaces the raw Firebase error object/message to the UI. */
+    const describeAuthError = (err: any): string => {
+        switch (err?.code) {
+            case 'auth/too-many-requests':
+                return 'Too many attempts. Please wait a while before trying again.';
+            case 'auth/invalid-phone-number':
+                return 'That phone number looks invalid.';
+            case 'auth/invalid-verification-code':
+                return 'Incorrect code. Please check and try again.';
+            case 'auth/code-expired':
+                return 'This code has expired. Request a new one.';
+            case 'auth/captcha-check-failed':
+            case 'auth/missing-recaptcha-token':
+                return 'Verification check failed. Please try again.';
+            case 'auth/network-request-failed':
+                return 'Network error. Check your connection and try again.';
+            case 'auth/quota-exceeded':
+                return 'SMS limit reached for now. Please try again later.';
+            default:
+                return err?.message ? 'Something went wrong. Please try again.' : 'Something went wrong. Please try again.';
+        }
+    };
 
     // Lazily create an invisible reCAPTCHA verifier (required by Firebase Phone Auth)
     const getRecaptcha = () => {
@@ -43,6 +78,7 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
             setError('');
             setOtp('');
             setStep('phone');
+            setResendCooldown(0);
         }
     }, [isOpen]);
 
@@ -62,8 +98,10 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
 
     if (!isOpen) return null;
 
-    const handleGetOTP = async (e: React.FormEvent) => {
-        e.preventDefault();
+    // Shared by the initial "Send OTP" and the OTP-step "Resend" button — both are just
+    // signInWithPhoneNumber again, per Firebase's own supported resend flow (no custom
+    // OTP mechanism of our own).
+    const sendOtp = async (setBusy: (v: boolean) => void) => {
         setError('');
         if (!phoneNumber || phoneNumber.length < 10) {
             setError('Enter a valid 10-digit number');
@@ -74,27 +112,33 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
             return;
         }
 
-        setIsLoading(true);
+        setBusy(true);
         try {
             const verifier = getRecaptcha();
             const confirmation = await signInWithPhoneNumber(auth as any, `+91${phoneNumber}`, verifier);
             confirmationRef.current = confirmation;
             setStep('otp');
+            setOtp('');
+            setResendCooldown(30);
         } catch (err: any) {
             console.error('Failed to send OTP:', err);
             // Reset reCAPTCHA so the next attempt gets a clean token
             try { recaptchaRef.current?.clear(); } catch { }
             recaptchaRef.current = null;
-            if (err?.code === 'auth/too-many-requests') {
-                setError('Too many attempts. Please try again later.');
-            } else if (err?.code === 'auth/invalid-phone-number') {
-                setError('That phone number looks invalid.');
-            } else {
-                setError('Could not send OTP. Please try again.');
-            }
+            setError(describeAuthError(err));
         } finally {
-            setIsLoading(false);
+            setBusy(false);
         }
+    };
+
+    const handleGetOTP = (e: React.FormEvent) => {
+        e.preventDefault();
+        sendOtp(setIsLoading);
+    };
+
+    const handleResendOTP = () => {
+        if (resendCooldown > 0 || isResending) return;
+        sendOtp(setIsResending);
     };
 
     const handleVerifyOTP = async (e: React.FormEvent) => {
@@ -110,15 +154,31 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
             return;
         }
 
-        setIsLoading(true);
+        setIsVerifying(true);
         try {
-            await confirmationRef.current.confirm(otp);
+            const result = await confirmationRef.current.confirm(otp);
+            // Firebase has now created/authenticated the Firebase user. Sync it to our
+            // own User table (by phone number) and get the real ns_session cookie the
+            // rest of the app (verifyAuth()/middleware.ts) checks — without this the
+            // browser would hold a valid Firebase session that the server never sees.
+            const idToken = await result.user.getIdToken();
+            const syncRes = await fetch('/api/auth/sync', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idToken }),
+            });
+            if (!syncRes.ok) {
+                setError('Signed in, but could not finish setting up your account. Please try again.');
+                return;
+            }
+            const data = await syncRes.json().catch(() => null);
+            login(phoneNumber, data?.isAdmin === true);
             onSuccess(phoneNumber);
         } catch (err: any) {
             console.error('OTP verification failed:', err);
-            setError(err?.code === 'auth/invalid-verification-code' ? 'Incorrect code. Try again.' : 'Verification failed. Try again.');
+            setError(describeAuthError(err));
         } finally {
-            setIsLoading(false);
+            setIsVerifying(false);
         }
     };
 
@@ -226,18 +286,32 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
                             <button
                                 type="submit"
                                 className={styles.submitBtn}
-                                disabled={isLoading}
+                                disabled={isVerifying}
                             >
-                                {isLoading ? 'Verifying...' : 'Verify & Proceed'}
+                                {isVerifying ? 'Verifying...' : 'Verify & Proceed'}
                             </button>
 
-                            <button
-                                type="button"
-                                className={styles.resendBtn}
-                                onClick={() => setStep('phone')}
-                            >
-                                Change Number
-                            </button>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
+                                <button
+                                    type="button"
+                                    className={styles.resendBtn}
+                                    onClick={() => setStep('phone')}
+                                >
+                                    Change Number
+                                </button>
+                                <button
+                                    type="button"
+                                    className={styles.resendBtn}
+                                    onClick={handleResendOTP}
+                                    disabled={resendCooldown > 0 || isResending}
+                                >
+                                    {isResending
+                                        ? 'Resending...'
+                                        : resendCooldown > 0
+                                            ? `Resend in ${resendCooldown}s`
+                                            : 'Resend OTP'}
+                                </button>
+                            </div>
                         </form>
                     </>
                 )}

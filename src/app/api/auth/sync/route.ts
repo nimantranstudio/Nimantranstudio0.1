@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma';
 
 import { adminAuth } from '@/lib/firebase-admin';
 import { createAdminToken, ADMIN_COOKIE } from '@/lib/admin-session';
+import { createSessionToken, SESSION_COOKIE, sessionCookieOptions } from '@/lib/session';
+import { toTenDigits } from '@/lib/messaging/types';
 
 // Only this number gets admin access. Configurable via env; defaults to the owner's number.
 const ADMIN_MOBILE = process.env.ADMIN_MOBILE || '8884678194';
@@ -28,16 +30,11 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Mobile number not found in token' }, { status: 400 });
         }
 
-        // Remove country code usually (assuming +91 for Indian numbers as per login flow)
-        // Adjust logic if you want to store full number or just 10 digits.
-        // The existing code seemed to expect just the 10-digit identifier for "mobileNumber"
-        // based on "identifier.replace(/\D/g, '').slice(0, 10)" in login page.
-        // However, Firebase returns E.164 format (+91XXXXXXXXXX).
-        // Let's normalize to the 10-digit format to match existing DB records if that's the convention.
-        // OR store the full number. Existing DB check: "where: { mobileNumber }"
-
-        // Strategy: Flexible 10-digit extraction for matching
-        const mobileNumber = fullMobileNumber.replace('+91', '');
+        // Every other mobileNumber lookup in this app (OTP send/verify, ADMIN_MOBILE,
+        // the dev bypass) uses this same shared 10-digit normalizer — reusing it here
+        // instead of a hardcoded "+91" strip keeps this in sync with that convention,
+        // and unlike a hardcoded prefix it degrades gracefully for other country codes.
+        const mobileNumber = toTenDigits(fullMobileNumber);
         console.log("Auth Sync: Normalized mobileNumber:", mobileNumber);
 
         const isUserAdmin = mobileNumber === ADMIN_MOBILE;
@@ -76,19 +73,31 @@ export async function POST(request: Request) {
         }
 
         console.log("Auth Sync: SUCCESS");
+        const isAdmin = user.role === 'admin';
         const response = NextResponse.json({
             success: true,
             user: {
                 id: user.id,
                 mobileNumber: user.mobileNumber,
                 role: user.role
-            }
+            },
+            isAdmin,
         });
 
-        // Grant a signed, httpOnly admin session cookie only to admins
-        if (user.role === 'admin') {
-            const token = await createAdminToken(mobileNumber);
-            response.cookies.set(ADMIN_COOKIE, token, {
+        // The real, universal session — the same ns_session cookie the OTP-verify flow
+        // grants, checked by verifyAuth()/middleware.ts for every protected page and API
+        // route. Previously this route only ever set the separate admin-only cookie below,
+        // so a regular user completing Firebase Phone Auth here (e.g. on the checkout
+        // page) authenticated with Firebase in the browser but was never actually
+        // recognized as logged in server-side.
+        const token = await createSessionToken(user);
+        response.cookies.set(SESSION_COOKIE, token, sessionCookieOptions());
+
+        // Also keep granting the legacy admin cookie for admins — unrelated existing
+        // behavior, left untouched.
+        if (isAdmin) {
+            const adminToken = await createAdminToken(mobileNumber);
+            response.cookies.set(ADMIN_COOKIE, adminToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
                 sameSite: 'lax',
