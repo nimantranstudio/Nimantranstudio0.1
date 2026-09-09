@@ -3,12 +3,10 @@ import { prisma } from '@/lib/prisma';
 import { verifyOtp } from '@/lib/otp';
 import { toTenDigits } from '@/lib/messaging/types';
 import { createSessionToken, SESSION_COOKIE, sessionCookieOptions } from '@/lib/session';
+import { isDevOtpBypass } from '@/lib/auth/dev-otp-bypass';
+import { OTP_MAX_VERIFY_ATTEMPTS } from '@/lib/otp-config';
 
 const ADMIN_MOBILE = process.env.ADMIN_MOBILE || '';
-// Dev-only bypass so the flow is testable without SMS. Never active in production.
-const BYPASS_CODE = process.env.OTP_BYPASS_CODE || '';
-
-const MAX_ATTEMPTS = 5;
 
 async function issueSession(user: { id: string; mobileNumber: string; role: string }) {
     const res = NextResponse.json({
@@ -55,13 +53,9 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Mobile number and OTP are required' }, { status: 400 });
         }
 
-        // Dev-only bypass (never in production, only when explicitly configured).
-        if (
-            (process.env.NODE_ENV !== 'production' &&
-            BYPASS_CODE &&
-            otp === BYPASS_CODE) ||
-            (mobileNumber === '8884678194' && otp === '422101')
-        ) {
+        // See src/lib/auth/dev-otp-bypass.ts — the ONLY place this check is defined.
+        // TODO: REMOVE DEVELOPMENT OTP BYPASS BEFORE PRODUCTION.
+        if (isDevOtpBypass(mobileNumber, otp)) {
             const user = await findOrCreateUser(mobileNumber);
             return issueSession(user);
         }
@@ -75,7 +69,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Invalid or expired OTP' }, { status: 400 });
         }
 
-        if (otpRequest.attemptCount >= MAX_ATTEMPTS) {
+        if (otpRequest.attemptCount >= OTP_MAX_VERIFY_ATTEMPTS) {
             return NextResponse.json(
                 { error: 'Too many incorrect attempts. Please request a new code.' },
                 { status: 429 }

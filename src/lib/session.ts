@@ -8,10 +8,9 @@
  * admin is just a session whose `role` claim is "admin".
  */
 
-const SECRET =
-    process.env.SESSION_SECRET ||
-    process.env.ADMIN_SESSION_SECRET ||
-    'nimantran-session-secret-change-me';
+import { resolveSessionSecret } from './session-secret';
+
+const SECRET = resolveSessionSecret();
 
 const encoder = new TextEncoder();
 

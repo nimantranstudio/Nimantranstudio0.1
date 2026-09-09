@@ -19,17 +19,28 @@ export default function LoginFormContent() {
     const [identifier, setIdentifier] = useState('');
     const [otp, setOtp] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [isResending, setIsResending] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    // Mirrors the server's own resend cooldown (OTP_RESEND_COOLDOWN_SECONDS) — this
+    // is a UX convenience, not the enforcement; /api/auth/otp/send rejects an early
+    // resend regardless of what this timer shows, and a 429 here re-syncs it from
+    // the server's retryAfterSeconds rather than trusting client-side timing alone.
+    const [resendCooldown, setResendCooldown] = useState(0);
 
-    const handleGetOTP = async (e: React.FormEvent) => {
-        e.preventDefault();
+    useEffect(() => {
+        if (resendCooldown <= 0) return;
+        const t = setTimeout(() => setResendCooldown((s) => s - 1), 1000);
+        return () => clearTimeout(t);
+    }, [resendCooldown]);
+
+    const sendOtp = async (setBusy: (v: boolean) => void) => {
         if (!identifier || identifier.length < 10) {
             setError('Please enter a valid 10-digit mobile number');
             return;
         }
 
         setError(null);
-        setIsLoading(true);
+        setBusy(true);
 
         try {
             const res = await fetch('/api/auth/otp/send', {
@@ -40,14 +51,30 @@ export default function LoginFormContent() {
             const data = await res.json();
             if (res.ok && data.success) {
                 setStep('otp');
+                setOtp('');
+                setResendCooldown(typeof data.resendAfterSeconds === 'number' ? data.resendAfterSeconds : 30);
             } else {
                 setError(data.error || 'Failed to send OTP. Please try again.');
+                // A too-early resend still reports how long is actually left server-side.
+                if (typeof data.retryAfterSeconds === 'number') {
+                    setResendCooldown(data.retryAfterSeconds);
+                }
             }
         } catch (err: any) {
             setError(err?.message || 'Network error. Please try again.');
         } finally {
-            setIsLoading(false);
+            setBusy(false);
         }
+    };
+
+    const handleGetOTP = (e: React.FormEvent) => {
+        e.preventDefault();
+        sendOtp(setIsLoading);
+    };
+
+    const handleResendOTP = () => {
+        if (resendCooldown > 0 || isResending) return;
+        sendOtp(setIsResending);
     };
 
     const handleVerifyOTP = async (e: React.FormEvent) => {
@@ -191,16 +218,31 @@ export default function LoginFormContent() {
                                     </button>
                                 </form>
 
-                                <button
-                                    type="button"
-                                    className={styles.linkButton}
-                                    onClick={() => {
-                                        setStep('phone');
-                                        setError(null);
-                                    }}
-                                >
-                                    ← Change number
-                                </button>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
+                                    <button
+                                        type="button"
+                                        className={styles.linkButton}
+                                        onClick={() => {
+                                            setStep('phone');
+                                            setError(null);
+                                            setResendCooldown(0);
+                                        }}
+                                    >
+                                        ← Change number
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className={styles.linkButton}
+                                        onClick={handleResendOTP}
+                                        disabled={resendCooldown > 0 || isResending}
+                                    >
+                                        {isResending
+                                            ? 'Resending...'
+                                            : resendCooldown > 0
+                                                ? `Resend in ${resendCooldown}s`
+                                                : 'Resend OTP'}
+                                    </button>
+                                </div>
                             </>
                         )}
                     </div>

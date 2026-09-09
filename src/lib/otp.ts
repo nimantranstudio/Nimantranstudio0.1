@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import { resolveSessionSecret } from './session-secret';
 
 /**
  * Server-owned OTP hashing. The plaintext code is never stored — only its HMAC.
@@ -6,10 +7,7 @@ import crypto from 'crypto';
  * need bcrypt; a keyed HMAC with the session secret is sufficient and adds no
  * dependency.
  */
-const SECRET =
-    process.env.SESSION_SECRET ||
-    process.env.ADMIN_SESSION_SECRET ||
-    'nimantran-session-secret-change-me';
+const SECRET = resolveSessionSecret();
 
 export function hashOtp(code: string): string {
     return crypto.createHmac('sha256', SECRET).update(code).digest('hex');

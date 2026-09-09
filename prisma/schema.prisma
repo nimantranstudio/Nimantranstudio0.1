@@ -33,7 +33,14 @@ model OTPRequest {
   isUsed       Boolean  @default(false)
   attemptCount Int      @default(0)
   createdAt    DateTime @default(now())
+  // Secondary rate-limit dimension alongside mobileNumber — one IP spamming
+  // many different numbers is a distinct SMS-cost-abuse pattern a per-number
+  // limit alone can't catch. Nullable: the client IP isn't always resolvable
+  // (e.g. behind some proxies), and that must never block sending the OTP.
+  ipAddress    String?
 
+  @@index([mobileNumber, createdAt])
+  @@index([ipAddress, createdAt])
   @@map("OTPRequest")
 }
 
