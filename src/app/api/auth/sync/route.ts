@@ -9,70 +9,75 @@ import { toTenDigits } from '@/lib/messaging/types';
 // Only this number gets admin access. Configurable via env; defaults to the owner's number.
 const ADMIN_MOBILE = process.env.ADMIN_MOBILE || '8884678194';
 
+/**
+ * The one place a Firebase Phone Auth login (both the main /login page and the
+ * checkout page's LoginModal call this) becomes an application session. The
+ * client has already completed signInWithPhoneNumber + confirm() with Firebase
+ * and hands over the resulting ID token here — this route verifies it with
+ * Firebase Admin (never trusts the client's own claim of who it is), resolves
+ * the matching Prisma User, and mints the same ns_session cookie every
+ * existing protected route already checks via verifyAuth()/middleware.ts.
+ * Nothing downstream of the cookie needed to change for this migration.
+ */
 export async function POST(request: Request) {
     try {
         const { idToken } = await request.json();
-        console.log("Auth Sync: Received idToken (last 10 chars):", idToken?.slice(-10));
 
         if (!idToken) {
-            console.error("Auth Sync: No idToken provided");
             return NextResponse.json({ error: 'ID Token required' }, { status: 400 });
         }
 
-        // Verify the ID token securely using Firebase Admin
-        console.log("Auth Sync: Verifying idToken with Firebase Admin...");
+        // Verify the ID token securely using Firebase Admin — this is the actual
+        // authentication check; everything else here is just resolving identity.
         const decodedToken = await adminAuth.verifyIdToken(idToken);
+        const firebaseUid = decodedToken.uid;
         const fullMobileNumber = decodedToken.phone_number;
-        console.log("Auth Sync: Decoded token phone_number:", fullMobileNumber);
 
         if (!fullMobileNumber) {
-            console.error("Auth Sync: Mobile number not found in token");
             return NextResponse.json({ error: 'Mobile number not found in token' }, { status: 400 });
         }
 
-        // Every other mobileNumber lookup in this app (OTP send/verify, ADMIN_MOBILE,
-        // the dev bypass) uses this same shared 10-digit normalizer — reusing it here
-        // instead of a hardcoded "+91" strip keeps this in sync with that convention,
-        // and unlike a hardcoded prefix it degrades gracefully for other country codes.
+        // Every mobileNumber lookup in this app normalizes through this same shared
+        // helper, so a number entered as "9876543210" or returned by Firebase as
+        // "+919876543210" always resolves to the same User row.
         const mobileNumber = toTenDigits(fullMobileNumber);
-        console.log("Auth Sync: Normalized mobileNumber:", mobileNumber);
-
         const isUserAdmin = mobileNumber === ADMIN_MOBILE;
 
-        // Sync with local DB
-        console.log("Auth Sync: Searching for user in Prisma...");
-        let user = await prisma.user.findUnique({
-            where: { mobileNumber }
-        });
+        // 1. Prefer the stable Firebase UID — set on every user's first Firebase
+        //    login, so this is the fast path for every login after that.
+        let user = await prisma.user.findUnique({ where: { firebaseUid } });
 
         if (!user) {
-            console.log("Auth Sync: User not found, creating new user...");
-            user = await prisma.user.create({
-                data: {
-                    mobileNumber,
-                    isMobileVerified: true,
-                    role: isUserAdmin ? 'admin' : 'user',
-                    status: 'active'
-                }
-            });
-            console.log("Auth Sync: Created new user:", user.id);
-        } else {
-            console.log("Auth Sync: Found existing user:", user.id);
-            // Update users to verified if they weren't
-            if (!user.isMobileVerified || (isUserAdmin && user.role !== 'admin')) {
-                console.log("Auth Sync: Updating existing user status/role...");
+            // 2. First Firebase login for this account. Match the existing user by
+            //    phone number (accounts created before this migration, or via the
+            //    checkout flow) and link the Firebase UID onto that same row —
+            //    never creates a duplicate for someone who already has an account.
+            const existing = await prisma.user.findUnique({ where: { mobileNumber } });
+            if (existing) {
                 user = await prisma.user.update({
                     where: { mobileNumber },
                     data: {
+                        firebaseUid,
                         isMobileVerified: true,
-                        role: isUserAdmin ? 'admin' : user.role
-                    }
+                        role: isUserAdmin ? 'admin' : existing.role,
+                    },
                 });
-                console.log("Auth Sync: Updated existing user.");
+            } else {
+                // 3. Genuinely new user.
+                user = await prisma.user.create({
+                    data: {
+                        mobileNumber,
+                        firebaseUid,
+                        isMobileVerified: true,
+                        role: isUserAdmin ? 'admin' : 'user',
+                        status: 'active',
+                    },
+                });
             }
+        } else if (isUserAdmin && user.role !== 'admin') {
+            user = await prisma.user.update({ where: { id: user.id }, data: { role: 'admin' } });
         }
 
-        console.log("Auth Sync: SUCCESS");
         const isAdmin = user.role === 'admin';
         const response = NextResponse.json({
             success: true,
@@ -84,12 +89,8 @@ export async function POST(request: Request) {
             isAdmin,
         });
 
-        // The real, universal session — the same ns_session cookie the OTP-verify flow
-        // grants, checked by verifyAuth()/middleware.ts for every protected page and API
-        // route. Previously this route only ever set the separate admin-only cookie below,
-        // so a regular user completing Firebase Phone Auth here (e.g. on the checkout
-        // page) authenticated with Firebase in the browser but was never actually
-        // recognized as logged in server-side.
+        // The real, universal session — checked by verifyAuth()/middleware.ts for
+        // every protected page and API route, for every user (admin or not).
         const token = await createSessionToken(user);
         response.cookies.set(SESSION_COOKIE, token, sessionCookieOptions());
 
@@ -109,7 +110,7 @@ export async function POST(request: Request) {
         return response;
 
     } catch (error: any) {
-        console.error('Auth Sync Error - FULL DETAILS:', error);
-        return NextResponse.json({ error: 'Sync failed' }, { status: 500 });
+        console.error('Auth Sync Error:', error?.message);
+        return NextResponse.json({ error: 'Sign-in failed' }, { status: 500 });
     }
 }

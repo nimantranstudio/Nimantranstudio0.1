@@ -6,6 +6,7 @@ import { X } from 'lucide-react';
 import styles from './LoginModal.module.css';
 import { auth } from '@/lib/firebase';
 import { RecaptchaVerifier, signInWithPhoneNumber, type ConfirmationResult } from 'firebase/auth';
+import { describeFirebaseAuthError } from '@/lib/auth/firebase-auth-errors';
 
 import { useWeddingStore } from '@/store/wedding-store';
 
@@ -35,30 +36,6 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
         const t = setTimeout(() => setResendCooldown((s) => s - 1), 1000);
         return () => clearTimeout(t);
     }, [resendCooldown]);
-
-    /** Maps a Firebase Auth error code to a message a user can act on. Never
-     * surfaces the raw Firebase error object/message to the UI. */
-    const describeAuthError = (err: any): string => {
-        switch (err?.code) {
-            case 'auth/too-many-requests':
-                return 'Too many attempts. Please wait a while before trying again.';
-            case 'auth/invalid-phone-number':
-                return 'That phone number looks invalid.';
-            case 'auth/invalid-verification-code':
-                return 'Incorrect code. Please check and try again.';
-            case 'auth/code-expired':
-                return 'This code has expired. Request a new one.';
-            case 'auth/captcha-check-failed':
-            case 'auth/missing-recaptcha-token':
-                return 'Verification check failed. Please try again.';
-            case 'auth/network-request-failed':
-                return 'Network error. Check your connection and try again.';
-            case 'auth/quota-exceeded':
-                return 'SMS limit reached for now. Please try again later.';
-            default:
-                return err?.message ? 'Something went wrong. Please try again.' : 'Something went wrong. Please try again.';
-        }
-    };
 
     // Lazily create an invisible reCAPTCHA verifier (required by Firebase Phone Auth)
     const getRecaptcha = () => {
@@ -125,7 +102,7 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
             // Reset reCAPTCHA so the next attempt gets a clean token
             try { recaptchaRef.current?.clear(); } catch { }
             recaptchaRef.current = null;
-            setError(describeAuthError(err));
+            setError(describeFirebaseAuthError(err));
         } finally {
             setBusy(false);
         }
@@ -176,7 +153,7 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
             onSuccess(phoneNumber);
         } catch (err: any) {
             console.error('OTP verification failed:', err);
-            setError(describeAuthError(err));
+            setError(describeFirebaseAuthError(err));
         } finally {
             setIsVerifying(false);
         }

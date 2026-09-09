@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import styles from './login.module.css';
 import { useWeddingStore } from '@/store/wedding-store';
@@ -8,6 +8,9 @@ import { Loader2, AlertCircle, ShieldCheck, Zap, Heart } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { FloatingHearts } from '@/components/ui/FloatingHearts';
+import { auth } from '@/lib/firebase';
+import { RecaptchaVerifier, signInWithPhoneNumber, type ConfirmationResult } from 'firebase/auth';
+import { describeFirebaseAuthError } from '@/lib/auth/firebase-auth-errors';
 
 export default function LoginFormContent() {
     const router = useRouter();
@@ -20,12 +23,13 @@ export default function LoginFormContent() {
     const [otp, setOtp] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [isResending, setIsResending] = useState(false);
+    const [isVerifying, setIsVerifying] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    // Mirrors the server's own resend cooldown (OTP_RESEND_COOLDOWN_SECONDS) — this
-    // is a UX convenience, not the enforcement; /api/auth/otp/send rejects an early
-    // resend regardless of what this timer shows, and a 429 here re-syncs it from
-    // the server's retryAfterSeconds rather than trusting client-side timing alone.
+    // Mirrors Firebase's own send — this is a UX convenience only. Firebase enforces
+    // the real resend/rate protection server-side regardless of what this shows.
     const [resendCooldown, setResendCooldown] = useState(0);
+    const recaptchaRef = useRef<RecaptchaVerifier | null>(null);
+    const confirmationRef = useRef<ConfirmationResult | null>(null);
 
     useEffect(() => {
         if (resendCooldown <= 0) return;
@@ -33,9 +37,33 @@ export default function LoginFormContent() {
         return () => clearTimeout(t);
     }, [resendCooldown]);
 
+    // Clean up the reCAPTCHA verifier on unmount so a stale widget never lingers
+    // across a client-side navigation away from /login.
+    useEffect(() => {
+        return () => {
+            try { recaptchaRef.current?.clear(); } catch { }
+            recaptchaRef.current = null;
+        };
+    }, []);
+
+    // Lazily create an invisible reCAPTCHA verifier (required by Firebase Phone Auth).
+    const getRecaptcha = () => {
+        if (recaptchaRef.current) return recaptchaRef.current;
+        recaptchaRef.current = new RecaptchaVerifier(auth as any, 'recaptcha-container', {
+            size: 'invisible',
+        });
+        return recaptchaRef.current;
+    };
+
+    // Shared by the initial "Get OTP" and the OTP-step "Resend" — both are just
+    // signInWithPhoneNumber again, Firebase's own supported resend flow.
     const sendOtp = async (setBusy: (v: boolean) => void) => {
         if (!identifier || identifier.length < 10) {
             setError('Please enter a valid 10-digit mobile number');
+            return;
+        }
+        if (!auth || !(auth as any).app) {
+            setError('Login is not configured yet. Please try again shortly.');
             return;
         }
 
@@ -43,25 +71,18 @@ export default function LoginFormContent() {
         setBusy(true);
 
         try {
-            const res = await fetch('/api/auth/otp/send', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ mobileNumber: identifier }),
-            });
-            const data = await res.json();
-            if (res.ok && data.success) {
-                setStep('otp');
-                setOtp('');
-                setResendCooldown(typeof data.resendAfterSeconds === 'number' ? data.resendAfterSeconds : 30);
-            } else {
-                setError(data.error || 'Failed to send OTP. Please try again.');
-                // A too-early resend still reports how long is actually left server-side.
-                if (typeof data.retryAfterSeconds === 'number') {
-                    setResendCooldown(data.retryAfterSeconds);
-                }
-            }
+            const verifier = getRecaptcha();
+            const confirmation = await signInWithPhoneNumber(auth as any, `+91${identifier}`, verifier);
+            confirmationRef.current = confirmation;
+            setStep('otp');
+            setOtp('');
+            setResendCooldown(30);
         } catch (err: any) {
-            setError(err?.message || 'Network error. Please try again.');
+            console.error('Failed to send OTP:', err);
+            // Reset reCAPTCHA so the next attempt gets a clean token.
+            try { recaptchaRef.current?.clear(); } catch { }
+            recaptchaRef.current = null;
+            setError(describeFirebaseAuthError(err));
         } finally {
             setBusy(false);
         }
@@ -80,29 +101,40 @@ export default function LoginFormContent() {
     const handleVerifyOTP = async (e: React.FormEvent) => {
         e.preventDefault();
         if (otp.length < 6) return;
+        if (!confirmationRef.current) {
+            setError('Please request a new code.');
+            setStep('phone');
+            return;
+        }
 
         setError(null);
-        setIsLoading(true);
+        setIsVerifying(true);
 
         try {
-            const res = await fetch('/api/auth/otp/verify', {
+            const result = await confirmationRef.current.confirm(otp);
+            // Firebase has now authenticated the user. Sync that to our own User
+            // table and get the real ns_session cookie every existing protected
+            // route already checks — without this the browser would hold a valid
+            // Firebase session the server never sees.
+            const idToken = await result.user.getIdToken();
+            const syncRes = await fetch('/api/auth/sync', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ mobileNumber: identifier, otp }),
+                body: JSON.stringify({ idToken }),
             });
-            const data = await res.json();
-
-            if (res.ok && data.success) {
-                const isAdmin = data.isAdmin === true;
-                login(identifier, isAdmin);
-                router.push(isAdmin ? '/admin' : redirectPath);
-            } else {
-                setError(data.error || 'Invalid OTP');
+            const data = await syncRes.json().catch(() => null);
+            if (!syncRes.ok) {
+                setError('Signed in, but could not finish setting up your account. Please try again.');
+                return;
             }
+            const isAdmin = data?.isAdmin === true;
+            login(identifier, isAdmin);
+            router.push(isAdmin ? '/admin' : redirectPath);
         } catch (err: any) {
-            setError(err?.message || 'Network error. Please try again.');
+            console.error('OTP verification failed:', err);
+            setError(describeFirebaseAuthError(err));
         } finally {
-            setIsLoading(false);
+            setIsVerifying(false);
         }
     };
 
@@ -115,7 +147,10 @@ export default function LoginFormContent() {
                 <div className={`${styles.blob} ${styles.blob2}`}></div>
                 <div className={`${styles.blob} ${styles.blob3}`}></div>
             </div>
-            
+
+            {/* Invisible reCAPTCHA host required by Firebase Phone Auth */}
+            <div id="recaptcha-container" />
+
             <div className={styles.formPanel}>
                 <div className={styles.card}>
                     <div className={styles.cardBranding}>
@@ -207,9 +242,9 @@ export default function LoginFormContent() {
                                     <button
                                         type="submit"
                                         className={`btn btn-primary ${styles.submitBtn}`}
-                                        disabled={isLoading || otp.length < 6}
+                                        disabled={isVerifying || otp.length < 6}
                                     >
-                                        {isLoading ? (
+                                        {isVerifying ? (
                                             <>
                                                 <Loader2 className="animate-spin" size={18} style={{ marginRight: '8px' }} />
                                                 Verifying...

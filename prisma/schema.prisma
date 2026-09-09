@@ -16,6 +16,12 @@ model User {
   updatedAt        DateTime        @updatedAt
   isMobileVerified Boolean         @default(false)
   mobileNumber     String          @unique
+  // Firebase Auth's own stable identity, set the first time a user completes
+  // Firebase Phone Auth (see /api/auth/sync). Nullable: existing users created
+  // before this migration have no Firebase session yet and get linked on their
+  // next login instead of being backfilled — matched by mobileNumber then,
+  // same as always.
+  firebaseUid      String?         @unique
   role             String          @default("user")
   status           String          @default("active")
   orders           Order[]
@@ -25,6 +31,11 @@ model User {
   @@map("User")
 }
 
+// Kept but unused — the custom OTP system that wrote to this table has been
+// replaced by Firebase Phone Auth (see /api/auth/sync). Left in place rather
+// than dropped so its existing rows aren't lost; nothing in the app writes to
+// or reads from this table anymore. Safe to remove later once you're sure you
+// don't need the old data.
 model OTPRequest {
   id           String   @id @default(cuid())
   mobileNumber String
@@ -33,10 +44,6 @@ model OTPRequest {
   isUsed       Boolean  @default(false)
   attemptCount Int      @default(0)
   createdAt    DateTime @default(now())
-  // Secondary rate-limit dimension alongside mobileNumber — one IP spamming
-  // many different numbers is a distinct SMS-cost-abuse pattern a per-number
-  // limit alone can't catch. Nullable: the client IP isn't always resolvable
-  // (e.g. behind some proxies), and that must never block sending the OTP.
   ipAddress    String?
 
   @@index([mobileNumber, createdAt])
