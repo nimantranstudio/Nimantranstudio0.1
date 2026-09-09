@@ -22,6 +22,11 @@
 export const FIELD_IDS = {
     GROOM_NAME:    'groom-name',
     BRIDE_NAME:    'bride-name',
+    // Haldi/Mehendi/Sangeet's single-name "{name} ke {event}" slot. Distinct from
+    // BRIDE_NAME: this field can hold either the bride's or groom's name, chosen by
+    // "Creating Invite For" — see InvitationCard's isSingleNameCeremony/effectiveBrideName.
+    // Only ever sent/mapped for those three event types.
+    PERSON_TYPE:   'person-type',
     GROOM_PARENTS: 'groom-parents',
     BRIDE_PARENTS: 'bride-parents',
     EVENT_NAME:    'event-name',
@@ -41,6 +46,8 @@ export type TemplateFieldMap = Partial<Record<string, string>>;
 export interface FieldPayloadInput {
     groomName?: string;
     brideName?: string;
+    /** Only set for haldi/mehendi/sangeet — the bride or groom name, per "Creating Invite For". */
+    personType?: string;
     groomParents?: string;
     brideParents?: string;
     eventName?: string;
@@ -59,6 +66,7 @@ export function buildFieldPayload(input: FieldPayloadInput): TemplateFieldMap {
     };
     set(FIELD_IDS.GROOM_NAME,    input.groomName);
     set(FIELD_IDS.BRIDE_NAME,    input.brideName);
+    set(FIELD_IDS.PERSON_TYPE,   input.personType);
     set(FIELD_IDS.GROOM_PARENTS, input.groomParents);
     set(FIELD_IDS.BRIDE_PARENTS, input.brideParents);
     set(FIELD_IDS.EVENT_NAME,    input.eventName);

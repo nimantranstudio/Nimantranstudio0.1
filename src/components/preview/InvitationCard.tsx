@@ -786,6 +786,13 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                 // slot. See the data-field guard below for the general form of this protection.
                 'groom-name': groomName || 'Groom Name',
                 'bride-name': effectiveBrideName || 'Bride Name',
+                // Haldi/Mehendi/Sangeet only — same value as 'bride-name' above (the
+                // "Creating Invite For" swap already lives in effectiveBrideName), exposed
+                // under its own key so these three templates' data-field="person-type" span
+                // is matched explicitly rather than by an incidental id="bride-name" match.
+                // undefined elsewhere: never touches Wedding/Reception/Save the Date, whose
+                // 'bride-name' key keeps meaning the literal bride's name.
+                'person-type': isSingleNameCeremony ? (effectiveBrideName || 'Bride Name') : undefined,
                 'groom-parents': groomParents || 'Groom Parents',
                 'groom-parent-name': groomParents || 'Groom Parents',
                 'bride-parents': brideParents || 'Bride Parents',
@@ -849,6 +856,15 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                 
                 // Fallback for uploaded templates that are missing IDs
                 if (!el) {
+                    // person-type's element carries id="bride-name" (unchanged, other CSS/
+                    // logic in the template may key off it) with data-field="person-type" —
+                    // match by data-field directly rather than by id, and don't reassign the
+                    // id: the 'bride-name' key above already owns that id for its own lookup.
+                    if (id === 'person-type') {
+                        const dataFieldEl = doc.querySelector('[data-field="person-type"]');
+                        if (dataFieldEl) el = dataFieldEl as HTMLElement;
+                    }
+
                     const customClassMap: Record<string, string> = {
                         'event-date': 'style-date',
                         'event-time': 'style-time',
@@ -1548,6 +1564,10 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
         const payload = buildFieldPayload({
             groomName:    groomName   || undefined,
             brideName:    effectiveBrideName || undefined,
+            // Haldi/Mehendi/Sangeet only — see the matching fullMapping['person-type']
+            // comment in updateContent() above for why this mirrors 'bride-name' rather
+            // than being a separate value.
+            personType:   isSingleNameCeremony ? (effectiveBrideName || undefined) : undefined,
             groomParents: groomParents || undefined,
             brideParents: brideParents || undefined,
             eventName:    event?.name  || undefined,
