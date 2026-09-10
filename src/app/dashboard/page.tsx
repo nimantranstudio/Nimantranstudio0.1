@@ -1345,39 +1345,13 @@ export default function DashboardPage() {
                             })()}
                         </div>
 
-                        {/* Center Tag: Placed in the Center of the Aditya & Ananya card */}
-                        {isEmptyState && (
-                            <div className={redesignStyles.peekCenterTag}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-                                    <span className={redesignStyles.livePulseDot} />
-                                    <span style={{ fontSize: '0.86rem', fontWeight: 600, color: '#FFFFFF', letterSpacing: '-0.01em', whiteSpace: 'nowrap' }}>
-                                        Previewing Sample Wedding Dashboard
-                                    </span>
-                                </div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                                    <Link href="/themes" className={redesignStyles.peekCtaBtn}>
-                                        <Sparkles size={13} />
-                                        <span>Create Your Suite</span>
-                                    </Link>
-                                    {isPeekingDemo && (
-                                        <button 
-                                            onClick={() => setIsPeekingDemo(false)}
-                                            className={redesignStyles.peekCloseBtn}
-                                        >
-                                            Back to Concierge
-                                        </button>
-                                    )}
-                                </div>
-                            </div>
-                        )}
-
                         {/* Right Corner Group: Action Buttons */}
                         <div style={{ 
                             display: 'flex', 
                             alignItems: 'center', 
                             gap: '0.85rem', 
                             flexWrap: 'wrap', 
-                            marginLeft: isEmptyState ? '0' : 'auto' 
+                            marginLeft: 'auto' 
                         }}>
 
                             {/* Complete Assets Download Button */}
