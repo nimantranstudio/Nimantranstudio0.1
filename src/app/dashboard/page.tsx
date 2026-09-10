@@ -1057,36 +1057,6 @@ export default function DashboardPage() {
 
     return (
         <>
-        {/* Floating Peek Mode Banner for Ghost Dashboard */}
-        {isEmptyState && isPeekingDemo && (
-            <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ type: "spring", duration: 0.4, bounce: 0 }}
-                className={redesignStyles.peekBanner}
-            >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-                    <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: '#F59E0B' }} />
-                    <span style={{ fontSize: '0.88rem', fontWeight: 600, letterSpacing: '-0.01em' }}>
-                        Previewing Sample Wedding Dashboard
-                    </span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                    <Link href="/themes" className={redesignStyles.peekCtaBtn}>
-                        <Sparkles size={14} />
-                        <span>Create Your Suite</span>
-                    </Link>
-                    <button 
-                        onClick={() => setIsPeekingDemo(false)}
-                        className={redesignStyles.peekCloseBtn}
-                    >
-                        Back to Concierge
-                    </button>
-                </div>
-            </motion.div>
-        )}
-
         {/* Floating Luxury Concierge Modal for Empty State */}
         {isEmptyState && !isPeekingDemo && (
             <div className={redesignStyles.conciergeOverlay}>
@@ -1338,13 +1308,39 @@ export default function DashboardPage() {
                             })()}
                         </div>
 
+                        {/* Center Tag: Placed in the Center of the Aditya & Ananya card */}
+                        {isEmptyState && (
+                            <div className={redesignStyles.peekCenterTag}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                                    <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: '#F59E0B' }} />
+                                    <span style={{ fontSize: '0.86rem', fontWeight: 600, color: '#FFFFFF', letterSpacing: '-0.01em', whiteSpace: 'nowrap' }}>
+                                        Previewing Sample Wedding Dashboard
+                                    </span>
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                                    <Link href="/themes" className={redesignStyles.peekCtaBtn}>
+                                        <Sparkles size={13} />
+                                        <span>Create Your Suite</span>
+                                    </Link>
+                                    {isPeekingDemo && (
+                                        <button 
+                                            onClick={() => setIsPeekingDemo(false)}
+                                            className={redesignStyles.peekCloseBtn}
+                                        >
+                                            Back to Concierge
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
                         {/* Right Corner Group: Action Buttons */}
                         <div style={{ 
                             display: 'flex', 
                             alignItems: 'center', 
                             gap: '0.85rem', 
                             flexWrap: 'wrap', 
-                            marginLeft: 'auto' 
+                            marginLeft: isEmptyState ? '0' : 'auto' 
                         }}>
 
                             {/* Complete Assets Download Button */}

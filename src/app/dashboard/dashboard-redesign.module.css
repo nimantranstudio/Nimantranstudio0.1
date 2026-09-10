@@ -1048,6 +1048,21 @@
     transition: transform 0s;
 }
 
+/* Center Tag inside Couple Info Card */
+.peekCenterTag {
+    background: rgba(24, 24, 27, 0.94);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    color: #FFFFFF;
+    padding: 0.42rem 0.65rem 0.42rem 1.15rem;
+    border-radius: 9999px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.85rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16), 0 0 0 1px rgba(212, 175, 55, 0.35);
+    margin: 0 auto;
+}
+
 /* Floating Peek Banner */
 .peekBanner {
     position: fixed;
@@ -1166,6 +1181,14 @@
     .primaryCtaBtn {
         padding: 0.85rem 1.25rem;
         font-size: 0.92rem;
+    }
+    .peekCenterTag {
+        width: 100%;
+        margin: 0.5rem 0 0 0;
+        justify-content: space-between;
+        padding: 0.55rem 0.85rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
     }
     .peekBanner {
         flex-direction: column;
