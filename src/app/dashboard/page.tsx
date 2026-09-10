@@ -1032,7 +1032,6 @@ export default function DashboardPage() {
                 gap: '1.25rem'
             }}>
                 <div className={redesignStyles.conciergeEmblemWrapper}>
-                    <div className={redesignStyles.conciergeEmblemGlow} />
                     <Image 
                         src="/nimantran-symbol.png" 
                         alt="Nimantran Studio" 
@@ -1074,7 +1073,6 @@ export default function DashboardPage() {
                 >
                     {/* Nimantran Studio Logo Emblem */}
                     <div className={redesignStyles.conciergeEmblemWrapper}>
-                        <div className={redesignStyles.conciergeEmblemGlow} />
                         <Image 
                             src="/nimantran-symbol.png" 
                             alt="Nimantran Studio" 
