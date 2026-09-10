@@ -129,6 +129,7 @@ export default function DashboardPage() {
     const [rsvpListLoading, setRsvpListLoading] = useState(false);
     const [rsvpSearchQuery, setRsvpSearchQuery] = useState('');
     const [dbWedding, setDbWedding] = useState<any>(null);
+    const [isCheckingDb, setIsCheckingDb] = useState(true);
     const [isPeekingDemo, setIsPeekingDemo] = useState(false);
 
     useEffect(() => {
@@ -137,13 +138,10 @@ export default function DashboardPage() {
         }
     }, [isMounted, isAuthenticated, router]);
 
-    const hasSavedSuite = Boolean(
-        lastSavedWeddingId ||
-        dbWedding?.id ||
-        (bundleItems && bundleItems.length > 0) ||
-        ((formData.groomName && formData.groomName.trim() !== '') && (formData.brideName && formData.brideName.trim() !== ''))
-    );
-    const isEmptyState = !hasSavedSuite;
+    // The database is the SOLE authority for whether this authenticated user owns an active suite
+    const hasActiveSuite = Boolean(dbWedding?.id);
+    const isEmptyState = !isCheckingDb && !hasActiveSuite;
+    const activeWeddingId = dbWedding?.id || null;
 
     const DEMO_GHOST_DATA = {
         coupleNames: 'Aditya & Ananya',
@@ -199,38 +197,6 @@ export default function DashboardPage() {
             { id: 'g-5', guestName: 'Kabir Singhania', status: 'attending', adultCount: 1, phone: '+91 98210 90123' },
         ]
     };
-
-    useEffect(() => {
-        if (!lastSavedWeddingId) return;
-        setRsvpListLoading(true);
-        const fetchRsvps = async () => {
-            try {
-                await auth.authStateReady();
-                const token = auth.currentUser ? await auth.currentUser.getIdToken() : '';
-                const res = await fetch(`/api/rsvp/${lastSavedWeddingId}`, {
-                    headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-                });
-                const data = await res.json();
-                if (data.success) {
-                    if (data.wedding) setDbWedding(data.wedding);
-                    if (Array.isArray(data.rsvps)) {
-                        setRsvpsList(data.rsvps);
-                        const attending = data.rsvps
-                            .filter((r: any) => r.status === 'attending')
-                            .reduce((sum: number, r: any) => sum + (r.adultCount || 1), 0);
-                        const notAttending = data.rsvps.filter((r: any) => r.status === 'declined').length;
-                        const maybe = data.rsvps.filter((r: any) => r.status === 'maybe').length;
-                        setRsvpStats({ total: attending + notAttending + maybe, attending, notAttending, maybe });
-                    }
-                }
-            } catch (err) {
-                console.error(err);
-            } finally {
-                setRsvpListLoading(false);
-            }
-        };
-        fetchRsvps();
-    }, [lastSavedWeddingId]);
 
     const fullRsvpStats = {
         totalResponses: rsvpsList.length,
@@ -663,26 +629,6 @@ export default function DashboardPage() {
         window.history.replaceState({}, '', window.location.pathname);
     }, []);
 
-    // Load real RSVP responses for the summary card (same definitions as the RSVP
-    // Manager: attending = headcount of accepted guests, not-attending = declines).
-    useEffect(() => {
-        if (!lastSavedWeddingId) return;
-        let alive = true;
-        fetch(`/api/rsvp/${lastSavedWeddingId}`)
-            .then((r) => (r.ok ? r.json() : null))
-            .then((d) => {
-                if (!alive || !d?.success || !Array.isArray(d.rsvps)) return;
-                const attending = d.rsvps
-                    .filter((r: any) => r.status === 'attending')
-                    .reduce((sum: number, r: any) => sum + (r.adultCount || 1), 0);
-                const notAttending = d.rsvps.filter((r: any) => r.status === 'declined').length;
-                const maybe = d.rsvps.filter((r: any) => r.status === 'maybe').length;
-                setRsvpStats({ total: attending + notAttending + maybe, attending, notAttending, maybe });
-            })
-            .catch(() => {});
-        return () => { alive = false; };
-    }, [lastSavedWeddingId]);
-
     useEffect(() => {
         fetch('/api/bundle-assets')
             .then(r => r.json())
@@ -690,21 +636,79 @@ export default function DashboardPage() {
             .catch(() => {});
     }, []);
 
+    // Master server-authoritative loader: on mount, determine if the authenticated user
+    // actually has a wedding in the database.
     useEffect(() => {
-        async function fetchTheme() {
-            if (!selectedThemeId) return;
+        if (!isAuthenticated) return;
+        let alive = true;
+
+        const loadCurrentWedding = async () => {
+            setIsCheckingDb(true);
             try {
-                const res = await fetch(`/api/themes/${selectedThemeId}`);
+                const res = await fetch('/api/wedding/current');
+                if (!alive) return;
                 if (res.ok) {
                     const data = await res.json();
-                    setTheme(data.theme);
+                    if (data?.wedding && data.wedding.id) {
+                        setDbWedding(data.wedding);
+
+                        // Load theme if not already loaded
+                        const targetThemeId = data.wedding.themeId || selectedThemeId;
+                        if (targetThemeId) {
+                            fetch(`/api/themes/${targetThemeId}`)
+                                .then((r) => (r.ok ? r.json() : null))
+                                .then((tData) => {
+                                    if (alive && tData?.theme) setTheme(tData.theme);
+                                })
+                                .catch(() => {});
+                        }
+
+                        // Fetch real RSVP responses for this wedding
+                        try {
+                            setRsvpListLoading(true);
+                            const rsvpRes = await fetch(`/api/rsvp/${data.wedding.id}`);
+                            if (rsvpRes.ok) {
+                                const rData = await rsvpRes.json();
+                                if (alive && rData?.success && Array.isArray(rData.rsvps)) {
+                                    setRsvpsList(rData.rsvps);
+                                    const attending = rData.rsvps
+                                        .filter((r: any) => r.status === 'attending')
+                                        .reduce((sum: number, r: any) => sum + (r.adultCount || 1), 0);
+                                    const notAttending = rData.rsvps.filter((r: any) => r.status === 'declined').length;
+                                    const maybe = rData.rsvps.filter((r: any) => r.status === 'maybe').length;
+                                    setRsvpStats({ total: attending + notAttending + maybe, attending, notAttending, maybe });
+                                }
+                            }
+                        } catch (err) {
+                            console.error('Error fetching RSVPs:', err);
+                        } finally {
+                            if (alive) setRsvpListLoading(false);
+                        }
+                    } else {
+                        setDbWedding(null);
+                        setRsvpsList([]);
+                        setRsvpStats({ total: 0, attending: 0, notAttending: 0, maybe: 0 });
+                    }
+                } else {
+                    setDbWedding(null);
+                    setRsvpsList([]);
+                    setRsvpStats({ total: 0, attending: 0, notAttending: 0, maybe: 0 });
                 }
-            } catch (error) {
-                console.error("Failed to fetch theme", error);
+            } catch (err) {
+                console.error('Error loading current wedding:', err);
+                if (alive) {
+                    setDbWedding(null);
+                    setRsvpsList([]);
+                    setRsvpStats({ total: 0, attending: 0, notAttending: 0, maybe: 0 });
+                }
+            } finally {
+                if (alive) setIsCheckingDb(false);
             }
-        }
-        fetchTheme();
-    }, [selectedThemeId]);
+        };
+
+        loadCurrentWedding();
+        return () => { alive = false; };
+    }, [isAuthenticated, selectedThemeId]);
 
     const buildPreviewItems = () => {
         const ensureLeadingSlash = (path: string) => {
@@ -712,6 +716,24 @@ export default function DashboardPage() {
             if (path.startsWith('http') || path.startsWith('/')) return path;
             return `/${path}`;
         };
+
+        // If user has saved DB events and no client bundleItems in store, build directly from DB
+        if (dbWedding && dbWedding.events && dbWedding.events.length > 0 && (!bundleItems || bundleItems.length === 0)) {
+            return dbWedding.events.map((evt: any, index: number) => ({
+                id: evt.id,
+                name: evt.name || `Event ${index + 1}`,
+                image: evt.generatedCard?.imageUrl || (theme?.previewImages?.[index] || '/assets/themes/gold-1.jpg'),
+                event: {
+                    id: evt.id,
+                    name: evt.name,
+                    date: evt.date || formData.primaryDate,
+                    time: evt.time || formData.primaryTime,
+                    venue: evt.venue || formData.defaultVenueName,
+                    mapLink: evt.mapLink,
+                    description: evt.description
+                }
+            }));
+        }
 
         if (!bundleItems || bundleItems.length === 0) {
             const displayImages = (bundleImages && bundleImages.length > 0) ? bundleImages : (theme?.previewImages || []);
@@ -830,9 +852,7 @@ export default function DashboardPage() {
         return items;
     };
 
-    // Layer any Dashboard-saved edits on top of the base items — applied here, at the
-    // source, so the hero preview, carousel labels/dates, and Suite Preview modal all
-    // reflect a saved edit consistently, not just the modal it was made from.
+    // Layer any Dashboard-saved edits on top of the base items
     const previewItems = buildPreviewItems().map((item) => {
         const override = eventOverrides[item.id];
         if (!override) return item;
@@ -843,46 +863,30 @@ export default function DashboardPage() {
         };
     });
 
-    // Seed eventOverrides/dbEventIdByItemId from the backend once per mount — the DB is
-    // the source of truth for saved Name/Date/Time/Venue values, so this is what makes a
-    // Dashboard edit survive a refresh and stay ahead of whatever the (client-only,
-    // /details-facing) Zustand store happens to hold. Matches DB WeddingEvent rows to
-    // BundleItem-backed previewItems by classified event type — the same tool
-    // (classifyEventType) already used for the bundleId+eventId template mapping,
-    // reused here rather than inventing a second matching scheme — never by raw name
-    // string, which the admin/couple can freely edit.
+    // Seed eventOverrides/dbEventIdByItemId from dbWedding whenever it updates
     useEffect(() => {
-        if (!isAuthenticated || bundleItems.length === 0) return;
-        let alive = true;
+        if (!dbWedding?.events || dbWedding.events.length === 0) return;
+        const dbEvents: any[] = dbWedding.events;
+        const overrides: Record<string, { name: string; date: string; time: string; venue: string }> = {};
+        const idMap: Record<string, string> = {};
+        const storedMap: Record<string, boolean> = {};
+
         const items = buildPreviewItems();
-        fetch('/api/wedding/current')
-            .then((res) => (res.ok ? res.json() : null))
-            .then((data) => {
-                if (!alive) return;
-                const dbEvents: any[] = data?.wedding?.events || [];
-                if (dbEvents.length === 0) return;
-                const overrides: Record<string, { name: string; date: string; time: string; venue: string }> = {};
-                const idMap: Record<string, string> = {};
-                const storedMap: Record<string, boolean> = {};
-                for (const item of items) {
-                    const itemType = classifyEventType(item.event?.name || item.name);
-                    const match = dbEvents.find((de) => classifyEventType(de.name) === itemType);
-                    if (match) {
-                        overrides[item.id] = { name: match.name, date: match.date, time: match.time, venue: match.venue };
-                        idMap[item.id] = match.id;
-                        storedMap[item.id] = !!match.generatedCard?.imageUrl;
-                    }
-                }
-                if (Object.keys(overrides).length > 0) {
-                    setEventOverrides((prev) => ({ ...overrides, ...prev }));
-                    setDbEventIdByItemId((prev) => ({ ...idMap, ...prev }));
-                    setCardStoredByItemId((prev) => ({ ...storedMap, ...prev }));
-                }
-            })
-            .catch(() => { /* Non-fatal — dashboard still works off local formData. */ });
-        return () => { alive = false; };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isAuthenticated, bundleItems.length]);
+        for (const item of items) {
+            const itemType = classifyEventType(item.event?.name || item.name);
+            const match = dbEvents.find((de) => de.id === item.id || classifyEventType(de.name) === itemType);
+            if (match) {
+                overrides[item.id] = { name: match.name, date: match.date, time: match.time, venue: match.venue };
+                idMap[item.id] = match.id;
+                storedMap[item.id] = !!match.generatedCard?.imageUrl;
+            }
+        }
+        if (Object.keys(overrides).length > 0) {
+            setEventOverrides((prev) => ({ ...overrides, ...prev }));
+            setDbEventIdByItemId((prev) => ({ ...idMap, ...prev }));
+            setCardStoredByItemId((prev) => ({ ...storedMap, ...prev }));
+        }
+    }, [dbWedding]);
 
     // Paging to a different card (or closing the modal) always exits edit mode — an
     // in-progress edit belongs to the card it was started on, never carries over silently.
@@ -942,13 +946,13 @@ export default function DashboardPage() {
         return null;
     };
 
-    const rsvpFullUrl = lastSavedWeddingId
-        ? `${typeof window !== 'undefined' ? window.location.origin : 'https://nimantranwebsite.vercel.app'}/rsvp/${lastSavedWeddingId}`
+    const rsvpFullUrl = activeWeddingId
+        ? `${typeof window !== 'undefined' ? window.location.origin : 'https://nimantranwebsite.vercel.app'}/rsvp/${activeWeddingId}`
         : '';
     const [copyStatus, setCopyStatus] = useState(false);
 
     const handleCopyRsvpLink = async () => {
-        const targetUrl = rsvpFullUrl || `${typeof window !== 'undefined' ? window.location.origin : ''}/rsvp/${lastSavedWeddingId || 'demo'}`;
+        const targetUrl = rsvpFullUrl || `${typeof window !== 'undefined' ? window.location.origin : ''}/rsvp/${activeWeddingId || 'demo'}`;
         try {
             await navigator.clipboard.writeText(targetUrl);
             setCopyStatus(true);
@@ -986,6 +990,42 @@ export default function DashboardPage() {
     const displayPreviewItems = isEmptyState ? DEMO_GHOST_DATA.previewItems : previewItems;
 
     if (!isMounted || !isAuthenticated) return null;
+
+    if (isCheckingDb) {
+        return (
+            <div style={{
+                minHeight: '100vh',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: '#FDFBF7',
+                gap: '1.25rem'
+            }}>
+                <div className={redesignStyles.conciergeEmblemWrapper}>
+                    <div className={redesignStyles.conciergeEmblemGlow} />
+                    <div className={redesignStyles.conciergeEmblemCircle}>
+                        <Sparkles size={24} className={redesignStyles.emblemIcon} />
+                    </div>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                    <p style={{
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: '1.25rem',
+                        color: '#1F2937',
+                        fontWeight: 600,
+                        margin: 0,
+                        letterSpacing: '-0.01em'
+                    }}>
+                        Nimantran Studio
+                    </p>
+                    <p style={{ fontSize: '0.85rem', color: '#9CA3AF', marginTop: '0.35rem' }}>
+                        Loading your wedding studio...
+                    </p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <>
@@ -1244,9 +1284,9 @@ export default function DashboardPage() {
                             <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.65rem', fontWeight: 600, color: '#111827', margin: 0, lineHeight: 1.25, letterSpacing: '-0.02em' }}>
                                 {isEmptyState 
                                     ? DEMO_GHOST_DATA.coupleNames 
-                                    : (formData.brideName || formData.groomName ? 
-                                        [formData.brideName, formData.groomName].filter(Boolean).join(' & ') 
-                                        : 'Ananya & Rohan')}
+                                    : ((dbWedding?.groomName || formData.groomName || dbWedding?.brideName || formData.brideName) ? 
+                                        [dbWedding?.groomName || formData.groomName, dbWedding?.brideName || formData.brideName].filter(Boolean).join(' & ') 
+                                        : DEMO_GHOST_DATA.coupleNames)}
                             </h3>
 
                             {/* Line 2: Real-time Date  ·  Real-time Days to go */}
@@ -1269,7 +1309,7 @@ export default function DashboardPage() {
                                         </div>
                                     );
                                 }
-                                const userDateStr = formData.primaryDate || (formData.events && formData.events.length > 0 ? formData.events[0].date : '');
+                                const userDateStr = dbWedding?.events?.[0]?.date || formData.primaryDate || (formData.events && formData.events.length > 0 ? formData.events[0].date : '');
                                 const countdownData = calculateDaysRemaining(userDateStr || '20-12-2025');
                                 const displayDate = formatLongDisplayDate(userDateStr) || '20 December 2025';
 
