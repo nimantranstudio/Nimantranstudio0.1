@@ -1140,6 +1140,37 @@ export default function DashboardPage() {
             </div>
         )}
 
+        {/* Floating & Sticky Temporary Demo State Banner */}
+        {isEmptyState && isPeekingDemo && (
+            <motion.div 
+                initial={{ opacity: 0, y: -24, x: "-50%" }}
+                animate={{ opacity: 1, y: 0, x: "-50%" }}
+                exit={{ opacity: 0, y: -24, x: "-50%" }}
+                transition={{ type: "spring", duration: 0.45, bounce: 0 }}
+                className={redesignStyles.peekBanner}
+            >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                    <span className={redesignStyles.livePulseDot} />
+                    <span style={{ fontSize: '0.88rem', fontWeight: 600, color: '#FFFFFF', letterSpacing: '-0.01em', whiteSpace: 'nowrap' }}>
+                        Previewing Sample Wedding Dashboard
+                    </span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <Link href="/themes" className={redesignStyles.peekCtaBtn}>
+                        <Sparkles size={13} />
+                        <span>Create Your Suite</span>
+                    </Link>
+                    <button 
+                        type="button"
+                        onClick={() => setIsPeekingDemo(false)}
+                        className={redesignStyles.peekCloseBtn}
+                    >
+                        Back to Concierge
+                    </button>
+                </div>
+            </motion.div>
+        )}
+
         <div className={`${styles.dashboardContainer} ${isEmptyState && !isPeekingDemo ? redesignStyles.ghostDashboard : ''}`}>
             <WelcomeDialog
                 open={showWelcome}
@@ -1317,8 +1348,8 @@ export default function DashboardPage() {
                         {/* Center Tag: Placed in the Center of the Aditya & Ananya card */}
                         {isEmptyState && (
                             <div className={redesignStyles.peekCenterTag}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                                    <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: '#F59E0B' }} />
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                                    <span className={redesignStyles.livePulseDot} />
                                     <span style={{ fontSize: '0.86rem', fontWeight: 600, color: '#FFFFFF', letterSpacing: '-0.01em', whiteSpace: 'nowrap' }}>
                                         Previewing Sample Wedding Dashboard
                                     </span>
