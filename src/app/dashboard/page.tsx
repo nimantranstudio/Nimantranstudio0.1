@@ -154,32 +154,38 @@ export default function DashboardPage() {
             {
                 id: 'demo-card-1',
                 name: 'Save the Date',
-                image: '/assets/themes/gold-1.jpg',
-                event: { id: 'save_the_date', name: 'Save the Date', date: '10-10-2026', time: '06:00 PM', venue: 'The Oberoi Udaivilas' }
+                image: '/Image/bundle/cmnkf8vg40002g2h32n8nau30_evt_6_Save_the_date.html',
+                event: { id: 'save_the_date', name: 'Save the Date', heading: 'Save the Date', date: '10-10-2026', time: '06:00 PM', venue: 'The Oberoi Udaivilas' }
             },
             {
                 id: 'demo-card-2',
                 name: 'The Wedding Ceremony',
-                image: '/assets/themes/gold-2.jpg',
-                event: { id: 'wedding', name: 'The Wedding Ceremony', date: '28-12-2026', time: '07:30 PM', venue: 'The Oberoi Udaivilas' }
+                image: '/Image/bundle/cmnkf8vg40002g2h32n8nau30_evt_7_Wedding_Invitation.html',
+                event: { id: 'wedding', name: 'The Wedding Ceremony', heading: 'The Wedding Ceremony', date: '28-12-2026', time: '07:30 PM', venue: 'The Oberoi Udaivilas' }
             },
             {
                 id: 'demo-card-3',
                 name: 'Haldi Ceremony',
-                image: '/assets/themes/gold-1.jpg',
-                event: { id: 'haldi', name: 'Haldi Ceremony', date: '26-12-2026', time: '11:00 AM', venue: 'Poolside Pavilion' }
+                image: '/Image/bundle/cmnkf8vg40002g2h32n8nau30_evt_8_Haldi_Invitation.html',
+                event: { id: 'haldi', name: 'Haldi Ceremony', heading: 'Haldi Ceremony', date: '26-12-2026', time: '11:00 AM', venue: 'Poolside Pavilion' }
             },
             {
                 id: 'demo-card-4',
-                name: 'Sangeet Night',
-                image: '/assets/themes/gold-2.jpg',
-                event: { id: 'sangeet', name: 'Sangeet Night', date: '27-12-2026', time: '08:00 PM', venue: 'Royal Ballroom' }
+                name: 'Mehendi Ceremony',
+                image: '/Image/bundle/cmnkf8vg40002g2h32n8nau30_evt_10_Mehendi_Invitation.html',
+                event: { id: 'mehendi', name: 'Mehendi Ceremony', heading: 'Mehendi Ceremony', date: '27-12-2026', time: '04:00 PM', venue: 'Courtyard Lawns' }
             },
             {
                 id: 'demo-card-5',
+                name: 'Sangeet Night',
+                image: '/Image/bundle/cmnkf8vg40002g2h32n8nau30_evt_9_Sangeet_Invitation.html',
+                event: { id: 'sangeet', name: 'Sangeet Night', heading: 'Sangeet Night', date: '27-12-2026', time: '08:00 PM', venue: 'Royal Ballroom' }
+            },
+            {
+                id: 'demo-card-6',
                 name: 'Grand Reception',
-                image: '/assets/themes/gold-1.jpg',
-                event: { id: 'reception', name: 'Grand Reception', date: '29-12-2026', time: '08:00 PM', venue: 'Lakeside Lawns' }
+                image: '/Image/bundle/cmnkf8vg40002g2h32n8nau30_evt_13_Reception.html',
+                event: { id: 'reception', name: 'Grand Reception', heading: 'Grand Reception', date: '29-12-2026', time: '08:00 PM', venue: 'Lakeside Lawns' }
             }
         ],
         stats: {
@@ -653,7 +659,7 @@ export default function DashboardPage() {
                         setDbWedding(data.wedding);
 
                         // Load theme if not already loaded
-                        const targetThemeId = data.wedding.themeId || selectedThemeId;
+                        const targetThemeId = data.wedding.themeId || selectedThemeId || 'cmnkf7nv40000g2h3gyu2r9uq';
                         if (targetThemeId) {
                             fetch(`/api/themes/${targetThemeId}`)
                                 .then((r) => (r.ok ? r.json() : null))
@@ -688,11 +694,26 @@ export default function DashboardPage() {
                         setDbWedding(null);
                         setRsvpsList([]);
                         setRsvpStats({ total: 0, attending: 0, notAttending: 0, maybe: 0 });
+                        // In empty state, load Suvarna Sohala theme so dashboard cards and preview modals have authentic Suvarna Sohala theme data
+                        const fallbackThemeId = selectedThemeId || 'cmnkf7nv40000g2h3gyu2r9uq';
+                        fetch(`/api/themes/${fallbackThemeId}`)
+                            .then((r) => (r.ok ? r.json() : null))
+                            .then((tData) => {
+                                if (alive && tData?.theme) setTheme(tData.theme);
+                            })
+                            .catch(() => {});
                     }
                 } else {
                     setDbWedding(null);
                     setRsvpsList([]);
                     setRsvpStats({ total: 0, attending: 0, notAttending: 0, maybe: 0 });
+                    const fallbackThemeId = selectedThemeId || 'cmnkf7nv40000g2h3gyu2r9uq';
+                    fetch(`/api/themes/${fallbackThemeId}`)
+                        .then((r) => (r.ok ? r.json() : null))
+                        .then((tData) => {
+                            if (alive && tData?.theme) setTheme(tData.theme);
+                        })
+                        .catch(() => {});
                 }
             } catch (err) {
                 console.error('Error loading current wedding:', err);
@@ -700,6 +721,13 @@ export default function DashboardPage() {
                     setDbWedding(null);
                     setRsvpsList([]);
                     setRsvpStats({ total: 0, attending: 0, notAttending: 0, maybe: 0 });
+                    const fallbackThemeId = selectedThemeId || 'cmnkf7nv40000g2h3gyu2r9uq';
+                    fetch(`/api/themes/${fallbackThemeId}`)
+                        .then((r) => (r.ok ? r.json() : null))
+                        .then((tData) => {
+                            if (alive && tData?.theme) setTheme(tData.theme);
+                        })
+                        .catch(() => {});
                 }
             } finally {
                 if (alive) setIsCheckingDb(false);
@@ -1115,24 +1143,22 @@ export default function DashboardPage() {
                         </div>
                     </div>
 
-                    {/* Action CTAs */}
-                    <div className={redesignStyles.conciergeActions}>
-                        <Link href="/themes" className={redesignStyles.primaryCtaBtn}>
+                    {/* Action CTAs: Side-by-side row */}
+                    <div className={redesignStyles.conciergeActionsRow}>
+                        <Link href="/themes" className={redesignStyles.primaryYellowBtn}>
                             <Sparkles size={16} />
                             <span>Choose a Theme & Begin</span>
                             <ArrowRight size={16} />
                         </Link>
 
-                        <div className={redesignStyles.secondaryActionsRow}>
-                            <button 
-                                type="button"
-                                onClick={() => setIsPeekingDemo(true)}
-                                className={redesignStyles.secondaryPillBtn}
-                            >
-                                <Eye size={14} />
-                                <span>Peek Demo Dashboard</span>
-                            </button>
-                        </div>
+                        <button 
+                            type="button"
+                            onClick={() => setIsPeekingDemo(true)}
+                            className={redesignStyles.peekDemoBtn}
+                        >
+                            <Eye size={15} />
+                            <span>Peek Demo Dashboard</span>
+                        </button>
                     </div>
                 </motion.div>
             </div>
@@ -1909,7 +1935,7 @@ export default function DashboardPage() {
                     
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', width: '100%', alignItems: 'center', justifyContent: 'center', flexGrow: 1 }}>
                         {(() => {
-                            const validItems = previewItems;
+                            const validItems = displayPreviewItems;
                                 
                             if (!validItems || validItems.length === 0) return null;
                             const currentIndex = Math.min(suitePreviewIndex, validItems.length - 1);
@@ -1939,8 +1965,8 @@ export default function DashboardPage() {
                                                 ref={suitePreviewCardRef}
                                                 event={currentItem.event}
                                                 theme={theme}
-                                                groomName={formData.groomName || ''}
-                                                brideName={formData.brideName || ''}
+                                                groomName={isEmptyState ? 'Aditya' : (formData.groomName || '')}
+                                                brideName={isEmptyState ? 'Ananya' : (formData.brideName || '')}
                                                 invitationFor={formData.invitationFor}
                                                 groomParents={formData.groomParents}
                                                 brideParents={formData.brideParents}
