@@ -731,7 +731,7 @@
    ========================================================================== */
 
 .ghostDashboard {
-    filter: blur(10px) saturate(1.15) opacity(0.55);
+    filter: blur(2.5px) opacity(0.85);
     pointer-events: none !important;
     user-select: none !important;
     transition: filter 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -745,9 +745,9 @@
     align-items: center;
     justify-content: center;
     padding: 1.5rem;
-    background: rgba(248, 246, 240, 0.4);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    background: rgba(15, 23, 42, 0.22);
+    backdrop-filter: blur(1.5px);
+    -webkit-backdrop-filter: blur(1.5px);
     overflow-y: auto;
 }
 

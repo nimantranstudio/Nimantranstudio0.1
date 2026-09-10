@@ -1088,11 +1088,11 @@ export default function DashboardPage() {
                             Your Wedding Suite Awaits
                         </h2>
                         <p className={redesignStyles.conciergeDescription}>
-                            Step into your personal wedding studio. Create luxury digital invitations, cinematic 4K video reveals, and manage guest RSVPs in real time.
+                            Step into your personal wedding studio. Create luxury digital invitations and manage guest RSVPs in real time.
                         </p>
                     </div>
 
-                    {/* 3 Core Value Pillars */}
+                    {/* Core Value Pillars */}
                     <div className={redesignStyles.conciergeFeaturesGrid}>
                         <div className={redesignStyles.conciergeFeatureItem}>
                             <div className={redesignStyles.featureIconCircle} style={{ background: '#FEF3C7', color: '#D97706' }}>
@@ -1101,16 +1101,6 @@ export default function DashboardPage() {
                             <div>
                                 <h4 className={redesignStyles.featureTitle}>Multi-Event Digital Suite</h4>
                                 <p className={redesignStyles.featureSub}>Save the Date, Haldi, Sangeet, Wedding & Reception cards.</p>
-                            </div>
-                        </div>
-
-                        <div className={redesignStyles.conciergeFeatureItem}>
-                            <div className={redesignStyles.featureIconCircle} style={{ background: '#EDE9FE', color: '#7C3AED' }}>
-                                <Play size={18} />
-                            </div>
-                            <div>
-                                <h4 className={redesignStyles.featureTitle}>4K Cinematic Video Invitations</h4>
-                                <p className={redesignStyles.featureSub}>Ultra-HD animated reveals with bespoke royal music & typography.</p>
                             </div>
                         </div>
 
@@ -1142,16 +1132,6 @@ export default function DashboardPage() {
                                 <Eye size={14} />
                                 <span>Peek Demo Dashboard</span>
                             </button>
-
-                            <a 
-                                href="https://wa.me/918010581916?text=Hi%20Nimantran%20Studio,%20I'd%20like%20to%20know%20more%20about%20creating%20a%20wedding%20suite" 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className={redesignStyles.secondaryPillBtn}
-                            >
-                                <MessageCircle size={14} />
-                                <span>Chat with Concierge</span>
-                            </a>
                         </div>
                     </div>
                 </motion.div>
