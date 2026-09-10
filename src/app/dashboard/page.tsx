@@ -54,6 +54,7 @@ import {
     Loader2
 } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface RSVPEntry {
     id: string;
@@ -1032,9 +1033,14 @@ export default function DashboardPage() {
             }}>
                 <div className={redesignStyles.conciergeEmblemWrapper}>
                     <div className={redesignStyles.conciergeEmblemGlow} />
-                    <div className={redesignStyles.conciergeEmblemCircle}>
-                        <Sparkles size={24} className={redesignStyles.emblemIcon} />
-                    </div>
+                    <Image 
+                        src="/nimantran-symbol.png" 
+                        alt="Nimantran Studio" 
+                        width={60} 
+                        height={60} 
+                        className={redesignStyles.conciergeLogoImage}
+                        priority
+                    />
                 </div>
                 <div style={{ textAlign: 'center' }}>
                     <p style={{
@@ -1066,12 +1072,17 @@ export default function DashboardPage() {
                     transition={{ type: "spring", duration: 0.55, bounce: 0 }}
                     className={redesignStyles.conciergeCard}
                 >
-                    {/* Illuminated Seal */}
+                    {/* Nimantran Studio Logo Emblem */}
                     <div className={redesignStyles.conciergeEmblemWrapper}>
                         <div className={redesignStyles.conciergeEmblemGlow} />
-                        <div className={redesignStyles.conciergeEmblemCircle}>
-                            <Sparkles size={24} className={redesignStyles.emblemIcon} />
-                        </div>
+                        <Image 
+                            src="/nimantran-symbol.png" 
+                            alt="Nimantran Studio" 
+                            width={60} 
+                            height={60} 
+                            className={redesignStyles.conciergeLogoImage}
+                            priority
+                        />
                     </div>
 
                     {/* Gold Badge */}
@@ -1116,9 +1127,7 @@ export default function DashboardPage() {
                     {/* Action CTAs: Side-by-side row */}
                     <div className={redesignStyles.conciergeActionsRow}>
                         <Link href="/themes" className={redesignStyles.primaryYellowBtn}>
-                            <Sparkles size={16} />
                             <span>Choose a Theme & Begin</span>
-                            <ArrowRight size={16} />
                         </Link>
 
                         <button 
@@ -1126,7 +1135,6 @@ export default function DashboardPage() {
                             onClick={() => setIsPeekingDemo(true)}
                             className={redesignStyles.peekDemoBtn}
                         >
-                            <Eye size={15} />
                             <span>Peek Demo Dashboard</span>
                         </button>
                     </div>
