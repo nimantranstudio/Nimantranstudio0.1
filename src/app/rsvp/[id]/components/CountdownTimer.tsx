@@ -112,7 +112,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({ targetDateStr, t
             <div className={styles.countdownContainer}>
                 <div className={styles.countdownTitle}>Counting Down To The Big Day</div>
                 <div className={styles.countdownGrid}>
-                    {['DAYS', 'HOURS', 'MINUTES', 'SECONDS'].map((label) => (
+                    {['DAYS', 'HOURS', 'MINUTES'].map((label) => (
                         <div key={label} className={styles.countdownBox}>
                             <span className={styles.countdownNum}>--</span>
                             <span className={styles.countdownLabel}>{label}</span>
@@ -155,11 +155,6 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({ targetDateStr, t
                 <div className={styles.countdownBox}>
                     <span className={styles.countdownNum}>{String(timeLeft.minutes).padStart(2, '0')}</span>
                     <span className={styles.countdownLabel}>MINS</span>
-                </div>
-                <div className={styles.countdownColon}>:</div>
-                <div className={styles.countdownBox}>
-                    <span className={styles.countdownNum}>{String(timeLeft.seconds).padStart(2, '0')}</span>
-                    <span className={styles.countdownLabel}>SECS</span>
                 </div>
             </div>
         </div>

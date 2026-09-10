@@ -370,10 +370,8 @@ export default function ThemeDetailClient({
             {/* Header with Breadcrumb and Separator */}
             {/* Personalization Transition Screen removed - moved to /details */}
 
-            <header style={{
-                marginBottom: '1.5rem'
-            }}>
-                <div className="container" style={{ padding: '1.25rem 0 0.5rem 0' }}>
+            <header className={styles.header}>
+                <div className="container">
                     <Breadcrumbs
                         items={[
                             { label: 'Home', href: '/' },

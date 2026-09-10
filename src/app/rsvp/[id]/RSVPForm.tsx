@@ -23,6 +23,81 @@ interface RSVPFormProps {
 
 type Step = 'INVITE' | 'SUCCESS' | 'ALREADY_REGISTERED';
 
+// Motion animation variants adhering to Emil Kowalski & Impeccable luxury animation guidelines (Refined Smooth Cinematic Reveal)
+const slowContainerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.32,
+            delayChildren: 0.15,
+        },
+    },
+};
+
+const slowItemVariants = {
+    hidden: { opacity: 0, y: 20, filter: 'blur(6px)' },
+    visible: {
+        opacity: 1,
+        y: 0,
+        filter: 'blur(0px)',
+        transition: {
+            duration: 1.2,
+            ease: [0.16, 1, 0.3, 1],
+        },
+    },
+};
+
+const coupleContainerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.32,
+            delayChildren: 0.1,
+        },
+    },
+};
+
+const ampersandVariants = {
+    hidden: { opacity: 0, scale: 0.75, filter: 'blur(4px)' },
+    visible: {
+        opacity: 1,
+        scale: 1,
+        filter: 'blur(0px)',
+        transition: {
+            duration: 1.1,
+            ease: [0.16, 1, 0.3, 1],
+        },
+    },
+};
+
+const flourishVariants = {
+    hidden: { opacity: 0, scale: 0.88, filter: 'blur(4px)' },
+    visible: {
+        opacity: 0.65,
+        scale: 1,
+        filter: 'blur(0px)',
+        transition: {
+            duration: 1.5,
+            ease: [0.16, 1, 0.3, 1],
+        },
+    },
+};
+
+const dividerVariants = {
+    hidden: { opacity: 0, scaleX: 0.4, filter: 'blur(4px)' },
+    visible: {
+        opacity: 1,
+        scaleX: 1,
+        filter: 'blur(0px)',
+        transition: {
+            duration: 1.1,
+            ease: [0.16, 1, 0.3, 1],
+        },
+    },
+};
+
 export const RSVPForm = ({ wedding, isPreview = false }: RSVPFormProps) => {
     const [step, setStep] = useState<Step>('INVITE');
     const [isCoverOpen, setIsCoverOpen] = useState(false);
@@ -379,330 +454,377 @@ export const RSVPForm = ({ wedding, isPreview = false }: RSVPFormProps) => {
                         exit={{ opacity: 0, scale: 0.98 }}
                         transition={{ type: 'spring', bounce: 0, duration: 0.65 }}
                     >
-                        {/* 1. DETAILED ROYAL INVITATION HERO SECTION (Exact Match to Reference Screenshot) */}
-                <header className={styles.heroDetailedSection}>
-                    {/* Top-Left Botanical Corner Flourish */}
-                    <div className={styles.cornerFlourishTL} aria-hidden="true">
-                        <svg width="64" height="64" viewBox="0 0 60 60" fill="none">
-                            <path d="M6 6 C20 6 48 18 54 54 C40 30 24 16 6 6 Z" stroke="rgba(197, 160, 89, 0.65)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                            <path d="M6 6 C16 18 24 34 28 46" stroke="rgba(197, 160, 89, 0.45)" strokeWidth="1.2" strokeLinecap="round" />
-                        </svg>
-                    </div>
+                        {/* 1. DETAILED ROYAL INVITATION HERO SECTION (Slow Progressive Text Stagger Reveal) */}
+                        <motion.header
+                            className={styles.heroDetailedSection}
+                            variants={slowContainerVariants}
+                            initial="hidden"
+                            animate="visible"
+                        >
+                            {/* Top-Left Botanical Corner Flourish */}
+                            <motion.div variants={flourishVariants} className={styles.cornerFlourishTL} aria-hidden="true">
+                                <svg width="64" height="64" viewBox="0 0 60 60" fill="none">
+                                    <path d="M6 6 C20 6 48 18 54 54 C40 30 24 16 6 6 Z" stroke="rgba(197, 160, 89, 0.65)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                                    <path d="M6 6 C16 18 24 34 28 46" stroke="rgba(197, 160, 89, 0.45)" strokeWidth="1.2" strokeLinecap="round" />
+                                </svg>
+                            </motion.div>
 
-                    {/* Top-Right Botanical Corner Flourish */}
-                    <div className={styles.cornerFlourishTR} aria-hidden="true">
-                        <svg width="64" height="64" viewBox="0 0 60 60" fill="none">
-                            <path d="M54 6 C40 6 12 18 6 54 C20 30 36 16 54 6 Z" stroke="rgba(197, 160, 89, 0.65)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                            <path d="M54 6 C44 18 36 34 32 46" stroke="rgba(197, 160, 89, 0.45)" strokeWidth="1.2" strokeLinecap="round" />
-                        </svg>
-                    </div>
+                            {/* Top-Right Botanical Corner Flourish */}
+                            <motion.div variants={flourishVariants} className={styles.cornerFlourishTR} aria-hidden="true">
+                                <svg width="64" height="64" viewBox="0 0 60 60" fill="none">
+                                    <path d="M54 6 C40 6 12 18 6 54 C20 30 36 16 54 6 Z" stroke="rgba(197, 160, 89, 0.65)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                                    <path d="M54 6 C44 18 36 34 32 46" stroke="rgba(197, 160, 89, 0.45)" strokeWidth="1.2" strokeLinecap="round" />
+                                </svg>
+                            </motion.div>
 
-                    {/* Divine Blessing Inscription */}
-                    <div className={styles.heroBlessingText}>
-                        <p>With the blessings of the divine</p>
-                        <p>and the love of our families</p>
-                    </div>
+                            {/* Divine Blessing Inscription (Individual line reveals) */}
+                            <motion.div variants={slowContainerVariants} className={styles.heroBlessingText}>
+                                <motion.p variants={slowItemVariants}>With the blessings of the divine</motion.p>
+                                <motion.p variants={slowItemVariants}>and the love of our families</motion.p>
+                            </motion.div>
 
-                    {/* Together We Invite Pre-header */}
-                    <div className={styles.heroInviteTag}>
-                        TOGETHER WE INVITE YOU TO CELEBRATE
-                    </div>
+                            {/* Together We Invite Pre-header */}
+                            <motion.div variants={slowItemVariants} className={styles.heroInviteTag}>
+                                TOGETHER WE INVITE YOU TO CELEBRATE
+                            </motion.div>
 
-                    {/* Vertical Royal Lineage & Couple Block */}
-                    <div className={styles.heroVerticalCoupleBlock}>
-                        {/* 1. Groom & Parental Lineage */}
-                        <div className={styles.heroPersonBlock}>
-                            <h1 className={styles.heroPersonName}>{wedding.groomName}</h1>
-                            {wedding.groomParents && (
-                                <div className={styles.heroPersonLineage}>
-                                    <span className={styles.heroPersonRole}>Son of</span>
-                                    <span className={styles.heroPersonParents}>{groomParentsFormatted}</span>
-                                </div>
-                            )}
-                        </div>
+                            {/* Vertical Royal Lineage & Couple Block */}
+                            <motion.div variants={coupleContainerVariants} className={styles.heroVerticalCoupleBlock}>
+                                {/* 1. Groom & Parental Lineage */}
+                                <motion.div variants={slowItemVariants} className={styles.heroPersonBlock}>
+                                    <h1 className={styles.heroPersonName}>{wedding.groomName}</h1>
+                                    {wedding.groomParents && (
+                                        <div className={styles.heroPersonLineage}>
+                                            <span className={styles.heroPersonRole}>Son of</span>
+                                            <span className={styles.heroPersonParents}>{groomParentsFormatted}</span>
+                                        </div>
+                                    )}
+                                </motion.div>
 
-                        {/* 2. Central Elegant Ampersand Divider */}
-                        <div className={styles.heroVerticalAmpersandWrap}>
-                            <span className={styles.heroAmpersand}>&amp;</span>
-                        </div>
+                                {/* 2. Central Elegant Ampersand Divider */}
+                                <motion.div variants={ampersandVariants} className={styles.heroVerticalAmpersandWrap}>
+                                    <span className={styles.heroAmpersand}>&amp;</span>
+                                </motion.div>
 
-                        {/* 3. Bride & Parental Lineage */}
-                        <div className={styles.heroPersonBlock}>
-                            <h1 className={styles.heroPersonName}>{wedding.brideName}</h1>
-                            {wedding.brideParents && (
-                                <div className={styles.heroPersonLineage}>
-                                    <span className={styles.heroPersonRole}>Daughter of</span>
-                                    <span className={styles.heroPersonParents}>{brideParentsFormatted}</span>
-                                </div>
-                            )}
-                        </div>
-                    </div>
+                                {/* 3. Bride & Parental Lineage */}
+                                <motion.div variants={slowItemVariants} className={styles.heroPersonBlock}>
+                                    <h1 className={styles.heroPersonName}>{wedding.brideName}</h1>
+                                    {wedding.brideParents && (
+                                        <div className={styles.heroPersonLineage}>
+                                            <span className={styles.heroPersonRole}>Daughter of</span>
+                                            <span className={styles.heroPersonParents}>{brideParentsFormatted}</span>
+                                        </div>
+                                    )}
+                                </motion.div>
+                            </motion.div>
 
-                    {/* Auspicious Occasions Note */}
-                    <div className={styles.heroOccasionsText}>
-                        On the following auspicious occasions
-                    </div>
+                            {/* Auspicious Occasions Note */}
+                            <motion.div variants={slowItemVariants} className={styles.heroOccasionsText}>
+                                On the following auspicious occasions
+                            </motion.div>
 
-                    {/* Diamond Hairline Divider 2 (Placed below Auspicious Occasions) */}
-                    <div className={styles.heroDiamondDivider}>
-                        <span className={styles.diamondLine} />
-                        <span className={styles.diamondSymbol}>◆</span>
-                        <span className={styles.diamondLine} />
-                    </div>
-                </header>
+                            {/* Diamond Hairline Divider 2 (Placed below Auspicious Occasions) */}
+                            <motion.div variants={dividerVariants} className={styles.heroDiamondDivider}>
+                                <span className={styles.diamondLine} />
+                                <span className={styles.diamondSymbol}>◆</span>
+                                <span className={styles.diamondLine} />
+                            </motion.div>
 
-                {/* 2. INTERACTIVE ROYAL SANCTUARY GATES & COUNTDOWN SECTION */}
-                <RoyalSanctuaryDoors
-                    targetDateStr={primaryDateStr}
-                    targetTimeStr={primaryTimeStr}
-                    venueLocation={venueLocation}
-                />
-
-                {/* Personal Invitation Message if provided */}
-                {wedding.invitationMessage && wedding.invitationMessage.trim() && (
-                    <div className={styles.quoteCard} style={{ marginTop: '1rem', marginBottom: '2.5rem' }}>
-                        <p className={styles.quoteText}>
-                            &ldquo;{wedding.invitationMessage}&rdquo;
-                        </p>
-                    </div>
-                )}
-
-                <div className={styles.ornamentDivider}>
-                    <div className={styles.ornamentLine} />
-                    <span>✦ ❦ ✦</span>
-                    <div className={styles.ornamentLine} />
-                </div>
-
-                {/* 3. CELEBRATIONS & CEREMONY TIMELINE */}
-                <section className={styles.eventsSection}>
-                    <div className={styles.sectionHeaderWrap}>
-                        <span className={styles.sectionSubHead}>THE CELEBRATIONS</span>
-                        <h2 className={styles.sectionTitle}>Wedding Itinerary</h2>
-                        <p className={styles.sectionSubtitle}>
-                            Join us in each step of our sacred and joyous celebration
-                        </p>
-                    </div>
-
-                    <div className={styles.eventsTimeline}>
-                        {eventsList.length > 0 ? (
-                            eventsList.map((evt, idx) => (
-                                <EventCard
-                                    key={evt.id || idx}
-                                    event={evt}
-                                    coupleNames={coupleNames}
-                                    index={idx}
+                            {/* 2. INTERACTIVE ROYAL SANCTUARY GATES & COUNTDOWN SECTION (Reveals after Auspicious Occasions line) */}
+                            <motion.div variants={slowItemVariants} style={{ width: '100%' }}>
+                                <RoyalSanctuaryDoors
+                                    targetDateStr={primaryDateStr}
+                                    targetTimeStr={primaryTimeStr}
+                                    venueLocation={venueLocation}
                                 />
-                            ))
-                        ) : primaryDateStr || venueLocation ? (
-                            <EventCard
-                                event={{
-                                    id: 'primary-event',
-                                    name: mainWeddingEvent?.name || (wedding as any).eventType || 'Wedding Ceremony',
-                                    date: primaryDateStr || '',
-                                    time: primaryTimeStr || '',
-                                    venue: venueLocation || '',
-                                    description: (wedding as any).description || '',
-                                }}
-                                coupleNames={coupleNames}
-                                index={0}
-                            />
-                        ) : null}
-                    </div>
-                </section>
+                            </motion.div>
+                        </motion.header>
 
-                {/* 4. INTERACTIVE RSVP FORM */}
-                <section id="rsvp-section" className={styles.rsvpSection}>
-                    <div className={styles.sectionHeaderWrap}>
-                        <span className={styles.sectionSubHead}>JOIN THE CELEBRATION</span>
-                        <h2 className={styles.sectionTitle}>Confirm Your Presence</h2>
-                        <p className={styles.sectionSubtitle}>
-                            Please let us know if you can join our celebration
-                        </p>
-                    </div>
-
-                    <form id="rsvp-form" className={styles.form} onSubmit={handleSubmit} noValidate>
-                        {/* Attendance Segmented Tabs */}
-                        <div className={styles.field}>
-                            <label className={styles.fieldLabel}>
-                                <span>Will you be attending?</span>
-                            </label>
-                            <div className={styles.segmentedControl}>
-                                {(
-                                    [
-                                        { id: 'attending', label: "I'll be there 🎉" },
-                                        { id: 'maybe', label: 'Will try 🤞' },
-                                        { id: 'declined', label: 'Sending wishes 💛' },
-                                    ] as const
-                                ).map((opt) => (
-                                    <motion.button
-                                        key={opt.id}
-                                        type="button"
-                                        className={styles.segmentedTab}
-                                        data-active={status === opt.id}
-                                        onClick={() => setStatus(opt.id)}
-                                        whileTap={{ scale: 0.96 }}
-                                    >
-                                        {status === opt.id && (
-                                            <motion.div
-                                                layoutId="active-pill"
-                                                className={styles.segmentedPill}
-                                                transition={{ type: 'spring', bounce: 0.15, duration: 0.4 }}
-                                            />
-                                        )}
-                                        <span className={styles.segmentedLabel}>{opt.label}</span>
-                                    </motion.button>
-                                ))}
-                            </div>
-                            <div className={styles.feedbackMessage}>
-                                {status === 'attending' && "Can't wait to celebrate with you 🎉"}
-                                {status === 'maybe' && 'Hope you can make it 🤍'}
-                                {status === 'declined' && 'Your warm wishes mean so much 💛'}
-                            </div>
-                        </div>
-
-                        {/* Guest Name */}
-                        <div className={styles.field}>
-                            <label htmlFor="rsvp-guest-name" className={styles.fieldLabel}>
-                                <span>Your Full Name</span>
-                                {nameError && <span className={styles.fieldErrorText}>Name is required</span>}
-                            </label>
-                            <input
-                                id="rsvp-guest-name"
-                                type="text"
-                                placeholder="e.g. Rahul Patil / The Sharma Family"
-                                className={clsx(styles.input, nameError && styles.inputError)}
-                                value={guestName}
-                                onChange={(e) => {
-                                    setGuestName(e.target.value);
-                                    if (e.target.value.trim()) setNameError(false);
-                                }}
-                            />
-                        </div>
-
-                        {/* Number of Guests & Phone */}
-                        <div className={styles.row}>
-                            <div className={styles.field}>
-                                <label className={styles.fieldLabel}>
-                                    <span>Total Guests</span>
-                                </label>
-                                <div className={styles.stepperWrap}>
-                                    <motion.button
-                                        type="button"
-                                        className={styles.stepperBtn}
-                                        onClick={handleDecrementGuests}
-                                        disabled={adultCount <= 1}
-                                        whileTap={{ scale: 0.92 }}
-                                    >
-                                        -
-                                    </motion.button>
-                                    <div className={styles.stepperValueBox}>
-                                        <AnimatePresence mode="popLayout" initial={false}>
-                                            <motion.span
-                                                key={adultCount}
-                                                className={styles.stepperValue}
-                                                initial={{ y: stepperDir === 'up' ? 12 : -12, opacity: 0 }}
-                                                animate={{ y: 0, opacity: 1 }}
-                                                exit={{ y: stepperDir === 'up' ? -12 : 12, opacity: 0 }}
-                                                transition={{ type: 'spring', bounce: 0, duration: 0.22 }}
-                                            >
-                                                {adultCount}
-                                            </motion.span>
-                                        </AnimatePresence>
-                                    </div>
-                                    <motion.button
-                                        type="button"
-                                        className={styles.stepperBtn}
-                                        onClick={handleIncrementGuests}
-                                        whileTap={{ scale: 0.92 }}
-                                    >
-                                        +
-                                    </motion.button>
-                                </div>
-                            </div>
-
-                            <div className={styles.field}>
-                                <label className={styles.fieldLabel}>
-                                    <span>Phone Number</span>
-                                </label>
-                                <input
-                                    type="tel"
-                                    placeholder="e.g. 9876543210"
-                                    className={styles.input}
-                                    value={phone}
-                                    onChange={(e) => setPhone(e.target.value)}
-                                />
-                            </div>
-                        </div>
-
-
-
-                        {/* RSVP Deadline */}
-                        {wedding.rsvpDeadline && (
-                            <p className={styles.deadlineNotice}>
-                                Kindly confirm your attendance by{' '}
-                                <strong>
-                                    {new Date(wedding.rsvpDeadline).toLocaleDateString('en-GB', {
-                                        day: 'numeric',
-                                        month: 'long',
-                                        year: 'numeric',
-                                    })}
-                                </strong>
-                            </p>
+                        {/* Personal Invitation Message if provided */}
+                        {wedding.invitationMessage && wedding.invitationMessage.trim() && (
+                            <motion.div
+                                className={styles.quoteCard}
+                                style={{ marginTop: '1rem', marginBottom: '2.5rem' }}
+                                initial={{ opacity: 0, y: 20, filter: 'blur(6px)' }}
+                                whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                                viewport={{ once: true, margin: '-50px' }}
+                                transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
+                            >
+                                <p className={styles.quoteText}>
+                                    &ldquo;{wedding.invitationMessage}&rdquo;
+                                </p>
+                            </motion.div>
                         )}
 
-                        {submitError && <div className={styles.errorMessage}>{submitError}</div>}
-
-                        <motion.button
-                            type="submit"
-                            className={styles.submitButton}
-                            disabled={isSubmitting}
-                            whileTap={{ scale: 0.97 }}
+                        <motion.div
+                            className={styles.ornamentDivider}
+                            initial={{ opacity: 0, scale: 0.88, filter: 'blur(4px)' }}
+                            whileInView={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+                            viewport={{ once: true, margin: '-40px' }}
+                            transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
                         >
-                            {isSubmitting ? (
-                                <span className={styles.submittingWrap}>
-                                    <span className={styles.spinner} /> Sending Response…
-                                </span>
-                            ) : (
-                                <>
-                                    <Sparkles size={18} /> Confirm My Attendance
-                                </>
-                            )}
-                        </motion.button>
-                    </form>
-                </section>
+                            <div className={styles.ornamentLine} />
+                            <span>✦ ❦ ✦</span>
+                            <div className={styles.ornamentLine} />
+                        </motion.div>
 
-                <div className={styles.ornamentDivider}>
-                    <div className={styles.ornamentLine} />
-                    <span>✦ ❦ ✦</span>
-                    <div className={styles.ornamentLine} />
-                </div>
+                        {/* 3. CELEBRATIONS & CEREMONY TIMELINE */}
+                        <motion.section
+                            className={styles.eventsSection}
+                            variants={slowContainerVariants}
+                            initial="hidden"
+                            whileInView="visible"
+                            viewport={{ once: true, margin: '-50px' }}
+                        >
+                            <motion.div variants={slowItemVariants} className={styles.sectionHeaderWrap}>
+                                <span className={styles.sectionSubHead}>THE CELEBRATIONS</span>
+                                <h2 className={styles.sectionTitle}>Wedding Itinerary</h2>
+                                <p className={styles.sectionSubtitle}>
+                                    Join us in each step of our sacred and joyous celebration
+                                </p>
+                            </motion.div>
 
-                {/* 5. BRAND FOOTER & SIGNATURE */}
-                <footer className={styles.websiteFooter}>
-                    <p className={styles.footerThanks}>
-                        We look forward to celebrating this unforgettable occasion with you!
-                    </p>
+                            <div className={styles.eventsTimeline}>
+                                {eventsList.length > 0 ? (
+                                    eventsList.map((evt, idx) => (
+                                        <EventCard
+                                            key={evt.id || idx}
+                                            event={evt}
+                                            coupleNames={coupleNames}
+                                            index={idx}
+                                        />
+                                    ))
+                                ) : primaryDateStr || venueLocation ? (
+                                    <EventCard
+                                        event={{
+                                            id: 'primary-event',
+                                            name: mainWeddingEvent?.name || (wedding as any).eventType || 'Wedding Ceremony',
+                                            date: primaryDateStr || '',
+                                            time: primaryTimeStr || '',
+                                            venue: venueLocation || '',
+                                            description: (wedding as any).description || '',
+                                        }}
+                                        coupleNames={coupleNames}
+                                        index={0}
+                                    />
+                                ) : null}
+                            </div>
+                        </motion.section>
 
-                    {/* Couple Names & Date Signature */}
-                    <div className={styles.footerSignatureBlock}>
-                        <h3 className={styles.footerSignatureNames}>
-                            {wedding.groomName} {wedding.brideName ? `& ${wedding.brideName}` : ''}
-                        </h3>
-                        {footerDateFormatted ? (
-                            <>
-                                <div className={styles.footerSignatureDivider} />
-                                <span className={styles.footerSignatureDate}>
-                                    {footerDateFormatted}
-                                </span>
-                            </>
-                        ) : null}
-                    </div>
+                        {/* 4. INTERACTIVE RSVP FORM */}
+                        <motion.section
+                            id="rsvp-section"
+                            className={styles.rsvpSection}
+                            variants={slowContainerVariants}
+                            initial="hidden"
+                            whileInView="visible"
+                            viewport={{ once: true, margin: '-50px' }}
+                        >
+                            <motion.div variants={slowItemVariants} className={styles.sectionHeaderWrap}>
+                                <span className={styles.sectionSubHead}>JOIN THE CELEBRATION</span>
+                                <h2 className={styles.sectionTitle}>Confirm Your Presence</h2>
+                                <p className={styles.sectionSubtitle}>
+                                    Please let us know if you can join our celebration
+                                </p>
+                            </motion.div>
 
-                    <Link href="/" className={styles.poweredByCard}>
-                        crafted with love on
-                        <img src="/logo.png" alt="Nimantran Studio" className={styles.brandLogo} />
-                    </Link>
-                </footer>
+                            <form id="rsvp-form" className={styles.form} onSubmit={handleSubmit} noValidate>
+                                {/* Attendance Segmented Tabs */}
+                                <motion.div variants={slowItemVariants} className={styles.field}>
+                                    <label className={styles.fieldLabel}>
+                                        <span>Will you be attending?</span>
+                                    </label>
+                                    <div className={styles.segmentedControl}>
+                                        {(
+                                            [
+                                                { id: 'attending', label: "I'll be there 🎉" },
+                                                { id: 'maybe', label: 'Will try 🤞' },
+                                                { id: 'declined', label: 'Sending wishes 💛' },
+                                            ] as const
+                                        ).map((opt) => (
+                                            <motion.button
+                                                key={opt.id}
+                                                type="button"
+                                                className={styles.segmentedTab}
+                                                data-active={status === opt.id}
+                                                onClick={() => setStatus(opt.id)}
+                                                whileTap={{ scale: 0.96 }}
+                                            >
+                                                {status === opt.id && (
+                                                    <motion.div
+                                                        layoutId="active-pill"
+                                                        className={styles.segmentedPill}
+                                                        transition={{ type: 'spring', bounce: 0.15, duration: 0.4 }}
+                                                    />
+                                                )}
+                                                <span className={styles.segmentedLabel}>{opt.label}</span>
+                                            </motion.button>
+                                        ))}
+                                    </div>
+                                    <div className={styles.feedbackMessage}>
+                                        {status === 'attending' && "Can't wait to celebrate with you 🎉"}
+                                        {status === 'maybe' && 'Hope you can make it 🤍'}
+                                        {status === 'declined' && 'Your warm wishes mean so much 💛'}
+                                    </div>
+                                </motion.div>
+
+                                {/* Guest Name */}
+                                <motion.div variants={slowItemVariants} className={styles.field}>
+                                    <label htmlFor="rsvp-guest-name" className={styles.fieldLabel}>
+                                        <span>Your Full Name</span>
+                                        {nameError && <span className={styles.fieldErrorText}>Name is required</span>}
+                                    </label>
+                                    <input
+                                        id="rsvp-guest-name"
+                                        type="text"
+                                        placeholder="e.g. Rahul Patil / The Sharma Family"
+                                        className={clsx(styles.input, nameError && styles.inputError)}
+                                        value={guestName}
+                                        onChange={(e) => {
+                                            setGuestName(e.target.value);
+                                            if (e.target.value.trim()) setNameError(false);
+                                        }}
+                                    />
+                                </motion.div>
+
+                                {/* Number of Guests & Phone */}
+                                <motion.div variants={slowItemVariants} className={styles.row}>
+                                    <div className={styles.field}>
+                                        <label className={styles.fieldLabel}>
+                                            <span>Total Guests</span>
+                                        </label>
+                                        <div className={styles.stepperWrap}>
+                                            <motion.button
+                                                type="button"
+                                                className={styles.stepperBtn}
+                                                onClick={handleDecrementGuests}
+                                                disabled={adultCount <= 1}
+                                                whileTap={{ scale: 0.92 }}
+                                            >
+                                                -
+                                            </motion.button>
+                                            <div className={styles.stepperValueBox}>
+                                                <AnimatePresence mode="popLayout" initial={false}>
+                                                    <motion.span
+                                                        key={adultCount}
+                                                        className={styles.stepperValue}
+                                                        initial={{ y: stepperDir === 'up' ? 12 : -12, opacity: 0 }}
+                                                        animate={{ y: 0, opacity: 1 }}
+                                                        exit={{ y: stepperDir === 'up' ? -12 : 12, opacity: 0 }}
+                                                        transition={{ type: 'spring', bounce: 0, duration: 0.22 }}
+                                                    >
+                                                        {adultCount}
+                                                    </motion.span>
+                                                </AnimatePresence>
+                                            </div>
+                                            <motion.button
+                                                type="button"
+                                                className={styles.stepperBtn}
+                                                onClick={handleIncrementGuests}
+                                                whileTap={{ scale: 0.92 }}
+                                            >
+                                                +
+                                            </motion.button>
+                                        </div>
+                                    </div>
+
+                                    <div className={styles.field}>
+                                        <label className={styles.fieldLabel}>
+                                            <span>Phone Number</span>
+                                        </label>
+                                        <input
+                                            type="tel"
+                                            placeholder="e.g. 9876543210"
+                                            className={styles.input}
+                                            value={phone}
+                                            onChange={(e) => setPhone(e.target.value)}
+                                        />
+                                    </div>
+                                </motion.div>
+
+                                {/* RSVP Deadline */}
+                                {wedding.rsvpDeadline && (
+                                    <motion.p variants={slowItemVariants} className={styles.deadlineNotice}>
+                                        Kindly confirm your attendance by{' '}
+                                        <strong>
+                                            {new Date(wedding.rsvpDeadline).toLocaleDateString('en-GB', {
+                                                day: 'numeric',
+                                                month: 'long',
+                                                year: 'numeric',
+                                            })}
+                                        </strong>
+                                    </motion.p>
+                                )}
+
+                                {submitError && <div className={styles.errorMessage}>{submitError}</div>}
+
+                                <motion.div variants={slowItemVariants}>
+                                    <motion.button
+                                        type="submit"
+                                        className={styles.submitButton}
+                                        disabled={isSubmitting}
+                                        whileTap={{ scale: 0.97 }}
+                                    >
+                                        {isSubmitting ? (
+                                            <span className={styles.submittingWrap}>
+                                                <span className={styles.spinner} /> Sending Response…
+                                            </span>
+                                        ) : (
+                                            <>
+                                                <Sparkles size={18} /> Confirm My Attendance
+                                            </>
+                                        )}
+                                    </motion.button>
+                                </motion.div>
+                            </form>
+                        </motion.section>
+
+                        <motion.div
+                            className={styles.ornamentDivider}
+                            initial={{ opacity: 0, scale: 0.88, filter: 'blur(4px)' }}
+                            whileInView={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+                            viewport={{ once: true, margin: '-40px' }}
+                            transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
+                        >
+                            <div className={styles.ornamentLine} />
+                            <span>✦ ❦ ✦</span>
+                            <div className={styles.ornamentLine} />
+                        </motion.div>
+
+                        {/* 5. BRAND FOOTER & SIGNATURE */}
+                        <motion.footer
+                            className={styles.websiteFooter}
+                            variants={slowContainerVariants}
+                            initial="hidden"
+                            whileInView="visible"
+                            viewport={{ once: true, margin: '-40px' }}
+                        >
+                            <motion.p variants={slowItemVariants} className={styles.footerThanks}>
+                                We look forward to celebrating this unforgettable occasion with you!
+                            </motion.p>
+
+                            {/* Couple Names & Date Signature */}
+                            <motion.div variants={slowItemVariants} className={styles.footerSignatureBlock}>
+                                <h3 className={styles.footerSignatureNames}>
+                                    {wedding.groomName} {wedding.brideName ? `& ${wedding.brideName}` : ''}
+                                </h3>
+                                {footerDateFormatted ? (
+                                    <>
+                                        <div className={styles.footerSignatureDivider} />
+                                        <span className={styles.footerSignatureDate}>
+                                            {footerDateFormatted}
+                                        </span>
+                                    </>
+                                ) : null}
+                            </motion.div>
+
+                            <motion.div variants={slowItemVariants}>
+                                <Link href="/" className={styles.poweredByCard}>
+                                    crafted with love on
+                                    <img src="/logo.png" alt="Nimantran Studio" className={styles.brandLogo} />
+                                </Link>
+                            </motion.div>
+                        </motion.footer>
             </motion.div>
         )}
     </AnimatePresence>

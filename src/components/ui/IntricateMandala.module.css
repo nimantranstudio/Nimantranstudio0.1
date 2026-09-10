@@ -6,7 +6,7 @@
     overflow: visible;
     transform-origin: center center;
     will-change: transform;
-    animation: slowSpinMandala 70s linear infinite;
+    animation: slowSpinMandala 80s linear infinite;
     filter: drop-shadow(0 0 12px rgba(212, 175, 55, 0.45));
 }
 

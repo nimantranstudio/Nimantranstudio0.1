@@ -15,11 +15,18 @@
 }
 
 .breadcrumbContainer {
-    max-width: 1200px;
+    max-width: var(--container-width);
     margin: 0 auto;
-    padding: 0 1.5rem;
+    padding: 0 2rem;
     display: flex;
     align-items: center;
+    box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+    .breadcrumbContainer {
+        padding: 0 1.25rem;
+    }
 }
 
 .header {
@@ -33,10 +40,17 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    max-width: 1200px;
+    max-width: var(--container-width);
     margin: 0 auto;
-    padding: 0 1.5rem;
+    padding: 0 2rem;
     gap: 1.5rem;
+    box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+    .headerContainer {
+        padding: 0 1.25rem;
+    }
 }
 
 .backLink {
@@ -80,9 +94,16 @@
 }
 
 .mainContainer {
-    max-width: 1200px;
+    max-width: var(--container-width);
     margin: 0 auto;
-    padding: 0 1.5rem;
+    padding: 0 2rem;
+    box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+    .mainContainer {
+        padding: 0 1.25rem;
+    }
 }
 
 .premiumLayout {

@@ -10,6 +10,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useWeddingStore } from '@/store/wedding-store';
 import dashboardStyles from '../../dashboard.module.css';
+import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 
 export default function RSVPCreatePage() {
     const router = useRouter();
@@ -78,10 +79,13 @@ export default function RSVPCreatePage() {
         <div className={styles.container}>
             <main className={styles.main}>
                 {/* Breadcrumb */}
-                <div className={styles.breadcrumb}>
-                    <Link href="/dashboard" className={styles.breadcrumbLink}>Dashboard</Link>
-                    <span className={styles.separator}>/</span>
-                    <span className={styles.activeBreadcrumb}>Create</span>
+                <div className={styles.breadcrumbWrapper}>
+                    <Breadcrumbs
+                        items={[
+                            { label: 'Dashboard', href: '/dashboard' },
+                            { label: 'Create', active: true },
+                        ]}
+                    />
                 </div>
 
                 <div className={styles.formContainer}>

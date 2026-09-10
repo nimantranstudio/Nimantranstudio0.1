@@ -142,7 +142,7 @@ export default async function BlogPostPage({
         <main className={styles.page}>
             {/* Breadcrumb nav */}
             <div className={styles.backBar}>
-                <div className="container" style={{ padding: '1.25rem 0 0.5rem 0' }}>
+                <div className="container">
                     <Breadcrumbs
                         items={[
                             { label: 'Home', href: '/' },

@@ -36,6 +36,16 @@
     position: relative;
 }
 
+.item:first-child .link {
+    padding-left: 0;
+    margin-left: 0;
+}
+
+.item:first-child .current {
+    padding-left: 0;
+    margin-left: 0;
+}
+
 .link:hover {
     color: #1C1917; /* High contrast dark stone on hover */
 }

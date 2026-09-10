@@ -7,34 +7,21 @@
 
 .main {
     width: 100%;
-    max-width: 1200px;
+    max-width: var(--container-width);
     margin: 0 auto;
-    padding: 2.5rem 1.5rem 5rem;
+    padding: 2rem 2rem 5rem;
+    box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+    .main {
+        padding: 1.5rem 1.25rem 4rem;
+    }
 }
 
 /* Breadcrumb Styles */
-.breadcrumb {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding-bottom: 1rem;
+.breadcrumbWrapper {
     margin-bottom: 2rem;
-    border-bottom: 1px solid #E2E8F0;
-    font-size: 0.9rem;
-    font-weight: 500;
-}
-
-.breadcrumbLink {
-    color: #888;
-}
-
-.separator {
-    color: #ccc;
-}
-
-.activeBreadcrumb {
-    color: #333;
-    font-weight: 600;
 }
 
 .page {

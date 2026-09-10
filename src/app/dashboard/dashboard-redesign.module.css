@@ -726,3 +726,343 @@
     box-shadow: 0 4px 12px rgba(200, 169, 81, 0.12) !important;
 }
 
+/* ==========================================================================
+   Luxury Concierge Empty State & Frosted Ghost Dashboard
+   ========================================================================== */
+
+.ghostDashboard {
+    filter: blur(10px) saturate(1.15) opacity(0.55);
+    pointer-events: none !important;
+    user-select: none !important;
+    transition: filter 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.conciergeOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    background: rgba(248, 246, 240, 0.4);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    overflow-y: auto;
+}
+
+.conciergeCard {
+    position: relative;
+    width: 100%;
+    max-width: 620px;
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(253, 250, 245, 0.93) 100%);
+    backdrop-filter: blur(28px) saturate(190%);
+    -webkit-backdrop-filter: blur(28px) saturate(190%);
+    border: 1px solid rgba(212, 175, 55, 0.45);
+    border-radius: 28px;
+    padding: 2.75rem 2.25rem 2.25rem;
+    box-shadow: 
+        0 4px 20px rgba(0, 0, 0, 0.04), 
+        0 24px 64px rgba(70, 45, 20, 0.12), 
+        inset 0 1px 2px rgba(255, 255, 255, 0.9);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1.35rem;
+    margin: auto;
+}
+
+.conciergeEmblemWrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.conciergeEmblemGlow {
+    position: absolute;
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(212, 175, 55, 0.35) 0%, rgba(212, 175, 55, 0) 70%);
+    animation: breatheGlow 3s ease-in-out infinite;
+}
+
+@keyframes breatheGlow {
+    0%, 100% { transform: scale(1); opacity: 0.7; }
+    50% { transform: scale(1.25); opacity: 1; }
+}
+
+.conciergeEmblemCircle {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #FFFDF8 0%, #FBF6E9 100%);
+    border: 1.5px solid #D4AF37;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #B45309;
+    box-shadow: 0 4px 16px rgba(212, 175, 55, 0.25), inset 0 1px 1px #FFFFFF;
+    position: relative;
+    z-index: 2;
+}
+
+.emblemIcon {
+    color: #D4AF37;
+}
+
+.conciergeBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.32rem 0.9rem;
+    border-radius: 9999px;
+    background: #FFFDF8;
+    border: 1px solid rgba(212, 175, 55, 0.35);
+    color: #92400E;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    box-shadow: 0 1px 3px rgba(212, 175, 55, 0.08);
+}
+
+.conciergeTitle {
+    font-family: var(--font-serif);
+    font-size: 2.1rem;
+    font-weight: 600;
+    color: #111827;
+    line-height: 1.2;
+    letter-spacing: -0.025em;
+    margin: 0;
+}
+
+.conciergeDescription {
+    font-size: 0.95rem;
+    color: #4B5563;
+    line-height: 1.55;
+    margin: 0 auto;
+    max-width: 480px;
+}
+
+.conciergeFeaturesGrid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    width: 100%;
+    margin-top: 0.25rem;
+}
+
+.conciergeFeatureItem {
+    display: flex;
+    align-items: center;
+    gap: 0.95rem;
+    padding: 0.85rem 1.15rem;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.02);
+    text-align: left;
+    width: 100%;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+}
+
+.conciergeFeatureItem:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.featureIconCircle {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.featureTitle {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #1F2937;
+    margin: 0 0 0.15rem 0;
+    letter-spacing: -0.01em;
+}
+
+.featureSub {
+    font-size: 0.8rem;
+    color: #6B7280;
+    margin: 0;
+    line-height: 1.35;
+}
+
+.conciergeActions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    width: 100%;
+    margin-top: 0.5rem;
+}
+
+.primaryCtaBtn {
+    width: 100%;
+    background: linear-gradient(135deg, #18181B 0%, #27272A 100%);
+    color: #FDFBF7 !important;
+    border: 1px solid rgba(212, 175, 55, 0.6);
+    padding: 0.95rem 1.75rem;
+    border-radius: 9999px;
+    font-size: 0.98rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    cursor: pointer;
+    text-decoration: none !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(212, 175, 55, 0.2);
+    transition: transform 0.16s ease-out, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.primaryCtaBtn:hover {
+    box-shadow: 0 8px 28px rgba(212, 175, 55, 0.35);
+    border-color: rgba(212, 175, 55, 0.95);
+    transform: translateY(-1px);
+}
+
+.primaryCtaBtn:active {
+    transform: scale(0.97);
+    transition: transform 0s;
+}
+
+.secondaryActionsRow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.85rem;
+    width: 100%;
+    flex-wrap: wrap;
+}
+
+.secondaryPillBtn {
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    color: #4B5563;
+    padding: 0.55rem 1.15rem;
+    border-radius: 9999px;
+    font-size: 0.84rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    text-decoration: none !important;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.secondaryPillBtn:hover {
+    background: #FFFFFF;
+    color: #111827;
+    border-color: #D4AF37;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.04);
+}
+
+.secondaryPillBtn:active {
+    transform: scale(0.97);
+    transition: transform 0s;
+}
+
+/* Floating Peek Banner */
+.peekBanner {
+    position: fixed;
+    top: 1.25rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+    background: rgba(24, 24, 27, 0.94);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    color: #FFFFFF;
+    padding: 0.55rem 0.85rem 0.55rem 1.35rem;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(212, 175, 55, 0.4);
+    max-width: 90vw;
+}
+
+.peekCtaBtn {
+    background: linear-gradient(135deg, #D4AF37 0%, #B45309 100%);
+    color: #FFFFFF !important;
+    border: none;
+    padding: 0.45rem 1.15rem;
+    border-radius: 9999px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    text-decoration: none !important;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3);
+    transition: all 0.16s ease-out;
+}
+
+.peekCtaBtn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(212, 175, 55, 0.5);
+}
+
+.peekCtaBtn:active {
+    transform: scale(0.97);
+    transition: transform 0s;
+}
+
+.peekCloseBtn {
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #E4E4E7;
+    padding: 0.45rem 0.95rem;
+    border-radius: 9999px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    transition: all 0.16s ease-out;
+}
+
+.peekCloseBtn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #FFFFFF;
+}
+
+.peekCloseBtn:active {
+    transform: scale(0.97);
+    transition: transform 0s;
+}
+
+@media (max-width: 640px) {
+    .conciergeCard {
+        padding: 2rem 1.25rem 1.75rem;
+        border-radius: 22px;
+    }
+    .conciergeTitle {
+        font-size: 1.65rem;
+    }
+    .conciergeDescription {
+        font-size: 0.88rem;
+    }
+    .peekBanner {
+        flex-direction: column;
+        gap: 0.65rem;
+        padding: 0.85rem 1.15rem;
+        border-radius: 20px;
+        text-align: center;
+    }
+}
+

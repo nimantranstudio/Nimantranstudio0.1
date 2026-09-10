@@ -107,6 +107,8 @@ function formatFullWeddingDate(dateStr?: string | null): { fullDate: string; sub
     }
 }
 
+
+
 export const RoyalSanctuaryDoors: React.FC<RoyalSanctuaryDoorsProps> = ({
     targetDateStr,
     targetTimeStr,
@@ -202,7 +204,7 @@ export const RoyalSanctuaryDoors: React.FC<RoyalSanctuaryDoorsProps> = ({
                             scale: isOpen ? 1 : 0.95,
                             opacity: isOpen ? 1 : 0.6,
                         }}
-                        transition={{ type: 'spring', bounce: 0.15, duration: 0.55 }}
+                        transition={{ type: 'spring', bounce: 0.15, duration: 0.45 }}
                     >
                         <div className={styles.innerCardDateTag}>OUR WEDDING DATE</div>
 
@@ -218,7 +220,7 @@ export const RoyalSanctuaryDoors: React.FC<RoyalSanctuaryDoorsProps> = ({
 
                         <div className={styles.innerCardDivider} />
 
-                        {/* 4 Countdown Boxes */}
+                        {/* 3 Countdown Boxes (Days, Hours, Minutes) */}
                         <div className={styles.sanctuaryTimerGrid}>
                             <div className={styles.sanctuaryTimerBox}>
                                 <span className={styles.sanctuaryTimerNum}>
@@ -239,13 +241,6 @@ export const RoyalSanctuaryDoors: React.FC<RoyalSanctuaryDoorsProps> = ({
                                     {timeLeft ? String(timeLeft.minutes).padStart(2, '0') : '00'}
                                 </span>
                                 <span className={styles.sanctuaryTimerLabel}>MINUTES</span>
-                            </div>
-
-                            <div className={styles.sanctuaryTimerBox}>
-                                <span className={styles.sanctuaryTimerNum}>
-                                    {timeLeft ? String(timeLeft.seconds).padStart(2, '0') : '00'}
-                                </span>
-                                <span className={styles.sanctuaryTimerLabel}>SECONDS</span>
                             </div>
                         </div>
 
@@ -269,8 +264,8 @@ export const RoyalSanctuaryDoors: React.FC<RoyalSanctuaryDoorsProps> = ({
                             transition={{
                                 type: 'spring',
                                 damping: 24,
-                                stiffness: 130,
-                                mass: 0.8,
+                                stiffness: 100,
+                                mass: 0.9,
                             }}
                         >
                             <div className={styles.doorInnerBorder} />
@@ -294,8 +289,8 @@ export const RoyalSanctuaryDoors: React.FC<RoyalSanctuaryDoorsProps> = ({
                             transition={{
                                 type: 'spring',
                                 damping: 24,
-                                stiffness: 130,
-                                mass: 0.8,
+                                stiffness: 100,
+                                mass: 0.9,
                             }}
                         >
                             <div className={styles.doorInnerBorder} />
@@ -324,7 +319,7 @@ export const RoyalSanctuaryDoors: React.FC<RoyalSanctuaryDoorsProps> = ({
                                         initial={{ scale: 0.8, opacity: 0 }}
                                         animate={{ scale: 1, opacity: 1 }}
                                         exit={{ scale: 0.6, opacity: 0 }}
-                                        transition={{ type: 'spring', bounce: 0.25, duration: 0.35 }}
+                                        transition={{ type: 'spring', bounce: 0.2, duration: 0.35 }}
                                     >
                                         {/* Concentric Gold Rings */}
                                         <div className={styles.sealOuterRing} />

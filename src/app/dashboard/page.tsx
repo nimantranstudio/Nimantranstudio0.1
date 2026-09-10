@@ -129,6 +129,76 @@ export default function DashboardPage() {
     const [rsvpListLoading, setRsvpListLoading] = useState(false);
     const [rsvpSearchQuery, setRsvpSearchQuery] = useState('');
     const [dbWedding, setDbWedding] = useState<any>(null);
+    const [isPeekingDemo, setIsPeekingDemo] = useState(false);
+
+    useEffect(() => {
+        if (isMounted && !isAuthenticated) {
+            router.push('/login?redirect=/dashboard');
+        }
+    }, [isMounted, isAuthenticated, router]);
+
+    const hasSavedSuite = Boolean(
+        lastSavedWeddingId ||
+        dbWedding?.id ||
+        (bundleItems && bundleItems.length > 0) ||
+        ((formData.groomName && formData.groomName.trim() !== '') && (formData.brideName && formData.brideName.trim() !== ''))
+    );
+    const isEmptyState = !hasSavedSuite;
+
+    const DEMO_GHOST_DATA = {
+        coupleNames: 'Aditya & Ananya',
+        displayDate: '28 December 2026',
+        countdownText: '284 Days to go',
+        time: '07:30 PM',
+        venue: 'The Oberoi Udaivilas, Udaipur',
+        deadline: 'Respond by 15 December 2026',
+        previewItems: [
+            {
+                id: 'demo-card-1',
+                name: 'Save the Date',
+                image: '/assets/themes/gold-1.jpg',
+                event: { id: 'save_the_date', name: 'Save the Date', date: '10-10-2026', time: '06:00 PM', venue: 'The Oberoi Udaivilas' }
+            },
+            {
+                id: 'demo-card-2',
+                name: 'The Wedding Ceremony',
+                image: '/assets/themes/gold-2.jpg',
+                event: { id: 'wedding', name: 'The Wedding Ceremony', date: '28-12-2026', time: '07:30 PM', venue: 'The Oberoi Udaivilas' }
+            },
+            {
+                id: 'demo-card-3',
+                name: 'Haldi Ceremony',
+                image: '/assets/themes/gold-1.jpg',
+                event: { id: 'haldi', name: 'Haldi Ceremony', date: '26-12-2026', time: '11:00 AM', venue: 'Poolside Pavilion' }
+            },
+            {
+                id: 'demo-card-4',
+                name: 'Sangeet Night',
+                image: '/assets/themes/gold-2.jpg',
+                event: { id: 'sangeet', name: 'Sangeet Night', date: '27-12-2026', time: '08:00 PM', venue: 'Royal Ballroom' }
+            },
+            {
+                id: 'demo-card-5',
+                name: 'Grand Reception',
+                image: '/assets/themes/gold-1.jpg',
+                event: { id: 'reception', name: 'Grand Reception', date: '29-12-2026', time: '08:00 PM', venue: 'Lakeside Lawns' }
+            }
+        ],
+        stats: {
+            totalResponses: 142,
+            attending: 118,
+            declined: 16,
+            maybe: 8,
+            headcount: 246
+        },
+        sampleGuests: [
+            { id: 'g-1', guestName: 'Rajesh & Sunita Sharma', status: 'attending', adultCount: 3, phone: '+91 98201 44521' },
+            { id: 'g-2', guestName: 'Vikram & Meera Malhotra', status: 'attending', adultCount: 2, phone: '+91 98110 89234' },
+            { id: 'g-3', guestName: 'Dr. Amitabh & Neha Roy', status: 'attending', adultCount: 4, phone: '+91 98300 12789' },
+            { id: 'g-4', guestName: 'Pooja & Amit Verma', status: 'attending', adultCount: 2, phone: '+91 99100 55432' },
+            { id: 'g-5', guestName: 'Kabir Singhania', status: 'attending', adultCount: 1, phone: '+91 98210 90123' },
+        ]
+    };
 
     useEffect(() => {
         if (!lastSavedWeddingId) return;
@@ -913,11 +983,142 @@ export default function DashboardPage() {
         return fallback;
     };
 
+    const displayPreviewItems = isEmptyState ? DEMO_GHOST_DATA.previewItems : previewItems;
+
     if (!isMounted || !isAuthenticated) return null;
 
     return (
         <>
-        <div className={styles.dashboardContainer}>
+        {/* Floating Peek Mode Banner for Ghost Dashboard */}
+        {isEmptyState && isPeekingDemo && (
+            <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ type: "spring", duration: 0.4, bounce: 0 }}
+                className={redesignStyles.peekBanner}
+            >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                    <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: '#F59E0B' }} />
+                    <span style={{ fontSize: '0.88rem', fontWeight: 600, letterSpacing: '-0.01em' }}>
+                        Previewing Sample Wedding Dashboard
+                    </span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                    <Link href="/themes" className={redesignStyles.peekCtaBtn}>
+                        <Sparkles size={14} />
+                        <span>Create Your Suite</span>
+                    </Link>
+                    <button 
+                        onClick={() => setIsPeekingDemo(false)}
+                        className={redesignStyles.peekCloseBtn}
+                    >
+                        Back to Concierge
+                    </button>
+                </div>
+            </motion.div>
+        )}
+
+        {/* Floating Luxury Concierge Modal for Empty State */}
+        {isEmptyState && !isPeekingDemo && (
+            <div className={redesignStyles.conciergeOverlay}>
+                <motion.div 
+                    initial={{ opacity: 0, y: 28, scale: 0.96 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ type: "spring", duration: 0.55, bounce: 0 }}
+                    className={redesignStyles.conciergeCard}
+                >
+                    {/* Illuminated Seal */}
+                    <div className={redesignStyles.conciergeEmblemWrapper}>
+                        <div className={redesignStyles.conciergeEmblemGlow} />
+                        <div className={redesignStyles.conciergeEmblemCircle}>
+                            <Sparkles size={24} className={redesignStyles.emblemIcon} />
+                        </div>
+                    </div>
+
+                    {/* Gold Badge */}
+                    <div className={redesignStyles.conciergeBadge}>
+                        <Sparkles size={12} />
+                        <span>Nimantran Studio Concierge</span>
+                    </div>
+
+                    {/* Title & Description */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
+                        <h2 className={redesignStyles.conciergeTitle}>
+                            Your Wedding Suite Awaits
+                        </h2>
+                        <p className={redesignStyles.conciergeDescription}>
+                            Step into your personal wedding studio. Create luxury digital invitations, cinematic 4K video reveals, and manage guest RSVPs in real time.
+                        </p>
+                    </div>
+
+                    {/* 3 Core Value Pillars */}
+                    <div className={redesignStyles.conciergeFeaturesGrid}>
+                        <div className={redesignStyles.conciergeFeatureItem}>
+                            <div className={redesignStyles.featureIconCircle} style={{ background: '#FEF3C7', color: '#D97706' }}>
+                                <CreditCard size={18} />
+                            </div>
+                            <div>
+                                <h4 className={redesignStyles.featureTitle}>Multi-Event Digital Suite</h4>
+                                <p className={redesignStyles.featureSub}>Save the Date, Haldi, Sangeet, Wedding & Reception cards.</p>
+                            </div>
+                        </div>
+
+                        <div className={redesignStyles.conciergeFeatureItem}>
+                            <div className={redesignStyles.featureIconCircle} style={{ background: '#EDE9FE', color: '#7C3AED' }}>
+                                <Play size={18} />
+                            </div>
+                            <div>
+                                <h4 className={redesignStyles.featureTitle}>4K Cinematic Video Invitations</h4>
+                                <p className={redesignStyles.featureSub}>Ultra-HD animated reveals with bespoke royal music & typography.</p>
+                            </div>
+                        </div>
+
+                        <div className={redesignStyles.conciergeFeatureItem}>
+                            <div className={redesignStyles.featureIconCircle} style={{ background: '#ECFDF5', color: '#059669' }}>
+                                <CheckCircle2 size={18} />
+                            </div>
+                            <div>
+                                <h4 className={redesignStyles.featureTitle}>WhatsApp RSVP & Guest Manager</h4>
+                                <p className={redesignStyles.featureSub}>Live headcount tracking, dietary preferences & Excel exports.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Action CTAs */}
+                    <div className={redesignStyles.conciergeActions}>
+                        <Link href="/themes" className={redesignStyles.primaryCtaBtn}>
+                            <Sparkles size={16} />
+                            <span>Choose a Theme & Begin</span>
+                            <ArrowRight size={16} />
+                        </Link>
+
+                        <div className={redesignStyles.secondaryActionsRow}>
+                            <button 
+                                type="button"
+                                onClick={() => setIsPeekingDemo(true)}
+                                className={redesignStyles.secondaryPillBtn}
+                            >
+                                <Eye size={14} />
+                                <span>Peek Demo Dashboard</span>
+                            </button>
+
+                            <a 
+                                href="https://wa.me/918010581916?text=Hi%20Nimantran%20Studio,%20I'd%20like%20to%20know%20more%20about%20creating%20a%20wedding%20suite" 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className={redesignStyles.secondaryPillBtn}
+                            >
+                                <MessageCircle size={14} />
+                                <span>Chat with Concierge</span>
+                            </a>
+                        </div>
+                    </div>
+                </motion.div>
+            </div>
+        )}
+
+        <div className={`${styles.dashboardContainer} ${isEmptyState && !isPeekingDemo ? redesignStyles.ghostDashboard : ''}`}>
             <WelcomeDialog
                 open={showWelcome}
                 onClose={closeWelcome}
@@ -965,7 +1166,7 @@ export default function DashboardPage() {
                     >
                         <PreviewCard
                             ref={cardRef}
-                            event={previewItems[selectedPreviewIndex]?.event || {
+                            event={displayPreviewItems[selectedPreviewIndex]?.event || {
                                 id: `preview-${selectedPreviewIndex}`,
                                 name: `Preview ${selectedPreviewIndex + 1}`,
                                 date: formData.primaryDate,
@@ -982,7 +1183,7 @@ export default function DashboardPage() {
                             isPlaceholder={false}
                             isRawPreview={false}
                             type='image'
-                            customImage={previewItems[selectedPreviewIndex]?.image}
+                            customImage={displayPreviewItems[selectedPreviewIndex]?.image}
                             isSecured={false}
                             showSizingBoxes={false}
                         />
@@ -995,7 +1196,7 @@ export default function DashboardPage() {
                 visible carousel thumbnails are duplicated 4x for the scroll
                 loop and are too small/inert to capture reliably. */}
             <div aria-hidden style={{ position: 'fixed', left: '-99999px', top: 0, width: '500px', zIndex: -1, pointerEvents: 'none', opacity: 0 }}>
-                {previewItems.map((item) => (
+                {displayPreviewItems.map((item) => (
                     <div key={item.id}>
                         <PreviewCard
                             ref={(el) => { assetCardRefs.current[item.id] = el; }}
@@ -1019,8 +1220,14 @@ export default function DashboardPage() {
             <main className={styles.mainContent}>
                 {/* 1. Clean Full-Width Dashboard Welcome Header */}
                 <div className={styles.dashboardHeader} style={{ marginBottom: '1.5rem' }}>
-                    <h1 className={styles.title} style={{ margin: 0 }}>Welcome! Your wedding suite is ready.</h1>
-                    <p className={styles.subtitle} style={{ marginTop: '0.45rem', margin: 0, color: '#64748B', fontSize: '0.95rem' }}>Download your cards, share instantly on WhatsApp, and track guest RSVPs in real time.</p>
+                    <h1 className={styles.title} style={{ margin: 0 }}>
+                        {isEmptyState ? "Welcome to your Nimantran Dashboard" : "Welcome! Your wedding suite is ready."}
+                    </h1>
+                    <p className={styles.subtitle} style={{ marginTop: '0.45rem', margin: 0, color: '#64748B', fontSize: '0.95rem' }}>
+                        {isEmptyState 
+                            ? "This is your live command center preview. Download cards, share on WhatsApp, and manage guest RSVPs."
+                            : "Download your cards, share instantly on WhatsApp, and track guest RSVPs in real time."}
+                    </p>
                 </div>
 
                 {/* 2. Dedicated Couple & Wedding Details Celebration Card */}
@@ -1035,13 +1242,33 @@ export default function DashboardPage() {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
                             {/* Line 1: Couple Name */}
                             <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.65rem', fontWeight: 600, color: '#111827', margin: 0, lineHeight: 1.25, letterSpacing: '-0.02em' }}>
-                                {formData.brideName || formData.groomName ? 
-                                    [formData.brideName, formData.groomName].filter(Boolean).join(' & ') 
-                                    : 'Ananya & Rohan'}
+                                {isEmptyState 
+                                    ? DEMO_GHOST_DATA.coupleNames 
+                                    : (formData.brideName || formData.groomName ? 
+                                        [formData.brideName, formData.groomName].filter(Boolean).join(' & ') 
+                                        : 'Ananya & Rohan')}
                             </h3>
 
                             {/* Line 2: Real-time Date  ·  Real-time Days to go */}
                             {(() => {
+                                if (isEmptyState) {
+                                    return (
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', color: '#64748B', fontWeight: 500, flexWrap: 'wrap' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                                                <Calendar size={14} style={{ color: '#C8A951' }} />
+                                                <span style={{ color: '#334155', fontWeight: 600 }}>
+                                                    {DEMO_GHOST_DATA.displayDate}
+                                                </span>
+                                            </div>
+
+                                            <span style={{ color: '#94A3B8', margin: '0 0.15rem' }}>·</span>
+
+                                            <span style={{ color: '#B45309', fontWeight: 600 }}>
+                                                {DEMO_GHOST_DATA.countdownText}
+                                            </span>
+                                        </div>
+                                    );
+                                }
                                 const userDateStr = formData.primaryDate || (formData.events && formData.events.length > 0 ? formData.events[0].date : '');
                                 const countdownData = calculateDaysRemaining(userDateStr || '20-12-2025');
                                 const displayDate = formatLongDisplayDate(userDateStr) || '20 December 2025';
@@ -1079,7 +1306,7 @@ export default function DashboardPage() {
                                 whileTap={{ scale: 0.95 }}
                                 transition={{ type: "spring", stiffness: 400, damping: 17 }}
                                 onClick={handleDownloadAllAssets}
-                                disabled={isDownloadingAssets}
+                                disabled={isDownloadingAssets || isEmptyState}
                                 style={{
                                     background: '#FFFFFF',
                                     border: '1px solid #E5E7EB',
@@ -1088,8 +1315,8 @@ export default function DashboardPage() {
                                     borderRadius: '100px',
                                     fontSize: '0.85rem',
                                     fontWeight: 600,
-                                    cursor: isDownloadingAssets ? 'default' : 'pointer',
-                                    opacity: isDownloadingAssets ? 0.6 : 1,
+                                    cursor: (isDownloadingAssets || isEmptyState) ? 'default' : 'pointer',
+                                    opacity: (isDownloadingAssets || isEmptyState) ? 0.6 : 1,
                                     display: 'inline-flex',
                                     alignItems: 'center',
                                     gap: '0.5rem',
@@ -1117,6 +1344,7 @@ export default function DashboardPage() {
                                 whileTap={{ scale: 0.95 }}
                                 transition={{ type: "spring", stiffness: 400, damping: 17 }}
                                 onClick={() => handleShareWhatsApp()}
+                                disabled={isEmptyState}
                                 style={{
                                     background: '#FFFFFF',
                                     border: '1px solid #E5E7EB',
@@ -1125,7 +1353,8 @@ export default function DashboardPage() {
                                     borderRadius: '100px',
                                     fontSize: '0.85rem',
                                     fontWeight: 600,
-                                    cursor: 'pointer',
+                                    cursor: isEmptyState ? 'default' : 'pointer',
+                                    opacity: isEmptyState ? 0.6 : 1,
                                     display: 'inline-flex',
                                     alignItems: 'center',
                                     gap: '0.5rem',
@@ -1157,7 +1386,7 @@ export default function DashboardPage() {
                                 </h2>
                                 <span style={{ background: '#ECFDF5', color: '#059669', fontSize: '0.78rem', fontWeight: 600, padding: '0.3rem 0.85rem', borderRadius: '100px', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', border: '1px solid rgba(16, 185, 129, 0.15)' }}>
                                     <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10B981', display: 'inline-block' }} />
-                                    {previewItems.length || 5} Assets Ready
+                                    {displayPreviewItems.length || 5} Assets Ready
                                 </span>
                             </div>
 
@@ -1188,11 +1417,11 @@ export default function DashboardPage() {
                                 onMouseEnter={() => setIsCarouselHovered(true)}
                                 onMouseLeave={() => setIsCarouselHovered(false)}
                             >
-                                {[...previewItems, ...previewItems, ...previewItems, ...previewItems].map((item, itemIdx) => {
-                                    const originalIdx = itemIdx % (previewItems.length || 1);
+                                {[...displayPreviewItems, ...displayPreviewItems, ...displayPreviewItems, ...displayPreviewItems].map((item, itemIdx) => {
+                                    const originalIdx = itemIdx % (displayPreviewItems.length || 1);
                                     // Extract real date/time from item.event or formData
-                                    const rawDate = item.event?.date || formData.primaryDate;
-                                    const dateDisplay = formatDisplayDate(rawDate) || '06-08-2026';
+                                    const rawDate = item.event?.date || (isEmptyState ? '28-12-2026' : formData.primaryDate);
+                                    const dateDisplay = formatDisplayDate(rawDate) || '28-12-2026';
 
                                     return (
                                         <div 
@@ -1224,8 +1453,8 @@ export default function DashboardPage() {
                                                     <PreviewCard
                                                         event={item.event}
                                                         theme={theme}
-                                                        groomName={formData.groomName || ''}
-                                                        brideName={formData.brideName || ''}
+                                                        groomName={isEmptyState ? 'Aditya' : (formData.groomName || '')}
+                                                        brideName={isEmptyState ? 'Ananya' : (formData.brideName || '')}
                                                         invitationFor={formData.invitationFor}
                                                         groomParents={formData.groomParents}
                                                         brideParents={formData.brideParents}
@@ -1281,7 +1510,7 @@ export default function DashboardPage() {
                     {/* Events List Container */}
                     <div className={rsvpStyles.listContainer}>
                         {(() => {
-                            const rsvpLink = getRsvpPageLink();
+                            const rsvpLink = isEmptyState ? '' : getRsvpPageLink();
                             const invitationTypeName = 'Wedding Ceremony';
 
                             const weddingCeremonyEvent = formData.events?.find(e =>
@@ -1312,6 +1541,12 @@ export default function DashboardPage() {
                             const formattedDeadline = formatDisplayDate(rawDeadline);
                             const deadlineDisplay = (formattedDeadline || rawDeadline) ? `Respond by ${formattedDeadline || rawDeadline}` : 'No deadline';
 
+                            const currentStats = isEmptyState ? DEMO_GHOST_DATA.stats : fullRsvpStats;
+                            const currentGuests = isEmptyState ? DEMO_GHOST_DATA.sampleGuests : filteredRsvpsList;
+                            const displayRsvpDate = isEmptyState ? `${DEMO_GHOST_DATA.displayDate} • ${DEMO_GHOST_DATA.time}` : dateDisplay;
+                            const displayRsvpVenue = isEmptyState ? DEMO_GHOST_DATA.venue : venueDisplay;
+                            const displayRsvpDeadline = isEmptyState ? DEMO_GHOST_DATA.deadline : deadlineDisplay;
+
                             return (
                                 <div key="primary_wedding_ceremony" className={rsvpStyles.eventGroup}>
                                     {/* Dark Luxury Event Hero Card */}
@@ -1338,7 +1573,7 @@ export default function DashboardPage() {
                                                         <span>Preview</span>
                                                     </Link>
                                                 )}
-                                                <button className={rsvpStyles.pillBtn} onClick={openWhatsAppRsvp}>
+                                                <button className={rsvpStyles.pillBtn} onClick={openWhatsAppRsvp} disabled={isEmptyState}>
                                                     <ShareArrowIcon size={16} color="#111827" />
                                                     <span>Share on WhatsApp</span>
                                                 </button>
@@ -1350,17 +1585,17 @@ export default function DashboardPage() {
                                             <div className={rsvpStyles.detailCard}>
                                                 <span className={rsvpStyles.detailLabel}>Date & Time</span>
                                                 <span className={rsvpStyles.detailValue}>
-                                                    {dateDisplay}
+                                                    {displayRsvpDate}
                                                 </span>
                                             </div>
                                             <div className={rsvpStyles.detailCard}>
                                                 <span className={rsvpStyles.detailLabel}>Venue</span>
-                                                <span className={rsvpStyles.detailValue}>{venueDisplay}</span>
+                                                <span className={rsvpStyles.detailValue}>{displayRsvpVenue}</span>
                                             </div>
                                             <div className={rsvpStyles.detailCard}>
                                                 <span className={rsvpStyles.detailLabel}>RSVP Deadline</span>
                                                 <span className={rsvpStyles.detailValue}>
-                                                    {deadlineDisplay}
+                                                    {displayRsvpDeadline}
                                                 </span>
                                             </div>
                                         </div>
@@ -1374,28 +1609,28 @@ export default function DashboardPage() {
                                                 <div className={rsvpStyles.bentoHeader}>
                                                     <span className={rsvpStyles.bentoTitle}>Total Responses</span>
                                                 </div>
-                                                <span className={rsvpStyles.bentoNumber}>{fullRsvpStats.totalResponses}</span>
+                                                <span className={rsvpStyles.bentoNumber}>{currentStats.totalResponses}</span>
                                             </div>
 
                                             <div className={`${rsvpStyles.bentoStatCard} ${rsvpStyles.cardAttending}`}>
                                                 <div className={rsvpStyles.bentoHeader}>
                                                     <span className={rsvpStyles.bentoTitle}>Attending</span>
                                                 </div>
-                                                <span className={rsvpStyles.bentoNumber}>{fullRsvpStats.attending}</span>
+                                                <span className={rsvpStyles.bentoNumber}>{currentStats.attending}</span>
                                             </div>
 
                                             <div className={`${rsvpStyles.bentoStatCard} ${rsvpStyles.cardDeclined}`}>
                                                 <div className={rsvpStyles.bentoHeader}>
                                                     <span className={rsvpStyles.bentoTitle}>Not Attending</span>
                                                 </div>
-                                                <span className={rsvpStyles.bentoNumber}>{fullRsvpStats.declined}</span>
+                                                <span className={rsvpStyles.bentoNumber}>{currentStats.declined}</span>
                                             </div>
 
                                             <div className={`${rsvpStyles.bentoStatCard} ${rsvpStyles.cardMaybe}`}>
                                                 <div className={rsvpStyles.bentoHeader}>
                                                     <span className={rsvpStyles.bentoTitle}>Maybe</span>
                                                 </div>
-                                                <span className={rsvpStyles.bentoNumber}>{fullRsvpStats.maybe}</span>
+                                                <span className={rsvpStyles.bentoNumber}>{currentStats.maybe}</span>
                                             </div>
                                         </div>
 
@@ -1406,7 +1641,7 @@ export default function DashboardPage() {
                                                 <h3 className={rsvpStyles.guestTitle}>Guest Responses</h3>
                                                 <span className={rsvpStyles.headcountBadge}>
                                                     <Users size={14} />
-                                                    {fullRsvpStats.headcount} Confirmed Guests
+                                                    {currentStats.headcount} Confirmed Guests
                                                 </span>
                                             </div>
                                             <div className={rsvpStyles.guestActions}>
@@ -1442,7 +1677,7 @@ export default function DashboardPage() {
                                                         </button>
                                                     )}
                                                 </div>
-                                                <button className={rsvpStyles.exportBtn} onClick={handleDownloadExcel}>
+                                                <button className={rsvpStyles.exportBtn} onClick={handleDownloadExcel} disabled={isEmptyState}>
                                                     <Download size={16} />
                                                     <span>Download List</span>
                                                 </button>
@@ -1464,7 +1699,7 @@ export default function DashboardPage() {
                                                         <tr>
                                                             <td colSpan={4} className={rsvpStyles.emptyTable}>Loading responses...</td>
                                                         </tr>
-                                                    ) : filteredRsvpsList.length === 0 ? (
+                                                    ) : currentGuests.length === 0 ? (
                                                         <tr>
                                                             <td colSpan={4} className={rsvpStyles.emptyTable}>
                                                                 {rsvpsList.length === 0
@@ -1473,7 +1708,7 @@ export default function DashboardPage() {
                                                             </td>
                                                         </tr>
                                                     ) : (
-                                                        filteredRsvpsList.map(r => (
+                                                        currentGuests.map(r => (
                                                             <tr key={r.id}>
                                                                 <td className={rsvpStyles.guestName}>{(r.guestName || '').replace(/&amp;/g, '&')}</td>
                                                                 <td>

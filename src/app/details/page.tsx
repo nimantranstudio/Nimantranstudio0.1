@@ -121,7 +121,7 @@ function DetailsContent() {
         updateEvent
     } = useWeddingStore();
 
-    // Studio Active Chapter State (1: Your Story, 2: The Ceremony, 3: Celebrate Every Moment, 4: Ready to Invite)
+    // Studio Active Chapter State (1: Your Story, 2: The Wedding Ceremony, 3: Celebrate Every Moment, 4: Wedding Website & RSVP)
     const [activeChapter, setActiveChapter] = useState<number>(1);
     
     // Focused field state for visual glows on preview
@@ -243,13 +243,20 @@ function DetailsContent() {
     const previewEvent = useMemo(() => {
         if (activeChapter === 3 && activePreviewEventId && activePreviewEventId !== 'wedding') {
             const foundEvent = formData.events?.find(e => e.id === activePreviewEventId);
-            if (foundEvent) return foundEvent;
+            if (foundEvent) {
+                return {
+                    ...foundEvent,
+                    venue: foundEvent.venue || formData.defaultVenueName || '',
+                    mapLink: foundEvent.mapLink || formData.primaryMapLink || '',
+                };
+            }
         }
         return { 
             id: 'default', 
             date: formData.primaryDate, 
             time: formData.primaryTime, 
-            venue: formData.defaultVenueName, 
+            venue: formData.defaultVenueName || '', 
+            mapLink: formData.primaryMapLink || '',
             name: 'Wedding' 
         };
     }, [activeChapter, activePreviewEventId, formData]);
@@ -558,22 +565,24 @@ function DetailsContent() {
             </AnimatePresence>
 
             <header className={styles.header}>
-                <Breadcrumbs
-                    items={[
-                        { label: 'Home', href: '/' },
-                        { label: 'Themes', href: '/themes' },
-                        { label: `${themeName}${selectedPlan ? ` (${selectedPlan})` : ''}`, href: `/themes/${selectedThemeId}` },
-                        { label: 'Wedding Details', active: true },
-                    ]}
-                />
-                
-                {/* Auto-Save Indicator */}
-                {saveStatus === 'saving' && (
-                    <div className={clsx(styles.saveStatus, styles.saving)}>
-                        <Loader2 size={14} className="animate-spin" />
-                        <span>Saving Changes...</span>
-                    </div>
-                )}
+                <div className={styles.headerContainer}>
+                    <Breadcrumbs
+                        items={[
+                            { label: 'Home', href: '/' },
+                            { label: 'Themes', href: '/themes' },
+                            { label: `${themeName}${selectedPlan ? ` (${selectedPlan})` : ''}`, href: `/themes/${selectedThemeId}` },
+                            { label: 'Wedding Details', active: true },
+                        ]}
+                    />
+                    
+                    {/* Auto-Save Indicator */}
+                    {saveStatus === 'saving' && (
+                        <div className={clsx(styles.saveStatus, styles.saving)}>
+                            <Loader2 size={14} className="animate-spin" />
+                            <span>Saving Changes...</span>
+                        </div>
+                    )}
+                </div>
             </header>
 
             <main className={styles.studioContainer}>
@@ -611,10 +620,13 @@ function DetailsContent() {
                                                     id: 'preview',
                                                     groomName: formData.groomName || 'Groom',
                                                     brideName: formData.brideName || 'Bride',
+                                                    groomParents: formData.groomParents || '',
+                                                    brideParents: formData.brideParents || '',
                                                     themeId: 'default',
                                                     invitationMessage: formData.invitationMessage || "Please join us for our special day!",
                                                     allowCompanions: formData.allowCompanions || false,
                                                     collectDietary: formData.collectDietary || false,
+                                                    rsvpDeadline: formData.rsvpDeadline || null,
                                                     events: [
                                                         {
                                                             id: 'wedding-ceremony',
@@ -936,7 +948,7 @@ function DetailsContent() {
                         </AnimatePresence>
                     </div>
 
-                    {/* CHAPTER 2: The Ceremony */}
+                    {/* CHAPTER 2: The Wedding Ceremony */}
                     <div className={clsx(
                         styles.chapter, 
                         activeChapter === 2 ? styles.chapterActive : styles.chapterCollapsed
@@ -953,7 +965,7 @@ function DetailsContent() {
                         >
                             <div className={styles.chapterHeaderLeft}>
                                 <div className={styles.chapterNumber}>2</div>
-                                <h3 className={styles.chapterTitle}>The Ceremony</h3>
+                                <h3 className={styles.chapterTitle}>The Wedding Ceremony</h3>
                             </div>
                             <ChevronDown size={18} className={styles.chapterToggleIcon} />
                         </div>
@@ -999,7 +1011,7 @@ function DetailsContent() {
                                         <div className={styles.studioInputGroup}>
                                             <label className={styles.studioLabel}>Where is everyone gathering?</label>
                                             <Input
-                                                label="Venue Address"
+                                                label="Venue"
                                                 hideLabel
                                                 type="textarea"
                                                 className={styles.studioTextarea}
@@ -1007,7 +1019,7 @@ function DetailsContent() {
                                                 onFocus={() => handleFocus('defaultVenueName')}
                                                 onBlur={handleBlur}
                                                 onChange={(e) => updateFormData({ defaultVenueName: e.target.value })}
-                                                placeholder="e.g. The Grand Palace Hall, Palace Road, Jodhpur"
+                                                placeholder="e.g. The Taj Palace, Mumbai"
                                             />
                                         </div>
 
@@ -1090,6 +1102,11 @@ function DetailsContent() {
                                                 // than the editable name, which is no longer editable here for exactly that
                                                 // reason: renaming it must never be able to break the eventId/template link.
                                                 const matchedSection = eventSections.find(s => s.localEventId === event.id);
+                                                const isWeddingVenue = Boolean(
+                                                    formData.defaultVenueName?.trim() && 
+                                                    event.venue?.trim().toLowerCase() === formData.defaultVenueName?.trim().toLowerCase()
+                                                );
+
                                                 return (
                                                 <div
                                                     className={clsx(
@@ -1165,18 +1182,63 @@ function DetailsContent() {
                                                         </div>
                                                     </div>
 
-                                                    <div className={styles.studioInputGroup}>
-                                                        <div>
-                                                            <label className={styles.studioLabel}>Venue Name (Optional)</label>
-                                                            <Input
-                                                                label="Venue"
-                                                                hideLabel
+                                                    <div className={styles.venueInputGroup}>
+                                                        <label className={styles.studioLabel}>Venue</label>
+                                                        <div className={styles.inlineAddressWrapper}>
+                                                            <input
+                                                                type="text"
+                                                                id={`venue-${event.id}`}
+                                                                className={clsx(
+                                                                    styles.inlineAddressInput,
+                                                                    focusedField === event.id && styles.inlineAddressInputFocused
+                                                                )}
                                                                 value={event.venue || ''}
+                                                                placeholder={formData.defaultVenueName ? `e.g. ${formData.defaultVenueName}` : "e.g. The Taj Palace, Mumbai"}
                                                                 onFocus={() => { handleFocus(event.id); setActivePreviewEventId(event.id); }}
                                                                 onBlur={handleBlur}
-                                                                placeholder="Inherits global venue if left empty"
                                                                 onChange={(e) => updateEvent(event.id, { venue: e.target.value, isCustomVenue: !!e.target.value })}
                                                             />
+                                                            <button
+                                                                type="button"
+                                                                className={clsx(
+                                                                    styles.inlineSameAsAboveBtn,
+                                                                    isWeddingVenue && styles.inlineSameAsAboveBtnActive
+                                                                )}
+                                                                onClick={() => {
+                                                                    if (formData.defaultVenueName?.trim()) {
+                                                                        updateEvent(event.id, {
+                                                                            venue: formData.defaultVenueName,
+                                                                            isCustomVenue: true,
+                                                                            mapLink: formData.primaryMapLink || event.mapLink || ''
+                                                                        });
+                                                                    } else {
+                                                                        const prevEvent = (formData.events || [])
+                                                                            .slice(0, index)
+                                                                            .reverse()
+                                                                            .find(e => e.venue?.trim());
+
+                                                                        if (prevEvent?.venue?.trim()) {
+                                                                            updateEvent(event.id, {
+                                                                                venue: prevEvent.venue,
+                                                                                isCustomVenue: true,
+                                                                                mapLink: prevEvent.mapLink || event.mapLink || ''
+                                                                            });
+                                                                        } else {
+                                                                            setActiveChapter(2);
+                                                                            setTimeout(() => handleFocus('defaultVenueName'), 150);
+                                                                        }
+                                                                    }
+                                                                }}
+                                                                title={
+                                                                    isWeddingVenue 
+                                                                        ? "Address matches Wedding Ceremony" 
+                                                                        : formData.defaultVenueName?.trim()
+                                                                        ? `Copy Wedding Address: ${formData.defaultVenueName}`
+                                                                        : "Use Wedding Ceremony address (Add in Chapter 2)"
+                                                                }
+                                                            >
+                                                                Same as above
+                                                            </button>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -1189,7 +1251,7 @@ function DetailsContent() {
                         </AnimatePresence>
                     </div>
 
-                    {/* CHAPTER 4: Ready to Invite */}
+                    {/* CHAPTER 4: Wedding Website & RSVP */}
                     <div className={clsx(
                         styles.chapter, 
                         activeChapter === 4 ? styles.chapterActive : styles.chapterCollapsed
@@ -1206,7 +1268,7 @@ function DetailsContent() {
                         >
                             <div className={styles.chapterHeaderLeft}>
                                 <div className={styles.chapterNumber}>4</div>
-                                <h3 className={styles.chapterTitle}>Ready to Invite</h3>
+                                <h3 className={styles.chapterTitle}>Wedding Website &amp; RSVP</h3>
                             </div>
                             <ChevronDown size={18} className={styles.chapterToggleIcon} />
                         </div>

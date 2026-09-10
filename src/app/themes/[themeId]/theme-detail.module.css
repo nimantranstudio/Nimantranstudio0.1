@@ -4,6 +4,11 @@
     background-color: #FDFBF7;
 }
 
+.header {
+    padding: 1.25rem 0 0.5rem 0;
+    margin-bottom: 1.5rem;
+}
+
 .breadcrumb {
     padding: 2rem 0;
     font-size: 0.875rem;
