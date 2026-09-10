@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
             allow: '/',
             disallow: ['/api/', '/admin/'],
         },
-        sitemap: 'https://nimantranstudio.com/sitemap.xml',
+        sitemap: 'https://www.nimantranstudio.in/sitemap.xml',
     };
 }

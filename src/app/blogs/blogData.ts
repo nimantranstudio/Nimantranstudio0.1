@@ -54,7 +54,7 @@ A good digital wedding card on WhatsApp should have:
 
 ### The Format That Works Best
 
-Couples who use [Nimantran Studio](https://nimantranstudio.com) send invitations in a **2-message format**:
+Couples who use [Nimantran Studio](https://www.nimantranstudio.in) send invitations in a **2-message format**:
 
 **Message 1:** The beautifully designed invitation image or PDF
 **Message 2:** A short personal note: *"Dear Sharma Ji, we would be honoured to have your family celebrate with us. Please confirm your attendance: [RSVP link]"*
@@ -124,7 +124,7 @@ You get:
 - **A guest dashboard** showing who confirmed, who declined, and who hasn't responded
 - **WhatsApp-optimised image formats** (correct dimensions for WhatsApp preview)
 
-**Start in under 10 minutes** at [nimantranstudio.com](https://nimantranstudio.com).
+**Start in under 10 minutes** at [nimantranstudio.in](https://www.nimantranstudio.in).
 
 ---
 
@@ -235,7 +235,7 @@ The best online wedding invitation maker for Indian couples in 2025 is one that 
 
 Beautiful cards. Built-in RSVP. Real-time guest tracking. WhatsApp-ready sharing.
 
-**[Start for free at Nimantran Studio →](https://nimantranstudio.com)**
+**[Start for free at Nimantran Studio →](https://www.nimantranstudio.in)**
         `
     },
     {
@@ -365,7 +365,7 @@ Couples who use digital RSVP consistently report one thing: **the week before th
 
 Instead of 4 people managing 4 different lists, there is one source of truth. Instead of phone calls, there are dashboard numbers. Instead of guessing, there is data.
 
-**[Set up your RSVP system with Nimantran Studio →](https://nimantranstudio.com)**
+**[Set up your RSVP system with Nimantran Studio →](https://www.nimantranstudio.in)**
         `
     },
     {
@@ -514,7 +514,7 @@ Ask yourself three questions:
 
 Nimantran Studio offers several of these themes with complete function-specific card sets, RSVP systems, and WhatsApp-ready sharing.
 
-**[Browse all wedding themes →](https://nimantranstudio.com/themes)**
+**[Browse all wedding themes →](https://www.nimantranstudio.in/themes)**
         `
     },
     {
@@ -652,7 +652,7 @@ Send early. Guest attendance is directly correlated with lead time.
 
 Nimantran Studio includes a designed Save the Date card in every theme bundle — matching the design language of your full invitation set, so your wedding communication is consistent from first contact to ceremony day.
 
-**[See Save the Date designs →](https://nimantranstudio.com/themes)**
+**[See Save the Date designs →](https://www.nimantranstudio.in/themes)**
         `
     },
     {
@@ -784,7 +784,7 @@ Digital wedding invitations save Indian couples, on average:
 
 What you gain: real-time data, instant reach, complete flexibility, and a seamless experience for your guests.
 
-**[Create your digital wedding invitation →](https://nimantranstudio.com)**
+**[Create your digital wedding invitation →](https://www.nimantranstudio.in)**
         `
     }
 ];
@@ -875,7 +875,7 @@ Har Nimantran Studio bundle ke saath aata hai ek **built-in RSVP system**:
 - Non-responders ki filtered list — follow-up easy ho jaata hai
 - Export to CSV — caterer aur venue ko data de sakte ho easily
 
-**[Apna RSVP system setup karo — 10 minutes mein →](https://nimantranstudio.com)**
+**[Apna RSVP system setup karo — 10 minutes mein →](https://www.nimantranstudio.in)**
     `
 },
 
@@ -978,7 +978,7 @@ Nimantran Studio ka dashboard automatically dikhata hai **kaun-kaun ne abhi tak 
 
 No spreadsheets. No manual tracking. Just a clean list of who still needs a nudge.
 
-**[Apna RSVP dashboard setup karo →](https://nimantranstudio.com)**
+**[Apna RSVP dashboard setup karo →](https://www.nimantranstudio.in)**
     `
 },
 
@@ -1089,7 +1089,7 @@ The caterer got final numbers 6 days before the wedding — not a rough estimate
 
 ---
 
-**[Set up your RSVP system like Priya & Arjun did →](https://nimantranstudio.com)**
+**[Set up your RSVP system like Priya & Arjun did →](https://www.nimantranstudio.in)**
     `
 },
 
@@ -1159,7 +1159,7 @@ India mein yeh common hai: relatives aa jaate hain jinhone kabhi RSVP nahi kiya.
 
 Nimantran Studio ka dashboard aapko allow karta hai RSVP link open rakhne ya manually close karne ki. Aap dekh sakte ho real time mein total confirmed count aur caterer ke liye CSV export kar sakte ho ek click mein.
 
-**[Apna wedding RSVP system banao →](https://nimantranstudio.com)**
+**[Apna wedding RSVP system banao →](https://www.nimantranstudio.in)**
     `
 },
 
@@ -1259,7 +1259,7 @@ Nimantran Studio का RSVP dashboard ek **live guest list** ki tarah kaam kart
 
 Aur yeh data family ke saare members ke saath share hota hai — ek phone nahi, ek notebook nahi, **ek dashboard**.
 
-**[Apni guest list organize karo Nimantran Studio ke saath →](https://nimantranstudio.com)**
+**[Apni guest list organize karo Nimantran Studio ke saath →](https://www.nimantranstudio.in)**
     `
 },
 
@@ -1350,7 +1350,7 @@ Micro weddings deserve **elevated invitations**. When the scale is intimate, eve
 
 Nimantran Studio's premium themes (Spiritual Souls, Forest Vows, Minimalist Gold) are particularly suited to micro weddings — refined, personal, and designed to feel like they came from a thoughtful couple, not a mass event.
 
-**[Design your micro wedding invitation →](https://nimantranstudio.com)**
+**[Design your micro wedding invitation →](https://www.nimantranstudio.in)**
     `
 },
 
@@ -1463,7 +1463,7 @@ Personal calls only to close family who still haven't confirmed. At this stage, 
 
 ---
 
-**[Create your invitations and RSVP system today →](https://nimantranstudio.com)**
+**[Create your invitations and RSVP system today →](https://www.nimantranstudio.in)**
     `
 },
 
@@ -1562,7 +1562,7 @@ Use a digital RSVP system that captures not just attendance but also:
 
 Nimantran Studio's RSVP dashboard captures all of this — and exports cleanly for your coordinator.
 
-**[Start your destination wedding invitation →](https://nimantranstudio.com)**
+**[Start your destination wedding invitation →](https://www.nimantranstudio.in)**
     `
 },
 
@@ -1649,7 +1649,7 @@ The card carries the design. The note above makes it personal:
 
 Nimantran Studio's Haldi card designs are included in every wedding bundle — matching your main invitation theme so your entire wedding communication looks cohesive.
 
-**[Browse Haldi invitation designs →](https://nimantranstudio.com/themes)**
+**[Browse Haldi invitation designs →](https://www.nimantranstudio.in/themes)**
     `
 },
 
@@ -1740,7 +1740,7 @@ Sangeet attendance often differs from Wedding attendance. Some guests come only 
 
 Nimantran Studio gives you a **separate RSVP link for each function** — so your Sangeet headcount is accurate and separate from the Wedding count.
 
-**[Create your Sangeet invitation →](https://nimantranstudio.com)**
+**[Create your Sangeet invitation →](https://www.nimantranstudio.in)**
     `
 },
 
@@ -1819,7 +1819,7 @@ For professional contacts or elderly relatives, keep the wording formal. For fri
 
 Nimantran Studio includes a Mehendi-specific card design in every theme bundle — so your Mehendi invite matches the visual language of your entire wedding.
 
-**[See Mehendi card designs →](https://nimantranstudio.com/themes)**
+**[See Mehendi card designs →](https://www.nimantranstudio.in/themes)**
     `
 },
 
@@ -1912,7 +1912,7 @@ Apne Haldi invitation mein clearly mention karein:
 
 ---
 
-**[Create your Haldi invitation →](https://nimantranstudio.com)**
+**[Create your Haldi invitation →](https://www.nimantranstudio.in)**
     `
 },
 
@@ -2008,7 +2008,7 @@ A Punjabi wedding invitation should carry the energy of the celebration. Rich je
 
 Nimantran Studio's Royal Rajputana and Heritage themes work beautifully for Punjabi weddings — grand, rich, and unapologetically celebratory.
 
-**[Design your Punjabi wedding invitation →](https://nimantranstudio.com)**
+**[Design your Punjabi wedding invitation →](https://www.nimantranstudio.in)**
     `
 },
 
@@ -2099,7 +2099,7 @@ South Indian wedding invitations traditionally carry specific information: gotra
 
 Nimantran Studio's *Suvarna Sohala* theme was designed specifically for South Indian weddings — jasmine garlands, kolam patterns, ivory and gold tones, and the typographic tradition of Tamil-style script elements.
 
-**[Design your South Indian wedding invitation →](https://nimantranstudio.com)**
+**[Design your South Indian wedding invitation →](https://www.nimantranstudio.in)**
     `
 },
 
@@ -2209,7 +2209,7 @@ DJ starts. Food served. Let the evening find its own energy.
 
 ---
 
-**[Create your Sangeet invitation →](https://nimantranstudio.com)**
+**[Create your Sangeet invitation →](https://www.nimantranstudio.in)**
     `
 },
 
@@ -2334,7 +2334,7 @@ Yahan hain 30 templates — formal se lekar modern tak.
 
 ---
 
-**[Use these wording templates in a beautiful Nimantran Studio invitation →](https://nimantranstudio.com)**
+**[Use these wording templates in a beautiful Nimantran Studio invitation →](https://www.nimantranstudio.in)**
     `
 },
 
@@ -2448,7 +2448,7 @@ Yahan hain 25 templates — har style ke liye.
 
 ---
 
-**[Use these templates in a Nimantran Studio Sangeet invitation →](https://nimantranstudio.com)**
+**[Use these templates in a Nimantran Studio Sangeet invitation →](https://www.nimantranstudio.in)**
     `
 },
 
@@ -2537,7 +2537,7 @@ Two tones. One invitation. Everyone happy.
 
 ---
 
-**[Design an invitation that sounds like you →](https://nimantranstudio.com)**
+**[Design an invitation that sounds like you →](https://www.nimantranstudio.in)**
     `
 },
 
@@ -2645,7 +2645,7 @@ Or more casual:
 
 ---
 
-**[Get WhatsApp-ready invitation cards with RSVP links →](https://nimantranstudio.com)**
+**[Get WhatsApp-ready invitation cards with RSVP links →](https://www.nimantranstudio.in)**
     `
 },
 
@@ -2769,7 +2769,7 @@ Digital invitations reach NRI guests in seconds, with:
 - Google Maps link (directly usable on their phone)
 - WhatsApp-ready format they can share with their own family members
 
-**[Create NRI-ready digital invitations →](https://nimantranstudio.com)**
+**[Create NRI-ready digital invitations →](https://www.nimantranstudio.in)**
     `
 },
 
@@ -2910,7 +2910,7 @@ Yahan hain 40 ready messages — function-wise, tone-wise.
 
 ---
 
-**[Create beautiful invitation cards for all these messages →](https://nimantranstudio.com)**
+**[Create beautiful invitation cards for all these messages →](https://www.nimantranstudio.in)**
     `
 },
 

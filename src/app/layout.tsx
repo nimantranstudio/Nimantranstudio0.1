@@ -10,7 +10,7 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair" });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://nimantranstudio.com"),
+  metadataBase: new URL("https://www.nimantranstudio.in"),
   title: "Nimantran Studio | WhatsApp Wedding Invites & Digital Invites India",
   description: "Create stunning WhatsApp wedding invites and track RSVPs in under 5 minutes. The easiest digital wedding invitation platform for Indian weddings. No subscription required.",
   keywords: ["WhatsApp wedding invitation", "Marathi wedding invitation", "digital wedding invitation India", "wedding RSVP website", "wedding invite maker"],
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Nimantran Studio | WhatsApp Wedding Invites & RSVP Tracking",
     description: "Design elegant digital wedding invitations and manage your guest list — all in one place. Share instantly on WhatsApp.",
-    url: "https://nimantranstudio.com",
+    url: "https://www.nimantranstudio.in",
     siteName: "Nimantran Studio",
     images: [
       {
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
     images: ["/og-image.png"],
   },
   alternates: {
-    canonical: "https://nimantranstudio.com",
+    canonical: "https://www.nimantranstudio.in",
   },
   icons: {
     icon: "/favicon.png",

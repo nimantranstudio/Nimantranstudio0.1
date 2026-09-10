@@ -124,7 +124,7 @@ export default async function BlogsPage() {
                     <p className={styles.newsletterText}>
                         Join thousands of Indian couples who read our weekly guide on planning a stress-free wedding.
                     </p>
-                    <Link href="https://nimantranstudio.com" className={styles.newsletterBtn}>
+                    <Link href="/" className={styles.newsletterBtn}>
                         Start Planning Your Wedding →
                     </Link>
                 </div>

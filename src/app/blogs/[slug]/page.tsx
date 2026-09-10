@@ -202,7 +202,7 @@ export default async function BlogPostPage({
                             <p className={styles.sidebarText}>
                                 Beautiful designs, built-in RSVP, and WhatsApp-ready sharing — all from ₹999.
                             </p>
-                            <Link href="https://nimantranstudio.com" className={styles.sidebarBtn}>
+                            <Link href="/" className={styles.sidebarBtn}>
                                 Start for Free →
                             </Link>
                         </div>
