@@ -122,16 +122,22 @@
     margin-top: 2rem;
 }
 
-.mobileLogo {
+.welcomeLogoWrapper {
     display: flex;
     justify-content: center;
-    margin-bottom: 1.75rem;
+    align-items: center;
+    margin: 0 auto 1.25rem auto;
 }
 
-@media (min-width: 800px) {
-    .mobileLogo {
-        display: none;
-    }
+.welcomeLogo {
+    width: 54px;
+    height: 54px;
+    object-fit: contain;
+    transition: transform 0.2s ease;
+}
+
+.welcomeLogoWrapper:hover .welcomeLogo {
+    transform: scale(1.05);
 }
 
 .title {

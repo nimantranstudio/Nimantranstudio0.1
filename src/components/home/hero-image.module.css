@@ -1,70 +1,114 @@
 .container {
     position: relative;
     width: 100%;
-    height: 650px;
-    /* Reduced height to fix visibility issue */
+    height: 660px;
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-top: 1rem;
+    margin-top: 0.5rem;
     overflow: visible;
-    /* Allow tags to extend if needed */
 }
 
 .scene {
     position: relative;
-    width: 600px;
-    height: 600px;
+    width: 100%;
+    max-width: 680px;
+    height: 620px;
     display: flex;
     justify-content: center;
     align-items: center;
-    /* Added to ensure children are centered */
+}
+
+.slideWrapper {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    will-change: opacity, transform;
 }
 
 .imageWrapper {
     position: relative;
-    width: 380px;
+    width: 440px;
+    max-width: 90vw;
     height: auto;
     z-index: 10;
-    border-radius: 0;
     display: flex;
-    /* Ensure image fits */
     justify-content: center;
     margin-top: 0;
-    /* Removed offset to ensure perfect centering */
+    filter: drop-shadow(0 20px 45px rgba(0, 0, 0, 0.08));
 }
 
 .imageWrapper img {
-    mask-image: linear-gradient(to bottom, black 0%, black 30%, transparent 100%);
-    -webkit-mask-image: linear-gradient(to bottom, black 0%, black 30%, transparent 100%);
+    mask-image: linear-gradient(to bottom, black 0%, black 88%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 0%, black 88%, transparent 100%);
 }
 
+.imageWrapper2 {
+    position: relative;
+    width: 100%;
+    max-width: 660px;
+    height: auto;
+    z-index: 10;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 
+.imageWrapper2 img {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 24px 48px rgba(0, 0, 0, 0.09));
+}
 
+.imageWrapper3 {
+    position: relative;
+    width: 440px;
+    max-width: 90vw;
+    height: auto;
+    z-index: 10;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 0;
+    filter: drop-shadow(0 20px 45px rgba(0, 0, 0, 0.08));
+}
+
+.imageWrapper3 img {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    display: block;
+}
 
 .tag {
     position: absolute;
-    background: rgba(255, 255, 255, 0.65);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    padding: 10px 20px;
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    padding: 9px 18px;
     border-radius: 50px;
-    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+    box-shadow: 0 8px 30px 0 rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 0.9rem;
+    font-size: 0.88rem;
     font-weight: 600;
-    color: #333;
+    color: #1e293b;
     z-index: 20;
     white-space: nowrap;
-    transition: box-shadow 0.3s ease, background 0.3s ease;
+    transition: box-shadow 0.25s ease, background 0.25s ease, transform 0.2s ease;
+    cursor: default;
 }
 
 .tag:hover {
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
-    background: rgba(255, 255, 255, 0.85);
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.1);
+    background: rgba(255, 255, 255, 0.9);
 }
 
 .tagIcon {
@@ -73,33 +117,77 @@
     align-items: center;
 }
 
+/* Subtle Minimal Frosted Capsule Indicator */
+.carouselIndicators {
+    position: absolute;
+    bottom: 0.25rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    z-index: 30;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(18px) saturate(180%);
+    -webkit-backdrop-filter: blur(18px) saturate(180%);
+    padding: 4px 8px;
+    border-radius: 9999px;
+    border: 1px solid rgba(255, 255, 255, 0.95);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+    user-select: none;
+}
+
+.indicatorDot {
+    width: 7px;
+    height: 7px;
+    border-radius: 9999px;
+    background: rgba(148, 163, 184, 0.45);
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.indicatorDot:hover {
+    background: rgba(100, 116, 139, 0.7);
+}
+
+.activeDot {
+    width: 22px;
+    height: 7px;
+    border-radius: 9999px;
+    background: linear-gradient(135deg, #ECC878 0%, #D4AF37 100%);
+    box-shadow: 0 1px 6px rgba(212, 175, 55, 0.4);
+}
+
 @media (max-width: 900px) {
     .container {
-        height: 500px;
+        height: 480px;
     }
 
     .scene {
         width: 100%;
         height: 100%;
-        max-width: 450px;
+        max-width: 440px;
     }
 
     .imageWrapper {
-        width: 250px;
+        width: 270px;
     }
 
-    .innerCircle {
-        width: 340px;
-        height: 340px;
+    .imageWrapper2 {
+        max-width: 400px;
     }
 
-    .outerCircle {
-        width: 460px;
-        height: 460px;
+    .imageWrapper3 {
+        width: 260px;
+        border-radius: 20px;
     }
 
     .tag {
-        padding: 8px 12px;
+        padding: 6px 12px;
         font-size: 0.75rem;
     }
 }

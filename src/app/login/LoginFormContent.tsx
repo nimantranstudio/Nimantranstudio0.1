@@ -154,9 +154,6 @@ export default function LoginFormContent() {
             <div className={styles.formPanel}>
                 <div className={styles.card}>
                     <div className={styles.cardBranding}>
-                        <Link href="/" className={styles.brandLogo}>
-                            <Image src="/logo.png" alt="Nimantran Studio" width={140} height={38} priority />
-                        </Link>
                         <div className={styles.brandBody}>
                             <h2 className={styles.brandHeadline}>
                                 Beautiful Invitations.<br />Smart RSVP Tracking.
@@ -174,9 +171,18 @@ export default function LoginFormContent() {
                     </div>
 
                     <div className={styles.cardForm}>
-                        <Link href="/" className={styles.mobileLogo}>
-                            <Image src="/logo.png" alt="Nimantran Studio" width={140} height={38} priority />
-                        </Link>
+                        <div className={styles.welcomeLogoWrapper}>
+                            <Link href="/">
+                                <Image 
+                                    src="/nimantran-symbol.png" 
+                                    alt="Nimantran Studio" 
+                                    width={56} 
+                                    height={56} 
+                                    priority 
+                                    className={styles.welcomeLogo}
+                                />
+                            </Link>
+                        </div>
 
                         {error && (
                             <div className={styles.errorBanner}>

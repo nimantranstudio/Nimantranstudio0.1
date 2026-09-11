@@ -1,86 +1,227 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { MessageCircle, ClipboardCheck, Users, BarChart, Smartphone, Calendar } from 'lucide-react';
 import styles from './hero-image.module.css';
 
-// Placeholder image URL - will be replaced by user later
-const PLACEHOLDER_IMAGE = "/hero-image.png";
-// Or use a relevant image from public folder if available, e.g., distinct asset
-// const PLACEHOLDER_IMAGE = "/bundle-mockup.jpg"; // Using bundle-mockup as temperary placeholder
+const SLIDE_DURATION = 8000; // 8 seconds per slide
+
+const SLIDES = [
+    {
+        id: 'invite-card',
+        src: '/hero-image.png',
+        alt: 'Elegant traditional Indian wedding invitation design by Nimantran Studio',
+        width: 500,
+        height: 667,
+        sizes: '(max-width: 768px) 100vw, 460px',
+        wrapperClass: styles.imageWrapper,
+        hasTags: true,
+    },
+    {
+        id: 'full-suite-groom',
+        src: '/hero-image-2.png',
+        alt: 'Nimantran Studio Complete Wedding Invitation and RSVP Suite',
+        width: 1024,
+        height: 576,
+        sizes: '(max-width: 768px) 100vw, 660px',
+        wrapperClass: styles.imageWrapper2,
+        hasTags: false,
+    },
+    {
+        id: 'full-suite-bride',
+        src: '/hero-image-3.png',
+        alt: 'Nimantran Studio Luxury Wedding Suite & RSVP Management',
+        width: 1024,
+        height: 682,
+        sizes: '(max-width: 768px) 100vw, 660px',
+        wrapperClass: styles.imageWrapper2,
+        hasTags: false,
+    },
+];
 
 const HeroImage = () => {
+    const [currentSlide, setCurrentSlide] = useState(0);
+
+    // Guaranteed safe index (0, 1, or 2)
+    const activeIndex = ((currentSlide % SLIDES.length) + SLIDES.length) % SLIDES.length;
+
+    // Auto-advance every 8 seconds continuously in loop
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setCurrentSlide((prev) => (prev + 1) % SLIDES.length);
+        }, SLIDE_DURATION);
+        return () => clearInterval(timer);
+    }, []);
+
     return (
         <div className={styles.container}>
             <div className={styles.scene}>
-
-
+                {/* Slide 0: Single Traditional Invite with Interactive Floating Tags */}
                 <motion.div
-                    className={styles.imageWrapper}
-                    initial={{ y: 30, opacity: 0 }}
-                    animate={{ y: [0, -15, 0], opacity: 1 }}
+                    className={styles.slideWrapper}
+                    initial={false}
+                    animate={{
+                        opacity: activeIndex === 0 ? 1 : 0,
+                        scale: activeIndex === 0 ? 1 : 0.97,
+                        pointerEvents: activeIndex === 0 ? 'auto' : 'none',
+                        zIndex: activeIndex === 0 ? 10 : 1,
+                    }}
                     transition={{
-                        y: { duration: 6, repeat: Infinity, ease: "easeInOut" },
-                        opacity: { duration: 0.8 }
+                        duration: 0.85,
+                        ease: [0.16, 1, 0.3, 1],
                     }}
                 >
-                    <Image
-                        src={PLACEHOLDER_IMAGE}
-                        alt="Elegant traditional Indian wedding invitation design by Nimantran Studio"
-                        width={450}
-                        height={600}
-                        style={{ width: '100%', height: 'auto' }}
-                        priority
-                        fetchPriority="high"
-                        sizes="(max-width: 768px) 100vw, 450px"
+                    <motion.div
+                        className={styles.imageWrapper}
+                        animate={{ y: [0, -10, 0] }}
+                        transition={{
+                            y: { duration: 6, repeat: Infinity, ease: "easeInOut" },
+                        }}
+                    >
+                        <Image
+                            src="/hero-image.png"
+                            alt="Elegant traditional Indian wedding invitation design by Nimantran Studio"
+                            width={500}
+                            height={667}
+                            style={{ width: '100%', height: 'auto' }}
+                            priority
+                            fetchPriority="high"
+                            sizes="(max-width: 768px) 100vw, 460px"
+                        />
+                    </motion.div>
+
+                    {/* Floating Tags for Slide 0 */}
+                    <FloatingTag
+                        icon={<Smartphone size={18} />}
+                        text="Create Invites"
+                        delay={0.1}
+                        top="12%"
+                        left="-2%"
+                    />
+                    <FloatingTag
+                        icon={<MessageCircle size={18} />}
+                        text="WhatsApp Invite"
+                        delay={0.15}
+                        top="34%"
+                        left="-10%"
+                    />
+                    <FloatingTag
+                        icon={<Users size={18} />}
+                        text="Guest Management"
+                        delay={0.2}
+                        top="62%"
+                        left="-4%"
+                    />
+                    <FloatingTag
+                        icon={<Calendar size={18} />}
+                        text="Multi Event Control"
+                        delay={0.25}
+                        top="22%"
+                        right="-6%"
+                    />
+                    <FloatingTag
+                        icon={<ClipboardCheck size={18} />}
+                        text="RSVP Tracking"
+                        delay={0.3}
+                        top="42%"
+                        right="-12%"
+                    />
+                    <FloatingTag
+                        icon={<BarChart size={18} />}
+                        text="Analytics Dashboard"
+                        delay={0.35}
+                        top="66%"
+                        right="0%"
                     />
                 </motion.div>
 
-                {/* Floating Tags - Adjusted positions for better balance around the central image */}
-                <FloatingTag
-                    icon={<Smartphone size={18} />}
-                    text="Create Invites"
-                    delay={0.2}
-                    top="15%"
-                    left="0%"
-                />
-                <FloatingTag
-                    icon={<MessageCircle size={18} />}
-                    text="WhatsApp Invite"
-                    delay={0.25}
-                    top="35%"
-                    left="-8%"
-                />
-                <FloatingTag
-                    icon={<Users size={18} />}
-                    text="Guest Management"
-                    delay={0.3}
-                    top="60%"
-                    left="-2%"
-                />
-                <FloatingTag
-                    icon={<Calendar size={18} />}
-                    text="Multi Event Control"
-                    delay={0.35}
-                    top="25%"
-                    right="-5%"
-                />
-                <FloatingTag
-                    icon={<ClipboardCheck size={18} />}
-                    text="RSVP Tracking"
-                    delay={0.4}
-                    top="40%"
-                    right="-10%"
-                />
-                <FloatingTag
-                    icon={<BarChart size={18} />}
-                    text="Analytics Dashboard"
-                    delay={0.45}
-                    top="65%"
-                    right="2%"
-                />
+                {/* Slide 1: Full Suite Composite Graphic (Groom Perspective) */}
+                <motion.div
+                    className={styles.slideWrapper}
+                    initial={false}
+                    animate={{
+                        opacity: activeIndex === 1 ? 1 : 0,
+                        scale: activeIndex === 1 ? 1 : 0.97,
+                        pointerEvents: activeIndex === 1 ? 'auto' : 'none',
+                        zIndex: activeIndex === 1 ? 10 : 1,
+                    }}
+                    transition={{
+                        duration: 0.85,
+                        ease: [0.16, 1, 0.3, 1],
+                    }}
+                >
+                    <motion.div
+                        className={styles.imageWrapper2}
+                        animate={{ y: [0, -10, 0] }}
+                        transition={{
+                            y: { duration: 6, repeat: Infinity, ease: "easeInOut" },
+                        }}
+                    >
+                        <Image
+                            src="/hero-image-2.png"
+                            alt="Nimantran Studio Complete Wedding Invitation and RSVP Suite"
+                            width={1024}
+                            height={576}
+                            style={{ width: '100%', height: 'auto' }}
+                            priority
+                            sizes="(max-width: 768px) 100vw, 660px"
+                        />
+                    </motion.div>
+                </motion.div>
+
+                {/* Slide 2: Full Suite Graphic (Bride / Woman in Pink Perspective) */}
+                <motion.div
+                    className={styles.slideWrapper}
+                    initial={false}
+                    animate={{
+                        opacity: activeIndex === 2 ? 1 : 0,
+                        scale: activeIndex === 2 ? 1 : 0.97,
+                        pointerEvents: activeIndex === 2 ? 'auto' : 'none',
+                        zIndex: activeIndex === 2 ? 10 : 1,
+                    }}
+                    transition={{
+                        duration: 0.85,
+                        ease: [0.16, 1, 0.3, 1],
+                    }}
+                >
+                    <motion.div
+                        className={styles.imageWrapper2}
+                        animate={{ y: [0, -10, 0] }}
+                        transition={{
+                            y: { duration: 6, repeat: Infinity, ease: "easeInOut" },
+                        }}
+                    >
+                        <Image
+                            src="/hero-image-3.png"
+                            alt="Nimantran Studio Luxury Wedding Suite & RSVP Management"
+                            width={1024}
+                            height={682}
+                            style={{ width: '100%', height: 'auto' }}
+                            priority
+                            sizes="(max-width: 768px) 100vw, 660px"
+                        />
+                    </motion.div>
+                </motion.div>
+
+                {/* Subtle Minimal Carousel Indicator Capsule */}
+                <div className={styles.carouselIndicators} role="tablist" aria-label="Hero Carousel Navigation">
+                    {SLIDES.map((_, idx) => {
+                        const isActive = activeIndex === idx;
+                        return (
+                            <button
+                                key={idx}
+                                type="button"
+                                className={`${styles.indicatorDot} ${isActive ? styles.activeDot : ''}`}
+                                onClick={() => setCurrentSlide(idx)}
+                                aria-label={`Switch to slide ${idx + 1}`}
+                                aria-selected={isActive}
+                                role="tab"
+                            />
+                        );
+                    })}
+                </div>
             </div>
         </div>
     );
@@ -98,8 +239,8 @@ const FloatingTag = ({ icon, text, delay, top, left, right, bottom }: { icon: Re
             }}
             transition={{
                 type: "spring",
-                bounce: 0.3,
-                duration: 0.8,
+                bounce: 0,
+                duration: 0.6,
                 delay: delay
             }}
             style={{ top, left, right, bottom }}
