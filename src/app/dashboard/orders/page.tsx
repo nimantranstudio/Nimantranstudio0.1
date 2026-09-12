@@ -370,7 +370,7 @@ export default function MyOrdersPage() {
                                                     <FileText size={16} className={styles.kitCheck} />
                                                     <div className={styles.historyMeta}>
                                                         <span className={styles.historyTitle}>
-                                                            {order.planName || 'Wedding Suite'}
+                                                            {order.planName || 'Nimantran'}
                                                         </span>
                                                         <span className={styles.historySub}>
                                                             {date} · ₹{order.totalAmount.toLocaleString('en-IN')}
@@ -402,7 +402,7 @@ export default function MyOrdersPage() {
                                     Your Wedding Communication Kit
                                 </h2>
                                 <p className={styles.kitSub}>
-                                    All assets created for your {latest.planName || 'Wedding Suite'} plan.
+                                    All assets created for your {latest.planName || 'Nimantran'} plan.
                                 </p>
 
                                 <div className={styles.kitCard}>

@@ -26,7 +26,8 @@ import {
     Mail,
     Activity,
     Star,
-    Play
+    Play,
+    Maximize2
 } from 'lucide-react';
 import type { Theme } from '@/lib/constants/themes';
 import { useWeddingStore } from '@/store/wedding-store';
@@ -49,6 +50,29 @@ const DUMMY_EVENT = {
     description: undefined,
     isCustomVenue: false
 };
+
+const EXPERIENCE_ITEMS = [
+    {
+        title: 'One Form. Instant Creation.',
+        description: 'Fill in your wedding details once and automatically generate all event cards & invitations.',
+        image: '/images/experience/single-form.jpg',
+    },
+    {
+        title: 'Wedding Website & Rsvp',
+        description: 'Interactive wedding website with instant RSVP collection, Google Maps venue links, and live countdown.',
+        image: '/images/experience/wedding-website-rsvp.jpg',
+    },
+    {
+        title: 'Dashboard and RSVP Tracking',
+        description: 'Real-time host dashboard to track guest confirmations, headcount, and event-wise attendance.',
+        image: '/images/experience/dashboard-rsvp.jpg',
+    },
+    {
+        title: 'Instant Share Message',
+        description: 'Ready-to-send personalized WhatsApp invitations with rich media preview and direct guest links.',
+        image: '/images/experience/instant-share-message.jpg',
+    },
+];
 
 export default function ThemeDetailClient({ 
     themeId, 
@@ -95,11 +119,11 @@ export default function ThemeDetailClient({
             price: essentialsInvoice?.finalSellingPrice?.toString() || '0',
             originalPrice: essentialsInvoice?.totalWeddingSuiteValue?.toString() || '0',
             features: [
-                "12 Unique Rajputana Wedding Designs",
+                "Unique Wedding Events cards",
                 "High-Resolution JPEG/PNG Formats",
                 "Optimized for WhatsApp & Social Media",
                 "Ready in 2-5 Minutes",
-                "Supports Hindi, English, Marathi",
+                "Wedding Website & RSVP Dashboard",
                 "No Watermark",
                 "Delivery: Immediate download via dashboard after successful checkout."
             ]
@@ -141,6 +165,27 @@ export default function ThemeDetailClient({
     const [showStickyBar, setShowStickyBar] = useState(false);
     const [isPersonalising, setIsPersonalising] = useState(false);
     const [showConfetti, setShowConfetti] = useState(false);
+    const [experienceLightboxIndex, setExperienceLightboxIndex] = useState<number | null>(null);
+
+    // Keyboard navigation for Experience Full View Lightbox
+    useEffect(() => {
+        if (experienceLightboxIndex === null) return;
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') setExperienceLightboxIndex(null);
+            if (e.key === 'ArrowLeft') {
+                setExperienceLightboxIndex((prev) =>
+                    prev !== null ? (prev - 1 + EXPERIENCE_ITEMS.length) % EXPERIENCE_ITEMS.length : 0
+                );
+            }
+            if (e.key === 'ArrowRight') {
+                setExperienceLightboxIndex((prev) =>
+                    prev !== null ? (prev + 1) % EXPERIENCE_ITEMS.length : 0
+                );
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [experienceLightboxIndex]);
 
     // Reset index if image list changes and index is out of bounds
     useEffect(() => {
@@ -559,35 +604,56 @@ export default function ThemeDetailClient({
                                 <h3 className={styles.experienceTitle}>See the full experience</h3>
                             </div>
                             <div className={styles.experienceGrid}>
-                                <div className={styles.experienceCard}>
-                                    <div className={styles.cardPreview}>
-                                        <img src="/images/experience/whatsapp.png" alt="WhatsApp Share Preview" />
+                                {EXPERIENCE_ITEMS.map((item, index) => (
+                                    <div 
+                                        key={index} 
+                                        className={styles.experienceCard}
+                                        onClick={() => setExperienceLightboxIndex(index)}
+                                        role="button"
+                                        tabIndex={0}
+                                        aria-label={`View full ${item.title}`}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter' || e.key === ' ') {
+                                                setExperienceLightboxIndex(index);
+                                            }
+                                        }}
+                                    >
+                                        <div className={styles.cardPreview}>
+                                            <img src={item.image} alt={item.title} />
+                                            <div className={styles.cardHoverBadge}>
+                                                <Maximize2 size={14} />
+                                            </div>
+                                        </div>
+                                        <span className={styles.cardLabel}>{item.title}</span>
                                     </div>
-                                    <span className={styles.cardLabel}>Share on WhatsApp</span>
-                                </div>
-                                <div className={styles.experienceCard}>
-                                    <div className={styles.cardPreview}>
-                                        <img src="/images/experience/rsvp.png" alt="Guest RSVP Preview" />
-                                    </div>
-                                    <span className={styles.cardLabel}>Guest RSVP</span>
-                                </div>
-                                <div className={styles.experienceCard}>
-                                    <div className={styles.cardPreview}>
-                                        <img src="/images/experience/tracking.png" alt="Track in Real Time Preview" />
-                                    </div>
-                                    <span className={styles.cardLabel}>Track in Real Time</span>
-                                </div>
-                                <div className={styles.experienceCard}>
-                                    <div className={styles.cardPreview}>
-                                        <img src="/images/experience/events.png" alt="Manage All Events Preview" />
-                                    </div>
-                                    <span className={styles.cardLabel}>Manage All Events</span>
-                                </div>
+                                ))}
                             </div>
                         </div>
 
+                        {/* Guarantee & Support Trust Section */}
+                        <div className={styles.trustCol}>
+                            <div className={styles.guaranteeBox}>
+                                <span className={styles.guaranteeTitle}>Satisfaction Guaranteed</span>
+                                <p className={styles.guaranteeText}>
+                                    Final assets will be generated without watermarks in high definition immediately after payment.
+                                </p>
+                            </div>
 
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                <div className={styles.supportBox}>
+                                    <Headphones size={20} color="#666" />
+                                    <div className={styles.supportInfo}>
+                                        <span className={styles.supportLabel}>Need Help? Contact Us</span>
+                                        <span className={styles.supportValue}>+91 80105 81916</span>
+                                    </div>
+                                </div>
+                                <div className={styles.paymentBox}>
+                                    <ShieldCheck size={20} color="#666" style={{ marginRight: '8px' }} />
+                                    <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#666' }}>SECURE PAYMENTS</span>
+                                </div>
+                            </div>
                         </div>
+                    </div>
 
                     {/* Right Column: Content */}
                     <div className={styles.contentCol}>
@@ -761,7 +827,7 @@ export default function ThemeDetailClient({
                                                                 </motion.div>
                                                                 <span className={styles.categoryLabel}>Guest Experience</span>
                                                             </div>
-                                                            <span className={styles.itemName}>RSVP · Guest Dashboard · Response Insights</span>
+                                                            <span className={styles.itemName}>Wedding Website and RSVP · Dashboard · Response Insights</span>
                                                                 <div className={styles.itemJourneyRow}>
                                                                     <div style={{ display: 'flex', alignItems: 'center', gap: '8.5px' }}>
                                                                         <div className={styles.tickCircle}>
@@ -793,7 +859,7 @@ export default function ThemeDetailClient({
                                                         {/* Action button inside the box */}
                                                         <div className={styles.inBoxActions}>
                                                             <button onClick={handleCreateNow} className={clsx("btn btn-primary", styles.mainActionButton)}>
-                                                                Start My Wedding Setup
+                                                                Create My Nimantran
                                                             </button>
                                                             <p className={styles.socialProofText}>Most couples start sharing invites within 10 minutes after Creation.</p>
                                                         </div>
@@ -877,7 +943,7 @@ export default function ThemeDetailClient({
                                                     Premium typography, royal motifs, and culturally sensitive design elements crafted for a grand Indian wedding experience.
                                                 </p>
                                                 <p>
-                                                    This bundle captures the grandeur of Rajputana culture. Each element is crafted with royal precision, ensuring your wedding invitation stands out as a masterpiece.
+                                                    This bundle captures the grandeur of {theme?.name || 'Indian'} culture. Each element is crafted with royal precision, ensuring your wedding invitation stands out as a masterpiece.
                                                 </p>
                                             </>
                                         )}
@@ -902,29 +968,6 @@ export default function ThemeDetailClient({
                                         </div>
                                     </div>
                                 )}
-                            </div>
-                        </div>
-
-                        <div className={styles.trustCol}>
-                            <div className={styles.guaranteeBox}>
-                                <span className={styles.guaranteeTitle}>Satisfaction Guaranteed</span>
-                                <p className={styles.guaranteeText}>
-                                    Final assets will be generated without watermarks in high definition immediately after payment.
-                                </p>
-                            </div>
-
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                                <div className={styles.supportBox}>
-                                    <Headphones size={20} color="#666" />
-                                    <div className={styles.supportInfo}>
-                                        <span className={styles.supportLabel}>Need Help? Contact Us</span>
-                                        <span className={styles.supportValue}>+91 80105 81916</span>
-                                    </div>
-                                </div>
-                                <div className={styles.paymentBox}>
-                                    <ShieldCheck size={20} color="#666" style={{ marginRight: '8px' }} />
-                                    <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#666' }}>SECURE PAYMENTS</span>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -1019,6 +1062,99 @@ export default function ThemeDetailClient({
                 </div>
             )}
 
+            {/* Experience Feature Lightbox */}
+            {experienceLightboxIndex !== null && (
+                <div 
+                    className={styles.experienceLightboxOverlay}
+                    onClick={() => setExperienceLightboxIndex(null)}
+                >
+                    <div 
+                        className={styles.experienceLightboxContent}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* Close button */}
+                        <button 
+                            className={styles.experienceLightboxClose}
+                            onClick={() => setExperienceLightboxIndex(null)}
+                            aria-label="Close full view"
+                        >
+                            <X size={20} strokeWidth={2.2} />
+                        </button>
+
+                        {/* Navigation Arrows */}
+                        <button 
+                            className={clsx(styles.experienceLightboxNav, styles.experienceLightboxPrev)}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setExperienceLightboxIndex((prev) => 
+                                    prev !== null ? (prev - 1 + EXPERIENCE_ITEMS.length) % EXPERIENCE_ITEMS.length : 0
+                                );
+                            }}
+                            aria-label="Previous feature"
+                        >
+                            <ChevronLeft size={24} strokeWidth={2.2} />
+                        </button>
+
+                        <button 
+                            className={clsx(styles.experienceLightboxNav, styles.experienceLightboxNext)}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setExperienceLightboxIndex((prev) => 
+                                    prev !== null ? (prev + 1) % EXPERIENCE_ITEMS.length : 0
+                                );
+                            }}
+                            aria-label="Next feature"
+                        >
+                            <ChevronRight size={24} strokeWidth={2.2} />
+                        </button>
+
+                        {/* Main High-Res Image Container */}
+                        <div className={styles.experienceLightboxImageWrapper}>
+                            <img 
+                                key={experienceLightboxIndex}
+                                src={EXPERIENCE_ITEMS[experienceLightboxIndex].image} 
+                                alt={EXPERIENCE_ITEMS[experienceLightboxIndex].title}
+                                className={styles.experienceLightboxImg}
+                            />
+                        </div>
+
+                        {/* Caption */}
+                        <div className={styles.experienceLightboxCaption}>
+                            <span className={styles.experienceLightboxBadge}>
+                                Feature {experienceLightboxIndex + 1} of {EXPERIENCE_ITEMS.length}
+                            </span>
+                            <h4 className={styles.experienceLightboxTitle}>
+                                {EXPERIENCE_ITEMS[experienceLightboxIndex].title}
+                            </h4>
+                            <p className={styles.experienceLightboxDesc}>
+                                {EXPERIENCE_ITEMS[experienceLightboxIndex].description}
+                            </p>
+                        </div>
+
+                        {/* Thumbnails strip */}
+                        <div className={styles.experienceLightboxThumbs}>
+                            {EXPERIENCE_ITEMS.map((item, idx) => (
+                                <button
+                                    key={idx}
+                                    type="button"
+                                    className={clsx(
+                                        styles.experienceLightboxThumbItem,
+                                        experienceLightboxIndex === idx && styles.experienceLightboxThumbActive
+                                    )}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setExperienceLightboxIndex(idx);
+                                    }}
+                                    aria-label={`Switch to ${item.title}`}
+                                >
+                                    <img src={item.image} alt={item.title} />
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Sticky Bottom Bar */}
             <div className={clsx(styles.stickyBottomBar, showStickyBar && styles.stickyVisible, styles.mobileOnly)}>
                 <div className={styles.stickyInfo}>
@@ -1026,7 +1162,7 @@ export default function ThemeDetailClient({
                     <span className={styles.stickyPrice}>₹{DYNAMIC_PLANS[selectedPlan].price}</span>
                 </div>
                 <button onClick={handleCreateNow} className={clsx("btn btn-primary", styles.stickyBtn)}>
-                    Create Now
+                    Create My Nimantran
                 </button>
             </div>
         </div>

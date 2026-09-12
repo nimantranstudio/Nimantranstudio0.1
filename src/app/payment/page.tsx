@@ -471,13 +471,13 @@ export default function PaymentPage() {
                     <div className={styles.paymentActionSection}>
                         
                         <div className={styles.orderSummaryHeader}>
-                            <h1 className={styles.pageTitle}>Review Your Wedding Suite</h1>
+                            <h1 className={styles.pageTitle}>Review Your Nimantran</h1>
                             <p className={styles.pageSubtitle}>Everything below is unlocked for {coupleNames} the moment you pay — no account setup, no passwords.</p>
                         </div>
 
                         <div className={styles.actionCard}>
                             <div className={styles.productSummaryHeader}>
-                                <h3 className={styles.productName}>Your Complete Wedding Suite</h3>
+                                <h3 className={styles.productName}>Your Nimantran</h3>
                                 <p className={styles.productDesc}>One payment. Your entire celebration, ready to share.</p>
 
                                 <ul className={styles.premiumChecklist}>
@@ -531,7 +531,7 @@ export default function PaymentPage() {
                                 ) : (
                                     <>
                                         <Lock size={16} />
-                                        Unlock My Wedding Suite · ₹{totalAmount.toFixed(2)}
+                                        Unlock Nimantran — ₹{Math.round(totalAmount)}
                                     </>
                                 )}
                             </button>

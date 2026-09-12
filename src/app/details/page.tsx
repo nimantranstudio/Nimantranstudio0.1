@@ -497,7 +497,7 @@ function DetailsContent() {
                                 variants={itemVariants}
                                 className={styles.transitionSupportingText}
                             >
-                                Now let’s personalise your wedding invitation suite.
+                                Now let’s personalise your Nimantran.
                             </motion.p>
 
                             <motion.div
@@ -541,7 +541,7 @@ function DetailsContent() {
                                 Delete Event?
                             </h3>
                             <p className={styles.deleteModalText}>
-                                Are you sure you want to delete <strong>&ldquo;{eventToDelete.name}&rdquo;</strong>? This event card and its schedule will be removed from your wedding suite.
+                                Are you sure you want to delete <strong>&ldquo;{eventToDelete.name}&rdquo;</strong>? This event card and its schedule will be removed from your Nimantran.
                             </p>
                             <div className={styles.deleteModalActions}>
                                 <button 
@@ -1357,7 +1357,7 @@ function DetailsContent() {
                                     className={styles.actionBtnPrimary} 
                                     onClick={handleFinish}
                                 >
-                                    Generate My Nimantran
+                                    Generate Nimantran
                                 </button>
                             </div>
                         </div>

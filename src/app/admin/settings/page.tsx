@@ -15,7 +15,7 @@ export default function SettingsPage() {
         },
         {
             icon: '✦',
-            text: '<strong>Launch Offer</strong> - Create Your Complete Wedding Invitation Suite in Minutes',
+            text: '<strong>Launch Offer</strong> - Create Nimantran in Minutes',
             badge: 'Hot 🔥',
             active: true
         }

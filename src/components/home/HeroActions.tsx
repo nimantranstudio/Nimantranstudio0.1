@@ -14,7 +14,7 @@ export function HeroActions() {
     >
       <motion.div whileTap={{ scale: 0.97 }} style={{ display: 'inline-block' }}>
       <Link href="/themes" className="btn btn-primary">
-        Create My Invitation — ₹999
+        Create Nimantran
       </Link>
       </motion.div>
     </motion.div>

@@ -291,7 +291,7 @@ function PreviewContent() {
                 if (process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
                     console.warn('Razorpay order creation failed. Falling back to Mock Payment in development.');
                     const confirmMock = window.confirm(
-                        `Razorpay Order Creation Failed: ${data.error || 'Check server logs'}\n\nDo you want to simulate a successful payment to unlock your wedding suite on localhost?`
+                        `Razorpay Order Creation Failed: ${data.error || 'Check server logs'}\n\nDo you want to simulate a successful payment to unlock your Nimantran on localhost?`
                     );
                     if (confirmMock) {
                         // DEV: real payment (and thus /api/payment/verify, which sends the
@@ -1194,7 +1194,7 @@ function PreviewContent() {
                     {/* Left Column: Premium Carousel Slider */}
                     <div className={styles.leftColumn}>
                         <h2 className={styles.suiteCarouselTitle}>
-                            Your complete wedding communication suite is ready.
+                            Your Nimantran is ready.
                         </h2>
                         <p className={styles.suiteCarouselDesc}>
                             Beautiful invites, smart RSVP tracking and seamless sharing — everything you need to host stress-free.
@@ -1462,7 +1462,7 @@ function PreviewContent() {
                         <div className={styles.summaryView}>
                             <div className={styles.summaryCard}>
                                 <h1 className={styles.designTitle}>
-                                    Unlock Your Wedding Suite
+                                    Unlock My Nimantran
                                 </h1>
 
                                 <div className={styles.breakdownBox}>
@@ -1489,7 +1489,7 @@ function PreviewContent() {
                                         </div>
                                         <div className={styles.designDivider}></div>
                                         <div className={styles.totalValueRow}>
-                                            <span>Total Wedding Suite Value</span>
+                                            <span>Total Nimantran Value</span>
                                             <span>₹{pricing.totalValue}</span>
                                         </div>
                                     </div>
@@ -1510,7 +1510,7 @@ function PreviewContent() {
                                     </div>
 
                                     <div className={styles.savingsBanner}>
-                                        ✨ You saved ₹{pricing.discountedPrice} on your wedding communication suite
+                                        ✨ You saved ₹{pricing.discountedPrice} on your Nimantran
                                     </div>
                                     <div className={styles.socialProofLine}>
                                         ✨ Chosen by 24 families this month
@@ -1553,7 +1553,7 @@ function PreviewContent() {
                                             Processing...
                                         </div>
                                     ) : (
-                                        "Unlock My Wedding Suite"
+                                        "Unlock My Nimantran"
                                     )}
                                 </button>
 

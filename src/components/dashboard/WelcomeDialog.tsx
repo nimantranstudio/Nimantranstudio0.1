@@ -226,7 +226,7 @@ export function WelcomeDialog({
                                 letterSpacing: '-0.01em',
                             }}
                         >
-                            Your wedding suite is ready. Let’s make every invitation unforgettable.
+                            Your Nimantran is ready. Let’s make every invitation unforgettable.
                         </motion.p>
                     </motion.div>
                 </motion.div>

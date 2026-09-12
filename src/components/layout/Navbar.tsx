@@ -31,7 +31,6 @@ export const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false); // Mobile Menu
     const [isProfileOpen, setIsProfileOpen] = useState(false); // Profile Dropdown
     const [isScrolled, setIsScrolled] = useState(false);
-    const [hoveredNav, setHoveredNav] = useState<string | null>(null);
 
     const { isAuthenticated, isAdmin, userPhone, login, logout } = useWeddingStore();
     const [hasMounted, setHasMounted] = useState(false);
@@ -61,10 +60,23 @@ export const Navbar = () => {
     }, [login]);
 
     useEffect(() => {
+        let ticking = false;
         const handleScroll = () => {
-            setIsScrolled(window.scrollY > 15);
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    const scrollY = window.scrollY;
+                    setIsScrolled((prev) => {
+                        if (!prev && scrollY > 30) return true;
+                        if (prev && scrollY < 10) return false;
+                        return prev;
+                    });
+                    ticking = false;
+                });
+                ticking = true;
+            }
         };
         window.addEventListener('scroll', handleScroll, { passive: true });
+        handleScroll();
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
@@ -124,12 +136,10 @@ export const Navbar = () => {
                 <div className={styles.rightGroup} suppressHydrationWarning>
                     <nav 
                         className={styles.navRow} 
-                        onMouseLeave={() => setHoveredNav(null)}
                         aria-label="Main Navigation"
                     >
                         {NAV_LINKS.map((link) => {
                             const isActive = pathname === link.href;
-                            const isHovered = hoveredNav === link.href;
 
                             return (
                                 <Link
@@ -139,26 +149,12 @@ export const Navbar = () => {
                                         styles.navLink,
                                         isActive && styles.activeLink
                                     )}
-                                    onMouseEnter={() => setHoveredNav(link.href)}
                                 >
-                                    {/* Hover sliding pill with warm ivory/yellow tone */}
-                                    {isHovered && (
-                                        <motion.div
-                                            layoutId="navHoverPill"
-                                            className={styles.hoverPill}
-                                            transition={{ type: 'spring', bounce: 0.15, duration: 0.28 }}
-                                        />
-                                    )}
-
                                     <span className={styles.linkText}>{link.name}</span>
 
                                     {/* Active Route Indicator Dot */}
-                                    {isActive && !isHovered && (
-                                        <motion.span 
-                                            layoutId="activeDot"
-                                            className={styles.activeDot}
-                                            transition={{ type: 'spring', bounce: 0, duration: 0.3 }}
-                                        />
+                                    {isActive && (
+                                        <span className={styles.activeDot} />
                                     )}
                                 </Link>
                             );
@@ -177,7 +173,7 @@ export const Navbar = () => {
                                     <span className={styles.avatar}>
                                         {isAdmin ? <Shield size={13} /> : <User size={13} />}
                                     </span>
-                                    <span className={styles.profileLabel}>My Nimantran</span>
+                                    <span className={styles.profileLabel}>Account</span>
                                     <ChevronDown 
                                         size={13} 
                                         className={clsx(styles.chevron, isProfileOpen && styles.chevronRotated)} 
@@ -347,7 +343,7 @@ export const Navbar = () => {
                                             className={styles.mobileCtaBtn}
                                             onClick={() => setIsOpen(false)}
                                         >
-                                            <span>Explore Themes</span>
+                                            <span>Create Nimantran</span>
                                         </Link>
                                         <Link
                                             href="/login"

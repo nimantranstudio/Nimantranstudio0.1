@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import styles from './rsvp.module.css';
-import { Calendar, MapPin, Check, Info, Sparkles } from 'lucide-react';
+import { Calendar, MapPin, Check, Info, Send, Heart } from 'lucide-react';
 import clsx from 'clsx';
 import Link from 'next/link';
 import { FloatingFlowers } from '@/components/ui/FloatingFlowers';
@@ -771,7 +771,7 @@ export const RSVPForm = ({ wedding, isPreview = false }: RSVPFormProps) => {
                                             </span>
                                         ) : (
                                             <>
-                                                <Sparkles size={18} /> Confirm My Attendance
+                                                <Send size={18} /> Confirm My Presence
                                             </>
                                         )}
                                     </motion.button>
@@ -791,7 +791,7 @@ export const RSVPForm = ({ wedding, isPreview = false }: RSVPFormProps) => {
                             <div className={styles.ornamentLine} />
                         </motion.div>
 
-                        {/* 5. BRAND FOOTER & SIGNATURE */}
+                        {/* 5. BRAND FOOTER & THANK YOU SECTION */}
                         <motion.footer
                             className={styles.websiteFooter}
                             variants={slowContainerVariants}
@@ -799,26 +799,35 @@ export const RSVPForm = ({ wedding, isPreview = false }: RSVPFormProps) => {
                             whileInView="visible"
                             viewport={{ once: true, margin: '-40px' }}
                         >
-                            <motion.p variants={slowItemVariants} className={styles.footerThanks}>
-                                We look forward to celebrating this unforgettable occasion with you!
-                            </motion.p>
+                            <motion.div variants={slowItemVariants} className={styles.thankYouSection}>
+                                <div className={styles.thankYouHeart}>
+                                    <Heart size={22} fill="#C5A059" color="#C5A059" />
+                                </div>
 
-                            {/* Couple Names & Date Signature */}
-                            <motion.div variants={slowItemVariants} className={styles.footerSignatureBlock}>
-                                <h3 className={styles.footerSignatureNames}>
-                                    {wedding.groomName} {wedding.brideName ? `& ${wedding.brideName}` : ''}
-                                </h3>
-                                {footerDateFormatted ? (
-                                    <>
-                                        <div className={styles.footerSignatureDivider} />
-                                        <span className={styles.footerSignatureDate}>
-                                            {footerDateFormatted}
-                                        </span>
-                                    </>
-                                ) : null}
+                                <span className={styles.thankYouEyebrow}>WITH GRATEFUL HEARTS</span>
+
+                                <h2 className={styles.thankYouTitle}>Thank You</h2>
+
+                                <div className={styles.thankYouDivider}>
+                                    <div className={styles.thankYouDividerLine} />
+                                    <span>✦</span>
+                                    <div className={styles.thankYouDividerLine} />
+                                </div>
+
+                                <p className={styles.thankYouMessage}>
+                                    Your presence and blessings will make our celebration complete. We would be honoured to share this beautiful beginning with you.
+                                </p>
+
+                                <p className={styles.thankYouSignoff}>
+                                    With love, {wedding.groomName} {wedding.brideName ? `& ${wedding.brideName}` : ''}
+                                </p>
+
+                                <p className={styles.welcomingText}>
+                                    Our families look forward to welcoming you
+                                </p>
                             </motion.div>
 
-                            <motion.div variants={slowItemVariants}>
+                            <motion.div variants={slowItemVariants} style={{ width: '100%' }}>
                                 <Link href="/" className={styles.poweredByCard}>
                                     crafted with love on
                                     <img src="/logo.png" alt="Nimantran Studio" className={styles.brandLogo} />

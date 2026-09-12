@@ -3,17 +3,17 @@ import { Check, X } from 'lucide-react';
 
 export const metadata = {
     title: 'Pricing — Nimantran Studio',
-    description: 'One simple price for your entire wedding invitation suite. ₹999 one-time, no subscription.',
+    description: 'One simple price for your entire Nimantran. ₹999 one-time, no subscription.',
     openGraph: {
         title: 'Pricing — Nimantran Studio',
-        description: 'One simple price for your entire wedding invitation suite. ₹999 one-time, no subscription.',
+        description: 'One simple price for your entire Nimantran. ₹999 one-time, no subscription.',
         images: [{ url: '/og-image.png', width: 1200, height: 630 }],
         type: 'website',
     },
     twitter: {
         card: 'summary_large_image',
         title: 'Pricing — Nimantran Studio',
-        description: 'One simple price for your entire wedding invitation suite. ₹999 one-time, no subscription.',
+        description: 'One simple price for your entire Nimantran. ₹999 one-time, no subscription.',
         images: ['/og-image.png'],
     },
 };
@@ -115,7 +115,7 @@ export default function PricingPage() {
                                 marginBottom: '0.75rem',
                             }}
                         >
-                            GET STARTED — ₹999
+                            Create Nimantran — ₹999
                         </Link>
                         <p style={{ textAlign: 'center', fontSize: '0.78rem', color: '#94A3B8', marginBottom: '1.5rem', lineHeight: 1.6 }}>
                             Preview free · Satisfaction guarantee · Trusted by Indian couples

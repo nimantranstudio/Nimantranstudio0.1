@@ -1092,7 +1092,7 @@ export default function DashboardPage() {
                     {/* Title & Description */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
                         <h2 className={redesignStyles.conciergeTitle}>
-                            Your Wedding Suite Awaits
+                            Your Nimantran Awaits
                         </h2>
                         <p className={redesignStyles.conciergeDescription}>
                             Step into your personal wedding studio. Create luxury digital invitations and manage guest RSVPs in real time.
@@ -1158,7 +1158,7 @@ export default function DashboardPage() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <Link href="/themes" className={redesignStyles.peekCtaBtn}>
                         <Sparkles size={13} />
-                        <span>Create Your Suite</span>
+                        <span>Create Nimantran</span>
                     </Link>
                     <button 
                         type="button"
@@ -1274,7 +1274,7 @@ export default function DashboardPage() {
                 {/* 1. Clean Full-Width Dashboard Welcome Header */}
                 <div className={styles.dashboardHeader} style={{ marginBottom: '1.5rem' }}>
                     <h1 className={styles.title} style={{ margin: 0 }}>
-                        {isEmptyState ? "Welcome to your Nimantran Dashboard" : "Welcome! Your wedding suite is ready."}
+                        {isEmptyState ? "Welcome to your Nimantran Dashboard" : "Welcome! Your Nimantran is ready."}
                     </h1>
                     <p className={styles.subtitle} style={{ marginTop: '0.45rem', margin: 0, color: '#64748B', fontSize: '0.95rem' }}>
                         {isEmptyState 
@@ -1819,7 +1819,7 @@ export default function DashboardPage() {
                 >
                     <div className={redesignStyles.supportCard} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1.5rem', textAlign: 'left', padding: '1.75rem 2.25rem' }}>
                         <div>
-                            <h3 style={{ margin: 0, fontSize: '1.4rem', color: '#FFFFFF' }}>Need help with your wedding suite?</h3>
+                            <h3 style={{ margin: 0, fontSize: '1.4rem', color: '#FFFFFF' }}>Need help with your Nimantran?</h3>
                             <p style={{ margin: '0.35rem 0 0 0', fontSize: '0.9rem', color: '#A1A1AA' }}>Our dedicated studio concierge is here to assist with customization, print exports, or RSVP support.</p>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>

@@ -142,7 +142,7 @@ export const PricingSection = () => {
                                     boxShadow: '0 4px 20px rgba(212,175,55,0.3)',
                                 }}
                             >
-                                Create My Invitation — ₹999
+                                Create Nimantran — ₹999
                             </Link>
 
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>

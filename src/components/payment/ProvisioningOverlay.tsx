@@ -37,7 +37,7 @@ export function ProvisioningOverlay({ coupleNames }: { coupleNames?: string }) {
                 <div className={styles.iconBadge}>
                     <Sparkles size={26} strokeWidth={1.75} />
                 </div>
-                <h1 className={styles.title}>Preparing your Wedding Suite</h1>
+                <h1 className={styles.title}>Preparing your Nimantran</h1>
                 {coupleNames && <p className={styles.subtitle}>for {coupleNames}</p>}
 
                 <ul className={styles.stageList}>

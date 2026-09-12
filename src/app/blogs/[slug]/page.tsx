@@ -198,12 +198,12 @@ export default async function BlogPostPage({
                     <aside className={styles.sidebar}>
                         <div className={styles.sidebarCard}>
                             <p className={styles.sidebarEyebrow}>Ready to start?</p>
-                            <h3 className={styles.sidebarTitle}>Create your wedding invitation in minutes</h3>
+                            <h3 className={styles.sidebarTitle}>Create your Nimantran in minutes</h3>
                             <p className={styles.sidebarText}>
                                 Beautiful designs, built-in RSVP, and WhatsApp-ready sharing — all from ₹999.
                             </p>
-                            <Link href="/" className={styles.sidebarBtn}>
-                                Start for Free →
+                            <Link href="/themes" className={styles.sidebarBtn}>
+                                Create Nimantran →
                             </Link>
                         </div>
 
