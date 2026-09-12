@@ -21,7 +21,7 @@ const SLIDES = [
     },
     {
         id: 'full-suite-groom',
-        src: '/hero-image-2.png',
+        src: '/hero-suite-groom.png',
         alt: 'Nimantran Studio Complete Wedding Invitation and RSVP Suite',
         width: 1024,
         height: 690,
@@ -160,10 +160,10 @@ const HeroImage = () => {
                         }}
                     >
                         <Image
-                            src="/hero-image-2.png"
+                            src="/hero-suite-groom.png"
                             alt="Nimantran Studio Complete Wedding Invitation and RSVP Suite"
                             width={1024}
-                            height={576}
+                            height={690}
                             style={{ width: '100%', height: 'auto' }}
                             priority
                             sizes="(max-width: 768px) 100vw, 660px"
