@@ -78,7 +78,7 @@ export default function Footer() {
                 </div>
 
                 <div className={styles.footerBottom}>
-                    <p className={styles.copyright}>© 2026 NIMANTRANSTUDIO.COM — ALL RIGHTS RESERVED</p>
+                    <p className={styles.copyright}>© 2026 NIMANTRANSTUDIO.IN — ALL RIGHTS RESERVED</p>
                     <p className={styles.attribution}>
                         MADE WITH <Heart size={14} className={styles.heartIcon} /> FOR INDIAN WEDDINGS
                     </p>
