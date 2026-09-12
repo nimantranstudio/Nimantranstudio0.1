@@ -39,11 +39,34 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
 
     // Lazily create an invisible reCAPTCHA verifier (required by Firebase Phone Auth)
     const getRecaptcha = () => {
-        if (recaptchaRef.current) return recaptchaRef.current;
-        recaptchaRef.current = new RecaptchaVerifier(auth as any, 'recaptcha-container', {
+        if (typeof window === 'undefined') return null;
+
+        // Reset and clear any existing verifier instance before creating a fresh one
+        if (recaptchaRef.current) {
+            try {
+                recaptchaRef.current.clear();
+            } catch { }
+            recaptchaRef.current = null;
+        }
+
+        const container = document.getElementById('recaptcha-container');
+        if (container) {
+            container.innerHTML = '';
+        }
+
+        const verifier = new RecaptchaVerifier(auth as any, 'recaptcha-container', {
             size: 'invisible',
+            callback: () => {
+                // reCAPTCHA solved
+            },
+            'expired-callback': () => {
+                try { verifier.clear(); } catch { }
+                recaptchaRef.current = null;
+            }
         });
-        return recaptchaRef.current;
+
+        recaptchaRef.current = verifier;
+        return verifier;
     };
 
     // Reset verifier when the modal closes so a fresh one is made next open
@@ -61,12 +84,6 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
 
     useEffect(() => {
         if (isOpen) {
-            // if (isAuthenticated && userPhone) {
-            //     // Determine if we should auto-close or just fill
-            //     // If the user opened this, it implies they think they needed to login, OR the app forced them.
-            //     // If the app forced them but they ARE logged in, we should auto-succeed.
-            //     onSuccess(userPhone);
-            // } else if (userPhone) {
             if (userPhone) {
                 setPhoneNumber(userPhone);
             }
@@ -92,6 +109,8 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
         setBusy(true);
         try {
             const verifier = getRecaptcha();
+            if (!verifier) throw new Error('Verification setup failed');
+
             const confirmation = await signInWithPhoneNumber(auth as any, `+91${phoneNumber}`, verifier);
             confirmationRef.current = confirmation;
             setStep('otp');
@@ -100,8 +119,12 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
         } catch (err: any) {
             console.error('Failed to send OTP:', err);
             // Reset reCAPTCHA so the next attempt gets a clean token
-            try { recaptchaRef.current?.clear(); } catch { }
+            try { 
+                recaptchaRef.current?.clear(); 
+            } catch { }
             recaptchaRef.current = null;
+            const container = document.getElementById('recaptcha-container');
+            if (container) container.innerHTML = '';
             setError(describeFirebaseAuthError(err));
         } finally {
             setBusy(false);

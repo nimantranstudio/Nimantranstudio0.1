@@ -7,7 +7,12 @@
  * never reach the UI.
  */
 export function describeFirebaseAuthError(err: any): string {
-    switch (err?.code) {
+    const code = err?.code || '';
+    switch (code) {
+        case 'auth/invalid-app-credential':
+            return 'Phone verification could not complete. Please refresh the page and try again.';
+        case 'auth/app-not-authorized':
+            return 'Domain not authorized for authentication. Please check Firebase settings.';
         case 'auth/too-many-requests':
             return 'Too many attempts. Please wait a while before trying again.';
         case 'auth/invalid-phone-number':
@@ -24,6 +29,6 @@ export function describeFirebaseAuthError(err: any): string {
         case 'auth/quota-exceeded':
             return 'SMS limit reached for now. Please try again later.';
         default:
-            return 'Something went wrong. Please try again.';
+            return err?.message || 'Something went wrong. Please try again.';
     }
 }

@@ -24,7 +24,7 @@ const SLIDES = [
         src: '/hero-image-2.png',
         alt: 'Nimantran Studio Complete Wedding Invitation and RSVP Suite',
         width: 1024,
-        height: 576,
+        height: 690,
         sizes: '(max-width: 768px) 100vw, 660px',
         wrapperClass: styles.imageWrapper2,
         hasTags: false,

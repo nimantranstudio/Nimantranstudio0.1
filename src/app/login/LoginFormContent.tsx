@@ -41,18 +41,43 @@ export default function LoginFormContent() {
     // across a client-side navigation away from /login.
     useEffect(() => {
         return () => {
-            try { recaptchaRef.current?.clear(); } catch { }
+            try { 
+                recaptchaRef.current?.clear(); 
+            } catch { }
             recaptchaRef.current = null;
         };
     }, []);
 
     // Lazily create an invisible reCAPTCHA verifier (required by Firebase Phone Auth).
     const getRecaptcha = () => {
-        if (recaptchaRef.current) return recaptchaRef.current;
-        recaptchaRef.current = new RecaptchaVerifier(auth as any, 'recaptcha-container', {
+        if (typeof window === 'undefined') return null;
+
+        // Reset and clear any existing verifier instance before creating a fresh one
+        if (recaptchaRef.current) {
+            try {
+                recaptchaRef.current.clear();
+            } catch { }
+            recaptchaRef.current = null;
+        }
+
+        const container = document.getElementById('recaptcha-container');
+        if (container) {
+            container.innerHTML = '';
+        }
+
+        const verifier = new RecaptchaVerifier(auth as any, 'recaptcha-container', {
             size: 'invisible',
+            callback: () => {
+                // reCAPTCHA solved
+            },
+            'expired-callback': () => {
+                try { verifier.clear(); } catch { }
+                recaptchaRef.current = null;
+            }
         });
-        return recaptchaRef.current;
+
+        recaptchaRef.current = verifier;
+        return verifier;
     };
 
     // Shared by the initial "Get OTP" and the OTP-step "Resend" — both are just
@@ -72,6 +97,8 @@ export default function LoginFormContent() {
 
         try {
             const verifier = getRecaptcha();
+            if (!verifier) throw new Error('Verification setup failed');
+
             const confirmation = await signInWithPhoneNumber(auth as any, `+91${identifier}`, verifier);
             confirmationRef.current = confirmation;
             setStep('otp');
@@ -80,8 +107,12 @@ export default function LoginFormContent() {
         } catch (err: any) {
             console.error('Failed to send OTP:', err);
             // Reset reCAPTCHA so the next attempt gets a clean token.
-            try { recaptchaRef.current?.clear(); } catch { }
+            try { 
+                recaptchaRef.current?.clear(); 
+            } catch { }
             recaptchaRef.current = null;
+            const container = document.getElementById('recaptcha-container');
+            if (container) container.innerHTML = '';
             setError(describeFirebaseAuthError(err));
         } finally {
             setBusy(false);
