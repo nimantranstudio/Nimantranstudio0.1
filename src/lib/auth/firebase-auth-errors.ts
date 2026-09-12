@@ -10,9 +10,9 @@ export function describeFirebaseAuthError(err: any): string {
     const code = err?.code || '';
     switch (code) {
         case 'auth/invalid-app-credential':
-            return 'Phone verification could not complete. Please refresh the page and try again.';
+            return 'Phone verification failed: please ensure Phone Auth is enabled & your domain is in Firebase Console Authorized Domains.';
         case 'auth/app-not-authorized':
-            return 'Domain not authorized for authentication. Please check Firebase settings.';
+            return 'This domain is not authorized in Firebase Console (Authentication > Settings > Authorized domains).';
         case 'auth/too-many-requests':
             return 'Too many attempts. Please wait a while before trying again.';
         case 'auth/invalid-phone-number':
