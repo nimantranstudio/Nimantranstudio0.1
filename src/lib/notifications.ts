@@ -16,15 +16,17 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://www.nimantranstudio.
 const WELCOME_TEMPLATE = process.env.MSG91_WELCOME_TEMPLATE || 'welcome_nimantran';
 
 // A second, separate WhatsApp message sent right after the welcome one — the
-// shareable RSVP link itself. Written entirely in the COUPLE's own voice (no
-// "Hi, here's your link" framing) so it can be forwarded to guests exactly as
-// received, no editing needed. Needs its own MSG91-approved template before
-// this will actually deliver (same requirement the welcome template had): an
-// IMAGE header (couple's hero card, optional) and two body variables,
-// {{1}} = "Groom & Bride", {{2}} = the RSVP page URL. Suggested approval copy:
-// "💌 You're Invited!
-//  {{1}} are getting married, and we'd love for you to be there! 🎉 Tap below
-//  to view our invitation and let us know if you can make it: {{2}}"
+// shareable RSVP link itself. Kept deliberately short — the link's own Open
+// Graph tags (title/description/image, resolved live per wedding — see
+// src/app/rsvp/[id]/page.tsx) do the visual work when WhatsApp renders its
+// preview card, so the message text just needs to frame it, not repeat it.
+// Written entirely in the COUPLE's own voice (no "Hi, here's your link"
+// framing) so it can be forwarded to guests exactly as received. Needs its
+// own MSG91-approved template before this will actually deliver (same
+// requirement the welcome template had): an IMAGE header (couple's hero
+// card, optional) and two body variables, {{1}} = "Groom & Bride",
+// {{2}} = the RSVP page URL. Suggested approval copy:
+// "💍 {{1}} are getting married! Here's our wedding invitation: {{2}}"
 const RSVP_LINK_TEMPLATE = process.env.MSG91_RSVP_LINK_TEMPLATE || 'rsvp_link_nimantran';
 
 /** WhatsApp media headers accept real raster images only — not .html templates. */
