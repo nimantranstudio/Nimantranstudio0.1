@@ -36,42 +36,42 @@ const HeroImage = () => {
                         text="Create Invites"
                         delay={0.1}
                         top="12%"
-                        left="-2%"
+                        left="2%"
                     />
                     <FloatingTag
                         icon={<Globe size={18} />}
                         text="Wedding Website"
                         delay={0.15}
                         top="34%"
-                        left="-10%"
+                        left="-6%"
                     />
                     <FloatingTag
                         icon={<Users size={18} />}
                         text="Guest Management"
                         delay={0.2}
                         top="62%"
-                        left="-4%"
+                        left="0%"
                     />
                     <FloatingTag
                         icon={<Calendar size={18} />}
                         text="Multi Event Control"
                         delay={0.25}
                         top="22%"
-                        right="-6%"
+                        right="-2%"
                     />
                     <FloatingTag
                         icon={<ClipboardCheck size={18} />}
                         text="RSVP Tracking"
                         delay={0.3}
                         top="42%"
-                        right="-12%"
+                        right="-8%"
                     />
                     <FloatingTag
                         icon={<BarChart size={18} />}
                         text="Analytics Dashboard"
                         delay={0.35}
                         top="66%"
-                        right="0%"
+                        right="2%"
                     />
                 </div>
             </div>
