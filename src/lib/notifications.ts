@@ -16,12 +16,15 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://www.nimantranstudio.
 const WELCOME_TEMPLATE = process.env.MSG91_WELCOME_TEMPLATE || 'welcome_nimantran';
 
 // A second, separate WhatsApp message sent right after the welcome one — the
-// shareable RSVP link itself. Needs its own MSG91-approved template before
-// this will actually deliver (same requirement the welcome template had):
-// an IMAGE header (couple's hero card, optional) and two body variables,
-// {{1}} = couple names, {{2}} = the RSVP page URL. Suggested approval copy:
-// "Hi {{1}}! Your wedding invitation is ready. Share this with your guests
-// so they can view it and RSVP: {{2}}"
+// shareable RSVP link itself. Written entirely in the COUPLE's own voice (no
+// "Hi, here's your link" framing) so it can be forwarded to guests exactly as
+// received, no editing needed. Needs its own MSG91-approved template before
+// this will actually deliver (same requirement the welcome template had): an
+// IMAGE header (couple's hero card, optional) and two body variables,
+// {{1}} = "Groom & Bride", {{2}} = the RSVP page URL. Suggested approval copy:
+// "💌 You're Invited!
+//  {{1}} are getting married, and we'd love for you to be there! 🎉 Tap below
+//  to view our invitation and let us know if you can make it: {{2}}"
 const RSVP_LINK_TEMPLATE = process.env.MSG91_RSVP_LINK_TEMPLATE || 'rsvp_link_nimantran';
 
 /** WhatsApp media headers accept real raster images only — not .html templates. */
@@ -79,13 +82,16 @@ export async function sendWelcomeAndReceipt(opts: {
  */
 export async function sendRsvpLink(opts: {
     mobile: string;
-    coupleNames: string;
+    groomName?: string;
+    brideName?: string;
     weddingId: string;
     orderId: string;
     heroImageUrl?: string;
 }): Promise<SendResult> {
-    const { mobile, coupleNames, weddingId, orderId, heroImageUrl } = opts;
-    const couple = coupleNames || 'there';
+    const { mobile, groomName, brideName, weddingId, orderId, heroImageUrl } = opts;
+    // "Groom & Bride" — reads naturally in a first-person-plural invitation
+    // line ("X & Y are getting married") the couple can forward as-is.
+    const couple = [groomName, brideName].filter(Boolean).join(' & ') || 'We';
     const rsvpUrl = `${APP_URL}/rsvp/${weddingId}`;
     const hero = isSendableImage(heroImageUrl) ? absolutize(heroImageUrl) : undefined;
 

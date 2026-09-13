@@ -248,7 +248,9 @@ export async function POST(req: NextRequest) {
         }
 
         // 6. Fire-and-forget WhatsApp welcome + receipt. Never blocks the response.
-        const coupleNames = `${sanitize(formData?.groomName) || ''} ${sanitize(formData?.brideName) || ''}`.trim();
+        const groomName = sanitize(formData?.groomName) || undefined;
+        const brideName = sanitize(formData?.brideName) || undefined;
+        const coupleNames = [groomName, brideName].filter(Boolean).join(' ');
         const heroUrl = typeof heroImageUrl === 'string' ? heroImageUrl : undefined;
         sendWelcomeAndReceipt({
             mobile,
@@ -263,7 +265,8 @@ export async function POST(req: NextRequest) {
         if (weddingId) {
             sendRsvpLink({
                 mobile,
-                coupleNames,
+                groomName,
+                brideName,
                 weddingId,
                 orderId: order.id,
                 heroImageUrl: heroUrl,
