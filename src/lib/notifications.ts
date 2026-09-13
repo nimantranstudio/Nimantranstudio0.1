@@ -15,6 +15,15 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://www.nimantranstudio.
 // URL button (→ /dashboard/assets) baked into the approved template.
 const WELCOME_TEMPLATE = process.env.MSG91_WELCOME_TEMPLATE || 'welcome_nimantran';
 
+// A second, separate WhatsApp message sent right after the welcome one — the
+// shareable RSVP link itself. Needs its own MSG91-approved template before
+// this will actually deliver (same requirement the welcome template had):
+// an IMAGE header (couple's hero card, optional) and two body variables,
+// {{1}} = couple names, {{2}} = the RSVP page URL. Suggested approval copy:
+// "Hi {{1}}! Your wedding invitation is ready. Share this with your guests
+// so they can view it and RSVP: {{2}}"
+const RSVP_LINK_TEMPLATE = process.env.MSG91_RSVP_LINK_TEMPLATE || 'rsvp_link_nimantran';
+
 /** WhatsApp media headers accept real raster images only — not .html templates. */
 function isSendableImage(url?: string): boolean {
     return !!url && /\.(png|jpe?g|webp)(\?|$)/i.test(url);
@@ -60,4 +69,41 @@ export async function sendWelcomeAndReceipt(opts: {
 
     // Email receipt is intentionally deferred until an email provider is chosen.
     // The address is already captured on the User record; nothing to send yet.
+}
+
+/**
+ * The RSVP page link, as its own WhatsApp message — deliberately separate
+ * from the welcome message so it reads as "here's the thing to forward to
+ * your guests" rather than being buried in the account/receipt message.
+ * Only fires once a wedding (and therefore an RSVP page) actually exists.
+ */
+export async function sendRsvpLink(opts: {
+    mobile: string;
+    coupleNames: string;
+    weddingId: string;
+    orderId: string;
+    heroImageUrl?: string;
+}): Promise<SendResult> {
+    const { mobile, coupleNames, weddingId, orderId, heroImageUrl } = opts;
+    const couple = coupleNames || 'there';
+    const rsvpUrl = `${APP_URL}/rsvp/${weddingId}`;
+    const hero = isSendableImage(heroImageUrl) ? absolutize(heroImageUrl) : undefined;
+
+    try {
+        console.log(`[rsvp-link] sending to ${mobile} (order ${orderId}); url=${rsvpUrl} template=${RSVP_LINK_TEMPLATE}`);
+        const result = await messaging.sendWhatsAppTemplate(
+            mobile,
+            RSVP_LINK_TEMPLATE,
+            [couple, rsvpUrl],
+            hero
+        );
+        console.log(`[rsvp-link] result (order ${orderId}): ${JSON.stringify(result)}`);
+        if (!result.success) {
+            console.warn(`RSVP link WhatsApp not delivered (order ${orderId}): ${result.error}`);
+        }
+        return result;
+    } catch (err: any) {
+        console.warn(`RSVP link WhatsApp threw (order ${orderId}): ${err?.message}`);
+        return { success: false, error: err?.message || 'send threw' };
+    }
 }

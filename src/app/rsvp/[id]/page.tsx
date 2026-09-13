@@ -16,11 +16,30 @@ export async function generateMetadata({
             where: {
                 OR: [{ id }, { slug: id }],
             },
+            include: {
+                events: { include: { generatedCard: true } },
+            },
         });
 
         if (wedding) {
-            const title = `${wedding.groomName} & ${wedding.brideName}'s Wedding Invitation | Nimantran Studio`;
-            const description = `You are joyfully invited to the wedding celebration of ${wedding.groomName} & ${wedding.brideName}. View event itinerary, venue location & RSVP online.`;
+            const title = `${wedding.groomName} & ${wedding.brideName} — Wedding Invitation`;
+
+            // Prefer the main "Wedding" ceremony's venue/card over whichever
+            // event happens to be first — that's the one guests care about.
+            const mainEvent =
+                wedding.events.find((e) => (e.eventType || e.name || '').toLowerCase().includes('wedding')) ||
+                wedding.events[0];
+
+            const description = mainEvent?.venue
+                ? `Join us as ${wedding.groomName} & ${wedding.brideName} celebrate their wedding at ${mainEvent.venue}. RSVP online — Nimantran Studio.`
+                : `You are joyfully invited to the wedding celebration of ${wedding.groomName} & ${wedding.brideName}. View event itinerary, venue location & RSVP online.`;
+
+            // Use the couple's own rendered card when one exists — falls back to
+            // generic branding only if they haven't generated/viewed a card yet.
+            const cardImage = wedding.events
+                .map((e) => e.generatedCard?.imageUrl)
+                .find((url): url is string => !!url && /\.(png|jpe?g|webp)(\?|$)/i.test(url));
+            const image = cardImage || '/og-image.png';
 
             return {
                 title,
@@ -29,13 +48,13 @@ export async function generateMetadata({
                     title,
                     description,
                     type: 'website',
-                    images: ['/og-image.png'],
+                    images: [image],
                 },
                 twitter: {
                     card: 'summary_large_image',
                     title,
                     description,
-                    images: ['/og-image.png'],
+                    images: [image],
                 },
             };
         }

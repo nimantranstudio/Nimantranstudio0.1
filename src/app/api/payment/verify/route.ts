@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { WeddingFormSchema } from '@/lib/schemas/wedding-form';
 import { createSessionToken, SESSION_COOKIE, sessionCookieOptions } from '@/lib/session';
 import { toTenDigits } from '@/lib/messaging/types';
-import { sendWelcomeAndReceipt } from '@/lib/notifications';
+import { sendWelcomeAndReceipt, sendRsvpLink } from '@/lib/notifications';
 import { ensureInvoiceNumber } from '@/lib/invoice/invoice-number';
 import sanitizeHtml from 'sanitize-html';
 
@@ -248,13 +248,27 @@ export async function POST(req: NextRequest) {
         }
 
         // 6. Fire-and-forget WhatsApp welcome + receipt. Never blocks the response.
+        const coupleNames = `${sanitize(formData?.groomName) || ''} ${sanitize(formData?.brideName) || ''}`.trim();
+        const heroUrl = typeof heroImageUrl === 'string' ? heroImageUrl : undefined;
         sendWelcomeAndReceipt({
             mobile,
-            coupleNames: `${sanitize(formData?.groomName) || ''} ${sanitize(formData?.brideName) || ''}`.trim(),
+            coupleNames,
             amountRupees,
             orderId: order.id,
-            heroImageUrl: typeof heroImageUrl === 'string' ? heroImageUrl : undefined,
+            heroImageUrl: heroUrl,
         }).catch((e) => console.error('Notification dispatch failed:', e));
+
+        // 6b. The RSVP link, as its own follow-up message — only once a wedding
+        // (and therefore an RSVP page) actually exists to link to.
+        if (weddingId) {
+            sendRsvpLink({
+                mobile,
+                coupleNames,
+                weddingId,
+                orderId: order.id,
+                heroImageUrl: heroUrl,
+            }).catch((e) => console.error('RSVP link dispatch failed:', e));
+        }
 
         // 7. Issue the session and return.
         return withSession(
