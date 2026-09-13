@@ -64,13 +64,13 @@ export const EventCard: React.FC<EventCardProps> = ({ event, coupleNames, index 
     return (
         <motion.div
             className={styles.timelineCard}
-            initial={{ opacity: 0, y: 22, scale: 0.98, filter: 'blur(6px)' }}
+            initial={{ opacity: 0, y: 16, scale: 0.98, filter: 'blur(4px)' }}
             whileInView={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
-            viewport={{ once: true, margin: '-50px' }}
+            viewport={{ once: true, margin: '-40px' }}
             transition={{
-                duration: 1.1,
+                duration: 0.55,
                 ease: [0.16, 1, 0.3, 1],
-                delay: Math.min(index * 0.16, 0.5),
+                delay: Math.min(index * 0.08, 0.3),
             }}
         >
             <div className={styles.eventCardBody}>

@@ -23,26 +23,26 @@ interface RSVPFormProps {
 
 type Step = 'INVITE' | 'SUCCESS' | 'ALREADY_REGISTERED';
 
-// Motion animation variants adhering to Emil Kowalski & Impeccable luxury animation guidelines (Refined Smooth Cinematic Reveal)
+// Motion animation variants adhering to Emil Kowalski & Impeccable luxury animation guidelines (Refined Snappy Cinematic Reveal)
 const slowContainerVariants = {
     hidden: { opacity: 0 },
     visible: {
         opacity: 1,
         transition: {
-            staggerChildren: 0.32,
-            delayChildren: 0.15,
+            staggerChildren: 0.08,
+            delayChildren: 0.04,
         },
     },
 };
 
 const slowItemVariants = {
-    hidden: { opacity: 0, y: 20, filter: 'blur(6px)' },
+    hidden: { opacity: 0, y: 14, filter: 'blur(4px)' },
     visible: {
         opacity: 1,
         y: 0,
         filter: 'blur(0px)',
         transition: {
-            duration: 1.2,
+            duration: 0.55,
             ease: [0.16, 1, 0.3, 1],
         },
     },
@@ -53,46 +53,46 @@ const coupleContainerVariants = {
     visible: {
         opacity: 1,
         transition: {
-            staggerChildren: 0.32,
-            delayChildren: 0.1,
+            staggerChildren: 0.08,
+            delayChildren: 0.04,
         },
     },
 };
 
 const ampersandVariants = {
-    hidden: { opacity: 0, scale: 0.75, filter: 'blur(4px)' },
+    hidden: { opacity: 0, scale: 0.82, filter: 'blur(3px)' },
     visible: {
         opacity: 1,
         scale: 1,
         filter: 'blur(0px)',
         transition: {
-            duration: 1.1,
+            duration: 0.55,
             ease: [0.16, 1, 0.3, 1],
         },
     },
 };
 
 const flourishVariants = {
-    hidden: { opacity: 0, scale: 0.88, filter: 'blur(4px)' },
+    hidden: { opacity: 0, scale: 0.9, filter: 'blur(3px)' },
     visible: {
         opacity: 0.65,
         scale: 1,
         filter: 'blur(0px)',
         transition: {
-            duration: 1.5,
+            duration: 0.65,
             ease: [0.16, 1, 0.3, 1],
         },
     },
 };
 
 const dividerVariants = {
-    hidden: { opacity: 0, scaleX: 0.4, filter: 'blur(4px)' },
+    hidden: { opacity: 0, scaleX: 0.6, filter: 'blur(3px)' },
     visible: {
         opacity: 1,
         scaleX: 1,
         filter: 'blur(0px)',
         transition: {
-            duration: 1.1,
+            duration: 0.55,
             ease: [0.16, 1, 0.3, 1],
         },
     },
@@ -544,11 +544,10 @@ export const RSVPForm = ({ wedding, isPreview = false }: RSVPFormProps) => {
                         {wedding.invitationMessage && wedding.invitationMessage.trim() && (
                             <motion.div
                                 className={styles.quoteCard}
-                                style={{ marginTop: '1rem', marginBottom: '2.5rem' }}
-                                initial={{ opacity: 0, y: 20, filter: 'blur(6px)' }}
+                                initial={{ opacity: 0, y: 14, filter: 'blur(4px)' }}
                                 whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                                viewport={{ once: true, margin: '-50px' }}
-                                transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
+                                viewport={{ once: true, margin: '-40px' }}
+                                transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
                             >
                                 <p className={styles.quoteText}>
                                     &ldquo;{wedding.invitationMessage}&rdquo;
@@ -558,10 +557,10 @@ export const RSVPForm = ({ wedding, isPreview = false }: RSVPFormProps) => {
 
                         <motion.div
                             className={styles.ornamentDivider}
-                            initial={{ opacity: 0, scale: 0.88, filter: 'blur(4px)' }}
+                            initial={{ opacity: 0, scale: 0.9, filter: 'blur(3px)' }}
                             whileInView={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
                             viewport={{ once: true, margin: '-40px' }}
-                            transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
+                            transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
                         >
                             <div className={styles.ornamentLine} />
                             <span>✦ ❦ ✦</span>
@@ -781,10 +780,10 @@ export const RSVPForm = ({ wedding, isPreview = false }: RSVPFormProps) => {
 
                         <motion.div
                             className={styles.ornamentDivider}
-                            initial={{ opacity: 0, scale: 0.88, filter: 'blur(4px)' }}
+                            initial={{ opacity: 0, scale: 0.9, filter: 'blur(3px)' }}
                             whileInView={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
                             viewport={{ once: true, margin: '-40px' }}
-                            transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
+                            transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
                         >
                             <div className={styles.ornamentLine} />
                             <span>✦ ❦ ✦</span>

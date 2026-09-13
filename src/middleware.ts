@@ -16,8 +16,8 @@ export async function middleware(req: NextRequest) {
     const isAdminArea =
         pathname.startsWith('/admin') || pathname.startsWith('/api/admin');
 
+    // Admin area: accept a session with role=admin, or the legacy admin cookie.
     if (isAdminArea) {
-        // Admin: accept a session with role=admin, or the legacy admin cookie.
         const legacyAdmin = await verifyAdminToken(req.cookies.get(ADMIN_COOKIE)?.value);
         if (session?.role === 'admin' || legacyAdmin) {
             return NextResponse.next();
@@ -31,14 +31,7 @@ export async function middleware(req: NextRequest) {
         return NextResponse.redirect(url);
     }
 
-    // Dashboard: any valid session is enough.
-    if (session?.uid) {
-        return NextResponse.next();
-    }
-    const url = req.nextUrl.clone();
-    url.pathname = '/login';
-    url.searchParams.set('redirect', pathname);
-    return NextResponse.redirect(url);
+    return NextResponse.next();
 }
 
 export const config = {
@@ -46,7 +39,5 @@ export const config = {
         '/admin',
         '/admin/:path*',
         '/api/admin/:path*',
-        '/dashboard',
-        '/dashboard/:path*',
     ],
 };

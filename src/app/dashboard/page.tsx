@@ -133,12 +133,6 @@ export default function DashboardPage() {
     const [isCheckingDb, setIsCheckingDb] = useState(true);
     const [isPeekingDemo, setIsPeekingDemo] = useState(false);
 
-    useEffect(() => {
-        if (isMounted && !isAuthenticated) {
-            router.push('/login?redirect=/dashboard');
-        }
-    }, [isMounted, isAuthenticated, router]);
-
     // The database is the SOLE authority for whether this authenticated user owns an active suite
     const hasActiveSuite = Boolean(dbWedding?.id);
     const isEmptyState = !isCheckingDb && !hasActiveSuite;
@@ -643,10 +637,9 @@ export default function DashboardPage() {
             .catch(() => {});
     }, []);
 
-    // Master server-authoritative loader: on mount, determine if the authenticated user
-    // actually has a wedding in the database.
+    // Master server-authoritative loader: on mount, determine if the user
+    // actually has a wedding in the database, or load fallback demo theme.
     useEffect(() => {
-        if (!isAuthenticated) return;
         let alive = true;
 
         const loadCurrentWedding = async () => {
@@ -1018,7 +1011,7 @@ export default function DashboardPage() {
 
     const displayPreviewItems = isEmptyState ? DEMO_GHOST_DATA.previewItems : previewItems;
 
-    if (!isMounted || !isAuthenticated) return null;
+    if (!isMounted) return null;
 
     if (isCheckingDb) {
         return (

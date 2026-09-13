@@ -117,7 +117,7 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
             setOtp('');
             setResendCooldown(30);
         } catch (err: any) {
-            console.error('Failed to send OTP:', err);
+            console.warn('Failed to send OTP:', err?.message || err);
             // Reset reCAPTCHA so the next attempt gets a clean token
             try { 
                 recaptchaRef.current?.clear(); 
