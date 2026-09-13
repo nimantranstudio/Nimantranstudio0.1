@@ -23,16 +23,13 @@ export async function generateMetadata({
 
         if (wedding) {
             const title = `${wedding.groomName} & ${wedding.brideName} — Wedding Invitation`;
+            const description = `Join us as ${wedding.groomName} & ${wedding.brideName} celebrate their wedding. Tap to view the full invitation, event details & RSVP online — Nimantran Studio.`;
 
-            // Prefer the main "Wedding" ceremony's venue/card over whichever
-            // event happens to be first — that's the one guests care about.
+            // Prefer the main "Wedding" ceremony's card over whichever event
+            // happens to be first — that's the one guests care about.
             const mainEvent =
                 wedding.events.find((e) => (e.eventType || e.name || '').toLowerCase().includes('wedding')) ||
                 wedding.events[0];
-
-            const description = mainEvent?.venue
-                ? `Join us as ${wedding.groomName} & ${wedding.brideName} celebrate their wedding at ${mainEvent.venue}. RSVP online — Nimantran Studio.`
-                : `You are joyfully invited to the wedding celebration of ${wedding.groomName} & ${wedding.brideName}. View event itinerary, venue location & RSVP online.`;
 
             // Use the couple's own rendered card when one exists — the actual
             // Wedding ceremony card specifically (the same event `mainEvent`
