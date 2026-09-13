@@ -34,11 +34,18 @@ export async function generateMetadata({
                 ? `Join us as ${wedding.groomName} & ${wedding.brideName} celebrate their wedding at ${mainEvent.venue}. RSVP online — Nimantran Studio.`
                 : `You are joyfully invited to the wedding celebration of ${wedding.groomName} & ${wedding.brideName}. View event itinerary, venue location & RSVP online.`;
 
-            // Use the couple's own rendered card when one exists — falls back to
-            // generic branding only if they haven't generated/viewed a card yet.
-            const cardImage = wedding.events
-                .map((e) => e.generatedCard?.imageUrl)
-                .find((url): url is string => !!url && /\.(png|jpe?g|webp)(\?|$)/i.test(url));
+            // Use the couple's own rendered card when one exists — the actual
+            // Wedding ceremony card specifically (the same event `mainEvent`
+            // already resolved above), not whichever event's card happens to
+            // exist first (that was landing on "Save the Date" in practice,
+            // since it's created before "Wedding" in the event list). Only
+            // falls back to another event's card, then generic branding, if
+            // the couple hasn't generated the Wedding card yet.
+            const isImageUrl = (url?: string | null): url is string =>
+                !!url && /\.(png|jpe?g|webp)(\?|$)/i.test(url);
+            const cardImage =
+                (isImageUrl(mainEvent?.generatedCard?.imageUrl) ? mainEvent.generatedCard.imageUrl : undefined) ||
+                wedding.events.map((e) => e.generatedCard?.imageUrl).find(isImageUrl);
             const image = cardImage || '/og-image.png';
 
             return {
