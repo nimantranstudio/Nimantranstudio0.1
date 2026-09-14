@@ -199,8 +199,6 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
                     displayMap[inv.packageId] = inv.isDisplay ?? true;
                     if (inv.finalSellingPrice) {
                         tPrices[inv.packageId] = String(inv.finalSellingPrice);
-                    } else if (inv.discountedPrice) {
-                        tPrices[inv.packageId] = String(inv.discountedPrice);
                     }
                 });
                 setBundleInvoices(invoiceMap);
@@ -247,9 +245,8 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
         setTierPrices(prev => ({ ...prev, [packageId]: value }));
         
         if (!skipInvoiceSync) {
-            // Give event loop a beat to prevent state queue freezing from loop
             setTimeout(() => {
-                handleInvoiceChange(packageId, 'discountedPrice', value, true);
+                handleInvoiceChange(packageId, 'finalSellingPrice', value, true);
             }, 0);
         }
     };
@@ -258,7 +255,7 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
         setPackageDisplayConfig(prev => ({ ...prev, [packageName]: value }));
     };
 
-    const handleInvoiceChange = (packageId: string, field: keyof InvoiceData | 'discountedPrice', value: string, skipTierSync: boolean = false) => {
+    const handleInvoiceChange = (packageId: string, field: keyof InvoiceData | 'discountedPrice' | 'finalSellingPrice', value: string, skipTierSync: boolean = false) => {
         setBundleInvoices(prev => {
             const oldInvoice = prev[packageId] || { ...defaultInvoiceData };
             const newInvoice = { ...oldInvoice, [field]: value };
@@ -272,20 +269,78 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
             
             let finalAmountFormatted = '0';
 
-            if (field === 'discountedPrice') {
+            if (field === 'finalSellingPrice') {
                 const requestedFinalPrice = parseFloat(value) || 0;
-                let reverseDiscountPercent = 0;
-                if (totalSuiteValue > 0) {
-                     reverseDiscountPercent = ((totalSuiteValue - requestedFinalPrice) / totalSuiteValue) * 100;
+                newInvoice.finalSellingPrice = value;
+                if (totalSuiteValue > 0 && !isNaN(requestedFinalPrice)) {
+                    if (requestedFinalPrice >= totalSuiteValue) {
+                        newInvoice.discount = '0';
+                        newInvoice.discountedPrice = '0';
+                    } else {
+                        const discountAmt = Math.round((totalSuiteValue - requestedFinalPrice) * 100) / 100;
+                        const reverseDiscountPercent = (discountAmt / totalSuiteValue) * 100;
+                        newInvoice.discount = parseFloat(reverseDiscountPercent.toFixed(2)).toString();
+                        newInvoice.discountedPrice = discountAmt.toString();
+                    }
+                } else if (value === '') {
+                    newInvoice.discount = '';
+                    newInvoice.discountedPrice = '';
                 }
-                newInvoice.discount = parseFloat(reverseDiscountPercent.toFixed(2)).toString();
-                finalAmountFormatted = parseFloat(requestedFinalPrice.toFixed(2)).toString();
-                newInvoice.discountedPrice = value; // Preserve exact text while typing
-            } else {
-                const discountPercent = parseFloat(newInvoice.discount) || 0;
-                const finalAmount = totalSuiteValue - (totalSuiteValue * (discountPercent / 100));
-                finalAmountFormatted = parseFloat(finalAmount.toFixed(2)).toString();
-                newInvoice.discountedPrice = finalAmountFormatted;
+                finalAmountFormatted = value;
+            } else if (field === 'discountedPrice') {
+                newInvoice.discountedPrice = value;
+                const discountAmt = parseFloat(value);
+                if (!isNaN(discountAmt) && totalSuiteValue > 0) {
+                    const finalPrice = Math.max(0, Math.round((totalSuiteValue - discountAmt) * 100) / 100);
+                    const discPercent = (discountAmt / totalSuiteValue) * 100;
+                    newInvoice.finalSellingPrice = finalPrice.toString();
+                    newInvoice.discount = parseFloat(discPercent.toFixed(2)).toString();
+                    finalAmountFormatted = finalPrice.toString();
+                } else if (value === '') {
+                    newInvoice.finalSellingPrice = totalSuiteValue.toString();
+                    newInvoice.discount = '0';
+                    finalAmountFormatted = totalSuiteValue.toString();
+                }
+            } else if (['invitationDesignSuite', 'rsvpManagementTracking', 'guestDashboard'].includes(field)) {
+                const currentFinal = parseFloat(newInvoice.finalSellingPrice);
+                if (!isNaN(currentFinal) && currentFinal > 0 && totalSuiteValue > 0) {
+                    if (currentFinal >= totalSuiteValue) {
+                        newInvoice.discount = '0';
+                        newInvoice.discountedPrice = '0';
+                    } else {
+                        const discountAmt = Math.round((totalSuiteValue - currentFinal) * 100) / 100;
+                        const disc = (discountAmt / totalSuiteValue) * 100;
+                        newInvoice.discount = parseFloat(disc.toFixed(2)).toString();
+                        newInvoice.discountedPrice = discountAmt.toString();
+                    }
+                    finalAmountFormatted = currentFinal.toString();
+                } else {
+                    const discountPercent = parseFloat(newInvoice.discount) || 0;
+                    if (discountPercent > 0 && totalSuiteValue > 0) {
+                        const discountAmt = Math.round(totalSuiteValue * (discountPercent / 100) * 100) / 100;
+                        const finalPrice = Math.max(0, Math.round((totalSuiteValue - discountAmt) * 100) / 100);
+                        newInvoice.discountedPrice = discountAmt.toString();
+                        newInvoice.finalSellingPrice = finalPrice.toString();
+                        finalAmountFormatted = finalPrice.toString();
+                    } else {
+                        newInvoice.discountedPrice = '0';
+                        newInvoice.finalSellingPrice = totalSuiteValue.toString();
+                        finalAmountFormatted = totalSuiteValue.toString();
+                    }
+                }
+            } else if (field === 'discount') {
+                const discountPercent = parseFloat(value) || 0;
+                if (discountPercent > 0 && totalSuiteValue > 0) {
+                    const discountAmt = Math.round(totalSuiteValue * (discountPercent / 100) * 100) / 100;
+                    const finalPrice = Math.max(0, Math.round((totalSuiteValue - discountAmt) * 100) / 100);
+                    newInvoice.discountedPrice = discountAmt.toString();
+                    newInvoice.finalSellingPrice = finalPrice.toString();
+                    finalAmountFormatted = finalPrice.toString();
+                } else {
+                    newInvoice.discountedPrice = '0';
+                    newInvoice.finalSellingPrice = totalSuiteValue.toString();
+                    finalAmountFormatted = totalSuiteValue.toString();
+                }
             }
 
             newInvoice.finalSellingPrice = finalAmountFormatted;
@@ -488,16 +543,20 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
                                                         <span className={styles.packageName} style={{ flex: 1, cursor: 'pointer' }} onClick={() => isActive && toggleInvoiceExpand(p.id)}>
                                                             {p.name}
                                                         </span>
-                                                        <div className={styles.priceInputWrapper}>
-                                                            <span className={styles.currencyPrefix}>₹</span>
-                                                            <input
-                                                                type="text"
-                                                                className={styles.input}
-                                                                style={{ paddingLeft: '1.8rem' }}
-                                                                placeholder={String(p.price)}
-                                                                value={tierPrices[p.id] || tierPrices[p.name] || ''}
-                                                                onChange={e => handleTierPriceChange(p.id, e.target.value)}
-                                                            />
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                                                            <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#64748B', whiteSpace: 'nowrap' }}>Final Price</span>
+                                                            <div className={styles.priceInputWrapper} style={{ width: '130px' }}>
+                                                                <span className={styles.currencyPrefix}>₹</span>
+                                                                <input
+                                                                    type="number"
+                                                                    step="any"
+                                                                    className={styles.input}
+                                                                    style={{ paddingLeft: '1.8rem', fontWeight: 600, color: '#1E293B' }}
+                                                                    placeholder={String(p.price)}
+                                                                    value={currentInvoice.finalSellingPrice || tierPrices[p.id] || tierPrices[p.name] || ''}
+                                                                    onChange={e => handleTierPriceChange(p.id, e.target.value)}
+                                                                />
+                                                            </div>
                                                         </div>
                                                         <button 
                                                             type="button" 
@@ -516,12 +575,12 @@ export function BundleModal({ isOpen, onClose, onSuccess, initialData }: BundleM
                                                                 Invoice Breakdown for {p.name}
                                                             </div>
                                                             {[
-                                                                { key: 'invitationDesignSuite', label: 'Invitation Design Suite', prefix: '₹' },
-                                                                { key: 'rsvpManagementTracking', label: 'RSVP Management Tracking', prefix: '₹' },
-                                                                { key: 'guestDashboard', label: 'Guest Dashboard + hosting', prefix: '₹' },
+                                                                { key: 'invitationDesignSuite', label: 'Wedding Invitation Suite', prefix: '₹' },
+                                                                { key: 'rsvpManagementTracking', label: 'Wedding Website with RSVP', prefix: '₹' },
+                                                                { key: 'guestDashboard', label: 'Guest Management & Tracking', prefix: '₹' },
                                                                 { key: 'totalWeddingSuiteValue', label: 'Total Wedding Suite Value', prefix: '₹', readOnly: true },
                                                                 { key: 'discount', label: 'Offer / Discount (%)', prefix: '%' },
-                                                                { key: 'discountedPrice', label: 'Discounted Price', prefix: '₹' }
+                                                                { key: 'discountedPrice', label: 'Discount Price', prefix: '₹' }
                                                             ].map(({ key, label, prefix, readOnly }) => (
                                                                 <div key={key} style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                                                                     <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#475569' }}>{label}</label>

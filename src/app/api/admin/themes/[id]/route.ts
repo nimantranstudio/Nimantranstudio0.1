@@ -34,7 +34,15 @@ export async function PUT(
         }
 
         let savedImagePaths: string[] = [];
-        if (existingTheme.previewImages) {
+        const existingImagesRaw = formData.get('existingImages') as string | null;
+
+        if (existingImagesRaw !== null) {
+            try {
+                savedImagePaths = JSON.parse(existingImagesRaw);
+            } catch (e) {
+                console.error("Failed to parse existing images", e);
+            }
+        } else if (existingTheme.previewImages) {
             try {
                 savedImagePaths = JSON.parse(existingTheme.previewImages);
             } catch (e) {
@@ -66,6 +74,26 @@ export async function PUT(
             }
         }
 
+        // Determine final thumbnailUrl
+        const selectedThumbnailUrl = formData.get('selectedThumbnailUrl') as string | null;
+        const newThumbnailIndexStr = formData.get('newThumbnailIndex') as string | null;
+        let finalThumbnailUrl = existingTheme.thumbnailUrl;
+
+        if (selectedThumbnailUrl && savedImagePaths.includes(selectedThumbnailUrl)) {
+            finalThumbnailUrl = selectedThumbnailUrl;
+        } else if (newThumbnailIndexStr !== null && !isNaN(parseInt(newThumbnailIndexStr))) {
+            const newIdx = parseInt(newThumbnailIndexStr);
+            const validFilesCount = files.filter(f => f.size > 0).length;
+            const newFilesStartIdx = savedImagePaths.length - validFilesCount;
+            if (savedImagePaths[newFilesStartIdx + newIdx]) {
+                finalThumbnailUrl = savedImagePaths[newFilesStartIdx + newIdx];
+            }
+        } else if (savedImagePaths.length > thumbnailIndex && savedImagePaths[thumbnailIndex]) {
+            finalThumbnailUrl = savedImagePaths[thumbnailIndex];
+        } else if (savedImagePaths.length > 0) {
+            finalThumbnailUrl = savedImagePaths[0];
+        }
+
         const updatedTheme = await prisma.theme.update({
             where: { id },
             data: {
@@ -74,7 +102,7 @@ export async function PUT(
                 isActive,
                 isBestSeller,
                 isPopular,
-                thumbnailUrl: savedImagePaths.length > thumbnailIndex ? savedImagePaths[thumbnailIndex] : (savedImagePaths.length > 0 ? savedImagePaths[0] : existingTheme.thumbnailUrl),
+                thumbnailUrl: finalThumbnailUrl,
                 previewImages: JSON.stringify(savedImagePaths),
             }
         });

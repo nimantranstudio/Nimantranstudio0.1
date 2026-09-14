@@ -175,9 +175,12 @@ export default function ThemesPage() {
                             >
                                 <div style={{ width: '80px', height: '100px', background: '#FDFBF7', borderRadius: '8px', overflow: 'hidden', marginRight: '1.5rem' }}>
                                     <img
-                                        src={theme.thumbnailUrl}
+                                        src={theme.thumbnailUrl || '/placeholder-theme.jpg'}
                                         alt={theme.name}
                                         style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' }}
+                                        onError={(e) => {
+                                            e.currentTarget.src = '/placeholder-theme.jpg';
+                                        }}
                                     />
                                 </div>
                                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>

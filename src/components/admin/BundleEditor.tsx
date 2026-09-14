@@ -149,8 +149,21 @@ export function BundleEditor({ bundleId, initialData, themes, packages, allEvent
                         isDisplay: inv.isDisplay ?? true
                     };
                     displayMap[inv.packageId] = inv.isDisplay ?? true;
-                    if (inv.finalSellingPrice) tPrices[inv.packageId] = String(inv.finalSellingPrice);
-                    else if (inv.discountedPrice) tPrices[inv.packageId] = String(inv.discountedPrice);
+                    const finalVal = String(inv.finalSellingPrice || '');
+                    if (finalVal) {
+                        tPrices[inv.packageId] = finalVal;
+                        if (inv.package?.name) {
+                            tPrices[inv.package.name] = finalVal;
+                        }
+                    }
+                });
+                packages.forEach(pkg => {
+                    const matchedInv = initialData.bundleInvoices.find((bi: any) => bi.packageId === pkg.id);
+                    if (matchedInv && matchedInv.finalSellingPrice) {
+                        const pVal = String(matchedInv.finalSellingPrice);
+                        tPrices[pkg.id] = pVal;
+                        tPrices[pkg.name] = pVal;
+                    }
                 });
                 setBundleInvoices(invoiceMap);
                 setPackageDisplayConfig(displayMap);
@@ -243,50 +256,124 @@ export function BundleEditor({ bundleId, initialData, themes, packages, allEvent
         }
     }, [activeTab, activeTemplateIndex, bundleItemsList]);
 
-    const handleTierPriceChange = (packageId: string, value: string, skipInvoiceSync: boolean = false) => {
+    const handleFinalPriceChange = (packageId: string, value: string) => {
         setTierPrices(prev => ({ ...prev, [packageId]: value }));
-        if (!skipInvoiceSync) {
-            setTimeout(() => {
-                setBundleInvoices(prev => {
-                    const currentInvoice = prev[packageId] || { ...defaultInvoiceData };
-                    return { ...prev, [packageId]: { ...currentInvoice, finalSellingPrice: value, discountedPrice: value } };
-                });
-            }, 0);
-        }
+        setBundleInvoices(prev => {
+            const currentInvoice = { ...(prev[packageId] || defaultInvoiceData) };
+            
+            const design = parseFloat(currentInvoice.invitationDesignSuite) || 0;
+            const rsvp = parseFloat(currentInvoice.rsvpManagementTracking) || 0;
+            const guest = parseFloat(currentInvoice.guestDashboard) || 0;
+            const total = design + rsvp + guest;
+            currentInvoice.totalWeddingSuiteValue = String(total);
+
+            currentInvoice.finalSellingPrice = value;
+
+            const numericFinal = parseFloat(value);
+            if (!isNaN(numericFinal) && total > 0) {
+                if (numericFinal >= total) {
+                    currentInvoice.discount = '0';
+                    currentInvoice.discountedPrice = '0';
+                } else {
+                    const discountAmt = Math.round((total - numericFinal) * 100) / 100;
+                    const discPercent = (discountAmt / total) * 100;
+                    currentInvoice.discountedPrice = String(discountAmt);
+                    currentInvoice.discount = String(Math.round(discPercent * 100) / 100);
+                }
+            } else if (value === '') {
+                currentInvoice.discount = '';
+                currentInvoice.discountedPrice = '';
+            }
+
+            return { ...prev, [packageId]: currentInvoice };
+        });
     };
+
+    const handleTierPriceChange = handleFinalPriceChange;
 
     const handleInvoiceChange = (packageId: string, field: keyof InvoiceData, value: string) => {
         setBundleInvoices(prev => {
             const currentInvoice = { ...(prev[packageId] || defaultInvoiceData) };
             (currentInvoice as any)[field] = value;
             
+            const design = parseFloat(currentInvoice.invitationDesignSuite) || 0;
+            const rsvp = parseFloat(currentInvoice.rsvpManagementTracking) || 0;
+            const guest = parseFloat(currentInvoice.guestDashboard) || 0;
+            const total = design + rsvp + guest;
+            currentInvoice.totalWeddingSuiteValue = String(total);
+
             if (['invitationDesignSuite', 'rsvpManagementTracking', 'guestDashboard'].includes(field)) {
-                const total = (parseFloat(currentInvoice.invitationDesignSuite) || 0) + 
-                              (parseFloat(currentInvoice.rsvpManagementTracking) || 0) + 
-                              (parseFloat(currentInvoice.guestDashboard) || 0);
-                currentInvoice.totalWeddingSuiteValue = String(total);
-                
-                const discPercent = parseFloat(currentInvoice.discount) || 0;
-                if (discPercent > 0) {
-                    const discounted = total - (total * (discPercent / 100));
-                    currentInvoice.discountedPrice = String(Math.round(discounted));
-                    currentInvoice.finalSellingPrice = String(Math.round(discounted));
-                    handleTierPriceChange(packageId, currentInvoice.finalSellingPrice, true);
+                const currentFinal = parseFloat(currentInvoice.finalSellingPrice);
+                if (!isNaN(currentFinal) && currentFinal > 0 && total > 0) {
+                    if (currentFinal >= total) {
+                        currentInvoice.discount = '0';
+                        currentInvoice.discountedPrice = '0';
+                    } else {
+                        const discountAmt = Math.round((total - currentFinal) * 100) / 100;
+                        const discPercent = (discountAmt / total) * 100;
+                        currentInvoice.discount = String(Math.round(discPercent * 100) / 100);
+                        currentInvoice.discountedPrice = String(discountAmt);
+                    }
                 } else {
-                    currentInvoice.discountedPrice = String(total);
-                    currentInvoice.finalSellingPrice = String(total);
-                    handleTierPriceChange(packageId, String(total), true);
+                    const discPercent = parseFloat(currentInvoice.discount) || 0;
+                    if (discPercent > 0 && total > 0) {
+                        const discountAmt = Math.round(total * (discPercent / 100) * 100) / 100;
+                        const finalPrice = Math.max(0, Math.round((total - discountAmt) * 100) / 100);
+                        currentInvoice.discountedPrice = String(discountAmt);
+                        currentInvoice.finalSellingPrice = String(finalPrice);
+                        setTierPrices(tp => ({ ...tp, [packageId]: String(finalPrice) }));
+                    } else {
+                        currentInvoice.discountedPrice = '0';
+                        currentInvoice.finalSellingPrice = String(total);
+                        setTierPrices(tp => ({ ...tp, [packageId]: String(total) }));
+                    }
                 }
             } else if (field === 'discount') {
-                const total = parseFloat(currentInvoice.totalWeddingSuiteValue) || 0;
                 const discPercent = parseFloat(value) || 0;
-                const discounted = total - (total * (discPercent / 100));
-                currentInvoice.discountedPrice = String(Math.round(discounted));
-                currentInvoice.finalSellingPrice = String(Math.round(discounted));
-                handleTierPriceChange(packageId, currentInvoice.finalSellingPrice, true);
+                if (total > 0 && discPercent > 0) {
+                    const discountAmt = Math.round(total * (discPercent / 100) * 100) / 100;
+                    const finalPrice = Math.max(0, Math.round((total - discountAmt) * 100) / 100);
+                    currentInvoice.discountedPrice = String(discountAmt);
+                    currentInvoice.finalSellingPrice = String(finalPrice);
+                    setTierPrices(tp => ({ ...tp, [packageId]: String(finalPrice) }));
+                } else {
+                    currentInvoice.discountedPrice = '0';
+                    currentInvoice.finalSellingPrice = String(total);
+                    setTierPrices(tp => ({ ...tp, [packageId]: String(total) }));
+                }
             } else if (field === 'discountedPrice') {
+                currentInvoice.discountedPrice = value;
+                const discountAmt = parseFloat(value);
+                if (!isNaN(discountAmt) && total > 0) {
+                    const finalPrice = Math.max(0, Math.round((total - discountAmt) * 100) / 100);
+                    const discPercent = (discountAmt / total) * 100;
+                    currentInvoice.finalSellingPrice = String(finalPrice);
+                    currentInvoice.discount = String(Math.round(discPercent * 100) / 100);
+                    setTierPrices(tp => ({ ...tp, [packageId]: String(finalPrice) }));
+                } else if (value === '') {
+                    currentInvoice.finalSellingPrice = String(total);
+                    currentInvoice.discount = '0';
+                    setTierPrices(tp => ({ ...tp, [packageId]: String(total) }));
+                }
+            } else if (field === 'finalSellingPrice') {
                 currentInvoice.finalSellingPrice = value;
-                handleTierPriceChange(packageId, value, true);
+                setTierPrices(tp => ({ ...tp, [packageId]: value }));
+
+                const numericFinal = parseFloat(value);
+                if (!isNaN(numericFinal) && total > 0) {
+                    if (numericFinal >= total) {
+                        currentInvoice.discount = '0';
+                        currentInvoice.discountedPrice = '0';
+                    } else {
+                        const discountAmt = Math.round((total - numericFinal) * 100) / 100;
+                        const discPercent = (discountAmt / total) * 100;
+                        currentInvoice.discountedPrice = String(discountAmt);
+                        currentInvoice.discount = String(Math.round(discPercent * 100) / 100);
+                    }
+                } else if (value === '') {
+                    currentInvoice.discount = '';
+                    currentInvoice.discountedPrice = '';
+                }
             }
 
             return { ...prev, [packageId]: currentInvoice };
@@ -582,9 +669,20 @@ export function BundleEditor({ bundleId, initialData, themes, packages, allEvent
                                                         <span className={styles.toggleSwitch} style={{ transform: 'scale(0.8)' }}></span>
                                                     </label>
                                                     <span className={styles.packageName} style={{ flex: 1, cursor: 'pointer' }} onClick={() => isChecked && toggleInvoiceExpand(p.id)}>{p.name}</span>
-                                                    <div className={styles.priceInputWrapper}>
-                                                        <span className={styles.currencyPrefix}>₹</span>
-                                                        <input type="text" className={styles.input} style={{ paddingLeft: '1.8rem' }} placeholder={String(p.price)} value={tierPrices[p.id] || tierPrices[p.name] || ''} onChange={e => handleTierPriceChange(p.id, e.target.value)} />
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                                                        <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#64748B', whiteSpace: 'nowrap' }}>Final Price</span>
+                                                        <div className={styles.priceInputWrapper} style={{ width: '130px' }}>
+                                                            <span className={styles.currencyPrefix}>₹</span>
+                                                            <input 
+                                                                type="number" 
+                                                                step="any"
+                                                                className={styles.input} 
+                                                                style={{ paddingLeft: '1.8rem', fontWeight: 600, color: '#1E293B' }} 
+                                                                placeholder={String(p.price)} 
+                                                                value={currentInvoice.finalSellingPrice || tierPrices[p.id] || tierPrices[p.name] || ''} 
+                                                                onChange={e => handleFinalPriceChange(p.id, e.target.value)} 
+                                                            />
+                                                        </div>
                                                     </div>
                                                     <button type="button" style={{ background: 'transparent', border: 'none', cursor: isChecked ? 'pointer' : 'not-allowed', color: isChecked ? '#E1A639' : '#cbd5e1' }} onClick={() => isChecked && toggleInvoiceExpand(p.id)} disabled={!isChecked}>
                                                         {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
@@ -594,12 +692,12 @@ export function BundleEditor({ bundleId, initialData, themes, packages, allEvent
                                                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem', background: '#f8fafc', border: '1px solid #e2e8f0', padding: '1.5rem', borderRadius: '8px', marginLeft: '3rem' }}>
                                                         <div style={{ gridColumn: 'span 2', fontWeight: 600, color: '#334155', borderBottom: '1px solid #e2e8f0', paddingBottom: '0.5rem', marginBottom: '0.5rem' }}>Invoice Breakdown for {p.name}</div>
                                                         {[
-                                                            { key: 'invitationDesignSuite', label: 'Invitation Design Suite', prefix: '₹' },
-                                                            { key: 'rsvpManagementTracking', label: 'RSVP Management Tracking', prefix: '₹' },
-                                                            { key: 'guestDashboard', label: 'Guest Dashboard + hosting', prefix: '₹' },
+                                                            { key: 'invitationDesignSuite', label: 'Wedding Invitation Suite', prefix: '₹' },
+                                                            { key: 'rsvpManagementTracking', label: 'Wedding Website with RSVP', prefix: '₹' },
+                                                            { key: 'guestDashboard', label: 'Guest Management & Tracking', prefix: '₹' },
                                                             { key: 'totalWeddingSuiteValue', label: 'Total Wedding Suite Value', prefix: '₹', readOnly: true },
                                                             { key: 'discount', label: 'Offer / Discount (%)', prefix: '%' },
-                                                            { key: 'discountedPrice', label: 'Discounted Price', prefix: '₹' }
+                                                            { key: 'discountedPrice', label: 'Discount Price', prefix: '₹' }
                                                         ].map(({ key, label, prefix, readOnly }) => (
                                                             <div key={key} style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                                                                 <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#475569' }}>{label}</label>
@@ -719,9 +817,27 @@ export function BundleEditor({ bundleId, initialData, themes, packages, allEvent
                                 )}
                             </div>
 
-                            <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-                                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><input type="checkbox" className={styles.toggleInput} checked={isActive} onChange={e => setIsActive(e.target.checked)} /> Active</label>
-                                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><input type="checkbox" className={styles.toggleInput} checked={isPopular} onChange={e => setIsPopular(e.target.checked)} /> Popular</label>
+                            <div style={{ display: 'flex', gap: '1.5rem', marginTop: '1rem' }}>
+                                <label className={styles.toggle}>
+                                    <input 
+                                        type="checkbox" 
+                                        className={styles.toggleInput} 
+                                        checked={isActive} 
+                                        onChange={e => setIsActive(e.target.checked)} 
+                                    />
+                                    <span className={styles.toggleSwitch}></span>
+                                    <span className={styles.toggleLabel}>Active</span>
+                                </label>
+                                <label className={styles.toggle}>
+                                    <input 
+                                        type="checkbox" 
+                                        className={styles.toggleInput} 
+                                        checked={isPopular} 
+                                        onChange={e => setIsPopular(e.target.checked)} 
+                                    />
+                                    <span className={styles.toggleSwitch}></span>
+                                    <span className={styles.toggleLabel}>Popular</span>
+                                </label>
                             </div>
                         </div>
                     ) : (

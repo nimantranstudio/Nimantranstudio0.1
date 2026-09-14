@@ -38,11 +38,11 @@ export const FloatingFlowers = ({ isPreview = false }: { isPreview?: boolean }) 
             '#D4B8C0', // dusty mauve
             '#FAE8D8', // peach cream
         ];
-        const newPetals = Array.from({ length: 18 }).map((_, i) => ({
+        const newPetals = Array.from({ length: 30 }).map((_, i) => ({
             id: i,
             left: `${Math.random() * 100}%`,
-            duration: `${Math.random() * 12 + 26}s`,
-            delay: `-${Math.random() * 35}s`,
+            duration: `${Math.random() * 12 + 24}s`,
+            delay: `-${Math.random() * 32}s`,
             scale: Math.random() * 0.5 + 0.4,
             rotation: Math.random() * 360,
             color: colors[Math.floor(Math.random() * colors.length)],

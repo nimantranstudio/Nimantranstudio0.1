@@ -21,14 +21,19 @@ interface ThemeModalProps {
     } | null;
 }
 
+interface ThemeImageItem {
+    id: string;
+    url: string;
+    file?: File;
+}
+
 export function ThemeModal({ isOpen, onClose, onSuccess, initialData }: ThemeModalProps) {
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [isActive, setIsActive] = useState(true);
     const [isBestSeller, setIsBestSeller] = useState(false);
     const [isPopular, setIsPopular] = useState(false);
-    const [files, setFiles] = useState<File[]>([]);
-    const [previews, setPreviews] = useState<string[]>([]);
+    const [imageItems, setImageItems] = useState<ThemeImageItem[]>([]);
     const [thumbnailIndex, setThumbnailIndex] = useState(0);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -41,9 +46,10 @@ export function ThemeModal({ isOpen, onClose, onSuccess, initialData }: ThemeMod
             setIsActive(initialData.isActive);
             setIsBestSeller(initialData.isBestSeller);
             setIsPopular(initialData.isPopular);
-            setFiles([]);
-            const existingImages = initialData.previewImages ? JSON.parse(initialData.previewImages) : [initialData.thumbnailUrl];
-            setPreviews(existingImages);
+            const existingImages: string[] = initialData.previewImages 
+                ? JSON.parse(initialData.previewImages) 
+                : (initialData.thumbnailUrl ? [initialData.thumbnailUrl] : []);
+            setImageItems(existingImages.map((url, idx) => ({ id: `existing-${idx}-${url}`, url })));
             const thumbIdx = existingImages.indexOf(initialData.thumbnailUrl);
             setThumbnailIndex(thumbIdx >= 0 ? thumbIdx : 0);
         } else {
@@ -52,8 +58,7 @@ export function ThemeModal({ isOpen, onClose, onSuccess, initialData }: ThemeMod
             setIsActive(true);
             setIsBestSeller(false);
             setIsPopular(false);
-            setFiles([]);
-            setPreviews([]);
+            setImageItems([]);
             setThumbnailIndex(0);
         }
     }, [initialData, isOpen]);
@@ -63,15 +68,25 @@ export function ThemeModal({ isOpen, onClose, onSuccess, initialData }: ThemeMod
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
             const newFiles = Array.from(e.target.files);
-            setFiles(prev => [...prev, ...newFiles]);
-
-            const newPreviews = newFiles.map(file => URL.createObjectURL(file));
-            setPreviews(prev => [...prev, ...newPreviews]);
+            const newItems: ThemeImageItem[] = newFiles.map((file, idx) => ({
+                id: `new-${Date.now()}-${idx}-${file.name}`,
+                url: URL.createObjectURL(file),
+                file,
+            }));
+            setImageItems(prev => [...prev, ...newItems]);
         }
     };
 
-    const removeFile = (index: number) => {
-        setPreviews(prev => prev.filter((_, i) => i !== index));
+    const removeImage = (index: number) => {
+        setImageItems(prev => {
+            const target = prev[index];
+            if (target?.file) {
+                try {
+                    URL.revokeObjectURL(target.url);
+                } catch (_) {}
+            }
+            return prev.filter((_, i) => i !== index);
+        });
         if (thumbnailIndex === index) {
             setThumbnailIndex(0);
         } else if (thumbnailIndex > index) {
@@ -92,9 +107,26 @@ export function ThemeModal({ isOpen, onClose, onSuccess, initialData }: ThemeMod
             formData.append('isPopular', String(isPopular));
             formData.append('thumbnailIndex', String(thumbnailIndex));
 
-            files.forEach(file => {
-                formData.append('images', file);
+            // Surviving existing images
+            const survivingExisting = imageItems.filter(item => !item.file).map(item => item.url);
+            formData.append('existingImages', JSON.stringify(survivingExisting));
+
+            // If selected thumbnail is an existing image
+            const selectedItem = imageItems[thumbnailIndex];
+            if (selectedItem && !selectedItem.file) {
+                formData.append('selectedThumbnailUrl', selectedItem.url);
+            }
+
+            // New files
+            const newFiles = imageItems.filter(item => item.file);
+            newFiles.forEach(item => {
+                if (item.file) formData.append('images', item.file);
             });
+
+            if (selectedItem?.file) {
+                const newFileIdx = newFiles.indexOf(selectedItem);
+                formData.append('newThumbnailIndex', String(newFileIdx));
+            }
 
             const url = initialData
                 ? `/api/admin/themes/${initialData.id}`
@@ -225,16 +257,23 @@ export function ThemeModal({ isOpen, onClose, onSuccess, initialData }: ThemeMod
                                 <div className={styles.uploadHint}>SVG, PNG, JPG or GIF (max. 800x400px)</div>
                             </div>
 
-                            {previews.length > 0 && (
+                            {imageItems.length > 0 && (
                                 <div className={styles.previewGrid}>
-                                    {previews.map((src, index) => (
+                                    {imageItems.map((item, index) => (
                                         <div 
-                                            key={index} 
+                                            key={item.id || index} 
                                             className={clsx(styles.previewItem, thumbnailIndex === index && styles.previewItemThumbnail)}
                                             onClick={() => setThumbnailIndex(index)}
                                             style={{ cursor: 'pointer', border: thumbnailIndex === index ? '2px solid #E1A639' : '1px solid #e5e7eb' }}
                                         >
-                                            <img src={src} alt="Preview" className={styles.previewImg} />
+                                            <img 
+                                                src={item.url} 
+                                                alt="Preview" 
+                                                className={styles.previewImg} 
+                                                onError={(e) => {
+                                                    e.currentTarget.src = '/placeholder-theme.jpg';
+                                                }}
+                                            />
                                             {thumbnailIndex === index && (
                                                 <div style={{ position: 'absolute', top: 0, left: 0, right: 0, background: 'rgba(225, 166, 57, 0.9)', color: '#1A1A1A', fontSize: '10px', fontWeight: 'bold', padding: '2px 0', textAlign: 'center' }}>
                                                     THUMBNAIL
@@ -243,7 +282,8 @@ export function ThemeModal({ isOpen, onClose, onSuccess, initialData }: ThemeMod
                                             <button
                                                 type="button"
                                                 className={styles.removeBtn}
-                                                onClick={(e) => { e.stopPropagation(); removeFile(index); }}
+                                                onClick={(e) => { e.stopPropagation(); removeImage(index); }}
+                                                title="Remove Image"
                                             >
                                                 <X size={12} />
                                             </button>

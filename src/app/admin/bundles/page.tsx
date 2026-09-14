@@ -58,6 +58,9 @@ function ImageSlider({ images, name }: { images: string[], name: string }) {
                 src={images[currentIndex]}
                 alt={`${name} - ${currentIndex + 1}`}
                 style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'opacity 0.3s ease' }}
+                onError={(e) => {
+                    e.currentTarget.src = '/placeholder-theme.jpg';
+                }}
             />
             {images.length > 1 && (
                 <>
@@ -222,6 +225,9 @@ export default function BundlesPage() {
                                                 src={images[0]}
                                                 alt={bundle.BundleName || bundle.name}
                                                 style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' }}
+                                                onError={(e) => {
+                                                    e.currentTarget.src = '/placeholder-theme.jpg';
+                                                }}
                                             />
                                         ) : (
                                             <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#d1d5db' }}>

@@ -15,6 +15,7 @@ import { BackgroundAudioPlayer } from './components/BackgroundAudioPlayer';
 import { EventCard, WeddingEventItem } from './components/EventCard';
 import { GaneshaIcon } from './components/GaneshaIcon';
 import { RoyalCoverScreen } from './components/RoyalCoverScreen';
+import { AddToCalendarModal } from './components/AddToCalendarModal';
 
 interface RSVPFormProps {
     wedding: any;
@@ -43,7 +44,7 @@ const slowItemVariants = {
         filter: 'blur(0px)',
         transition: {
             duration: 0.55,
-            ease: [0.16, 1, 0.3, 1],
+            ease: [0.16, 1, 0.3, 1] as const,
         },
     },
 };
@@ -67,7 +68,7 @@ const ampersandVariants = {
         filter: 'blur(0px)',
         transition: {
             duration: 0.55,
-            ease: [0.16, 1, 0.3, 1],
+            ease: [0.16, 1, 0.3, 1] as const,
         },
     },
 };
@@ -80,7 +81,7 @@ const flourishVariants = {
         filter: 'blur(0px)',
         transition: {
             duration: 0.65,
-            ease: [0.16, 1, 0.3, 1],
+            ease: [0.16, 1, 0.3, 1] as const,
         },
     },
 };
@@ -93,7 +94,7 @@ const dividerVariants = {
         filter: 'blur(0px)',
         transition: {
             duration: 0.55,
-            ease: [0.16, 1, 0.3, 1],
+            ease: [0.16, 1, 0.3, 1] as const,
         },
     },
 };
@@ -104,6 +105,7 @@ export const RSVPForm = ({ wedding, isPreview = false }: RSVPFormProps) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showSuccessPetals, setShowSuccessPetals] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
+    const [showCalendarModal, setShowCalendarModal] = useState(false);
 
     // Form state
     const [status, setStatus] = useState<'attending' | 'maybe' | 'declined'>('attending');
@@ -124,12 +126,23 @@ export const RSVPForm = ({ wedding, isPreview = false }: RSVPFormProps) => {
         setAdultCount((prev) => Math.max(1, prev - 1));
     };
 
-    const coupleNames = [wedding.groomName, wedding.brideName].filter(Boolean).join(' & ');
+    const cleanText = (str?: string | null) => {
+        if (!str) return '';
+        return str
+            .replace(/&amp;/g, '&')
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>')
+            .replace(/&quot;/g, '"')
+            .replace(/&#39;/g, "'")
+            .trim();
+    };
+
+    const coupleNames = [wedding.groomName, wedding.brideName].filter(Boolean).map(cleanText).join(' & ');
 
     // Helper to format parent names dynamically
     const formatParentName = (name?: string | null) => {
-        if (!name || !name.trim()) return '';
-        const trimmed = name.trim();
+        const trimmed = cleanText(name);
+        if (!trimmed) return '';
         if (
             trimmed.toLowerCase().startsWith('mr') ||
             trimmed.toLowerCase().startsWith('smt') ||
@@ -212,6 +225,94 @@ export const RSVPForm = ({ wedding, isPreview = false }: RSVPFormProps) => {
         null;
 
     const hasVenue = Boolean(venueLocation && venueLocation.trim() && venueLocation !== 'Venue details to follow');
+
+    // Google Maps Link (shown only if the couple added a google maps link)
+    const googleMapsLink: string | null = (() => {
+        const candidate =
+            mainWeddingEvent?.mapLink ||
+            eventsList.find((e) => e.mapLink && e.mapLink.trim())?.mapLink ||
+            (wedding as any).primaryMapLink ||
+            (wedding as any).mapLink ||
+            (wedding as any).googleMapsLink ||
+            null;
+
+        if (!candidate || typeof candidate !== 'string') return null;
+        const trimmed = candidate.trim();
+        if (
+            !trimmed ||
+            trimmed.toLowerCase() === 'null' ||
+            trimmed.toLowerCase() === 'undefined' ||
+            trimmed.toLowerCase() === 'venue details to follow'
+        ) {
+            return null;
+        }
+        return trimmed.startsWith('http://') || trimmed.startsWith('https://')
+            ? trimmed
+            : `https://${trimmed}`;
+    })();
+
+    // Robust Calendar Event details for both Android (Google Calendar) & Apple (Apple Calendar .ics)
+    const calendarEventData = (() => {
+        const groom = cleanText(wedding.groomName) || 'Groom';
+        const bride = cleanText(wedding.brideName) || 'Bride';
+        const title = `${groom} & ${bride} — Wedding Ceremony`;
+        const venue = venueLocation || mainWeddingEvent?.venue || 'Wedding Venue';
+        const location = venue;
+        const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
+        const description = `Wedding celebration of ${groom} & ${bride}.\n\nView Invitation & Details: ${currentUrl}\n\nVenue: ${venue}`;
+
+        let startDate: Date;
+        let endDate: Date;
+
+        if (primaryDateStr && primaryDateStr.trim()) {
+            const trimmed = primaryDateStr.trim();
+            const isoMatch = trimmed.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+            let baseDate: Date;
+            if (isoMatch) {
+                const y = parseInt(isoMatch[1], 10);
+                const m = parseInt(isoMatch[2], 10) - 1;
+                const d = parseInt(isoMatch[3], 10);
+                baseDate = new Date(y, m, d, 10, 0, 0);
+            } else {
+                const parsed = new Date(trimmed);
+                baseDate = !isNaN(parsed.getTime()) ? parsed : new Date();
+            }
+
+            if (primaryTimeStr && primaryTimeStr.trim()) {
+                const cleanTime = primaryTimeStr.trim();
+                const match12 = cleanTime.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
+                if (match12) {
+                    let h = parseInt(match12[1], 10);
+                    const min = parseInt(match12[2], 10);
+                    const modifier = match12[3]?.toUpperCase();
+                    if (modifier === 'PM' && h < 12) h += 12;
+                    if (modifier === 'AM' && h === 12) h = 0;
+                    baseDate.setHours(h, min, 0, 0);
+                } else {
+                    const match24 = cleanTime.match(/^(\d{1,2}):(\d{2})/);
+                    if (match24) {
+                        baseDate.setHours(parseInt(match24[1], 10), parseInt(match24[2], 10), 0, 0);
+                    }
+                }
+            }
+            startDate = baseDate;
+            endDate = new Date(baseDate.getTime() + 4 * 60 * 60 * 1000);
+        } else {
+            const fallback = new Date();
+            fallback.setDate(fallback.getDate() + 30);
+            fallback.setHours(10, 0, 0, 0);
+            startDate = fallback;
+            endDate = new Date(fallback.getTime() + 4 * 60 * 60 * 1000);
+        }
+
+        return {
+            title,
+            description,
+            location,
+            startDate,
+            endDate,
+        };
+    })();
 
     useEffect(() => {
         if (isPreview) return;
@@ -302,15 +403,20 @@ export const RSVPForm = ({ wedding, isPreview = false }: RSVPFormProps) => {
         }
     };
 
-    const handleOpenMaps = () => {
-        if (!venueLocation) return;
-        window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(venueLocation)}`, '_blank');
+    const handleGetDirection = () => {
+        if (!googleMapsLink) return;
+        window.open(googleMapsLink, '_blank', 'noopener,noreferrer');
     };
 
     const renderDecorations = () => (
         <>
             <MandalaBackground isPreview={isPreview} />
             <FloatingFlowers isPreview={isPreview} />
+            <AddToCalendarModal
+                isOpen={showCalendarModal}
+                onClose={() => setShowCalendarModal(false)}
+                eventData={calendarEventData}
+            />
         </>
     );
 
@@ -341,13 +447,25 @@ export const RSVPForm = ({ wedding, isPreview = false }: RSVPFormProps) => {
                             You have already shared your response for {coupleNames}&apos;s wedding. We have safely recorded your details and can&apos;t wait to celebrate!
                         </p>
 
-                        {hasVenue && (
-                            <div className={styles.actionButtons} style={{ marginTop: '1.25rem' }}>
-                                <button className={styles.actionBtn} onClick={handleOpenMaps}>
-                                    <MapPin size={16} /> Open Venue in Maps
+                        <div className={styles.actionButtons} style={{ marginTop: '1.25rem' }}>
+                            <button
+                                type="button"
+                                className={styles.actionBtn}
+                                onClick={() => setShowCalendarModal(true)}
+                            >
+                                <Calendar size={16} /> Add to Calendar
+                            </button>
+
+                            {googleMapsLink && (
+                                <button
+                                    type="button"
+                                    className={styles.actionBtn}
+                                    onClick={handleGetDirection}
+                                >
+                                    <MapPin size={16} /> Get Direction
                                 </button>
-                            </div>
-                        )}
+                            )}
+                        </div>
 
                         <div className={styles.buttonWrapper} style={{ marginTop: '1.5rem' }}>
                             <button type="button" onClick={handleResetAndInvite} className={styles.backButton}>
@@ -407,13 +525,25 @@ export const RSVPForm = ({ wedding, isPreview = false }: RSVPFormProps) => {
 
                         <div className={styles.successDivider} />
 
-                        {hasVenue && (
-                            <div className={styles.actionButtons}>
-                                <button className={styles.actionBtn} onClick={handleOpenMaps}>
-                                    <MapPin size={16} /> Open Venue in Maps
+                        <div className={styles.actionButtons}>
+                            <button
+                                type="button"
+                                className={styles.actionBtn}
+                                onClick={() => setShowCalendarModal(true)}
+                            >
+                                <Calendar size={16} /> Add to Calendar
+                            </button>
+
+                            {googleMapsLink && (
+                                <button
+                                    type="button"
+                                    className={styles.actionBtn}
+                                    onClick={handleGetDirection}
+                                >
+                                    <MapPin size={16} /> Get Direction
                                 </button>
-                            </div>
-                        )}
+                            )}
+                        </div>
                     </div>
 
                     <Link href="/" className={styles.poweredByCard}>
@@ -461,74 +591,87 @@ export const RSVPForm = ({ wedding, isPreview = false }: RSVPFormProps) => {
                             initial="hidden"
                             animate="visible"
                         >
-                            {/* Top-Left Botanical Corner Flourish */}
-                            <motion.div variants={flourishVariants} className={styles.cornerFlourishTL} aria-hidden="true">
-                                <svg width="64" height="64" viewBox="0 0 60 60" fill="none">
-                                    <path d="M6 6 C20 6 48 18 54 54 C40 30 24 16 6 6 Z" stroke="rgba(197, 160, 89, 0.65)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                                    <path d="M6 6 C16 18 24 34 28 46" stroke="rgba(197, 160, 89, 0.45)" strokeWidth="1.2" strokeLinecap="round" />
-                                </svg>
-                            </motion.div>
+                            {/* Partition 1: Royal Couple Announcement with Faded Marble Floral Background (40% Visibility) */}
+                            <div className={styles.heroFirstSection}>
+                                <div className={styles.heroBackgroundLayer} aria-hidden="true">
+                                    <img
+                                        src="/images/rsvp-hero-marble-bg.png"
+                                        alt=""
+                                        className={styles.heroBackgroundImage}
+                                        loading="eager"
+                                    />
+                                    <div className={styles.heroBackgroundVignette} />
+                                </div>
 
-                            {/* Top-Right Botanical Corner Flourish */}
-                            <motion.div variants={flourishVariants} className={styles.cornerFlourishTR} aria-hidden="true">
-                                <svg width="64" height="64" viewBox="0 0 60 60" fill="none">
-                                    <path d="M54 6 C40 6 12 18 6 54 C20 30 36 16 54 6 Z" stroke="rgba(197, 160, 89, 0.65)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                                    <path d="M54 6 C44 18 36 34 32 46" stroke="rgba(197, 160, 89, 0.45)" strokeWidth="1.2" strokeLinecap="round" />
-                                </svg>
-                            </motion.div>
-
-                            {/* Divine Blessing Inscription (Individual line reveals) */}
-                            <motion.div variants={slowContainerVariants} className={styles.heroBlessingText}>
-                                <motion.p variants={slowItemVariants}>With the blessings of the divine</motion.p>
-                                <motion.p variants={slowItemVariants}>and the love of our families</motion.p>
-                            </motion.div>
-
-                            {/* Together We Invite Pre-header */}
-                            <motion.div variants={slowItemVariants} className={styles.heroInviteTag}>
-                                TOGETHER WE INVITE YOU TO CELEBRATE
-                            </motion.div>
-
-                            {/* Vertical Royal Lineage & Couple Block */}
-                            <motion.div variants={coupleContainerVariants} className={styles.heroVerticalCoupleBlock}>
-                                {/* 1. Groom & Parental Lineage */}
-                                <motion.div variants={slowItemVariants} className={styles.heroPersonBlock}>
-                                    <h1 className={styles.heroPersonName}>{wedding.groomName}</h1>
-                                    {wedding.groomParents && (
-                                        <div className={styles.heroPersonLineage}>
-                                            <span className={styles.heroPersonRole}>Son of</span>
-                                            <span className={styles.heroPersonParents}>{groomParentsFormatted}</span>
-                                        </div>
-                                    )}
+                                {/* Top-Left Botanical Corner Flourish */}
+                                <motion.div variants={flourishVariants} className={styles.cornerFlourishTL} aria-hidden="true">
+                                    <svg width="64" height="64" viewBox="0 0 60 60" fill="none">
+                                        <path d="M6 6 C20 6 48 18 54 54 C40 30 24 16 6 6 Z" stroke="rgba(197, 160, 89, 0.65)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                                        <path d="M6 6 C16 18 24 34 28 46" stroke="rgba(197, 160, 89, 0.45)" strokeWidth="1.2" strokeLinecap="round" />
+                                    </svg>
                                 </motion.div>
 
-                                {/* 2. Central Elegant Ampersand Divider */}
-                                <motion.div variants={ampersandVariants} className={styles.heroVerticalAmpersandWrap}>
-                                    <span className={styles.heroAmpersand}>&amp;</span>
+                                {/* Top-Right Botanical Corner Flourish */}
+                                <motion.div variants={flourishVariants} className={styles.cornerFlourishTR} aria-hidden="true">
+                                    <svg width="64" height="64" viewBox="0 0 60 60" fill="none">
+                                        <path d="M54 6 C40 6 12 18 6 54 C20 30 36 16 54 6 Z" stroke="rgba(197, 160, 89, 0.65)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                                        <path d="M54 6 C44 18 36 34 32 46" stroke="rgba(197, 160, 89, 0.45)" strokeWidth="1.2" strokeLinecap="round" />
+                                    </svg>
                                 </motion.div>
 
-                                {/* 3. Bride & Parental Lineage */}
-                                <motion.div variants={slowItemVariants} className={styles.heroPersonBlock}>
-                                    <h1 className={styles.heroPersonName}>{wedding.brideName}</h1>
-                                    {wedding.brideParents && (
-                                        <div className={styles.heroPersonLineage}>
-                                            <span className={styles.heroPersonRole}>Daughter of</span>
-                                            <span className={styles.heroPersonParents}>{brideParentsFormatted}</span>
-                                        </div>
-                                    )}
+                                {/* Divine Blessing Inscription (Individual line reveals) */}
+                                <motion.div variants={slowContainerVariants} className={styles.heroBlessingText}>
+                                    <motion.p variants={slowItemVariants}>With the blessings of the divine</motion.p>
+                                    <motion.p variants={slowItemVariants}>and the love of our families</motion.p>
                                 </motion.div>
-                            </motion.div>
 
-                            {/* Auspicious Occasions Note */}
-                            <motion.div variants={slowItemVariants} className={styles.heroOccasionsText}>
-                                On the following auspicious occasions
-                            </motion.div>
+                                {/* Together We Invite Pre-header */}
+                                <motion.div variants={slowItemVariants} className={styles.heroInviteTag}>
+                                    TOGETHER WE INVITE YOU TO CELEBRATE
+                                </motion.div>
 
-                            {/* Diamond Hairline Divider 2 (Placed below Auspicious Occasions) */}
-                            <motion.div variants={dividerVariants} className={styles.heroDiamondDivider}>
-                                <span className={styles.diamondLine} />
-                                <span className={styles.diamondSymbol}>◆</span>
-                                <span className={styles.diamondLine} />
-                            </motion.div>
+                                {/* Vertical Royal Lineage & Couple Block */}
+                                <motion.div variants={coupleContainerVariants} className={styles.heroVerticalCoupleBlock}>
+                                    {/* 1. Groom & Parental Lineage */}
+                                    <motion.div variants={slowItemVariants} className={styles.heroPersonBlock}>
+                                        <h1 className={styles.heroPersonName}>{cleanText(wedding.groomName)}</h1>
+                                        {wedding.groomParents && (
+                                            <div className={styles.heroPersonLineage}>
+                                                <span className={styles.heroPersonRole}>Son of</span>
+                                                <span className={styles.heroPersonParents}>{groomParentsFormatted}</span>
+                                            </div>
+                                        )}
+                                    </motion.div>
+
+                                    {/* 2. Central Elegant Ampersand Divider */}
+                                    <motion.div variants={ampersandVariants} className={styles.heroVerticalAmpersandWrap}>
+                                        <span className={styles.heroAmpersand}>&amp;</span>
+                                    </motion.div>
+
+                                    {/* 3. Bride & Parental Lineage */}
+                                    <motion.div variants={slowItemVariants} className={styles.heroPersonBlock}>
+                                        <h1 className={styles.heroPersonName}>{cleanText(wedding.brideName)}</h1>
+                                        {wedding.brideParents && (
+                                            <div className={styles.heroPersonLineage}>
+                                                <span className={styles.heroPersonRole}>Daughter of</span>
+                                                <span className={styles.heroPersonParents}>{brideParentsFormatted}</span>
+                                            </div>
+                                        )}
+                                    </motion.div>
+                                </motion.div>
+
+                                {/* Auspicious Occasions Note */}
+                                <motion.div variants={slowItemVariants} className={styles.heroOccasionsText}>
+                                    On the following auspicious occasions
+                                </motion.div>
+
+                                {/* Diamond Hairline Divider 2 (Placed gracefully at the base of Partition 1) */}
+                                <motion.div variants={dividerVariants} className={styles.heroDiamondDivider}>
+                                    <span className={styles.diamondLine} />
+                                    <span className={styles.diamondSymbol}>✦ ❖ ✦</span>
+                                    <span className={styles.diamondLine} />
+                                </motion.div>
+                            </div>
 
                             {/* 2. INTERACTIVE ROYAL SANCTUARY GATES & COUNTDOWN SECTION (Reveals after Auspicious Occasions line) */}
                             <motion.div variants={slowItemVariants} style={{ width: '100%' }}>

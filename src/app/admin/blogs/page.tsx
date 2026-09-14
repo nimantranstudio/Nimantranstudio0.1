@@ -102,7 +102,14 @@ export default function BlogsPage() {
                         }}>
                             <div style={{ display: 'flex', gap: '1.5rem', flex: 1, alignItems: 'center' }}>
                                 {blog.image ? (
-                                    <img src={blog.image} alt={blog.title} style={{ width: '120px', height: '80px', objectFit: 'cover', borderRadius: '0.5rem', flexShrink: 0 }} />
+                                    <img 
+                                        src={blog.image} 
+                                        alt={blog.title} 
+                                        style={{ width: '120px', height: '80px', objectFit: 'cover', borderRadius: '0.5rem', flexShrink: 0 }} 
+                                        onError={(e) => {
+                                            e.currentTarget.src = '/placeholder-theme.jpg';
+                                        }}
+                                    />
                                 ) : (
                                     <div style={{ width: '120px', height: '80px', background: '#F3F4F6', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9CA3AF', flexShrink: 0 }}>
                                         <FileText size={32} />

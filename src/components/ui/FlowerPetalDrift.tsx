@@ -102,7 +102,7 @@ export const FlowerPetalDrift: React.FC = () => {
             { c1: '#FEF3C7', c2: '#F59E0B' }, // Champagne / Golden
         ];
 
-        const generated: PetalConfig[] = Array.from({ length: 42 }).map((_, i) => {
+        const generated: PetalConfig[] = Array.from({ length: 56 }).map((_, i) => {
             const pal = palette[i % palette.length];
             const typeRoll = Math.random();
             const type: 'curled' | 'flutter' | 'marigold' =

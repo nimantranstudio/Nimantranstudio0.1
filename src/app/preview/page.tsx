@@ -1641,15 +1641,15 @@ function PreviewContent() {
                                         <div className={styles.designDetailSubheader}>{pricing.packageName}</div>
                                         <div className={styles.themeNameLabel}>{theme?.name || 'Wedding Theme ✨'}</div>
                                         <div className={styles.designDetailRow}>
-                                            <span>Invitation design suite</span>
+                                            <span>Wedding Invitation Suite</span>
                                             <span>₹{pricing.designSuite}</span>
                                         </div>
                                         <div className={styles.designDetailRow}>
-                                            <span>RSVP management & tracking</span>
+                                            <span>Wedding Website with RSVP</span>
                                             <span>₹{pricing.rsvpTracking}</span>
                                         </div>
                                         <div className={styles.designDetailRow}>
-                                            <span>Guest dashboard + hosting</span>
+                                            <span>Guest Management & Tracking</span>
                                             <span>₹{pricing.guestDashboard}</span>
                                         </div>
                                         <div className={styles.designDivider}></div>
