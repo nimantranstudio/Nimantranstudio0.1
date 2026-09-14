@@ -6,6 +6,7 @@ import { useWeddingStore } from '@/store/wedding-store';
 import type { Theme } from '@/lib/constants/themes';
 import { InvitationCard, InvitationCardRef } from '@/components/preview/InvitationCard';
 import { PreviewCard } from '@/components/preview/PreviewCard';
+import { RsvpWebsiteCard } from '@/components/preview/RsvpWebsiteCard';
 import styles from '@/components/preview/Preview.module.css';
 import { ChevronLeft, ChevronRight, X, Headphones, Play, Edit, Download, Share2, Check, Lock, Link as LinkIcon, Copy, Sparkles, MessageCircle, Activity, ShieldCheck, Type, Image as ImageIcon, MapPin, Bold, AlignLeft, AlignCenter, AlignRight, Type as FormatIcon, Maximize, Sticker, Trash2, Palette, Square, AlignJustify, ChevronDown, Users, Star, Loader2 } from 'lucide-react';
 import Link from 'next/link';
@@ -46,7 +47,7 @@ export default function PreviewPage() {
 import { ProcessingOverlay } from '@/components/processing/ProcessingOverlay';
 
 function PreviewContent() {
-    const { formData, selectedThemeId, isAuthenticated, login, bundleImages, bundleItems, selectedPlan, userPhone, setCheckoutComplete } = useWeddingStore();
+    const { formData, selectedThemeId, isAuthenticated, login, bundleImages, bundleItems, selectedPlan, userPhone, setCheckoutComplete, lastSavedWeddingId } = useWeddingStore();
     const [packages, setPackages] = useState<any[]>([]);
     const [theme, setTheme] = useState<any | null>(null);
 
@@ -184,17 +185,60 @@ function PreviewContent() {
             window.history.replaceState({}, '', newUrl.pathname + newUrl.search);
         }
     }, [searchParams]);
-    const [copyStatus, setCopyStatus] = useState(false);
+    // Dynamically resolve RSVP wedding ID (query param -> store saved ID -> user current wedding -> latest wedding in DB)
+    const urlWeddingId = searchParams.get('id');
+    const [dynamicWeddingId, setDynamicWeddingId] = useState<string | null>(
+        urlWeddingId || lastSavedWeddingId || null
+    );
 
-    // Generate RSVP Link based on actual saved wedding ID and current origin
-    const weddingId = searchParams.get('id');
-    const rsvpSlug = weddingId || `${formData.groomName?.toLowerCase().split(' ')[0] || 'wedding'}-${formData.brideName?.toLowerCase().split(' ')[0] || 'rsvp'}`;
+    useEffect(() => {
+        if (urlWeddingId) {
+            setDynamicWeddingId(urlWeddingId);
+            return;
+        }
+        if (lastSavedWeddingId) {
+            setDynamicWeddingId(lastSavedWeddingId);
+            return;
+        }
+
+        let isCancelled = false;
+        async function fetchWeddingId() {
+            try {
+                const currentRes = await fetch('/api/wedding/current');
+                if (currentRes.ok) {
+                    const currentData = await currentRes.json();
+                    if (!isCancelled && currentData.wedding?.id) {
+                        setDynamicWeddingId(currentData.wedding.id);
+                        return;
+                    }
+                }
+                const latestRes = await fetch('/api/wedding/latest');
+                if (latestRes.ok) {
+                    const latestData = await latestRes.json();
+                    if (!isCancelled && latestData.wedding?.id) {
+                        setDynamicWeddingId(latestData.wedding.id);
+                        return;
+                    }
+                }
+            } catch (err) {
+                console.error('Failed to resolve dynamic wedding id for RSVP:', err);
+            }
+        }
+        fetchWeddingId();
+        return () => {
+            isCancelled = true;
+        };
+    }, [urlWeddingId, lastSavedWeddingId]);
+
+    const effectiveWeddingId = dynamicWeddingId || urlWeddingId || lastSavedWeddingId;
+    const rsvpSlug = effectiveWeddingId || `${formData.groomName?.toLowerCase().split(' ')[0] || 'wedding'}-${formData.brideName?.toLowerCase().split(' ')[0] || 'rsvp'}`;
     const [origin, setOrigin] = useState('');
     useEffect(() => {
         setOrigin(window.location.origin);
     }, []);
     const rsvpFullUrl = origin ? `${origin}/rsvp/${rsvpSlug}` : `https://nimantran.app/rsvp/${rsvpSlug}`;
 
+    const [copyStatus, setCopyStatus] = useState(false);
     const handleCopyRsvpLink = async () => {
         try {
             await navigator.clipboard.writeText(rsvpFullUrl);
@@ -615,6 +659,21 @@ function PreviewContent() {
             });
         }
 
+        // Always include interactive Wedding Website & RSVP in the suite preview
+        items.push({
+            id: 'rsvp-website-preview',
+            name: 'Wedding Website & RSVP',
+            image: '',
+            isRsvpWebsite: true,
+            event: {
+                id: 'rsvp-website',
+                name: 'Wedding Website & RSVP',
+                date: formData.primaryDate,
+                time: formData.primaryTime,
+                venue: formData.defaultVenueName
+            }
+        });
+
         return items;
     };
 
@@ -933,34 +992,48 @@ function PreviewContent() {
                             width: cardLayout.aspectRatio > 1 ? 'min(90vw, 1000px)' : 'auto',
                             height: cardLayout.aspectRatio > 1 ? 'auto' : (isEditMode ? 'calc(100vh - 160px)' : 'min(85vh, 850px)'),
                             aspectRatio: cardLayout.aspectRatio,
-                            transition: 'width 0.3s ease, height 0.3s ease, aspect-ratio 0.3s ease'
+                            transition: 'width 0.3s ease, height 0.3s ease, aspect-ratio 0.3s ease',
+                            overflow: 'hidden'
                         }}>
-                            <PreviewCard
-                                ref={cardRef}
-                                key={`preview-${selectedPreviewIndex}-${resetKey}`}
-                                event={previewItems[selectedPreviewIndex]?.event || {
-                                    id: `design-${selectedPreviewIndex}`,
-                                    name: `Design ${selectedPreviewIndex + 1}`,
-                                    date: formData.primaryDate,
-                                    time: formData.primaryTime,
-                                    venue: formData.defaultVenueName
-                                }}
-                                theme={theme}
-                                groomName={formData.groomName || ''}
-                                brideName={formData.brideName || ''}
-                                groomParents={formData.groomParents || ''}
-                                brideParents={formData.brideParents || ''}
-                                welcomeMessage={formData.invitationMessage || ''}
-                                isPlaceholder={true}
-                                isRawPreview={false}
-                                type='image'
-                                customImage={uploadedPhotos[selectedPreviewIndex] || previewItems[selectedPreviewIndex]?.image}
-                                structuredLayout={previewItems[selectedPreviewIndex]?.layout}
-                                structuredCouple={formData}
-                                isSecured={true}
-                                showSizingBoxes={isEditMode}
-                                onLayoutMeasure={handleLayoutMeasure}
-                            />
+                            {previewItems[selectedPreviewIndex]?.isRsvpWebsite ? (
+                                <RsvpWebsiteCard 
+                                    weddingId={effectiveWeddingId}
+                                    groomName={formData.groomName}
+                                    brideName={formData.brideName}
+                                    events={formData.events}
+                                    primaryDate={formData.primaryDate}
+                                    primaryTime={formData.primaryTime}
+                                    venue={formData.defaultVenueName}
+                                    isInteractive={true}
+                                />
+                            ) : (
+                                <PreviewCard
+                                    ref={cardRef}
+                                    key={`preview-${selectedPreviewIndex}-${resetKey}`}
+                                    event={previewItems[selectedPreviewIndex]?.event || {
+                                        id: `design-${selectedPreviewIndex}`,
+                                        name: `Design ${selectedPreviewIndex + 1}`,
+                                        date: formData.primaryDate,
+                                        time: formData.primaryTime,
+                                        venue: formData.defaultVenueName
+                                    }}
+                                    theme={theme}
+                                    groomName={formData.groomName || ''}
+                                    brideName={formData.brideName || ''}
+                                    groomParents={formData.groomParents || ''}
+                                    brideParents={formData.brideParents || ''}
+                                    welcomeMessage={formData.invitationMessage || ''}
+                                    isPlaceholder={true}
+                                    isRawPreview={false}
+                                    type='image'
+                                    customImage={uploadedPhotos[selectedPreviewIndex] || previewItems[selectedPreviewIndex]?.image}
+                                    structuredLayout={previewItems[selectedPreviewIndex]?.layout}
+                                    structuredCouple={formData}
+                                    isSecured={true}
+                                    showSizingBoxes={isEditMode}
+                                    onLayoutMeasure={handleLayoutMeasure}
+                                />
+                            )}
 
 
 
@@ -1220,23 +1293,41 @@ function PreviewContent() {
                                             const idx = (activeSliderIndex - 2 + previewItems.length) % previewItems.length;
                                             const item = previewItems[idx];
                                             return (
-                                                <div key={`farleft-${item.id}`} className={clsx(styles.carouselCard, styles.cardFarLeft)}>
-                                                    <PreviewCard
-                                                        event={item.event}
-                                                        theme={theme}
-                                                        groomName={formData.groomName || ''}
-                                                        brideName={formData.brideName || ''}
-                                                        groomParents={formData.groomParents}
-                                                        brideParents={formData.brideParents}
-                                                        welcomeMessage={formData.invitationMessage}
-                                                        isPlaceholder={true}
-                                                        isRawPreview={false}
-                                                        customImage={item.image}
-                                                        structuredLayout={item.layout}
-                                                        structuredCouple={formData}
-                                                        className={styles.suiteThumbCard}
-                                                        isSecured={true}
-                                                    />
+                                                <div 
+                                                    key={`farleft-${item.id}`} 
+                                                    className={clsx(styles.carouselCard, styles.cardFarLeft)}
+                                                    onClick={() => setActiveSliderIndex(idx)}
+                                                >
+                                                    {item.isRsvpWebsite ? (
+                                                        <RsvpWebsiteCard 
+                                                            weddingId={effectiveWeddingId}
+                                                            groomName={formData.groomName}
+                                                            brideName={formData.brideName}
+                                                            events={formData.events}
+                                                            primaryDate={formData.primaryDate}
+                                                            primaryTime={formData.primaryTime}
+                                                            venue={formData.defaultVenueName}
+                                                            isInteractive={false}
+                                                            className={styles.suiteThumbCard}
+                                                        />
+                                                    ) : (
+                                                        <PreviewCard
+                                                            event={item.event}
+                                                            theme={theme}
+                                                            groomName={formData.groomName || ''}
+                                                            brideName={formData.brideName || ''}
+                                                            groomParents={formData.groomParents}
+                                                            brideParents={formData.brideParents}
+                                                            welcomeMessage={formData.invitationMessage}
+                                                            isPlaceholder={true}
+                                                            isRawPreview={false}
+                                                            customImage={item.image}
+                                                            structuredLayout={item.layout}
+                                                            structuredCouple={formData}
+                                                            className={styles.suiteThumbCard}
+                                                            isSecured={true}
+                                                        />
+                                                    )}
                                                 </div>
                                             );
                                         })()}
@@ -1246,23 +1337,41 @@ function PreviewContent() {
                                             const idx = (activeSliderIndex - 1 + previewItems.length) % previewItems.length;
                                             const item = previewItems[idx];
                                             return (
-                                                <div key={`left-${item.id}`} className={clsx(styles.carouselCard, styles.cardLeft)}>
-                                                    <PreviewCard
-                                                        event={item.event}
-                                                        theme={theme}
-                                                        groomName={formData.groomName || ''}
-                                                        brideName={formData.brideName || ''}
-                                                        groomParents={formData.groomParents}
-                                                        brideParents={formData.brideParents}
-                                                        welcomeMessage={formData.invitationMessage}
-                                                        isPlaceholder={true}
-                                                        isRawPreview={false}
-                                                        customImage={item.image}
-                                                        structuredLayout={item.layout}
-                                                        structuredCouple={formData}
-                                                        className={styles.suiteThumbCard}
-                                                        isSecured={true}
-                                                    />
+                                                <div 
+                                                    key={`left-${item.id}`} 
+                                                    className={clsx(styles.carouselCard, styles.cardLeft)}
+                                                    onClick={() => setActiveSliderIndex(idx)}
+                                                >
+                                                    {item.isRsvpWebsite ? (
+                                                        <RsvpWebsiteCard 
+                                                            weddingId={effectiveWeddingId}
+                                                            groomName={formData.groomName}
+                                                            brideName={formData.brideName}
+                                                            events={formData.events}
+                                                            primaryDate={formData.primaryDate}
+                                                            primaryTime={formData.primaryTime}
+                                                            venue={formData.defaultVenueName}
+                                                            isInteractive={false}
+                                                            className={styles.suiteThumbCard}
+                                                        />
+                                                    ) : (
+                                                        <PreviewCard
+                                                            event={item.event}
+                                                            theme={theme}
+                                                            groomName={formData.groomName || ''}
+                                                            brideName={formData.brideName || ''}
+                                                            groomParents={formData.groomParents}
+                                                            brideParents={formData.brideParents}
+                                                            welcomeMessage={formData.invitationMessage}
+                                                            isPlaceholder={true}
+                                                            isRawPreview={false}
+                                                            customImage={item.image}
+                                                            structuredLayout={item.layout}
+                                                            structuredCouple={formData}
+                                                            className={styles.suiteThumbCard}
+                                                            isSecured={true}
+                                                        />
+                                                    )}
                                                 </div>
                                             );
                                         })()}
@@ -1274,29 +1383,46 @@ function PreviewContent() {
                                                 <div 
                                                     key={`center-${item.id}`} 
                                                     className={styles.iphoneMockup}
-                                                    onClick={() => setSelectedPreviewIndex(activeSliderIndex)}
-                                                    style={{ cursor: 'pointer' }}
+                                                    onClick={() => {
+                                                        if (!item.isRsvpWebsite) {
+                                                            setSelectedPreviewIndex(activeSliderIndex);
+                                                        }
+                                                    }}
+                                                    style={{ cursor: item.isRsvpWebsite ? 'default' : 'pointer' }}
                                                 >
                                                     <div className={styles.iphoneScreen}>
                                                         <div className={styles.iphoneCamera}></div>
                                                         <div className={styles.iphoneScreenCard}>
-                                                            <PreviewCard
-                                                                ref={el => { suiteRefs.current[item.id] = el; }}
-                                                                event={item.event}
-                                                                theme={theme}
-                                                                groomName={formData.groomName || ''}
-                                                                brideName={formData.brideName || ''}
-                                                                groomParents={formData.groomParents}
-                                                                brideParents={formData.brideParents}
-                                                                welcomeMessage={formData.invitationMessage}
-                                                                isPlaceholder={true}
-                                                                isRawPreview={false}
-                                                                customImage={item.image}
-                                                                structuredLayout={item.layout}
-                                                                structuredCouple={formData}
-                                                                className={styles.suiteThumbCard}
-                                                                isSecured={true}
-                                                            />
+                                                            {item.isRsvpWebsite ? (
+                                                                <RsvpWebsiteCard 
+                                                                    weddingId={effectiveWeddingId}
+                                                                    groomName={formData.groomName}
+                                                                    brideName={formData.brideName}
+                                                                    events={formData.events}
+                                                                    primaryDate={formData.primaryDate}
+                                                                    primaryTime={formData.primaryTime}
+                                                                    venue={formData.defaultVenueName}
+                                                                    isInteractive={true}
+                                                                />
+                                                            ) : (
+                                                                <PreviewCard
+                                                                    ref={el => { suiteRefs.current[item.id] = el; }}
+                                                                    event={item.event}
+                                                                    theme={theme}
+                                                                    groomName={formData.groomName || ''}
+                                                                    brideName={formData.brideName || ''}
+                                                                    groomParents={formData.groomParents}
+                                                                    brideParents={formData.brideParents}
+                                                                    welcomeMessage={formData.invitationMessage}
+                                                                    isPlaceholder={true}
+                                                                    isRawPreview={false}
+                                                                    customImage={item.image}
+                                                                    structuredLayout={item.layout}
+                                                                    structuredCouple={formData}
+                                                                    className={styles.suiteThumbCard}
+                                                                    isSecured={true}
+                                                                />
+                                                            )}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -1308,23 +1434,41 @@ function PreviewContent() {
                                             const idx = (activeSliderIndex + 1) % previewItems.length;
                                             const item = previewItems[idx];
                                             return (
-                                                <div key={`right-${item.id}`} className={clsx(styles.carouselCard, styles.cardRight)}>
-                                                    <PreviewCard
-                                                        event={item.event}
-                                                        theme={theme}
-                                                        groomName={formData.groomName || ''}
-                                                        brideName={formData.brideName || ''}
-                                                        groomParents={formData.groomParents}
-                                                        brideParents={formData.brideParents}
-                                                        welcomeMessage={formData.invitationMessage}
-                                                        isPlaceholder={true}
-                                                        isRawPreview={false}
-                                                        customImage={item.image}
-                                                        structuredLayout={item.layout}
-                                                        structuredCouple={formData}
-                                                        className={styles.suiteThumbCard}
-                                                        isSecured={true}
-                                                    />
+                                                <div 
+                                                    key={`right-${item.id}`} 
+                                                    className={clsx(styles.carouselCard, styles.cardRight)}
+                                                    onClick={() => setActiveSliderIndex(idx)}
+                                                >
+                                                    {item.isRsvpWebsite ? (
+                                                        <RsvpWebsiteCard 
+                                                            weddingId={effectiveWeddingId}
+                                                            groomName={formData.groomName}
+                                                            brideName={formData.brideName}
+                                                            events={formData.events}
+                                                            primaryDate={formData.primaryDate}
+                                                            primaryTime={formData.primaryTime}
+                                                            venue={formData.defaultVenueName}
+                                                            isInteractive={false}
+                                                            className={styles.suiteThumbCard}
+                                                        />
+                                                    ) : (
+                                                        <PreviewCard
+                                                            event={item.event}
+                                                            theme={theme}
+                                                            groomName={formData.groomName || ''}
+                                                            brideName={formData.brideName || ''}
+                                                            groomParents={formData.groomParents}
+                                                            brideParents={formData.brideParents}
+                                                            welcomeMessage={formData.invitationMessage}
+                                                            isPlaceholder={true}
+                                                            isRawPreview={false}
+                                                            customImage={item.image}
+                                                            structuredLayout={item.layout}
+                                                            structuredCouple={formData}
+                                                            className={styles.suiteThumbCard}
+                                                            isSecured={true}
+                                                        />
+                                                    )}
                                                 </div>
                                             );
                                         })()}
@@ -1334,23 +1478,41 @@ function PreviewContent() {
                                             const idx = (activeSliderIndex + 2) % previewItems.length;
                                             const item = previewItems[idx];
                                             return (
-                                                <div key={`farright-${item.id}`} className={clsx(styles.carouselCard, styles.cardFarRight)}>
-                                                    <PreviewCard
-                                                        event={item.event}
-                                                        theme={theme}
-                                                        groomName={formData.groomName || ''}
-                                                        brideName={formData.brideName || ''}
-                                                        groomParents={formData.groomParents}
-                                                        brideParents={formData.brideParents}
-                                                        welcomeMessage={formData.invitationMessage}
-                                                        isPlaceholder={true}
-                                                        isRawPreview={false}
-                                                        customImage={item.image}
-                                                        structuredLayout={item.layout}
-                                                        structuredCouple={formData}
-                                                        className={styles.suiteThumbCard}
-                                                        isSecured={true}
-                                                    />
+                                                <div 
+                                                    key={`farright-${item.id}`} 
+                                                    className={clsx(styles.carouselCard, styles.cardFarRight)}
+                                                    onClick={() => setActiveSliderIndex(idx)}
+                                                >
+                                                    {item.isRsvpWebsite ? (
+                                                        <RsvpWebsiteCard 
+                                                            weddingId={effectiveWeddingId}
+                                                            groomName={formData.groomName}
+                                                            brideName={formData.brideName}
+                                                            events={formData.events}
+                                                            primaryDate={formData.primaryDate}
+                                                            primaryTime={formData.primaryTime}
+                                                            venue={formData.defaultVenueName}
+                                                            isInteractive={false}
+                                                            className={styles.suiteThumbCard}
+                                                        />
+                                                    ) : (
+                                                        <PreviewCard
+                                                            event={item.event}
+                                                            theme={theme}
+                                                            groomName={formData.groomName || ''}
+                                                            brideName={formData.brideName || ''}
+                                                            groomParents={formData.groomParents}
+                                                            brideParents={formData.brideParents}
+                                                            welcomeMessage={formData.invitationMessage}
+                                                            isPlaceholder={true}
+                                                            isRawPreview={false}
+                                                            customImage={item.image}
+                                                            structuredLayout={item.layout}
+                                                            structuredCouple={formData}
+                                                            className={styles.suiteThumbCard}
+                                                            isSecured={true}
+                                                        />
+                                                    )}
                                                 </div>
                                             );
                                         })()}
@@ -1381,77 +1543,80 @@ function PreviewContent() {
                             </div>
                         )}
 
-                        {/* Suite Highlights Container */}
-                        <div className={styles.highlightsContainer}>
-                            <div className={styles.highlightItem}>
-                                <div className={clsx(styles.highlightIcon, styles.iconGold)}>
-                                    <Sparkles size={18} />
-                                </div>
-                                <div className={styles.highlightContent}>
-                                    <h4 className={styles.highlightTitle}>12 Premium Assets</h4>
-                                    <p className={styles.highlightDesc}>Custom invitations for every ceremony</p>
-                                </div>
-                            </div>
-
-                            <div className={styles.highlightItem}>
-                                <div className={clsx(styles.highlightIcon, styles.iconEmerald)}>
-                                    <LinkIcon size={18} />
-                                </div>
-                                <div className={styles.highlightContent}>
-                                    <h4 className={styles.highlightTitle}>RSVP Website</h4>
-                                    <p className={styles.highlightDesc}>Real-time guest tracking & confirmations</p>
-                                </div>
-                            </div>
-
-                            <div className={styles.highlightItem}>
-                                <div className={clsx(styles.highlightIcon, styles.iconSapphire)}>
-                                    <Users size={18} />
-                                </div>
-                                <div className={styles.highlightContent}>
-                                    <h4 className={styles.highlightTitle}>Guest Dashboard</h4>
-                                    <p className={styles.highlightDesc}>Dietary choices, plus-ones & lists</p>
-                                </div>
-                            </div>
-
-                            <div className={styles.highlightItem}>
-                                <div className={clsx(styles.highlightIcon, styles.iconGreen)}>
-                                    <MessageCircle size={18} />
-                                </div>
-                                <div className={styles.highlightContent}>
-                                    <h4 className={styles.highlightTitle}>WhatsApp Sharing</h4>
-                                    <p className={styles.highlightDesc}>One-click 1-to-1 personalized delivery</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Social Proof & Trust Seal */}
-                        <div className={styles.trustBanner}>
-                            <div className={styles.avatarGroup}>
-                                <img src="https://picsum.photos/seed/user1/100/100" alt="Couple" className={styles.avatarImg} />
-                                <img src="https://picsum.photos/seed/user2/100/100" alt="Couple" className={styles.avatarImg} />
-                                <img src="https://picsum.photos/seed/user3/100/100" alt="Couple" className={styles.avatarImg} />
-                                <img src="https://picsum.photos/seed/user4/100/100" alt="Couple" className={styles.avatarImg} />
-                                <img src="https://picsum.photos/seed/user5/100/100" alt="Couple" className={styles.avatarImg} />
-                                <div className={styles.avatarPlus}>+</div>
-                            </div>
-
-                            <div className={styles.trustDivider} />
-
-                            <div className={styles.trustInfo}>
-                                <div className={styles.trustHeadline}>
-                                    Trusted by <strong>1,000+ couples</strong> across India
-                                </div>
-                                <div className={styles.trustSubline}>
-                                    <div className={styles.starsRow}>
-                                        <Star size={13} fill="#F59E0B" color="#F59E0B" />
-                                        <Star size={13} fill="#F59E0B" color="#F59E0B" />
-                                        <Star size={13} fill="#F59E0B" color="#F59E0B" />
-                                        <Star size={13} fill="#F59E0B" color="#F59E0B" />
-                                        <Star size={13} fill="#F59E0B" color="#F59E0B" />
+                        {/* Bottom Section: Highlights & Trust Seal aligned with right column bottom */}
+                        <div className={styles.leftBottomSection}>
+                            {/* Suite Highlights Container */}
+                            <div className={styles.highlightsContainer}>
+                                <div className={styles.highlightItem}>
+                                    <div className={clsx(styles.highlightIcon, styles.iconBrand)}>
+                                        <Sparkles size={20} />
                                     </div>
-                                    <span className={styles.ratingBadge}>4.9/5</span>
-                                    <span className={styles.ratingDot}>•</span>
-                                    <span className={styles.lovedText}>Loved for simplicity & design</span>
+                                    <div className={styles.highlightContent}>
+                                        <h4 className={styles.highlightTitle}>7 Premium Assets</h4>
+                                        <p className={styles.highlightDesc}>WhatsApp invitations for every ceremony</p>
+                                    </div>
+                                </div>
+
+                                <div className={styles.highlightItem}>
+                                    <div className={clsx(styles.highlightIcon, styles.iconBrand)}>
+                                        <LinkIcon size={20} />
+                                    </div>
+                                    <div className={styles.highlightContent}>
+                                        <h4 className={styles.highlightTitle}>RSVP Website</h4>
+                                        <p className={styles.highlightDesc}>Real-time guest tracking & confirmations</p>
+                                    </div>
+                                </div>
+
+                                <div className={styles.highlightItem}>
+                                    <div className={clsx(styles.highlightIcon, styles.iconBrand)}>
+                                        <Users size={20} />
+                                    </div>
+                                    <div className={styles.highlightContent}>
+                                        <h4 className={styles.highlightTitle}>Guest Dashboard</h4>
+                                        <p className={styles.highlightDesc}>Dietary choices, plus-ones & lists</p>
+                                    </div>
+                                </div>
+
+                                <div className={styles.highlightItem}>
+                                    <div className={clsx(styles.highlightIcon, styles.iconBrand)}>
+                                        <MessageCircle size={20} />
+                                    </div>
+                                    <div className={styles.highlightContent}>
+                                        <h4 className={styles.highlightTitle}>WhatsApp Sharing</h4>
+                                        <p className={styles.highlightDesc}>One-click 1-to-1 personalized delivery</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Social Proof & Trust Seal */}
+                            <div className={styles.trustBanner}>
+                                <div className={styles.avatarGroup}>
+                                    <img src="https://picsum.photos/seed/user1/100/100" alt="Couple" className={styles.avatarImg} />
+                                    <img src="https://picsum.photos/seed/user2/100/100" alt="Couple" className={styles.avatarImg} />
+                                    <img src="https://picsum.photos/seed/user3/100/100" alt="Couple" className={styles.avatarImg} />
+                                    <img src="https://picsum.photos/seed/user4/100/100" alt="Couple" className={styles.avatarImg} />
+                                    <img src="https://picsum.photos/seed/user5/100/100" alt="Couple" className={styles.avatarImg} />
+                                    <div className={styles.avatarPlus}>+</div>
+                                </div>
+
+                                <div className={styles.trustDivider} />
+
+                                <div className={styles.trustInfo}>
+                                    <div className={styles.trustHeadline}>
+                                        Trusted by <strong>couples</strong> across India
+                                    </div>
+                                    <div className={styles.trustSubline}>
+                                        <div className={styles.starsRow}>
+                                            <Star size={14} fill="#F59E0B" color="#F59E0B" />
+                                            <Star size={14} fill="#F59E0B" color="#F59E0B" />
+                                            <Star size={14} fill="#F59E0B" color="#F59E0B" />
+                                            <Star size={14} fill="#F59E0B" color="#F59E0B" />
+                                            <Star size={14} fill="#F59E0B" color="#F59E0B" />
+                                        </div>
+                                        <span className={styles.ratingBadge}>4.9/5</span>
+                                        <span className={styles.ratingDot}>•</span>
+                                        <span className={styles.lovedText}>Loved for simplicity & design</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>

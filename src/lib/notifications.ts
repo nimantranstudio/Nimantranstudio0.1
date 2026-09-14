@@ -26,7 +26,8 @@ const WELCOME_TEMPLATE = process.env.MSG91_WELCOME_TEMPLATE || 'welcome_nimantra
 // requirement the welcome template had): an IMAGE header (couple's hero
 // card, optional) and two body variables, {{1}} = "Groom & Bride",
 // {{2}} = the RSVP page URL. Suggested approval copy:
-// "💍 {{1}} are getting married! Here's our wedding invitation: {{2}}"
+// "🎉 {{1}} are getting married! Join us in the celebration — tap to
+// view our wedding invitation & RSVP: {{2}} 💍"
 const RSVP_LINK_TEMPLATE = process.env.MSG91_RSVP_LINK_TEMPLATE || 'rsvp_link_nimantran';
 
 /** WhatsApp media headers accept real raster images only — not .html templates. */

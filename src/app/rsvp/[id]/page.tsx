@@ -74,21 +74,32 @@ export async function generateMetadata({
 
 export default async function RSVPPage({
     params,
+    searchParams,
 }: {
     params: Promise<{ id: string }>;
+    searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
     const { id } = await params;
+    const sp = searchParams ? await searchParams : {};
+    const isPreview = sp.preview === 'true';
 
     // Fetch the wedding from the database
     let wedding = null;
     try {
-        wedding = await prisma.wedding.findFirst({
-            where: {
-                OR: [{ id }, { slug: id }],
-            },
-            include: { events: true },
-            orderBy: { createdAt: 'desc' },
-        });
+        if (id === 'latest') {
+            wedding = await prisma.wedding.findFirst({
+                orderBy: { createdAt: 'desc' },
+                include: { events: true },
+            });
+        } else {
+            wedding = await prisma.wedding.findFirst({
+                where: {
+                    OR: [{ id }, { slug: id }],
+                },
+                include: { events: true },
+                orderBy: { createdAt: 'desc' },
+            });
+        }
     } catch (e) {
         console.error('Database connection error in /rsvp/[id]:', e);
     }
@@ -117,8 +128,8 @@ export default async function RSVPPage({
     }
 
     return (
-        <div className={styles.page}>
-            <RSVPForm wedding={wedding} />
+        <div className={`${styles.page} ${isPreview ? styles.previewPage : ''}`}>
+            <RSVPForm wedding={wedding} isPreview={isPreview} />
         </div>
     );
 }

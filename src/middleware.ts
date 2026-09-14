@@ -31,6 +31,21 @@ export async function middleware(req: NextRequest) {
         return NextResponse.redirect(url);
     }
 
+    // Dashboard area: a couple's own suite (cards, RSVPs, assets). Requires any
+    // logged-in session — previously unguarded, so opening the "Download My
+    // Suite" WhatsApp link in a fresh browser (no session cookie, e.g. the
+    // in-app browser) silently fell through to the page's generic empty-state
+    // instead of asking the visitor to log in with their WhatsApp number.
+    if (pathname.startsWith('/dashboard')) {
+        if (session) {
+            return NextResponse.next();
+        }
+        const url = req.nextUrl.clone();
+        url.pathname = '/login';
+        url.searchParams.set('redirect', pathname);
+        return NextResponse.redirect(url);
+    }
+
     return NextResponse.next();
 }
 
@@ -39,5 +54,7 @@ export const config = {
         '/admin',
         '/admin/:path*',
         '/api/admin/:path*',
+        '/dashboard',
+        '/dashboard/:path*',
     ],
 };

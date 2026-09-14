@@ -30,6 +30,12 @@
     position: relative;
 }
 
+.previewPage {
+    min-height: 100%;
+    padding: 0.75rem 0.5rem 2rem;
+    align-items: stretch;
+}
+
 /* ─── WRAPPER ────────────────────────────────────────────────────────────── */
 .wrapper {
     width: 100%;
