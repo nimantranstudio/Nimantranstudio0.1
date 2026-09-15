@@ -86,20 +86,17 @@ export default function AdminDashboard() {
                 </Link>
 
                 {/* Stat Card 2 - Revenue */}
-                <div style={{ background: 'white', padding: '1.5rem', borderRadius: '12px', border: '1px solid #E5E0D8', display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-                    <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#F3EFE9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#756353' }}>
-                        <TrendingUp size={24} />
+                <Link href="/admin/revenue" style={{ textDecoration: 'none' }}>
+                    <div style={{ background: 'white', padding: '1.5rem', borderRadius: '12px', border: '1px solid #E5E0D8', display: 'flex', alignItems: 'center', gap: '1.5rem', cursor: 'pointer', transition: 'transform 0.2s', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}>
+                        <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#F3EFE9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#756353' }}>
+                            <TrendingUp size={24} />
+                        </div>
+                        <div>
+                            <div style={{ fontSize: '0.9rem', color: '#6b7280', fontWeight: '500' }}>Revenue</div>
+                            <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1A1A1A' }}>₹{stats.revenue.toLocaleString('en-IN')}</div>
+                        </div>
                     </div>
-                    <div>
-                        <div style={{ fontSize: '0.9rem', color: '#6b7280', fontWeight: '500' }}>Revenue</div>
-                        <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1A1A1A' }}>₹{stats.revenue}</div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Chart Placeholder */}
-            <div style={{ marginTop: '2rem', background: 'white', padding: '2rem', borderRadius: '12px', border: '1px solid #E5E0D8', height: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af' }}>
-                Chart Visualization Placeholder
+                </Link>
             </div>
         </div>
     );

@@ -114,7 +114,11 @@
             padding: inherit;
         }
 
-        /* Couple Container (Stacked Layout) */
+        /* Couple Container (Stacked Layout)
+           margin-top clears the background's horizontal gold divider line —
+           measured at ~47% of card height (y 416-438px of an 889px-tall
+           render), which previously sat *through* the groom's name (416-463px)
+           since this container had no top clearance at all. */
         .couple-container,
         .couple-container.side-by-side,
         .couple-container.stacked {
@@ -122,7 +126,7 @@
             flex-direction: column;
             align-items: center;
             width: 100%;
-            margin: 0 0 clamp(4px, 1vh, 8px) 0;
+            margin: clamp(28px, 6vh, 48px) 0 clamp(4px, 1vh, 8px) 0;
         }
 
         .person-block,
@@ -150,9 +154,12 @@
             margin: clamp(4px, 1vh, 10px) 0 clamp(4px, 1vh, 10px) 0;
         }
 
-        /* Bride Block: Starts strictly BELOW the horizontal gold line with center star */
+        /* Bride Block spacing below the groom block. The divider line itself is
+           cleared by .couple-container's margin-top above, not by this value —
+           an earlier attempt pushed this margin up to clamp(60px,13.5vh,100px)
+           to (wrongly) compensate for the line, leaving too large a gap. */
         .bride-block {
-            margin-top: clamp(38px, 8.5vh, 64px);
+            margin-top: clamp(28px, 6.5vh, 50px);
             margin-bottom: clamp(4px, 1vh, 8px);
         }
 

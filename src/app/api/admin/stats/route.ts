@@ -9,11 +9,16 @@ export async function GET(request: NextRequest) {
         const { getPrisma } = await import('@/lib/prisma');
         const prisma = getPrisma();
 
-        const [themesCount, bundlesCount, weddingsCount, rsvpsCount] = await Promise.all([
+        const [themesCount, bundlesCount, weddingsCount, rsvpsCount, revenueAgg] = await Promise.all([
             prisma.theme.count(),
             prisma.bundle.count(),
             prisma.wedding.count(),
-            prisma.rSVP.count()
+            prisma.rSVP.count(),
+            // Used to be a hardcoded placeholder (revenue: 1240). The full
+            // day-wise breakdown and per-payment history live on their own
+            // page (/admin/revenue, linked from this card) — this card only
+            // needs the headline total.
+            prisma.order.aggregate({ _sum: { totalAmount: true } })
         ]);
 
         return NextResponse.json({
@@ -21,7 +26,7 @@ export async function GET(request: NextRequest) {
             bundlesCount,
             weddingsCount,
             rsvpsCount,
-            revenue: 1240 // Hardcoded for now until payment integration exists
+            revenue: revenueAgg._sum.totalAmount || 0
         });
     } catch (error: any) {
         console.error('Failed to fetch dashboard stats:', error);
