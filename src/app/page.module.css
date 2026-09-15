@@ -253,6 +253,71 @@
   letter-spacing: -0.02em;
 }
 
+.heroLineMask {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.12em;
+  margin-bottom: -0.12em;
+}
+
+.heroLineText {
+  display: block;
+  will-change: transform, opacity;
+}
+
+.heroAccentText {
+  display: inline-block;
+  background: linear-gradient(
+    120deg,
+    #1A1A1A 0%,
+    #1A1A1A 25%,
+    #b8860b 45%,
+    #d4af37 50%,
+    #f3dc7e 55%,
+    #b8860b 60%,
+    #1A1A1A 80%,
+    #1A1A1A 100%
+  );
+  background-size: 260% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: heroTextSheen 7s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  animation-delay: 0.5s;
+}
+
+@keyframes heroTextSheen {
+  0% {
+    background-position: 120% 0;
+  }
+  30%, 100% {
+    background-position: -120% 0;
+  }
+}
+
+.heroSubtitleWrap {
+  display: block;
+  overflow: hidden;
+  margin-top: 1.75rem;
+}
+
+.heroSubtitleText {
+  font-size: 0.45em;
+  display: block;
+  font-weight: 300;
+  line-height: 1.5;
+  font-family: var(--font-inter), sans-serif;
+  letter-spacing: 0.02em;
+  color: #666;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heroAccentText {
+    animation: none;
+    -webkit-text-fill-color: #1A1A1A;
+  }
+}
+
 .subtitle {
   font-size: 1.25rem;
   color: var(--muted-foreground);

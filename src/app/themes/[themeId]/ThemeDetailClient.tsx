@@ -27,7 +27,9 @@ import {
     Activity,
     Star,
     Play,
-    Maximize2
+    Maximize2,
+    Layers,
+    Globe
 } from 'lucide-react';
 import type { Theme } from '@/lib/constants/themes';
 import { useWeddingStore } from '@/store/wedding-store';
@@ -38,6 +40,7 @@ import clsx from 'clsx';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { motion } from 'framer-motion';
 import { InvitationCard } from '@/components/preview/InvitationCard';
+import { RsvpWebsiteCard } from '@/components/preview/RsvpWebsiteCard';
 
 const DUMMY_EVENT = {
     id: 'preview',
@@ -161,6 +164,7 @@ export default function ThemeDetailClient({
 
     const [selectedPlan, setSelectedPlan] = useState<keyof typeof PLANS>('complete');
     const [selectedAssetIndex, setSelectedAssetIndex] = useState(0);
+    const [viewMode, setViewMode] = useState<'cards' | 'website'>('cards');
     const [activeSlide, setActiveSlide] = useState(0);
     const [showStickyBar, setShowStickyBar] = useState(false);
     const [isPersonalising, setIsPersonalising] = useState(false);
@@ -429,58 +433,99 @@ export default function ThemeDetailClient({
 
             <div className="container">
 
-                <div
-                    className={clsx(styles.mobileCarousel, styles.mobileOnly)}
-                    onScroll={handleCarouselScroll}
-                    ref={carouselRef}
-                >
-                    {assets.map((asset, index) => (
-                        <div key={index} className={styles.carouselItem} onClick={() => setPreviewIndex(index)}>
-                            {asset.image.toLowerCase().endsWith('.html') ? (
-                                <InvitationCard
-                                    event={DUMMY_EVENT as any}
-                                    theme={theme}
-                                    groomName={undefined as unknown as string}
-                                    brideName={undefined as unknown as string}
-                                    groomParents={undefined}
-                                    brideParents={undefined}
-                                    customImage={asset.image}
-                                    isRawPreview={true}
-                                />
-                            ) : (
-                                <Image
-                                    src={asset.image}
-                                    alt={asset.name}
-                                    fill
-                                    style={{ objectFit: 'cover' }}
-                                />
-                            )}
-                            <div style={{
-                                position: 'absolute',
-                                bottom: '10px',
-                                right: '10px',
-                                background: 'rgba(0,0,0,0.6)',
-                                color: 'white',
-                                padding: '4px 8px',
-                                borderRadius: '4px',
-                                fontSize: '0.7rem'
-                            }}>
-                                Swipe to view
+                {/* Mobile View Toggle */}
+                <div className={clsx(styles.viewToggleWrapper, styles.mobileOnly)} style={{ marginBottom: '1rem' }}>
+                    <div className={styles.viewTogglePill}>
+                        <button
+                            type="button"
+                            className={clsx(styles.toggleBtn, viewMode === 'cards' && styles.toggleBtnActive)}
+                            onClick={() => setViewMode('cards')}
+                        >
+                            <Layers size={14} />
+                            <span>Cards View</span>
+                        </button>
+                        <button
+                            type="button"
+                            className={clsx(styles.toggleBtn, viewMode === 'website' && styles.toggleBtnActive)}
+                            onClick={() => setViewMode('website')}
+                        >
+                            <Globe size={14} />
+                            <span>Website</span>
+                            <span className={styles.liveBadge}>LIVE</span>
+                        </button>
+                    </div>
+                </div>
+
+                {viewMode === 'website' ? (
+                    <div className={clsx(styles.mobileWebsiteContainer, styles.mobileOnly)}>
+                        <div className={clsx(styles.mainImageWrapper, styles.mainImageWrapperWebsite)} style={{ width: '100%', maxWidth: '340px' }}>
+                            <div className={styles.websitePhoneFrame}>
+                                <div className={styles.websitePhoneNotch}>
+                                    <div className={styles.websitePhoneSpeaker} />
+                                    <div className={styles.websitePhoneCamera} />
+                                </div>
+                                <div className={styles.websitePhoneScreen}>
+                                    <RsvpWebsiteCard isInteractive={true} />
+                                </div>
                             </div>
                         </div>
-                    ))}
-                </div>
-                {/* Carousel Dots - Mobile */}
-                <div className={clsx(styles.carouselDots, styles.mobileOnly)}>
-                    {assets.slice(0, 5).map((_, i) => (
+                    </div>
+                ) : (
+                    <>
                         <div
-                            key={i}
-                            className={clsx(styles.dot, activeSlide === i && styles.activeDot)}
-                            onClick={() => scrollToSlide(i)}
-                            style={{ cursor: 'pointer' }}
-                        />
-                    ))}
-                </div>
+                            className={clsx(styles.mobileCarousel, styles.mobileOnly)}
+                            onScroll={handleCarouselScroll}
+                            ref={carouselRef}
+                        >
+                            {assets.map((asset, index) => (
+                                <div key={index} className={styles.carouselItem} onClick={() => setPreviewIndex(index)}>
+                                    {asset.image.toLowerCase().endsWith('.html') ? (
+                                        <InvitationCard
+                                            event={DUMMY_EVENT as any}
+                                            theme={theme}
+                                            groomName={undefined as unknown as string}
+                                            brideName={undefined as unknown as string}
+                                            groomParents={undefined}
+                                            brideParents={undefined}
+                                            customImage={asset.image}
+                                            isRawPreview={true}
+                                        />
+                                    ) : (
+                                        <Image
+                                            src={asset.image}
+                                            alt={asset.name}
+                                            fill
+                                            style={{ objectFit: 'cover' }}
+                                        />
+                                    )}
+                                    <div style={{
+                                        position: 'absolute',
+                                        bottom: '10px',
+                                        right: '10px',
+                                        background: 'rgba(0,0,0,0.6)',
+                                        color: 'white',
+                                        padding: '4px 8px',
+                                        borderRadius: '4px',
+                                        fontSize: '0.7rem'
+                                    }}>
+                                        Swipe to view
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        {/* Carousel Dots - Mobile */}
+                        <div className={clsx(styles.carouselDots, styles.mobileOnly)}>
+                            {assets.slice(0, 5).map((_, i) => (
+                                <div
+                                    key={i}
+                                    className={clsx(styles.dot, activeSlide === i && styles.activeDot)}
+                                    onClick={() => scrollToSlide(i)}
+                                    style={{ cursor: 'pointer' }}
+                                />
+                            ))}
+                        </div>
+                    </>
+                )}
 
                 <div className={styles.layout}>
                     {/* Left Column: Asset Grid Refactored (Desktop) */}
@@ -493,9 +538,13 @@ export default function ThemeDetailClient({
                                     key={index}
                                     className={clsx(
                                         styles.thumbnailItem,
-                                        selectedAssetIndex === index ? styles.thumbnailItemActive : styles.thumbnailItemInactive
+                                        viewMode === 'cards' && selectedAssetIndex === index ? styles.thumbnailItemActive : styles.thumbnailItemInactive
                                     )}
-                                    onClick={() => { setSelectedAssetIndex(index); pauseAndResume(); }}
+                                    onClick={() => { 
+                                        if (viewMode === 'website') setViewMode('cards');
+                                        setSelectedAssetIndex(index); 
+                                        pauseAndResume(); 
+                                    }}
                                 >
                                     <div className={styles.thumbnailItemInner}>
                                         {asset.image.toLowerCase().endsWith('.html') ? (
@@ -529,15 +578,31 @@ export default function ThemeDetailClient({
                                 </div>
                             ))}
                             {assets.length > 4 && (
-                                <div className={styles.moreDesignsBtn} onClick={() => setPreviewIndex(0)}>
+                                <div className={styles.moreDesignsBtn} onClick={() => {
+                                    if (viewMode === 'website') setViewMode('cards');
+                                    setPreviewIndex(0);
+                                }}>
                                     <span className={styles.moreDesignsCount}>+{assets.length - 4}</span>
                                     <span>More<br />Designs</span>
                                 </div>
                             )}
                         </div>
 
-                        {/* Main Image on the right - Crossfade Stack */}
+                        {/* Main Image on the right - Crossfade Stack or RSVP Website View */}
                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
+                            {viewMode === 'website' ? (
+                                <div className={clsx(styles.mainImageWrapper, styles.mainImageWrapperWebsite)}>
+                                    <div className={styles.websitePhoneFrame}>
+                                        <div className={styles.websitePhoneNotch}>
+                                            <div className={styles.websitePhoneSpeaker} />
+                                            <div className={styles.websitePhoneCamera} />
+                                        </div>
+                                        <div className={styles.websitePhoneScreen}>
+                                            <RsvpWebsiteCard isInteractive={true} />
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
                                 <div
                                     className={styles.mainImageWrapper}
                                     onClick={() => setPreviewIndex(selectedAssetIndex)}
@@ -580,21 +645,51 @@ export default function ThemeDetailClient({
                                         )
                                     ))}
                                 </div>
+                            )}
 
                             {/* Floating Prev Button */}
-                            <div className={styles.galleryPrevBtn} onClick={() => {
-                                setSelectedAssetIndex((prev) => (prev - 1 + Math.min(assets.length, 5)) % Math.min(assets.length, 5));
-                                pauseAndResume();
-                            }}>
-                                <ChevronLeft size={24} />
-                            </div>
+                            {viewMode === 'cards' && (
+                                <div className={styles.galleryPrevBtn} onClick={() => {
+                                    setSelectedAssetIndex((prev) => (prev - 1 + Math.min(assets.length, 5)) % Math.min(assets.length, 5));
+                                    pauseAndResume();
+                                }}>
+                                    <ChevronLeft size={24} />
+                                </div>
+                            )}
 
                             {/* Floating Next Button */}
-                            <div className={styles.galleryNextBtn} onClick={() => {
-                                setSelectedAssetIndex((prev) => (prev + 1) % Math.min(assets.length, 5));
-                                pauseAndResume();
-                            }}>
-                                <ChevronRight size={24} />
+                            {viewMode === 'cards' && (
+                                <div className={styles.galleryNextBtn} onClick={() => {
+                                    setSelectedAssetIndex((prev) => (prev + 1) % Math.min(assets.length, 5));
+                                    pauseAndResume();
+                                }}>
+                                    <ChevronRight size={24} />
+                                </div>
+                            )}
+
+                            {/* Toggle Button Below the Image */}
+                            <div className={styles.viewToggleWrapper}>
+                                <div className={styles.viewTogglePill}>
+                                    <button
+                                        type="button"
+                                        className={clsx(styles.toggleBtn, viewMode === 'cards' && styles.toggleBtnActive)}
+                                        onClick={() => setViewMode('cards')}
+                                        aria-label="View Invitation Cards"
+                                    >
+                                        <Layers size={14} />
+                                        <span>Cards View</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className={clsx(styles.toggleBtn, viewMode === 'website' && styles.toggleBtnActive)}
+                                        onClick={() => setViewMode('website')}
+                                        aria-label="View Live Website"
+                                    >
+                                        <Globe size={14} />
+                                        <span>Website</span>
+                                        <span className={styles.liveBadge}>LIVE</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>

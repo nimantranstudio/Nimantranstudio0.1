@@ -79,25 +79,39 @@ export default async function Home() {
             <div className={styles.heroTextSection}>
               <motion.div
                 className={styles.trustedBadge}
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ type: "spring", bounce: 0, duration: 0.8 }}
+                initial={{ opacity: 0, transform: 'translateY(12px)' }}
+                animate={{ opacity: 1, transform: 'translateY(0px)' }}
+                transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
               >
                 <span><strong>Trusted by</strong> Indian families for stress-free wedding invites</span>
               </motion.div>
 
-              <motion.h1
-                className={styles.heroTitle}
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ type: "spring", bounce: 0, duration: 0.8, delay: 0.05 }}
-              >
-                <span style={{ display: 'block' }}>Invitations built for</span>
-                <span style={{ display: 'block', marginTop: '0.5rem' }}>Great Indian Weddings</span>
-                <span style={{ fontSize: '0.45em', display: 'block', marginTop: '2rem', fontWeight: 300, lineHeight: '1.5', fontFamily: 'var(--font-inter), sans-serif', letterSpacing: '0.02em', color: '#666' }}>
-                  <span style={{ display: 'block' }}>Create, share and manage beautiful wedding invites,<br /> RSVPs and guest updates all in one simple platform.</span>
+              <h1 className={styles.heroTitle}>
+                <span className={styles.heroLineMask}>
+                  <motion.span
+                    className={styles.heroLineText}
+                    initial={{ opacity: 0, transform: 'translateY(105%)' }}
+                    animate={{ opacity: 1, transform: 'translateY(0%)' }}
+                    transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
+                  >
+                    Invitations built for<br />
+                    <span className={styles.heroAccentText}>
+                      Great Indian Weddings
+                    </span>
+                  </motion.span>
                 </span>
-              </motion.h1>
+
+                <span className={styles.heroSubtitleWrap}>
+                  <motion.span
+                    className={styles.heroSubtitleText}
+                    initial={{ opacity: 0, transform: 'translateY(12px)' }}
+                    animate={{ opacity: 1, transform: 'translateY(0px)' }}
+                    transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.32 }}
+                  >
+                    Create, share and manage beautiful wedding invites,<br /> RSVPs and guest updates all in one simple platform.
+                  </motion.span>
+                </span>
+              </h1>
 
               <HeroActions />
 
