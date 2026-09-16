@@ -58,9 +58,18 @@ export default async function ThemeDetailPage({ params }: { params: Promise<{ th
             }
         }),
         prisma.package.findMany({ where: { isActive: true } }),
-        prisma.theme.findMany({ 
-            where: { isActive: true }, 
+        // Needs the same bundles/bundleInvoices shape ThemeCard reads pricing
+        // from — without it, every recommended theme falls into ThemeCard's
+        // "no bundle data" branch and shows "Price TBD" regardless of whether
+        // real pricing exists (it did here; this query just never fetched it).
+        prisma.theme.findMany({
+            where: { isActive: true },
             take: 20,
+            include: {
+                bundles: {
+                    include: { bundleInvoices: true }
+                }
+            },
             orderBy: [
                 { sequence: 'asc' },
                 { createdAt: 'desc' }

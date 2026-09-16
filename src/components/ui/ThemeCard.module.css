@@ -1,18 +1,28 @@
+.cardWrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+    position: relative;
+    padding-top: 8px;
+    margin-top: -8px;
+}
+
 .card {
     background: white;
     border-radius: 1.25rem;
     overflow: hidden;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    cursor: pointer;
     border: 1px solid #f0f0f0;
     position: relative;
     display: flex;
     flex-direction: column;
     height: 100%;
-    /* Reset anchor tag defaults */
-    text-decoration: none;
-    color: inherit;
+    transition: transform 260ms cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 260ms cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: transform, box-shadow;
 }
 
 /* Golden Glare Effect */
@@ -33,18 +43,18 @@
     z-index: 2;
 }
 
-.card:hover::after {
+.cardWrapper:hover .card::after {
     left: 150%;
     transition: left 1.5s ease;
 }
 
-.card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.1), 0 8px 16px -4px rgba(0, 0, 0, 0.04);
+.cardWrapper:hover .card {
+    transform: translateY(-6px);
+    box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.12), 0 8px 16px -4px rgba(0, 0, 0, 0.04);
 }
 
-.card:active {
-    transform: scale(0.98);
+.cardWrapper:active .card {
+    transform: translateY(-2px) scale(0.99);
     transition: transform 0s;
 }
 
@@ -187,33 +197,49 @@
 
 .cta {
     width: 100%;
-    padding: 0.8rem;
-    background: linear-gradient(135deg, #ECC878 0%, #D4AF37 100%);
-    color: #111111;
-    border: none;
+    padding: 0.85rem 1.25rem;
+    background: #FFFFFF;
+    color: #374151;
+    border: 1px solid #E5E7EB;
     border-radius: 0.75rem;
-    font-size: 0.95rem;
+    font-size: 0.925rem;
     font-weight: 600;
+    letter-spacing: 0.01em;
     cursor: pointer;
-    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.2);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
     margin-top: auto;
+    position: relative;
+    overflow: hidden;
+    transform: translateZ(0);
+    transition: 
+        background 220ms cubic-bezier(0.23, 1, 0.32, 1),
+        color 180ms ease,
+        border-color 200ms ease,
+        box-shadow 220ms cubic-bezier(0.23, 1, 0.32, 1),
+        transform 120ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
-.cta:active {
-    transform: scale(0.96);
-    transition: transform 0s;
+/* On card hover OR direct button hover: illuminate to primary gold without geometric shifting */
+.cardWrapper:hover .cta {
+    background: linear-gradient(135deg, #ECC878 0%, #D4AF37 100%);
+    color: #111111;
+    border-color: transparent;
+    box-shadow: 0 6px 18px rgba(212, 175, 55, 0.28), 0 2px 6px rgba(0, 0, 0, 0.04);
 }
 
 .cta:hover {
-    background: linear-gradient(135deg, #f0d59a 0%, #e0c15a 100%);
-    box-shadow: 0 6px 16px rgba(212, 175, 55, 0.3);
-    transform: translateY(-2px);
+    background: linear-gradient(135deg, #F3DCA0 0%, #DDB643 100%);
+    color: #111111;
+    border-color: transparent;
+    box-shadow: 0 8px 22px rgba(212, 175, 55, 0.36), 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
-.cta:active {
-    transform: translateY(0);
+/* Emil & UI/UX Pro Max: Immediate tactile response on active press */
+.cta:active,
+.cardWrapper:active .cta {
+    transform: scale(0.97);
+    transition: transform 0s;
 }

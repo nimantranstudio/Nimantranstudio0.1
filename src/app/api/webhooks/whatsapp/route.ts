@@ -1,5 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import crypto from 'crypto';
+
+/**
+ * Verifies Meta's X-Hub-Signature-256 header — HMAC-SHA256 of the raw request
+ * body, keyed by the WhatsApp/Meta app secret. Standard verification for every
+ * Meta webhook receiver; without it, this endpoint would accept and process
+ * any POSTed JSON as if it genuinely came from Meta (message-status spoofing).
+ * Constant-time compare so the check itself can't leak the secret via timing.
+ */
+function isValidWebhookSignature(rawBody: string, signatureHeader: string | null, secret: string): boolean {
+    if (!signatureHeader) return false;
+    const expected = 'sha256=' + crypto.createHmac('sha256', secret).update(rawBody).digest('hex');
+    const expectedBuf = Buffer.from(expected);
+    const givenBuf = Buffer.from(signatureHeader);
+    if (expectedBuf.length !== givenBuf.length) return false;
+    return crypto.timingSafeEqual(expectedBuf, givenBuf);
+}
 
 export async function GET(req: NextRequest) {
     try {
@@ -49,7 +66,30 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
     try {
-        const body = await req.json();
+        // Read the raw body text (not req.json()) so the exact bytes Meta
+        // signed are what gets verified — re-serializing a parsed object
+        // isn't guaranteed to match byte-for-byte.
+        const rawBody = await req.text();
+        const appSecret = process.env.WHATSAPP_APP_SECRET;
+
+        if (appSecret) {
+            const signature = req.headers.get('x-hub-signature-256');
+            if (!isValidWebhookSignature(rawBody, signature, appSecret)) {
+                console.warn('WhatsApp webhook: invalid or missing X-Hub-Signature-256 — rejecting request.');
+                return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
+            }
+        } else {
+            // Matches this codebase's existing pattern for a missing secret
+            // (see resolveSessionSecret) — fail loud in logs rather than
+            // silently accepting unverified webhook payloads with no trace.
+            console.error(
+                '[SECURITY] WHATSAPP_APP_SECRET is not set — this webhook is accepting POST ' +
+                'payloads WITHOUT verifying they actually came from Meta. Set WHATSAPP_APP_SECRET ' +
+                '(the WhatsApp/Meta app secret) to close this gap.'
+            );
+        }
+
+        const body = JSON.parse(rawBody);
 
         console.log('WhatsApp webhook received:', JSON.stringify(body, null, 2));
 
