@@ -7,6 +7,7 @@ import HeroImage from "@/components/home/HeroImage";
 import { ThemeShowcase } from "@/components/home/ThemeShowcase";
 import { HeroActions } from "@/components/home/HeroActions";
 import { prisma } from "@/lib/prisma";
+import { getHeadlinePricing } from "@/lib/pricing";
 import * as motion from "framer-motion/client";
 
 export const dynamic = 'force-dynamic';
@@ -63,7 +64,7 @@ async function getThemes() {
 }
 
 export default async function Home() {
-  const themes = await getThemes();
+  const [themes, pricing] = await Promise.all([getThemes(), getHeadlinePricing()]);
 
   return (
     <main className={styles.main}>
@@ -195,7 +196,11 @@ export default async function Home() {
 
       <ThemeShowcase initialThemes={themes} />
 
-      <PricingSection />
+      <PricingSection
+        price={pricing.price}
+        originalPrice={pricing.originalPrice}
+        savings={pricing.savings}
+      />
       <TestimonialSection />
       <FaqSection />
     </main>

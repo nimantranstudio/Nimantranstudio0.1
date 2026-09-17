@@ -16,7 +16,16 @@ const features = [
     "No watermark, ever",
 ];
 
-export const PricingSection = () => {
+interface PricingSectionProps {
+    /** From getHeadlinePricing() — the admin-configured bundle price. */
+    price: number;
+    originalPrice: number;
+    savings: number;
+}
+
+const inr = (n: number) => n.toLocaleString('en-IN');
+
+export const PricingSection = ({ price, originalPrice, savings }: PricingSectionProps) => {
     return (
         <section className={styles.premiumConversionSection}>
             <div className="container">
@@ -70,12 +79,15 @@ export const PricingSection = () => {
 
                         {/* Price section */}
                         <div style={{ padding: '2.5rem 2.5rem 2rem', textAlign: 'center' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.625rem', marginBottom: '0.875rem' }}>
-                                <span style={{ fontSize: '0.95rem', color: '#94A3B8', textDecoration: 'line-through', fontWeight: 500 }}>₹2,500</span>
-                                <span style={{ background: '#DCFCE7', color: '#15803D', fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.06em', padding: '4px 12px', borderRadius: '100px' }}>
-                                    SAVE ₹1,501
-                                </span>
-                            </div>
+                            {/* Only claim a discount when one is actually configured. */}
+                            {originalPrice > 0 && (
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.625rem', marginBottom: '0.875rem' }}>
+                                    <span style={{ fontSize: '0.95rem', color: '#94A3B8', textDecoration: 'line-through', fontWeight: 500 }}>₹{inr(originalPrice)}</span>
+                                    <span style={{ background: '#DCFCE7', color: '#15803D', fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.06em', padding: '4px 12px', borderRadius: '100px' }}>
+                                        SAVE ₹{inr(savings)}
+                                    </span>
+                                </div>
+                            )}
 
                             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: '0.375rem', marginBottom: '0.875rem' }}>
                                 <span style={{
@@ -85,7 +97,7 @@ export const PricingSection = () => {
                                     color: '#111',
                                     lineHeight: 1,
                                 }}>
-                                    <span style={{ fontSize: '2rem', verticalAlign: 'super', fontWeight: 500 }}>₹</span>999
+                                    <span style={{ fontSize: '2rem', verticalAlign: 'super', fontWeight: 500 }}>₹</span>{inr(price)}
                                 </span>
                                 <span style={{
                                     fontSize: '0.7rem',
@@ -142,7 +154,7 @@ export const PricingSection = () => {
                                     boxShadow: '0 4px 20px rgba(212,175,55,0.3)',
                                 }}
                             >
-                                Create Nimantran — ₹999
+                                Create Nimantran — ₹{inr(price)}
                             </Link>
 
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
