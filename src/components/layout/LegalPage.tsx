@@ -137,7 +137,7 @@ export function LegalPage({
                             </p>
                             <div className="flex flex-wrap gap-5 justify-center">
                                 <a
-                                    href="mailto:hello@nimantranstudio.com"
+                                    href="mailto:hello@nimantranstudio.in"
                                     className="inline-flex items-center gap-3 bg-[#000] text-white px-10 py-4 rounded-full text-sm font-bold hover:bg-[#1a1a1a] transition-all hover:shadow-xl hover:translate-y-[-2px]"
                                 >
                                     <Mail size={16} /> Email Us

@@ -108,9 +108,9 @@ export default function AboutPage() {
                         We'd love to hear from you
                     </h2>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', alignItems: 'center' }}>
-                        <a href="mailto:hello@nimantranstudio.com" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--secondary)', textDecoration: 'none', fontWeight: 500 }}>
+                        <a href="mailto:hello@nimantranstudio.in" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--secondary)', textDecoration: 'none', fontWeight: 500 }}>
                             <Mail size={18} color="var(--primary)" />
-                            hello@nimantranstudio.com
+                            hello@nimantranstudio.in
                         </a>
                         <a href="tel:+918010581916" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--secondary)', textDecoration: 'none', fontWeight: 500 }}>
                             <Phone size={18} color="var(--primary)" />

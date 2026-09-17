@@ -63,7 +63,7 @@ export default function Footer() {
                         <ul className={styles.contactList}>
                             <li>
                                 <span className={styles.contactIcon}><Mail size={15} /></span>
-                                <a href="mailto:hello@nimantranstudio.com">hello@nimantranstudio.com</a>
+                                <a href="mailto:hello@nimantranstudio.in">hello@nimantranstudio.in</a>
                             </li>
                             <li>
                                 <span className={styles.contactIcon}><Phone size={15} /></span>

@@ -102,7 +102,7 @@ export async function POST(req: NextRequest) {
 }
 
 async function getOrCreateGuestUser() {
-    const guestEmail = 'guest@nimantranstudio.com';
+    const guestEmail = 'guest@nimantranstudio.in';
     let user = await prisma.user.findUnique({ where: { email: guestEmail } });
     if (!user) {
         user = await prisma.user.create({
