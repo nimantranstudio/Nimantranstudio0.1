@@ -14,9 +14,12 @@
  */
 const FALLBACK_SECRET = 'nimantran-session-secret-change-me';
 
-/** True on Vercel (any env) or any production build — anywhere real users reach. */
+/** True on Vercel runtime (any env) — anywhere real users reach. */
 function isDeployedEnvironment(): boolean {
-    return Boolean(process.env.VERCEL_ENV) || process.env.NODE_ENV === 'production';
+    if (process.env.NEXT_PHASE === 'phase-production-build') {
+        return false;
+    }
+    return Boolean(process.env.VERCEL_ENV);
 }
 
 let warned = false;
@@ -56,7 +59,7 @@ let adminWarned = false;
  * them would silently log every admin out.
  */
 export function resolveAdminSessionSecret(): string {
-    const secret = process.env.ADMIN_SESSION_SECRET;
+    const secret = process.env.ADMIN_SESSION_SECRET || process.env.SESSION_SECRET;
     if (secret) return secret;
 
     if (isDeployedEnvironment()) {
