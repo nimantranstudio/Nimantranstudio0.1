@@ -4,15 +4,20 @@
  * chain independently. Centralized here so there's exactly one place that
  * decides what happens when SESSION_SECRET isn't set.
  *
- * Deliberately does not throw when missing: this codebase's NODE_ENV can't be
- * verified from here to reliably reflect the real production deployment, and
- * a hard crash on a misconfigured secret would take down every session-
- * checking route (including this app's own kill switch) with no fallback.
- * Instead it fails loud — a wrong secret is a live incident either way, so the
- * priority is making sure it's impossible to miss in logs, not making the app
- * unreachable if it happens to slip through configuration in production.
+ * On any DEPLOYED environment this throws rather than falling back: the
+ * fallback below is a publicly-known string living in the repo, so running
+ * with it means every session cookie and OTP hash on the site is forgeable by
+ * anyone who has read this file — a silent, total authentication bypass. An
+ * app that refuses to boot is a visible, fixable incident; an app quietly
+ * accepting forged admin sessions is not. Local development still gets the
+ * fallback so nothing needs configuring just to run the dev server.
  */
 const FALLBACK_SECRET = 'nimantran-session-secret-change-me';
+
+/** True on Vercel (any env) or any production build — anywhere real users reach. */
+function isDeployedEnvironment(): boolean {
+    return Boolean(process.env.VERCEL_ENV) || process.env.NODE_ENV === 'production';
+}
 
 let warned = false;
 
@@ -20,14 +25,55 @@ export function resolveSessionSecret(): string {
     const secret = process.env.SESSION_SECRET || process.env.ADMIN_SESSION_SECRET;
     if (secret) return secret;
 
+    if (isDeployedEnvironment()) {
+        throw new Error(
+            '[SECURITY] SESSION_SECRET is not set in a deployed environment. Refusing to sign ' +
+            'sessions with the publicly-known development fallback — every session and OTP ' +
+            'signature would be forgeable. Set SESSION_SECRET (a long random string) in the ' +
+            'environment configuration.'
+        );
+    }
+
     if (!warned) {
         warned = true;
         // eslint-disable-next-line no-console
         console.error(
             '[SECURITY] SESSION_SECRET is not set — falling back to a publicly-known ' +
-            'development default. Every session/OTP signature is forgeable with this ' +
-            'secret. Set SESSION_SECRET (a long random string) before deploying to production.'
+            'development default. Allowed locally only; a deployed environment without ' +
+            'SESSION_SECRET will refuse to start.'
         );
     }
     return FALLBACK_SECRET;
+}
+
+const ADMIN_FALLBACK_SECRET = 'nimantran-admin-secret-change-me';
+let adminWarned = false;
+
+/**
+ * Same guarantee for the legacy admin cookie (admin-session.ts). Kept on
+ * ADMIN_SESSION_SECRET rather than folded into the resolver above so that
+ * already-issued admin cookies keep verifying — switching which secret signs
+ * them would silently log every admin out.
+ */
+export function resolveAdminSessionSecret(): string {
+    const secret = process.env.ADMIN_SESSION_SECRET;
+    if (secret) return secret;
+
+    if (isDeployedEnvironment()) {
+        throw new Error(
+            '[SECURITY] ADMIN_SESSION_SECRET is not set in a deployed environment. Refusing to ' +
+            'sign admin sessions with the publicly-known development fallback — anyone could ' +
+            'forge an admin cookie. Set ADMIN_SESSION_SECRET in the environment configuration.'
+        );
+    }
+
+    if (!adminWarned) {
+        adminWarned = true;
+        // eslint-disable-next-line no-console
+        console.error(
+            '[SECURITY] ADMIN_SESSION_SECRET is not set — using the publicly-known development ' +
+            'default. Allowed locally only.'
+        );
+    }
+    return ADMIN_FALLBACK_SECRET;
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyAuth } from '@/lib/auth-server';
+import { rateLimit, clientKey } from '@/lib/rate-limit';
 import sanitizeHtml from 'sanitize-html';
 
 export const dynamic = 'force-dynamic';
@@ -15,6 +16,17 @@ export async function POST(
     { params }: { params: Promise<{ weddingId: string }> }
 ) {
     try {
+        // Public endpoint — anyone with the invitation link can submit. Capped
+        // so a script can't flood a couple's guest list, but loose enough that
+        // a whole family RSVPing from one home/venue network is unaffected.
+        const limit = rateLimit(clientKey(req, 'rsvp'), { limit: 20, windowMs: 10 * 60 * 1000 });
+        if (!limit.ok) {
+            return NextResponse.json(
+                { success: false, error: 'Too many RSVP submissions. Please try again shortly.' },
+                { status: 429, headers: { 'Retry-After': String(limit.retryAfterSec) } }
+            );
+        }
+
         const { weddingId } = await params;
         const body = await req.json();
 

@@ -1,9 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { verifyAuth } from "@/lib/auth-server";
 import { startVideoRender } from "@/lib/video-renderer";
 
 export async function POST(req: NextRequest) {
   try {
+    // Ownership-checked: rendering is expensive and the output is the couple's
+    // own invitation video. Without this, any caller could kick off renders
+    // against an arbitrary orderId belonging to someone else.
+    const { user, error: authError } = await verifyAuth(req);
+    if (authError || !user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { orderId, slide1Bg, slide2Bg, slide3Bg, slide4Bg, slide5Bg } = await req.json();
     if (!orderId) {
       return NextResponse.json({ error: "Missing orderId" }, { status: 400 });
@@ -39,7 +48,8 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    if (!order) {
+    // Deliberately 404 rather than 403 — don't confirm an orderId exists to a non-owner.
+    if (!order || order.userId !== user.id) {
       return NextResponse.json({ error: "Order not found" }, { status: 404 });
     }
 

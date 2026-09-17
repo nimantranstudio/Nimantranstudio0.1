@@ -5,7 +5,9 @@
  * server-side on every admin route — the client cannot forge it.
  */
 
-const SECRET = process.env.ADMIN_SESSION_SECRET || 'nimantran-admin-secret-change-me';
+import { resolveAdminSessionSecret } from './session-secret';
+
+const SECRET = resolveAdminSessionSecret();
 const encoder = new TextEncoder();
 
 export const ADMIN_COOKIE = 'ns_admin';

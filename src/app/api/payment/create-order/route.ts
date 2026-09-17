@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Razorpay from 'razorpay';
 import { prisma } from '@/lib/prisma';
+import { rateLimit, clientKey } from '@/lib/rate-limit';
 
 /**
  * Creates a Razorpay order for the selected theme + package.
@@ -13,6 +14,16 @@ import { prisma } from '@/lib/prisma';
  */
 export async function POST(req: NextRequest) {
     try {
+        // Unauthenticated by necessity (checkout precedes the session), so cap
+        // it — a real buyer creates a couple of orders, not hundreds.
+        const limit = rateLimit(clientKey(req, 'create-order'), { limit: 20, windowMs: 10 * 60 * 1000 });
+        if (!limit.ok) {
+            return NextResponse.json(
+                { error: 'Too many attempts. Please try again shortly.' },
+                { status: 429, headers: { 'Retry-After': String(limit.retryAfterSec) } }
+            );
+        }
+
         const { themeId, packageName, currency = 'INR' } = await req.json();
 
         if (!themeId || !packageName) {
