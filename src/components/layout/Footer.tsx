@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Facebook, InstagramIcon, Heart, YoutubeIcon, Mail, Phone, MapPin } from 'lucide-react';
+import { GovtTrustBadge } from '@/components/home/GovtTrustBadge';
 import styles from './Footer.module.css';
 
 export default function Footer() {
@@ -16,6 +17,9 @@ export default function Footer() {
                         <p className={styles.brandDesc}>
                             Nimantran Studio is a simple platform for creating wedding invitations, sharing them instantly on WhatsApp, and tracking guest RSVPs — all in one place.
                         </p>
+                        <div className={styles.footerTrust}>
+                            <GovtTrustBadge className={styles.footerBadge} showIcon={false} />
+                        </div>
                         <div className={styles.socials}>
                             <a href="https://www.facebook.com/people/Nimantranstudioin/61570740157527/?sk=about" aria-label="Facebook" target="_blank" rel="noopener noreferrer">
                                 <div className={styles.socialIcon}><Facebook size={18} /></div>

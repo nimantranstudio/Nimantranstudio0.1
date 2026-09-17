@@ -13,7 +13,7 @@
 }
 
 .brandCol {
-    max-width: 320px;
+    max-width: 380px;
 }
 
 .logo {
@@ -48,6 +48,14 @@
     line-height: 1.6;
     color: var(--muted-foreground);
     opacity: 0.8;
+}
+
+.footerTrust {
+    margin-top: 1.25rem;
+}
+
+.footerBadge {
+    margin-top: 0 !important;
 }
 
 .linkCol h4 {

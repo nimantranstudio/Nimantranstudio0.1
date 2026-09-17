@@ -20,7 +20,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #B8731F;
+  color: #D4AF37;
   flex-shrink: 0;
 }
 
@@ -59,10 +59,6 @@
   font-weight: 400;
 }
 
-.highlight {
-  color: #1E293B;
-  font-weight: 600;
-}
 
 .subLine {
   font-family: var(--font-sans), system-ui, sans-serif;
