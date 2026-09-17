@@ -20,30 +20,30 @@
 }
 
 .eyebrow {
-  font-family: var(--font-inter), var(--font-sans), sans-serif;
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  color: #64748B;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: #55687D;
   text-transform: uppercase;
   line-height: 1.2;
 }
 
 .title {
-  font-family: var(--font-playfair), var(--font-serif), Georgia, serif;
-  font-size: 1.05rem;
+  font-family: var(--font-serif), 'Playfair Display', Georgia, serif;
+  font-size: 1.45rem;
   font-weight: 600;
-  color: #1E293B;
+  color: #152238;
   line-height: 1.25;
-  margin: 0.15rem 0;
-  letter-spacing: 0.01em;
+  margin: 0.2rem 0;
+  letter-spacing: 0.005em;
 }
 
 .subtitle {
-  font-family: var(--font-inter), var(--font-sans), sans-serif;
-  font-size: 0.75rem;
-  font-weight: 450;
-  color: #64748B;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 0.95rem;
+  font-weight: 400;
+  color: #55687D;
   line-height: 1.2;
   letter-spacing: 0.01em;
 }
@@ -51,25 +51,25 @@
 .verifiedPill {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  background: #E8F5E9;
-  border: 1px solid #C8E6C9;
+  gap: 0.4rem;
+  background: #E6F4EA;
+  border: 1px solid #C4E7D0;
   border-radius: 9999px;
-  padding: 0.25rem 0.75rem;
-  font-size: 0.72rem;
+  padding: 0.3rem 0.85rem;
+  font-size: 0.82rem;
   font-weight: 700;
   letter-spacing: 0.06em;
-  color: #1B5E20;
-  box-shadow: 0 1px 2px rgba(27, 94, 32, 0.06);
+  color: #137333;
+  box-shadow: 0 1px 2px rgba(19, 115, 51, 0.08);
   white-space: nowrap;
-  font-family: var(--font-inter), var(--font-sans), sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
 }
 
 .checkIcon {
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
-  background: #2E7D32;
+  background: #137333;
   color: #FFFFFF;
   display: inline-flex;
   align-items: center;
@@ -91,19 +91,19 @@
   }
 
   .title {
-    font-size: 0.95rem;
+    font-size: 1.18rem;
   }
 
   .eyebrow {
-    font-size: 0.6rem;
+    font-size: 0.72rem;
   }
 
   .subtitle {
-    font-size: 0.7rem;
+    font-size: 0.85rem;
   }
 
   .verifiedPill {
-    padding: 0.2rem 0.6rem;
-    font-size: 0.65rem;
+    padding: 0.25rem 0.65rem;
+    font-size: 0.75rem;
   }
 }
