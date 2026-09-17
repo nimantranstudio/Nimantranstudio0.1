@@ -121,7 +121,7 @@ export default async function Home() {
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.8, delay: 0.15 }}
               >
-                Preview free · Pay once, yours forever · Trusted by Indian couples
+                Just at ₹ 999 only · Ready in 10 minutes · Free Preview
               </motion.p>
             </div>
             {/* Right Column - Hero Image */}

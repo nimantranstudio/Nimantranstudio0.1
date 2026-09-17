@@ -84,7 +84,45 @@
     font-size: 2.25rem;
     font-weight: 700;
     color: #fff;
-    line-height: 1.2;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+}
+
+.brandAccentText {
+    display: inline-block;
+    background: linear-gradient(
+        120deg,
+        #ECC878 0%,
+        #D4AF37 25%,
+        #FFF4D0 45%,
+        #ECC878 50%,
+        #FFF4D0 55%,
+        #D4AF37 60%,
+        #ECC878 80%,
+        #D4AF37 100%
+    );
+    background-size: 260% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: brandTextSheen 7s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    animation-delay: 0.5s;
+}
+
+@keyframes brandTextSheen {
+    0% {
+        background-position: 120% 0;
+    }
+    30%, 100% {
+        background-position: -120% 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .brandAccentText {
+        animation: none;
+        -webkit-text-fill-color: #D4AF37;
+    }
 }
 
 .brandSubtext {

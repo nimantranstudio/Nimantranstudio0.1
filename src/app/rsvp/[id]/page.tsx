@@ -45,13 +45,24 @@ export async function generateMetadata({
                 wedding.events.map((e) => e.generatedCard?.imageUrl).find(isImageUrl);
             const image = cardImage || '/og-image.png';
 
+            const rsvpUrl = `https://www.nimantranstudio.in/rsvp/${id}`;
+
             return {
                 title,
                 description,
+                alternates: {
+                    canonical: rsvpUrl,
+                },
+                robots: {
+                    index: false,
+                    follow: true,
+                },
                 openGraph: {
                     title,
                     description,
+                    url: rsvpUrl,
                     type: 'website',
+                    siteName: 'Nimantran Studio',
                     images: [image],
                 },
                 twitter: {
@@ -69,6 +80,10 @@ export async function generateMetadata({
     return {
         title: 'Wedding Invitation & RSVP | Nimantran Studio',
         description: 'Digital wedding invitation and online RSVP tracking.',
+        robots: {
+            index: false,
+            follow: true,
+        },
     };
 }
 

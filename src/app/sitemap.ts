@@ -8,9 +8,10 @@ export const dynamic = 'force-dynamic';
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const baseUrl = 'https://www.nimantranstudio.in';
 
-    let themeRoutes = [];
+    let themeRoutes: MetadataRoute.Sitemap = [];
+    let dbBlogRoutes: MetadataRoute.Sitemap = [];
 
-    // Fetch dynamic themes with error handling
+    // 1. Fetch dynamic active themes
     try {
         const themes = await prisma.theme.findMany({
             where: { isActive: true },
@@ -27,25 +28,66 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         console.error('Failed to fetch themes for sitemap:', error);
     }
 
-    const blogRoutes = BLOG_POSTS.map((post) => ({
+    // 2. Fetch dynamic database published blogs
+    try {
+        const dbBlogs = await prisma.blog.findMany({
+            where: { published: true },
+            select: { slug: true, updatedAt: true, createdAt: true }
+        });
+
+        dbBlogRoutes = dbBlogs.map((blog) => ({
+            url: `${baseUrl}/blogs/${blog.slug}`,
+            lastModified: blog.updatedAt || blog.createdAt || new Date(),
+            changeFrequency: 'weekly' as const,
+            priority: 0.7,
+        }));
+    } catch (error) {
+        console.error('Failed to fetch db blogs for sitemap:', error);
+    }
+
+    // 3. Fallback static blog posts
+    const staticBlogRoutes = BLOG_POSTS.map((post) => ({
         url: `${baseUrl}/blogs/${post.slug}`,
-        lastModified: new Date(), // Using current date as blogData doesn't have a strict lastModified field
+        lastModified: new Date(),
         changeFrequency: 'monthly' as const,
         priority: 0.7,
     }));
 
-    const staticRoutes = [
+    // Deduplicate blog routes by URL
+    const seenBlogUrls = new Set<string>();
+    const uniqueBlogRoutes: MetadataRoute.Sitemap = [];
+    for (const route of [...dbBlogRoutes, ...staticBlogRoutes]) {
+        if (!seenBlogUrls.has(route.url)) {
+            seenBlogUrls.add(route.url);
+            uniqueBlogRoutes.push(route);
+        }
+    }
+
+    // 4. Core static pages
+    const staticRoutes: MetadataRoute.Sitemap = [
         {
             url: baseUrl,
             lastModified: new Date(),
-            changeFrequency: 'monthly' as const,
-            priority: 1,
+            changeFrequency: 'daily' as const,
+            priority: 1.0,
         },
         {
             url: `${baseUrl}/themes`,
             lastModified: new Date(),
-            changeFrequency: 'weekly' as const,
+            changeFrequency: 'daily' as const,
             priority: 0.9,
+        },
+        {
+            url: `${baseUrl}/pricing`,
+            lastModified: new Date(),
+            changeFrequency: 'weekly' as const,
+            priority: 0.8,
+        },
+        {
+            url: `${baseUrl}/blogs`,
+            lastModified: new Date(),
+            changeFrequency: 'daily' as const,
+            priority: 0.8,
         },
         {
             url: `${baseUrl}/about`,
@@ -54,12 +96,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             priority: 0.5,
         },
         {
-            url: `${baseUrl}/pricing`,
+            url: `${baseUrl}/privacy`,
             lastModified: new Date(),
             changeFrequency: 'monthly' as const,
-            priority: 0.6,
+            priority: 0.3,
+        },
+        {
+            url: `${baseUrl}/terms`,
+            lastModified: new Date(),
+            changeFrequency: 'monthly' as const,
+            priority: 0.3,
+        },
+        {
+            url: `${baseUrl}/refund-policy`,
+            lastModified: new Date(),
+            changeFrequency: 'monthly' as const,
+            priority: 0.3,
         },
     ];
 
-    return [...staticRoutes, ...themeRoutes, ...blogRoutes];
+    return [...staticRoutes, ...themeRoutes, ...uniqueBlogRoutes];
 }

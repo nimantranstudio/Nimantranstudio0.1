@@ -23,9 +23,22 @@ export async function generateMetadata(
     return {
         title,
         description,
+        alternates: {
+            canonical: `https://www.nimantranstudio.in/themes/${themeId}`,
+        },
+        robots: {
+            index: true,
+            follow: true,
+            googleBot: {
+                index: true,
+                follow: true,
+                'max-image-preview': 'large',
+            },
+        },
         openGraph: {
             title,
             description,
+            url: `https://www.nimantranstudio.in/themes/${themeId}`,
             images: [{ url: image, width: 1200, height: 630, alt: theme.name }],
             type: 'website',
             siteName: 'Nimantran Studio',
@@ -77,7 +90,7 @@ export default async function ThemeDetailPage({ params }: { params: Promise<{ th
         })
     ]);
 
-    if (!themeData) {
+    if (!themeData || !themeData.isActive) {
         return (
             <div className="container" style={{ padding: '10rem 0', textAlign: 'center' }}>
                 <h1>Theme not found</h1>
@@ -119,12 +132,37 @@ export default async function ThemeDetailPage({ params }: { params: Promise<{ th
             thumbnail: t.thumbnailUrl || '/placeholder-theme.jpg'
         }));
 
+    const productSchema = {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "name": formattedTheme.name,
+        "description": formattedTheme.description || 'Digital wedding invitation suite for Indian weddings with RSVP and guest tracking.',
+        "image": formattedTheme.thumbnail?.startsWith('http') ? formattedTheme.thumbnail : `https://www.nimantranstudio.in${formattedTheme.thumbnail}`,
+        "brand": {
+            "@type": "Brand",
+            "name": "Nimantran Studio"
+        },
+        "offers": {
+            "@type": "Offer",
+            "price": "999",
+            "priceCurrency": "INR",
+            "availability": "https://schema.org/InStock",
+            "url": `https://www.nimantranstudio.in/themes/${themeId}`
+        }
+    };
+
     return (
-        <ThemeDetailClient 
-            themeId={themeId}
-            initialTheme={formattedTheme}
-            initialPackages={packages}
-            initialRecommendations={recommendations}
-        />
+        <>
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
+            />
+            <ThemeDetailClient 
+                themeId={themeId}
+                initialTheme={formattedTheme}
+                initialPackages={packages}
+                initialRecommendations={recommendations}
+            />
+        </>
     );
 }

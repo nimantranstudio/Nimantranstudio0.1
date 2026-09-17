@@ -3,17 +3,27 @@ import { LegalPage } from '@/components/layout/LegalPage';
 export const metadata = {
     title: 'Terms of Service — Nimantran Studio',
     description: 'Terms and conditions for using Nimantran Studio.',
+    alternates: {
+        canonical: 'https://www.nimantranstudio.in/terms',
+    },
+    robots: {
+        index: true,
+        follow: true,
+    },
     openGraph: {
         title: 'Terms of Service — Nimantran Studio',
         description: 'Terms and conditions for using Nimantran Studio.',
-        images: [{ url: '/og-image.png', width: 1200, height: 630 }],
+        url: 'https://www.nimantranstudio.in/terms',
+        siteName: 'Nimantran Studio',
+        images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: 'Nimantran Studio Terms' }],
+        locale: 'en_IN',
         type: 'website',
     },
     twitter: {
         card: 'summary_large_image',
         title: 'Terms of Service — Nimantran Studio',
         description: 'Terms and conditions for using Nimantran Studio.',
-        images: ['/og-image.png'],
+        images: ['/og-image.jpg'],
     },
 };
 

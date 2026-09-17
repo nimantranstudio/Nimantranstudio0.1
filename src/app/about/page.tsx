@@ -3,17 +3,27 @@ import { Mail, Phone, MapPin, Heart } from 'lucide-react';
 export const metadata = {
     title: 'About Us — Nimantran Studio',
     description: 'Learn about Nimantran Studio — built for Indian families who want beautiful, effortless digital wedding invitations.',
+    alternates: {
+        canonical: 'https://www.nimantranstudio.in/about',
+    },
+    robots: {
+        index: true,
+        follow: true,
+    },
     openGraph: {
         title: 'About Us — Nimantran Studio',
         description: 'Learn about Nimantran Studio — built for Indian families who want beautiful, effortless digital wedding invitations.',
-        images: [{ url: '/og-image.png', width: 1200, height: 630 }],
+        url: 'https://www.nimantranstudio.in/about',
+        siteName: 'Nimantran Studio',
+        images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: 'About Nimantran Studio' }],
+        locale: 'en_IN',
         type: 'website',
     },
     twitter: {
         card: 'summary_large_image',
         title: 'About Us — Nimantran Studio',
         description: 'Learn about Nimantran Studio — built for Indian families who want beautiful, effortless digital wedding invitations.',
-        images: ['/og-image.png'],
+        images: ['/og-image.jpg'],
     },
 };
 

@@ -16,8 +16,23 @@ interface BreadcrumbsProps {
 }
 
 export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
+    const breadcrumbSchema = {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": items.map((item, index) => ({
+            "@type": "ListItem",
+            "position": index + 1,
+            "name": item.label,
+            ...(item.href ? { "item": item.href.startsWith('http') ? item.href : `https://www.nimantranstudio.in${item.href}` } : {})
+        }))
+    };
+
     return (
         <nav aria-label="Breadcrumb" className={`${styles.nav} ${className || ''}`}>
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+            />
             <ol className={styles.list}>
                 {items.map((item, index) => {
                     const isLast = index === items.length - 1;

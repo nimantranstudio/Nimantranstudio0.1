@@ -187,7 +187,8 @@ export default function LoginFormContent() {
                     <div className={styles.cardBranding}>
                         <div className={styles.brandBody}>
                             <h2 className={styles.brandHeadline}>
-                                Beautiful Invitations.<br />Smart RSVP Tracking.
+                                Invitations built for<br />
+                                <span className={styles.brandAccentText}>Great Indian Weddings</span>
                             </h2>
                             <p className={styles.brandSubtext}>
                                 Create, share and manage your entire wedding communication in minutes.

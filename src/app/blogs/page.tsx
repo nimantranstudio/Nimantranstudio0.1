@@ -9,10 +9,32 @@ import styles from './blogs.module.css';
 export const metadata: Metadata = {
     title: 'Wedding Planning Blog & Insights | Nimantran Studio',
     description: 'Expert advice on digital wedding invitations, RSVP management, WhatsApp wedding cards, and wedding planning tips for Indian couples. Written by the Nimantran Studio team.',
+    alternates: {
+        canonical: 'https://www.nimantranstudio.in/blogs',
+    },
+    robots: {
+        index: true,
+        follow: true,
+        googleBot: {
+            index: true,
+            follow: true,
+            'max-image-preview': 'large',
+        },
+    },
     openGraph: {
-        title: 'Wedding Planning Blog | Nimantran Studio',
+        title: 'Wedding Planning Blog & Insights | Nimantran Studio',
         description: 'Expert advice for Indian couples on digital invitations, RSVP management, and wedding planning.',
+        url: 'https://www.nimantranstudio.in/blogs',
+        siteName: 'Nimantran Studio',
+        images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: 'Nimantran Studio Blog' }],
+        locale: 'en_IN',
         type: 'website',
+    },
+    twitter: {
+        card: 'summary_large_image',
+        title: 'Wedding Planning Blog & Insights | Nimantran Studio',
+        description: 'Expert advice for Indian couples on digital invitations, RSVP management, and wedding planning.',
+        images: ['/og-image.jpg'],
     },
 };
 

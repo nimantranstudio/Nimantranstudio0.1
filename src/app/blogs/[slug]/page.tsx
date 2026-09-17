@@ -17,21 +17,38 @@ export async function generateMetadata(
     const post = await prisma.blog.findUnique({ where: { slug } });
     
     if (!post) return { title: 'Post Not Found | Nimantran Studio' };
+    const postUrl = `https://www.nimantranstudio.in/blogs/${slug}`;
+    const imageUrl = post.image?.startsWith('http') ? post.image : `https://www.nimantranstudio.in${post.image}`;
+
     return {
         title: `${post.title} | Nimantran Studio Blog`,
-        description: post.metaDescription,
+        description: post.metaDescription || post.excerpt,
+        alternates: {
+            canonical: postUrl,
+        },
+        robots: {
+            index: true,
+            follow: true,
+            googleBot: {
+                index: true,
+                follow: true,
+                'max-image-preview': 'large',
+            },
+        },
         openGraph: {
             title: post.title,
-            description: post.metaDescription,
-            images: [{ url: post.image, width: 1200, height: 630, alt: post.title }],
+            description: post.metaDescription || post.excerpt,
+            url: postUrl,
+            images: [{ url: imageUrl, width: 1200, height: 630, alt: post.title }],
             type: 'article',
             siteName: 'Nimantran Studio',
+            publishedTime: post.createdAt ? new Date(post.createdAt).toISOString() : undefined,
         },
         twitter: {
             card: 'summary_large_image',
             title: post.title,
-            description: post.metaDescription,
-            images: [post.image],
+            description: post.metaDescription || post.excerpt,
+            images: [imageUrl],
         },
     };
 }
@@ -138,8 +155,39 @@ export default async function BlogPostPage({
         orderBy: { createdAt: 'desc' },
     });
 
+    const blogSchema = {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "headline": post.title,
+        "description": post.metaDescription || post.excerpt,
+        "image": post.image?.startsWith('http') ? post.image : `https://www.nimantranstudio.in${post.image}`,
+        "datePublished": post.createdAt ? new Date(post.createdAt).toISOString() : new Date().toISOString(),
+        "dateModified": post.updatedAt ? new Date(post.updatedAt).toISOString() : new Date().toISOString(),
+        "author": {
+            "@type": "Organization",
+            "name": "Nimantran Studio",
+            "url": "https://www.nimantranstudio.in"
+        },
+        "publisher": {
+            "@type": "Organization",
+            "name": "Nimantran Studio",
+            "logo": {
+                "@type": "ImageObject",
+                "url": "https://www.nimantranstudio.in/icon.png"
+            }
+        },
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": `https://www.nimantranstudio.in/blogs/${slug}`
+        }
+    };
+
     return (
         <main className={styles.page}>
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(blogSchema) }}
+            />
             {/* Breadcrumb nav */}
             <div className={styles.backBar}>
                 <div className="container">

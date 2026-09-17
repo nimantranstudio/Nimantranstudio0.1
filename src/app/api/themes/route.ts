@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-// Cache enabled for 60 seconds, updates from admin propagate quickly
-export const revalidate = 60;
+export const dynamic = 'force-dynamic';
 
 // Fallback static themes for database connection failure
 const STATIC_THEMES = [
@@ -31,6 +30,7 @@ const STATIC_THEMES = [
 export async function GET() {
     try {
         const themes = await prisma.theme.findMany({
+            where: { isActive: true },
             orderBy: [
                 { sequence: 'asc' },
                 { createdAt: 'desc' }
@@ -80,7 +80,7 @@ export async function GET() {
             { themes: formattedThemes },
             {
                 headers: {
-                    'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',
+                    'Cache-Control': 'no-store, max-age=0',
                 }
             }
         );

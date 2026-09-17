@@ -2,41 +2,105 @@ import Link from 'next/link';
 import { Check, X } from 'lucide-react';
 
 export const metadata = {
-    title: 'Pricing — Nimantran Studio',
-    description: 'One simple price for your entire Nimantran. ₹999 one-time, no subscription.',
+    title: 'Pricing — One Simple Price ₹999 | Nimantran Studio',
+    description: 'One simple price for your entire digital wedding invitation suite. ₹999 one-time payment, no subscriptions, unlimited RSVPs, and WhatsApp sharing.',
+    alternates: {
+        canonical: 'https://www.nimantranstudio.in/pricing',
+    },
+    robots: {
+        index: true,
+        follow: true,
+        googleBot: {
+            index: true,
+            follow: true,
+            'max-image-preview': 'large',
+        },
+    },
     openGraph: {
-        title: 'Pricing — Nimantran Studio',
-        description: 'One simple price for your entire Nimantran. ₹999 one-time, no subscription.',
-        images: [{ url: '/og-image.png', width: 1200, height: 630 }],
+        title: 'Pricing — One Simple Price ₹999 | Nimantran Studio',
+        description: 'One simple price for your entire digital wedding invitation suite. ₹999 one-time payment, no subscriptions, unlimited RSVPs, and WhatsApp sharing.',
+        url: 'https://www.nimantranstudio.in/pricing',
+        siteName: 'Nimantran Studio',
+        images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: 'Nimantran Studio Pricing' }],
+        locale: 'en_IN',
         type: 'website',
     },
     twitter: {
         card: 'summary_large_image',
-        title: 'Pricing — Nimantran Studio',
-        description: 'One simple price for your entire Nimantran. ₹999 one-time, no subscription.',
-        images: ['/og-image.png'],
+        title: 'Pricing — One Simple Price ₹999 | Nimantran Studio',
+        description: 'One simple price for your entire digital wedding invitation suite. ₹999 one-time payment, no subscriptions.',
+        images: ['/og-image.jpg'],
     },
 };
 
+const pricingStructuredData = {
+    "@context": "https://schema.org",
+    "@graph": [
+        {
+            "@type": "Product",
+            "name": "Nimantran WhatsApp Wedding Invitation Suite",
+            "description": "Complete Indian wedding digital invitation suite with WhatsApp sharing, unlimited RSVP tracking, multiple events, and personalized event cards.",
+            "image": "https://www.nimantranstudio.in/og-image.jpg",
+            "brand": {
+                "@type": "Brand",
+                "name": "Nimantran Studio"
+            },
+            "offers": {
+                "@type": "Offer",
+                "price": "999",
+                "priceCurrency": "INR",
+                "priceValidUntil": "2026-12-31",
+                "availability": "https://schema.org/InStock",
+                "url": "https://www.nimantranstudio.in/pricing"
+            }
+        },
+        {
+            "@type": "FAQPage",
+            "mainEntity": [
+                {
+                    "@type": "Question",
+                    "name": "Is this a one-time payment or a subscription?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "One-time. You pay ₹999 once and your invitation stays live for your entire wedding season. No renewals."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "How many guests can RSVP?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Unlimited. There is no cap on the number of guest responses your RSVP link can collect."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "Can I create invitations for multiple events?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Yes. A single purchase covers all your wedding events — Mehendi, Sangeet, Haldi, Wedding ceremony, and Reception."
+                    }
+                }
+            ]
+        }
+    ]
+};
+
 const features = [
-    { label: 'Personalised digital invitation', included: true },
-    { label: 'WhatsApp-ready sharing', included: true },
-    { label: 'Unlimited guest RSVP responses', included: true },
-    { label: 'Live RSVP dashboard', included: true },
-    { label: 'Guest list CSV export', included: true },
-    { label: 'Multiple events (Mehendi, Sangeet, Wedding)', included: true },
-    { label: 'No Nimantran watermark', included: true },
-    { label: 'Add to Google Calendar link', included: true },
-    { label: 'Maps link for venue', included: true },
-    { label: 'Companion / family headcount tracking', included: true },
-    { label: 'Monthly subscription', included: false },
-    { label: 'Hidden fees', included: false },
+    { label: 'All Premium Wedding Themes', included: true },
+    { label: 'Full WhatsApp Invite Bundle (Cover, Events, Map, RSVP)', included: true },
+    { label: 'Unlimited Guest RSVP Tracking', included: true },
+    { label: 'Live Guest Management Dashboard', included: true },
+    { label: 'Direct Google Maps Venue Navigation', included: true },
+    { label: 'Multi-Event Schedule (Mehendi, Sangeet, Wedding, etc.)', included: true },
+    { label: 'No Ads or Third-Party Watermarks', included: true },
+    { label: 'Live for Your Entire Wedding Season', included: true },
 ];
 
 const faqs = [
     {
         q: 'Is this a one-time payment or a subscription?',
-        a: 'One-time. You pay ₹999 once and your invitation stays live for your entire wedding season. No renewals.',
+        a: 'One-time. You pay ₹999 once and your invitation stays live for your entire wedding season. No renewals, no hidden fees.',
     },
     {
         q: 'How many guests can RSVP?',
@@ -44,21 +108,21 @@ const faqs = [
     },
     {
         q: 'Can I create invitations for multiple events?',
-        a: 'Yes. A single purchase covers all your wedding events — Mehendi, Sangeet, Haldi, Wedding ceremony, and Reception.',
+        a: 'Yes! A single purchase covers all your wedding functions — Mehendi, Sangeet, Haldi, Wedding ceremony, and Reception.',
     },
     {
-        q: 'What happens after my wedding?',
-        a: 'Your invitation link stays accessible for 12 months from purchase. After that it expires naturally.',
-    },
-    {
-        q: 'Do you offer refunds?',
-        a: 'Yes, within 7 days of purchase if you have not yet shared your invitation link. See our Refund Policy for details.',
+        q: 'How do I share the invites with my guests?',
+        a: 'From your dashboard, you can download all high-resolution event cards to share directly on WhatsApp, along with your personalized interactive RSVP link.',
     },
 ];
 
 export default function PricingPage() {
     return (
         <main style={{ backgroundColor: 'var(--background)', minHeight: '100vh' }}>
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(pricingStructuredData) }}
+            />
 
             {/* Hero */}
             <section style={{ padding: '5rem 1.5rem 4rem', textAlign: 'center', background: '#000', color: '#fff' }}>

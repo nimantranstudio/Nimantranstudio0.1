@@ -27,8 +27,25 @@ const FAQS = [
 export const FaqSection = () => {
     const [openIndex, setOpenIndex] = useState<number | null>(null);
 
+    const faqStructuredData = {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": FAQS.map((faq) => ({
+            "@type": "Question",
+            "name": faq.question,
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": faq.answer
+            }
+        }))
+    };
+
     return (
         <section className={styles.faqSection}>
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(faqStructuredData) }}
+            />
             <div className={`container ${styles.faqContainer}`}>
                 {/* Left Column: Heading */}
                 <div className={styles.faqHeader}>

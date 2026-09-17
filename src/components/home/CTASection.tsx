@@ -26,7 +26,7 @@ export const CTASection = () => {
                         </p>
 
                         <Link href="/themes" className={styles.ctaButton}>
-                            Create Nimantran
+                            Explore Nimantran
                         </Link>
 
                         <p className={styles.ctaFooter}>
