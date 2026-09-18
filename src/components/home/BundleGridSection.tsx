@@ -3,24 +3,40 @@
 import styles from '@/app/page.module.css';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 
 export const BundleGridSection = () => {
-    const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+    const [lightboxImage, setLightboxImage] = useState<{ src: string; alt: string } | null>(null);
+
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                setLightboxImage(null);
+            }
+        };
+        if (lightboxImage) {
+            window.addEventListener('keydown', handleKeyDown);
+            return () => window.removeEventListener('keydown', handleKeyDown);
+        }
+    }, [lightboxImage]);
 
     return (
         <section className={styles.bundleGridSection}>
             <AnimatePresence>
-                {isLightboxOpen && (
+                {lightboxImage && (
                     <motion.div
                         className={styles.lightboxOverlay}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        onClick={() => setIsLightboxOpen(false)}
+                        onClick={() => setLightboxImage(null)}
                     >
-                        <button className={styles.lightboxClose}>
+                        <button
+                            className={styles.lightboxClose}
+                            onClick={() => setLightboxImage(null)}
+                            aria-label="Close lightbox"
+                        >
                             <X size={24} />
                         </button>
                         <motion.div
@@ -29,10 +45,11 @@ export const BundleGridSection = () => {
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.9, opacity: 0 }}
                             transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                            onClick={(e) => e.stopPropagation()}
                         >
                             <img
-                                src="/wedding-bundle-showcase.jpg"
-                                alt="Complete digital wedding invitation suite"
+                                src={lightboxImage.src}
+                                alt={lightboxImage.alt}
                                 className={styles.lightboxImage}
                             />
                         </motion.div>
@@ -71,7 +88,22 @@ export const BundleGridSection = () => {
                         </div>
                         <div
                             className={styles.featureCardImageWrapper}
-                            onClick={() => setIsLightboxOpen(true)}
+                            onClick={() => setLightboxImage({
+                                src: "/wedding-bundle-showcase.jpg",
+                                alt: "Complete digital wedding invitation suite for multiple events - Nimantran Studio"
+                            })}
+                            role="button"
+                            tabIndex={0}
+                            aria-label="View complete wedding bundle image"
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    setLightboxImage({
+                                        src: "/wedding-bundle-showcase.jpg",
+                                        alt: "Complete digital wedding invitation suite for multiple events - Nimantran Studio"
+                                    });
+                                }
+                            }}
                         >
                             <Image
                                 src="/wedding-bundle-showcase.jpg"
@@ -98,7 +130,25 @@ export const BundleGridSection = () => {
                             </p>
                         </div>
                         <div className={styles.featureCardGraphicWrapper}>
-                            <div className={styles.mockRsvpContainer}>
+                            <div
+                                className={styles.mockRsvpContainer}
+                                onClick={() => setLightboxImage({
+                                    src: "/rsvp-dashboard-showcase.png",
+                                    alt: "Simple RSVP Dashboard - Nimantran Studio"
+                                })}
+                                role="button"
+                                tabIndex={0}
+                                aria-label="View RSVP dashboard preview"
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' || e.key === ' ') {
+                                        e.preventDefault();
+                                        setLightboxImage({
+                                            src: "/rsvp-dashboard-showcase.png",
+                                            alt: "Simple RSVP Dashboard - Nimantran Studio"
+                                        });
+                                    }
+                                }}
+                            >
                                 <Image
                                     src="/rsvp-dashboard-showcase.png"
                                     alt="Simple RSVP Dashboard - Nimantran Studio"
@@ -125,7 +175,25 @@ export const BundleGridSection = () => {
                             </p>
                         </div>
                         <div className={styles.featureCardGraphicWrapper}>
-                            <div className={styles.websiteShowcaseContainer}>
+                            <div
+                                className={styles.websiteShowcaseContainer}
+                                onClick={() => setLightboxImage({
+                                    src: "/wedding-website-showcase.png",
+                                    alt: "Wedding Website. A Connected Experience - Nimantran Studio"
+                                })}
+                                role="button"
+                                tabIndex={0}
+                                aria-label="View wedding website showcase"
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' || e.key === ' ') {
+                                        e.preventDefault();
+                                        setLightboxImage({
+                                            src: "/wedding-website-showcase.png",
+                                            alt: "Wedding Website. A Connected Experience - Nimantran Studio"
+                                        });
+                                    }
+                                }}
+                            >
                                 <Image
                                     src="/wedding-website-showcase.png"
                                     alt="Wedding Website. A Connected Experience - Nimantran Studio"

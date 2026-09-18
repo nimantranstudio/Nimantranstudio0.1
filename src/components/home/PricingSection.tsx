@@ -55,80 +55,57 @@ export const PricingSection = ({ price, originalPrice, savings }: PricingSection
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.8, delay: 0.2 }}
-                        style={{ gap: 0, padding: 0, overflow: 'hidden' }}
                     >
                         {/* Social proof bar */}
-                        <div style={{
-                            width: '100%',
-                            background: '#111',
-                            padding: '0.875rem 2.5rem',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '0.625rem',
-                        }}>
-                            <div style={{ display: 'flex', gap: '3px' }}>
+                        <div className={styles.pricingSocialProof}>
+                            <div className={styles.pricingSocialStars}>
                                 {[...Array(5)].map((_, i) => (
                                     <Star key={i} size={13} fill="#D4AF37" color="#D4AF37" />
                                 ))}
                             </div>
-                            <span style={{ color: '#fff', fontSize: '0.8rem', fontWeight: 500, letterSpacing: '0.01em' }}>
+                            <span className={styles.pricingSocialText}>
                                 Trusted by <strong style={{ color: '#D4AF37' }}>Indian couples</strong>
                             </span>
                         </div>
 
                         {/* Price section */}
-                        <div style={{ padding: '2.5rem 2.5rem 2rem', textAlign: 'center' }}>
+                        <div className={styles.pricingPriceBlock}>
                             {/* Only claim a discount when one is actually configured. */}
                             {originalPrice > 0 && (
-                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.625rem', marginBottom: '0.875rem' }}>
-                                    <span style={{ fontSize: '0.95rem', color: '#94A3B8', textDecoration: 'line-through', fontWeight: 500 }}>₹{inr(originalPrice)}</span>
-                                    <span style={{ background: '#DCFCE7', color: '#15803D', fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.06em', padding: '4px 12px', borderRadius: '100px' }}>
+                                <div className={styles.pricingDiscountRow}>
+                                    <span className={styles.pricingOriginalPrice}>₹{inr(originalPrice)}</span>
+                                    <span className={styles.pricingSaveBadge}>
                                         SAVE ₹{inr(savings)}
                                     </span>
                                 </div>
                             )}
 
-                            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: '0.375rem', marginBottom: '0.875rem' }}>
-                                <span style={{
-                                    fontFamily: 'var(--font-serif)',
-                                    fontSize: '4.5rem',
-                                    fontWeight: 700,
-                                    color: '#111',
-                                    lineHeight: 1,
-                                }}>
-                                    <span style={{ fontSize: '2rem', verticalAlign: 'super', fontWeight: 500 }}>₹</span>{inr(price)}
+                            <div className={styles.pricingMainPrice}>
+                                <span className={styles.pricingNumber}>
+                                    <span className={styles.pricingCurrencySymbol}>₹</span>{inr(price)}
                                 </span>
-                                <span style={{
-                                    fontSize: '0.7rem',
-                                    fontWeight: 700,
-                                    letterSpacing: '0.1em',
-                                    color: '#94A3B8',
-                                    textTransform: 'uppercase',
-                                    alignSelf: 'flex-end',
-                                    paddingBottom: '0.625rem',
-                                }}>one-time</span>
+                                <span className={styles.pricingTermLabel}>one-time</span>
                             </div>
 
-                            <p style={{ fontSize: '0.8rem', color: '#94A3B8', lineHeight: 1.5 }}>
+                            <p className={styles.pricingSubtextInfo}>
                                 No subscription · No hidden fees · Yours forever
                             </p>
                         </div>
 
-                        {/* Features — single column */}
-                        <div style={{ padding: '2rem 2.5rem' }}>
-                            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
+                        {/* Features — balanced single column */}
+                        <div className={styles.pricingFeaturesWrapper}>
+                            <ul className={styles.pricingFeaturesList}>
                                 {features.map((f, i) => (
                                     <motion.li
                                         key={i}
                                         suppressHydrationWarning
-                                        style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.875rem', color: '#333', lineHeight: 1.4 }}
-                                        initial={{ opacity: 0, y: 10 }}
+                                        className={styles.pricingFeatureItem}
+                                        initial={{ opacity: 0, y: 8 }}
                                         whileInView={{ opacity: 1, y: 0 }}
                                         viewport={{ once: true }}
-                                        transition={{ duration: 0.4, delay: 0.05 + i * 0.05 }}
+                                        transition={{ duration: 0.35, delay: 0.04 + i * 0.04 }}
                                     >
-                                        <Check size={15} strokeWidth={2.5} color="#D4AF37" style={{ flexShrink: 0 }} />
+                                        <Check size={16} strokeWidth={2.5} className={styles.pricingFeatureCheck} />
                                         <span>{f}</span>
                                     </motion.li>
                                 ))}
@@ -136,30 +113,17 @@ export const PricingSection = ({ price, originalPrice, savings }: PricingSection
                         </div>
 
                         {/* CTA */}
-                        <div style={{ padding: '2rem 2.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.875rem' }}>
+                        <div className={styles.pricingCtaWrapper}>
                             <Link
                                 href="/themes"
-                                style={{
-                                    display: 'block',
-                                    width: '100%',
-                                    textAlign: 'center',
-                                    background: 'linear-gradient(135deg, #ECC878 0%, #D4AF37 100%)',
-                                    color: '#111',
-                                    padding: '1.125rem',
-                                    borderRadius: '10px',
-                                    fontWeight: 700,
-                                    fontSize: '1rem',
-                                    letterSpacing: '0.02em',
-                                    textDecoration: 'none',
-                                    boxShadow: '0 4px 20px rgba(212,175,55,0.3)',
-                                }}
+                                className={styles.pricingMainButton}
                             >
                                 Create Nimantran — ₹{inr(price)}
                             </Link>
 
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
-                                <ShieldCheck size={13} color="#94A3B8" style={{ flexShrink: 0 }} />
-                                <span style={{ fontSize: '0.75rem', color: '#94A3B8', lineHeight: 1.4 }}>
+                            <div className={styles.pricingGuaranteeRow}>
+                                <ShieldCheck size={14} style={{ flexShrink: 0 }} />
+                                <span>
                                     Preview free · Satisfaction guarantee · Secure via Razorpay
                                 </span>
                             </div>

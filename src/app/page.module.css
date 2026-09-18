@@ -938,6 +938,7 @@
   justify-content: center;
   overflow: hidden;
   padding: 0 1.5rem;
+  cursor: pointer;
 }
 
 .dashboardPreviewImage {
@@ -948,6 +949,11 @@
   border-bottom: none;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
   display: block;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mockRsvpContainer:hover .dashboardPreviewImage {
+  transform: translateY(-4px) scale(1.02);
 }
 
 .websiteShowcaseContainer {
@@ -960,6 +966,7 @@
   justify-content: center;
   overflow: hidden;
   position: relative;
+  cursor: pointer;
 }
 
 .websiteShowcaseImage {
@@ -969,6 +976,11 @@
   object-position: center;
   display: block;
   border-radius: 16px;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.websiteShowcaseContainer:hover .websiteShowcaseImage {
+  transform: scale(1.03);
 }
 
 .mockRsvpMiniDash {
@@ -1771,156 +1783,202 @@
   font-family: var(--font-sans);
 }
 
-/* Integrated Pricing Block - Now a Card */
+/* Integrated Pricing Block - Card */
 .integratedPricingBlock {
   width: 100%;
-  max-width: 600px;
+  max-width: 540px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 4rem 3rem;
-  background-color: #FDFBF7;
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  border-radius: 32px;
-  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.4);
-  gap: 2.5rem;
-  text-align: center;
-  position: relative;
+  background-color: #FFFFFF;
+  border: 1px solid rgba(224, 222, 215, 0.85);
+  border-radius: 28px;
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.08);
   overflow: hidden;
+  position: relative;
+  text-align: center;
 }
 
-/* Removed glassmorphism shine for white card */
-
-.pricingDetails {
-  flex: 1;
+.pricingSocialProof {
+  width: 100%;
+  background: #111111;
+  padding: 0.85rem 2rem;
   display: flex;
-  flex-direction: column;
   align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
 }
 
-.productTitle {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #111111;
+.pricingSocialStars {
+  display: flex;
+  gap: 3px;
+}
+
+.pricingSocialText {
+  color: #FFFFFF;
+  font-size: 0.825rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+.pricingPriceBlock {
+  padding: 2.25rem 2rem 0.85rem;
+  text-align: center;
+}
+
+.pricingDiscountRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
   margin-bottom: 0.75rem;
-  font-family: var(--font-sans);
-  letter-spacing: 0.05em;
 }
 
-.priceContainer {
+.pricingOriginalPrice {
+  font-size: 1rem;
+  color: #94A3B8;
+  text-decoration: line-through;
+  font-weight: 500;
+}
+
+.pricingSaveBadge {
+  background: #DCFCE7;
+  color: #15803D;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 4px 12px;
+  border-radius: 100px;
+}
+
+.pricingMainPrice {
   display: flex;
   align-items: baseline;
   justify-content: center;
-  gap: 0.5rem;
-  margin-bottom: 0.75rem;
+  gap: 0.35rem;
+  margin-bottom: 0.65rem;
 }
 
-.priceAmount {
-  font-size: 3.5rem;
+.pricingNumber {
   font-family: var(--font-serif);
-  font-weight: 600;
+  font-size: 4.25rem;
+  font-weight: 700;
   color: #111111;
-  display: flex;
-  align-items: baseline;
+  line-height: 1;
+  letter-spacing: -0.02em;
 }
 
-.currency {
-  font-size: 0.6em;
-  margin-right: 0.1em;
+.pricingCurrencySymbol {
+  font-size: 2rem;
+  vertical-align: super;
   font-weight: 500;
-  color: #111111;
 }
 
-.priceTerm {
-  font-size: 1rem;
-  color: #666666;
+.pricingTermLabel {
+  font-size: 0.725rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #94A3B8;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  align-self: flex-end;
+  padding-bottom: 0.55rem;
 }
 
-.microText {
-  font-size: 0.875rem;
-  color: #888888;
+.pricingSubtextInfo {
+  font-size: 0.825rem;
+  color: #64748B;
+  line-height: 1.5;
+  margin: 0;
 }
 
-.featuresAndCta {
-  flex: 1;
+.pricingFeaturesWrapper {
+  padding: 0.5rem 2rem 1.25rem;
   display: flex;
-  flex-direction: column;
+  justify-content: center;
   align-items: center;
-  gap: 2.5rem;
+  width: 100%;
 }
 
-.premiumFeaturesList {
+.pricingFeaturesList {
   list-style: none;
   padding: 0;
-  margin: 0;
-  display: flex;
+  margin: 0 auto;
+  display: inline-flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 1rem;
+  gap: 0.75rem;
+  width: fit-content;
+  max-width: 100%;
+  text-align: left;
 }
 
-.premiumFeatureItem {
+.pricingFeatureItem {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  font-size: 1.05rem;
-  color: #333333;
+  gap: 0.75rem;
+  font-size: 0.9rem;
+  color: #1E293B;
+  line-height: 1.4;
+  font-weight: 500;
 }
 
-.goldCheck {
-  color: #D4AF37;
+.pricingFeatureCheck {
   flex-shrink: 0;
+  color: #D4AF37;
 }
 
-.premiumCtaButton {
-  background: linear-gradient(135deg, #ECC878 0%, #D4AF37 100%);
-  color: #111111;
-  border: none;
-  padding: 1.25rem 2.5rem;
-  border-radius: 0.5rem;
-  font-size: 1rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  width: fit-content;
-  font-family: var(--font-sans);
-}
-
-.premiumCtaButton:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(212, 175, 35, 0.2);
-}
-
-.ctaWrapper {
+.pricingCtaWrapper {
+  padding: 0.5rem 2rem 2.25rem;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
   align-items: center;
+  gap: 0.85rem;
+  width: 100%;
+  max-width: 440px;
+  margin: 0 auto;
 }
 
-.trustBadgeText {
-  font-size: 0.8rem;
-  color: #888888;
-  /* Muted gray for footer info */
-  letter-spacing: 0.02em;
-  font-family: var(--font-sans);
-  text-align: center;
+.pricingMainButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  background: linear-gradient(135deg, #ECC878 0%, #D4AF37 100%);
+  color: #111111;
+  padding: 1.05rem 1.5rem;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  box-shadow: 0 4px 14px rgba(212, 175, 55, 0.28), 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: transform 160ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 160ms ease, background 160ms ease;
+  cursor: pointer;
+}
+
+.pricingMainButton:hover {
+  background: linear-gradient(135deg, #f0d59a 0%, #e0c15a 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(212, 175, 55, 0.38);
+}
+
+.pricingMainButton:active {
+  transform: scale(0.97);
+  transition-duration: 0ms;
+}
+
+.pricingGuaranteeRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  color: #64748B;
+  font-size: 0.775rem;
+  line-height: 1.4;
 }
 
 /* Responsive adjustments */
 @media (max-width: 968px) {
-  .integratedPricingBlock {
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 3rem 2rem;
-    gap: 3rem;
-  }
-
   .premiumHeadline {
     font-size: 2.5rem;
   }
@@ -1932,16 +1990,28 @@
   }
 
   .integratedPricingBlock {
-    padding: 2rem 1rem;
+    max-width: 100%;
+    border-radius: 20px;
+  }
+
+  .pricingPriceBlock {
+    padding: 1.75rem 1.25rem 0.75rem;
+  }
+
+  .pricingNumber {
+    font-size: 3.5rem;
+  }
+
+  .pricingFeaturesWrapper {
+    padding: 0.5rem 1.25rem 1rem;
+  }
+
+  .pricingCtaWrapper {
+    padding: 0.5rem 1.25rem 1.75rem;
   }
 
   .premiumHeadline {
     font-size: 2rem;
-  }
-
-  .premiumCtaButton {
-    width: 100%;
-    text-align: center;
   }
 }
 
