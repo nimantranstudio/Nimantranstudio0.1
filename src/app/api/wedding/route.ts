@@ -5,6 +5,8 @@ import { WeddingFormSchema } from '@/lib/schemas/wedding-form';
 import { verifyAuth } from '@/lib/auth-server';
 import sanitizeHtml from 'sanitize-html';
 
+import { generateUniqueWeddingSlug } from '@/lib/slug';
+
 function sanitize(str: any): string {
     if (!str) return '';
     return sanitizeHtml(String(str), { allowedTags: [], allowedAttributes: {} });
@@ -29,9 +31,12 @@ export async function POST(req: NextRequest) {
         const finalUserId = user.id;
         console.log("API: User ID resolved", finalUserId);
 
+        const slug = await generateUniqueWeddingSlug(validatedData.groomName, validatedData.brideName);
+
         const wedding = await prisma.wedding.create({
             data: {
                 ownerId: finalUserId,
+                slug,
                 // Default to 'rajputana' if themeId is missing (e.g. created via dashboard directly)
                 themeId: sanitize(selectedThemeId),
                 groomName: sanitize(validatedData.groomName),

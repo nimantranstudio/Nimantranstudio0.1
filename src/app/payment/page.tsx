@@ -303,11 +303,20 @@ export default function PaymentPage() {
 
     const previewItems = buildPreviewItems();
 
-    // Hidden hero card used to capture the couple's real Wedding Invitation as a
-    // PNG for the WhatsApp welcome. Prefer the wedding item; fall back to first.
+    // Hidden hero card used to capture the couple's real Save the Date / Wedding Invitation
+    // as a PNG for the WhatsApp welcome. Strictly prioritize "Save the Date" card.
     const heroCardRef = useRef<InvitationCardRef>(null);
     const heroItem =
-        previewItems.find((it: any) => /wedding/i.test(`${it?.name || ''} ${it?.id || ''}`)) ||
+        previewItems.find((it: any) =>
+            /save\s*the\s*date|save_the_date|savethedate|evt_6/i.test(
+                `${it?.name || ''} ${it?.id || ''} ${it?.event?.id || ''} ${it?.event?.name || ''} ${it?.image || ''}`
+            )
+        ) ||
+        previewItems.find((it: any) =>
+            /wedding|ceremony|vivah|lagna|evt_1|evt_2|evt_3|evt_4|evt_5|evt_7|evt_11|evt_14|evt_17/i.test(
+                `${it?.name || ''} ${it?.id || ''} ${it?.event?.id || ''} ${it?.event?.name || ''} ${it?.image || ''}`
+            )
+        ) ||
         previewItems[0];
 
     // Auto-slide effect

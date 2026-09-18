@@ -17,6 +17,8 @@ export const dynamic = 'force-dynamic';
  * via lastSavedWeddingId; the dashboard just also needs it server-side now that
  * edits must persist to a specific, addressable row.
  */
+import { generateUniqueWeddingSlug } from '@/lib/slug';
+
 export async function GET(req: NextRequest) {
     try {
         const { user, error } = await verifyAuth(req);
@@ -36,6 +38,19 @@ export async function GET(req: NextRequest) {
 
         if (!wedding) {
             return NextResponse.json({ wedding: null });
+        }
+
+        if (!wedding.slug && (wedding.groomName || wedding.brideName)) {
+            try {
+                const slug = await generateUniqueWeddingSlug(wedding.groomName, wedding.brideName, wedding.id);
+                const updated = await prisma.wedding.update({
+                    where: { id: wedding.id },
+                    data: { slug },
+                });
+                wedding.slug = updated.slug;
+            } catch (slugErr) {
+                console.warn('Failed to auto-populate wedding slug:', slugErr);
+            }
         }
 
         return NextResponse.json({ wedding });

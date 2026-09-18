@@ -43,9 +43,15 @@ export async function generateMetadata({
             const cardImage =
                 (isImageUrl(mainEvent?.generatedCard?.imageUrl) ? mainEvent.generatedCard.imageUrl : undefined) ||
                 wedding.events.map((e) => e.generatedCard?.imageUrl).find(isImageUrl);
-            const image = cardImage || '/og-image.png';
 
-            const rsvpUrl = `https://www.nimantranstudio.in/rsvp/${id}`;
+            const toAbsoluteUrl = (url: string) => {
+                if (/^https?:\/\//i.test(url)) return url;
+                return `https://www.nimantranstudio.in${url.startsWith('/') ? '' : '/'}${url}`;
+            };
+
+            const image = toAbsoluteUrl(cardImage || '/og-image.png');
+            const canonicalSlugOrId = wedding.slug || id;
+            const rsvpUrl = `https://www.nimantranstudio.in/rsvp/${canonicalSlugOrId}`;
 
             return {
                 title,
@@ -63,7 +69,15 @@ export async function generateMetadata({
                     url: rsvpUrl,
                     type: 'website',
                     siteName: 'Nimantran Studio',
-                    images: [image],
+                    locale: 'en_IN',
+                    images: [
+                        {
+                            url: image,
+                            width: 1200,
+                            height: 630,
+                            alt: `${wedding.groomName} & ${wedding.brideName} Wedding Invitation`,
+                        },
+                    ],
                 },
                 twitter: {
                     card: 'summary_large_image',
@@ -80,6 +94,13 @@ export async function generateMetadata({
     return {
         title: 'Wedding Invitation & RSVP | Nimantran Studio',
         description: 'Digital wedding invitation and online RSVP tracking.',
+        openGraph: {
+            title: 'Wedding Invitation & RSVP | Nimantran Studio',
+            description: 'Digital wedding invitation and online RSVP tracking.',
+            url: `https://www.nimantranstudio.in/rsvp/${id}`,
+            siteName: 'Nimantran Studio',
+            images: [{ url: 'https://www.nimantranstudio.in/og-image.png', width: 1200, height: 630 }],
+        },
         robots: {
             index: false,
             follow: true,

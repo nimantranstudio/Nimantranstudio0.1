@@ -97,14 +97,15 @@ export async function sendRsvpLink(opts: {
     groomName?: string;
     brideName?: string;
     weddingId: string;
+    slug?: string;
     orderId: string;
     heroImageUrl?: string;
 }): Promise<SendResult> {
-    const { mobile, groomName, brideName, weddingId, orderId, heroImageUrl } = opts;
+    const { mobile, groomName, brideName, weddingId, slug, orderId, heroImageUrl } = opts;
     // "Groom & Bride" — reads naturally in a first-person-plural invitation
     // line ("X & Y are getting married") the couple can forward as-is.
     const couple = [groomName, brideName].filter(Boolean).join(' & ') || 'We';
-    const rsvpUrl = `${APP_URL}/rsvp/${weddingId}`;
+    const rsvpUrl = `${APP_URL}/rsvp/${slug || weddingId}`;
     // Same hero image the welcome message uses — payment/page.tsx already
     // captures the Wedding ceremony card specifically (falling back to the
     // first event only if there's no "wedding"-named one), so this inherits

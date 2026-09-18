@@ -10,15 +10,16 @@ import { useWeddingStore } from '@/store/wedding-store';
 
 export default function EventLinkPage() {
     const router = useRouter();
-    const { logout, lastSavedWeddingId, formData } = useWeddingStore();
+    const { logout, lastSavedWeddingId, lastSavedWeddingSlug, formData } = useWeddingStore();
     const [copied, setCopied] = useState(false);
     const [link, setLink] = useState('');
 
     useEffect(() => {
-        if (lastSavedWeddingId) {
-            setLink(`${window.location.origin}/rsvp/${lastSavedWeddingId}`);
+        const identifier = lastSavedWeddingSlug || lastSavedWeddingId;
+        if (identifier) {
+            setLink(`${window.location.origin}/rsvp/${identifier}`);
         }
-    }, [lastSavedWeddingId]);
+    }, [lastSavedWeddingId, lastSavedWeddingSlug]);
 
     const handleLogout = () => {
         logout();
@@ -32,10 +33,7 @@ export default function EventLinkPage() {
     };
 
     const openWhatsApp = () => {
-        const names = formData.groomName && formData.brideName
-            ? `${formData.groomName} & ${formData.brideName}`
-            : 'our wedding';
-        const text = `You're invited to ${names}! Please RSVP here: ${link}`;
+        const text = `🎉 We are excited to invite and celebrate with you!\nPlease RSVP below 👇\n${link}`;
         window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
     };
 

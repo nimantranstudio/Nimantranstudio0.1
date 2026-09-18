@@ -7,6 +7,7 @@ import { createSessionToken, SESSION_COOKIE, sessionCookieOptions } from '@/lib/
 import { toTenDigits } from '@/lib/messaging/types';
 import { sendWelcomeAndReceipt, sendRsvpLink } from '@/lib/notifications';
 import { ensureInvoiceNumber } from '@/lib/invoice/invoice-number';
+import { generateUniqueWeddingSlug } from '@/lib/slug';
 import sanitizeHtml from 'sanitize-html';
 
 function sanitize(str: any): string {
@@ -185,11 +186,14 @@ export async function POST(req: NextRequest) {
         //    still gets a session and lands on a "preparing" dashboard — never
         //    stranded on an error. The order is flagged 'failed' for follow-up.
         let weddingId: string | null = null;
+        let weddingSlug: string | null = null;
         try {
             const validated = WeddingFormSchema.parse(formData || {});
+            const slug = await generateUniqueWeddingSlug(validated.groomName, validated.brideName);
             const wedding = await prisma.wedding.create({
                 data: {
                     ownerId: user.id,
+                    slug,
                     themeId: sanitize(themeId),
                     groomName: sanitize(validated.groomName),
                     brideName: sanitize(validated.brideName),
@@ -228,12 +232,12 @@ export async function POST(req: NextRequest) {
                                 });
                             }
                             return list;
-                        })(),
-                    },
-                },
+                        })()
+                    }
+                }
             });
             weddingId = wedding.id;
-
+            weddingSlug = wedding.slug;
             await prisma.order.update({
                 where: { id: order.id },
                 data: { status: 'ready', weddingId },
@@ -268,6 +272,7 @@ export async function POST(req: NextRequest) {
                 groomName,
                 brideName,
                 weddingId,
+                slug: weddingSlug || undefined,
                 orderId: order.id,
                 heroImageUrl: heroUrl,
             }).catch((e) => console.error('RSVP link dispatch failed:', e));

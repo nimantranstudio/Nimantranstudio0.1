@@ -20,6 +20,7 @@ interface WeddingState {
     bundleItems: BundleItemInfo[];
     formData: WeddingFormData;
     lastSavedWeddingId: string | null;
+    lastSavedWeddingSlug: string | null;
 
     isAuthenticated: boolean;
     isAdmin: boolean;
@@ -36,7 +37,7 @@ interface WeddingState {
     logout: () => void;
     resetForm: () => void;
     /** Called after a successful payment: marks the user in and records the provisioned wedding. */
-    setCheckoutComplete: (weddingId?: string | null, phone?: string | null) => void;
+    setCheckoutComplete: (weddingId?: string | null, phone?: string | null, slug?: string | null) => void;
 }
 
 const INITIAL_FORM_DATA: WeddingFormData = {
@@ -67,6 +68,7 @@ export const useWeddingStore = create<WeddingState>()(
             bundleItems: [],
             formData: INITIAL_FORM_DATA,
             lastSavedWeddingId: null,
+            lastSavedWeddingSlug: null,
             isAuthenticated: false,
             isAdmin: false,
             userPhone: null,
@@ -78,11 +80,12 @@ export const useWeddingStore = create<WeddingState>()(
             logout: () => set({ isAuthenticated: false, userPhone: null, isAdmin: false }),
             resetForm: () => set({ formData: INITIAL_FORM_DATA }),
 
-            setCheckoutComplete: (weddingId, phone) =>
+            setCheckoutComplete: (weddingId, phone, slug) =>
                 set((state) => ({
                     isAuthenticated: true,
                     userPhone: phone ?? state.userPhone,
                     lastSavedWeddingId: weddingId ?? state.lastSavedWeddingId,
+                    lastSavedWeddingSlug: slug ?? state.lastSavedWeddingSlug,
                 })),
 
             updateFormData: (data) => set((state) => ({
@@ -163,7 +166,10 @@ export const useWeddingStore = create<WeddingState>()(
                         // just-typed date (updateEvent no longer matched the id) and
                         // remounted the event list + preview (the flicker). Local formData
                         // stays the single source of truth while the user is editing.
-                        set({ lastSavedWeddingId: result.wedding.id });
+                        set({
+                            lastSavedWeddingId: result.wedding.id,
+                            lastSavedWeddingSlug: result.wedding.slug || null,
+                        });
                     }
                     return result;
                 } catch (error: any) {

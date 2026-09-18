@@ -70,7 +70,7 @@ interface RSVPEntry {
 
 export default function DashboardPage() {
     const router = useRouter();
-    const { formData, selectedThemeId, isAuthenticated, bundleImages, bundleItems, lastSavedWeddingId, updateEvent, removeEvent } = useWeddingStore();
+    const { formData, selectedThemeId, isAuthenticated, bundleImages, bundleItems, lastSavedWeddingId, lastSavedWeddingSlug, updateEvent, removeEvent } = useWeddingStore();
     const [isMounted, setIsMounted] = useState(false);
     const [showWelcome, setShowWelcome] = useState(false);
     const [welcomeReceipt, setWelcomeReceipt] = useState<{
@@ -226,7 +226,8 @@ export default function DashboardPage() {
 
     const getRsvpPageLink = () => {
         const origin = typeof window !== 'undefined' ? window.location.origin : '';
-        return lastSavedWeddingId ? `${origin}/rsvp/${lastSavedWeddingId}` : '';
+        const identifier = dbWedding?.slug || lastSavedWeddingSlug || dbWedding?.id || lastSavedWeddingId;
+        return identifier ? `${origin}/rsvp/${identifier}` : '';
     };
 
     const copyRsvpPageLink = (id: string) => {
@@ -236,10 +237,7 @@ export default function DashboardPage() {
     };
 
     const openWhatsAppRsvp = () => {
-        const names = formData.groomName && formData.brideName
-            ? `${formData.groomName} & ${formData.brideName}`
-            : 'our wedding';
-        const text = `Please RSVP for ${names}: ${getRsvpPageLink()}`;
+        const text = `🎉 We are excited to invite and celebrate with you!\nPlease RSVP below 👇\n${getRsvpPageLink()}`;
         window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
     };
 
