@@ -119,18 +119,20 @@ export const BundleGridSection = () => {
                         transition={{ duration: 0.6, delay: 0.2 }}
                     >
                         <div className={styles.featureCardContent}>
-                            <h3>One-Click WhatsApp Sharing</h3>
+                            <h3>Wedding Website. A Connected Experience</h3>
                             <p>
-                                Export your digital invite instantly and share it with guests directly on WhatsApp, perfectly optimized for mobile viewing.
+                                Share every event, collect RSVPs, add events to calendars, get directions, and keep everyone updated.
                             </p>
                         </div>
                         <div className={styles.featureCardGraphicWrapper}>
-                            <div className={styles.mockPhoneGraphic}>
-                                <div className={styles.mockPhoneContent}>
-                                    <div className={styles.mockPhoneImg}></div>
-                                    <div className={styles.mockPhoneLine1}></div>
-                                    <div className={styles.mockPhoneLine2}></div>
-                                </div>
+                            <div className={styles.websiteShowcaseContainer}>
+                                <Image
+                                    src="/wedding-website-showcase.png"
+                                    alt="Wedding Website. A Connected Experience - Nimantran Studio"
+                                    width={1024}
+                                    height={597}
+                                    className={styles.websiteShowcaseImage}
+                                />
                             </div>
                         </div>
                     </motion.div>
