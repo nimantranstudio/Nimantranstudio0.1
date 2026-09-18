@@ -99,31 +99,13 @@ export const BundleGridSection = () => {
                         </div>
                         <div className={styles.featureCardGraphicWrapper}>
                             <div className={styles.mockRsvpContainer}>
-                                <div className={styles.mockRsvpMiniDash}>
-                                    <div className={styles.miniDashHeader}>
-                                        <span className={styles.miniDashTag}>HALDI</span>
-                                        <span className={styles.miniDashStatus}>RSVP LIVE</span>
-                                    </div>
-                                    <h4 className={styles.miniDashTitle}>Rahul weds Anjalee</h4>
-                                    <div className={styles.miniDashCards}>
-                                        <div className={`${styles.miniCard} ${styles.miniCardGray}`}>
-                                            <span className={styles.miniCardValue}>142</span>
-                                            <span className={styles.miniCardLabel}>RESPONSES</span>
-                                        </div>
-                                        <div className={`${styles.miniCard} ${styles.miniCardGreen}`}>
-                                            <span className={styles.miniCardValue}>120</span>
-                                            <span className={styles.miniCardLabel}>ATTENDING</span>
-                                        </div>
-                                        <div className={`${styles.miniCard} ${styles.miniCardRed}`}>
-                                            <span className={styles.miniCardValue}>12</span>
-                                            <span className={styles.miniCardLabel}>NOT ATTENDING</span>
-                                        </div>
-                                        <div className={`${styles.miniCard} ${styles.miniCardYellow}`}>
-                                            <span className={styles.miniCardValue}>10</span>
-                                            <span className={styles.miniCardLabel}>MAYBE</span>
-                                        </div>
-                                    </div>
-                                </div>
+                                <Image
+                                    src="/rsvp-dashboard-showcase.png"
+                                    alt="Simple RSVP Dashboard - Nimantran Studio"
+                                    width={1024}
+                                    height={634}
+                                    className={styles.dashboardPreviewImage}
+                                />
                             </div>
                         </div>
                     </motion.div>
