@@ -108,6 +108,80 @@ export async function generateMetadata({
     };
 }
 
+const SAMPLE_PREVIEW_WEDDING = {
+    id: 'demo-preview',
+    slug: 'aarav-weds-ananya',
+    ownerId: 'preview-owner',
+    themeId: 'cmnkf7nv40000g2h3gyu2r9uq',
+    groomName: 'Aarav',
+    brideName: 'Ananya',
+    groomParents: 'Mr. & Mrs. Sharma',
+    brideParents: 'Mr. & Mrs. Kapoor',
+    invitationMessage: 'Together with their families, Aarav & Ananya invite you to share in the joy of their wedding celebration.',
+    rsvpContact: '+91 98765 43210',
+    rsvpDeadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    events: [
+        {
+            id: 'evt_mehendi',
+            weddingId: 'demo-preview',
+            name: 'Mehendi Ceremony',
+            eventType: 'Mehendi',
+            date: '27-12-2026',
+            time: '04:00 PM',
+            venue: 'The Royal Palms Resort, Pune',
+            mapLink: 'https://maps.google.com',
+            description: 'Hands full of mehendi, hearts full of love.',
+            allowCompanions: true,
+            collectDietary: true,
+            rsvpDeadline: '2026-12-20',
+        },
+        {
+            id: 'evt_sangeet',
+            weddingId: 'demo-preview',
+            name: 'Sangeet Night',
+            eventType: 'Sangeet',
+            date: '27-12-2026',
+            time: '08:00 PM',
+            venue: 'Grand Imperial Ballroom, Pune',
+            mapLink: 'https://maps.google.com',
+            description: 'An evening of rhythm, music, and celebration.',
+            allowCompanions: true,
+            collectDietary: true,
+            rsvpDeadline: '2026-12-20',
+        },
+        {
+            id: 'evt_wedding',
+            weddingId: 'demo-preview',
+            name: 'Wedding Ceremony',
+            eventType: 'Wedding',
+            date: '28-12-2026',
+            time: '11:00 AM',
+            venue: 'Lakeside Palace Mandap, Pune',
+            mapLink: 'https://maps.google.com',
+            description: 'The auspicious union and sacred pheras.',
+            allowCompanions: true,
+            collectDietary: true,
+            rsvpDeadline: '2026-12-20',
+        },
+        {
+            id: 'evt_reception',
+            weddingId: 'demo-preview',
+            name: 'Grand Reception',
+            eventType: 'Reception',
+            date: '29-12-2026',
+            time: '08:00 PM',
+            venue: 'The Palace Lawns, Pune',
+            mapLink: 'https://maps.google.com',
+            description: 'Join us for a royal dinner and celebrations.',
+            allowCompanions: true,
+            collectDietary: true,
+            rsvpDeadline: '2026-12-20',
+        },
+    ],
+};
+
 export default async function RSVPPage({
     params,
     searchParams,
@@ -120,14 +194,14 @@ export default async function RSVPPage({
     const isPreview = sp.preview === 'true';
 
     // Fetch the wedding from the database
-    let wedding = null;
+    let wedding: any = null;
     try {
         if (id === 'latest') {
             wedding = await prisma.wedding.findFirst({
                 orderBy: { createdAt: 'desc' },
                 include: { events: true },
             });
-        } else {
+        } else if (id !== 'demo' && id !== 'preview') {
             wedding = await prisma.wedding.findFirst({
                 where: {
                     OR: [{ id }, { slug: id }],
@@ -141,26 +215,30 @@ export default async function RSVPPage({
     }
 
     if (!wedding) {
-        return (
-            <div
-                style={{
-                    minHeight: '100vh',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontFamily: 'var(--font-sans)',
-                    color: '#6b7280',
-                    background: '#FDFBF7',
-                }}
-            >
-                <div style={{ textAlign: 'center', padding: '2rem' }}>
-                    <p style={{ fontSize: '1.35rem', fontFamily: 'var(--font-serif)', color: '#1A1A1A', marginBottom: '0.5rem' }}>
-                        Invitation Not Found
-                    </p>
-                    <p style={{ fontSize: '0.9rem' }}>This invitation link may be invalid or has expired.</p>
+        if (isPreview || id === 'latest' || id === 'demo' || id === 'preview') {
+            wedding = SAMPLE_PREVIEW_WEDDING;
+        } else {
+            return (
+                <div
+                    style={{
+                        minHeight: '100vh',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontFamily: 'var(--font-sans)',
+                        color: '#6b7280',
+                        background: '#FDFBF7',
+                    }}
+                >
+                    <div style={{ textAlign: 'center', padding: '2rem' }}>
+                        <p style={{ fontSize: '1.35rem', fontFamily: 'var(--font-serif)', color: '#1A1A1A', marginBottom: '0.5rem' }}>
+                            Invitation Not Found
+                        </p>
+                        <p style={{ fontSize: '0.9rem' }}>This invitation link may be invalid or has expired.</p>
+                    </div>
                 </div>
-            </div>
-        );
+            );
+        }
     }
 
     return (
