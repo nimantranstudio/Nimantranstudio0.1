@@ -424,12 +424,10 @@ export const RSVPForm = ({ wedding, isPreview = false }: RSVPFormProps) => {
         return (
             <div className={clsx(styles.wrapper, isPreview && styles.previewWrapper)}>
                 {renderDecorations()}
-                {!isPreview && (
-                    <BackgroundAudioPlayer
-                        audioUrl={wedding.audioUrl || wedding.musicUrl || '/music/shubha-aagaman.m4a'}
-                        autoPlayTrigger={true}
-                    />
-                )}
+                <BackgroundAudioPlayer
+                    audioUrl={wedding.audioUrl || wedding.musicUrl || '/music/shubha-aagaman.m4a'}
+                    autoPlayTrigger={true}
+                />
 
                 <motion.div
                     className={clsx(styles.websiteCard, isPreview && styles.previewCard)}
@@ -495,12 +493,10 @@ export const RSVPForm = ({ wedding, isPreview = false }: RSVPFormProps) => {
             <div className={clsx(styles.wrapper, isPreview && styles.previewWrapper)}>
                 {renderDecorations()}
                 {showSuccessPetals && <FlowerPetalDrift />}
-                {!isPreview && (
-                    <BackgroundAudioPlayer
-                        audioUrl={wedding.audioUrl || wedding.musicUrl || '/music/shubha-aagaman.m4a'}
-                        autoPlayTrigger={true}
-                    />
-                )}
+                <BackgroundAudioPlayer
+                    audioUrl={wedding.audioUrl || wedding.musicUrl || '/music/shubha-aagaman.m4a'}
+                    autoPlayTrigger={true}
+                />
 
                 <motion.div
                     className={clsx(styles.websiteCard, isPreview && styles.previewCard)}
@@ -559,12 +555,10 @@ export const RSVPForm = ({ wedding, isPreview = false }: RSVPFormProps) => {
         <div className={clsx(styles.wrapper, isPreview && styles.previewWrapper)}>
             {renderDecorations()}
             {showSuccessPetals && <FlowerPetalDrift />}
-            {!isPreview && (
-                <BackgroundAudioPlayer
-                    audioUrl={wedding.audioUrl || wedding.musicUrl || '/music/shubha-aagaman.m4a'}
-                    autoPlayTrigger={isCoverOpen}
-                />
-            )}
+            <BackgroundAudioPlayer
+                audioUrl={wedding.audioUrl || wedding.musicUrl || '/music/shubha-aagaman.m4a'}
+                autoPlayTrigger={isCoverOpen}
+            />
 
             <AnimatePresence mode="wait">
                 {!isCoverOpen ? (
@@ -592,22 +586,6 @@ export const RSVPForm = ({ wedding, isPreview = false }: RSVPFormProps) => {
                         >
                             {/* Partition 1: Royal Couple Announcement */}
                             <div className={styles.heroFirstSection}>
-                                {/* Top-Left Botanical Corner Flourish */}
-                                <motion.div variants={flourishVariants} className={styles.cornerFlourishTL} aria-hidden="true">
-                                    <svg width="64" height="64" viewBox="0 0 60 60" fill="none">
-                                        <path d="M6 6 C20 6 48 18 54 54 C40 30 24 16 6 6 Z" stroke="rgba(197, 160, 89, 0.65)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                                        <path d="M6 6 C16 18 24 34 28 46" stroke="rgba(197, 160, 89, 0.45)" strokeWidth="1.2" strokeLinecap="round" />
-                                    </svg>
-                                </motion.div>
-
-                                {/* Top-Right Botanical Corner Flourish */}
-                                <motion.div variants={flourishVariants} className={styles.cornerFlourishTR} aria-hidden="true">
-                                    <svg width="64" height="64" viewBox="0 0 60 60" fill="none">
-                                        <path d="M54 6 C40 6 12 18 6 54 C20 30 36 16 54 6 Z" stroke="rgba(197, 160, 89, 0.65)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                                        <path d="M54 6 C44 18 36 34 32 46" stroke="rgba(197, 160, 89, 0.45)" strokeWidth="1.2" strokeLinecap="round" />
-                                    </svg>
-                                </motion.div>
-
                                 {/* Divine Blessing Inscription (Individual line reveals) */}
                                 <motion.div variants={slowContainerVariants} className={styles.heroBlessingText}>
                                     <motion.p variants={slowItemVariants}>With the blessings of the divine</motion.p>

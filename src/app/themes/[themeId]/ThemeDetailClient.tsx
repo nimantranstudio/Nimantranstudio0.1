@@ -276,6 +276,17 @@ export default function ThemeDetailClient({
         }
     }, [theme, selectedPlan]);
 
+    const [isMobileScreen, setIsMobileScreen] = useState(false);
+
+    useEffect(() => {
+        const checkMobile = () => {
+            setIsMobileScreen(window.innerWidth < 1024);
+        };
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+
     const carouselRef = useRef<HTMLDivElement>(null);
 
     // Handle carousel scroll for dots
@@ -465,7 +476,7 @@ export default function ThemeDetailClient({
                                     <div className={styles.websitePhoneCamera} />
                                 </div>
                                 <div className={styles.websitePhoneScreen}>
-                                    <RsvpWebsiteCard isInteractive={true} />
+                                    {isMobileScreen && <RsvpWebsiteCard isInteractive={true} />}
                                 </div>
                             </div>
                         </div>
@@ -598,7 +609,7 @@ export default function ThemeDetailClient({
                                             <div className={styles.websitePhoneCamera} />
                                         </div>
                                         <div className={styles.websitePhoneScreen}>
-                                            <RsvpWebsiteCard isInteractive={true} />
+                                            {!isMobileScreen && <RsvpWebsiteCard isInteractive={true} />}
                                         </div>
                                     </div>
                                 </div>
@@ -939,7 +950,6 @@ export default function ThemeDetailClient({
                                                         </div>
 
                                                         {/* Inline Pricing Breakdown */}
-                                                        <hr className={styles.cardDivider} />
                                                         <div className={styles.inlinePricing}>
                                                             <div className={styles.pricingLeft}>
                                                                 <div className={styles.saveLabel}>You save ₹{parseInt(DYNAMIC_PLANS[selectedPlan].originalPrice.replace(/,/g, '')) - parseInt(DYNAMIC_PLANS[selectedPlan].price.replace(/,/g, ''))}</div>

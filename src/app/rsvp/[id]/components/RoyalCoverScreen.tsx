@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import styles from '../rsvp.module.css';
 import { motion, AnimatePresence } from 'framer-motion';
 import { IntricateMandalaSvg } from '@/components/ui/IntricateMandala';
-import { Sparkles } from 'lucide-react';
 import clsx from 'clsx';
 
 interface RoyalCoverScreenProps {
@@ -105,11 +104,6 @@ export const RoyalCoverScreen: React.FC<RoyalCoverScreenProps> = ({
                         transition={{ type: 'spring', bounce: 0, duration: 0.25 }}
                         aria-label="Tap to open wedding invitation"
                     >
-                        {/* Star / Emblem at Top of Seal */}
-                        <div className={styles.coverSealStar}>
-                            <Sparkles size={16} />
-                        </div>
-
                         {/* Monogram Couple Initials */}
                         <div className={styles.coverMonogram}>
                             <span className={styles.coverMonogramInitial}>{groomInitial}</span>

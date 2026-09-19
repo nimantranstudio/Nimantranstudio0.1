@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import styles from './FaqSection.module.css';
-import { Plus, Minus } from 'lucide-react';
+import { Plus, Minus, Heart, ArrowRight } from 'lucide-react';
+import Link from 'next/link';
 
 const FAQS = [
     {
@@ -91,6 +92,28 @@ export const FaqSection = () => {
                             </div>
                         );
                     })}
+                </div>
+            </div>
+
+            {/* Clean Brand CTA Banner */}
+            <div className={styles.ctaBannerSection}>
+                <div className={styles.ctaBannerInner}>
+                    <div className={styles.ctaHeartBadge}>
+                        <Heart size={26} strokeWidth={1.75} className={styles.ctaHeartIcon} />
+                    </div>
+
+                    <h3 className={styles.ctaTitle}>
+                        Ready to Create Your Perfect Nimantran?
+                    </h3>
+
+                    <p className={styles.ctaSubtitle}>
+                        Join hundreds of hosts and couples who chose Nimantran for their special events.
+                    </p>
+
+                    <Link href="/themes" className={styles.ctaButton}>
+                        <span>Start Creating Your Nimantran</span>
+                        <ArrowRight size={17} />
+                    </Link>
                 </div>
             </div>
         </section>

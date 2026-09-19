@@ -259,6 +259,23 @@
   justify-content: center;
 }
 
+.heroTrustCenterWrap {
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin-top: 2.75rem;
+  position: relative;
+  z-index: 10;
+}
+
+@media (max-width: 968px) {
+  .heroTrustCenterWrap {
+    margin-top: 2rem;
+    justify-content: flex-start;
+  }
+}
+
 /* Trusted Badge */
 .trustedBadge {
   display: inline-flex;
@@ -1946,7 +1963,7 @@
   background: linear-gradient(135deg, #ECC878 0%, #D4AF37 100%);
   color: #111111;
   padding: 1.05rem 1.5rem;
-  border-radius: 12px;
+  border-radius: 8px;
   font-weight: 700;
   font-size: 1.05rem;
   letter-spacing: 0.01em;
@@ -1975,6 +1992,14 @@
   color: #64748B;
   font-size: 0.775rem;
   line-height: 1.4;
+}
+
+.pricingTrustBadgeOuter {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
 }
 
 /* Responsive adjustments */

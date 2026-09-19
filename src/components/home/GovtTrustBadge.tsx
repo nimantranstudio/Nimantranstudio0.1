@@ -1,16 +1,16 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import styles from './GovtTrustBadge.module.css';
 
 interface GovtTrustBadgeProps {
   className?: string;
   showIcon?: boolean;
+  theme?: 'light' | 'dark';
 }
 
-export function GovtTrustBadge({ className, showIcon = true }: GovtTrustBadgeProps) {
+export function GovtTrustBadge({ className, showIcon = true, theme = 'light' }: GovtTrustBadgeProps) {
   return (
-    <div className={`${styles.trustBadgeWrapper} ${className || ''}`}>
+    <div className={`${styles.trustBadgeWrapper} ${theme === 'dark' ? styles.darkTheme : styles.lightTheme} ${className || ''}`}>
       <div className={styles.trustPill}>
         {showIcon && (
           <>
@@ -48,4 +48,3 @@ export function GovtTrustBadge({ className, showIcon = true }: GovtTrustBadgePro
     </div>
   );
 }
-

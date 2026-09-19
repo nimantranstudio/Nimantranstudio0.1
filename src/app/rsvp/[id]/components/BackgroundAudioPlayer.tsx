@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import styles from '../rsvp.module.css';
 import { Volume2, VolumeX } from 'lucide-react';
 
@@ -15,8 +15,37 @@ export const BackgroundAudioPlayer: React.FC<BackgroundAudioPlayerProps> = ({
     autoPlayTrigger,
 }) => {
     const audioRef = useRef<HTMLAudioElement | null>(null);
-    const [isPlaying, setIsPlaying] = useState<boolean>(true);
-    const [userManuallyMuted, setUserManuallyMuted] = useState<boolean>(false);
+    const buttonRef = useRef<HTMLButtonElement | null>(null);
+    const [isPlaying, setIsPlaying] = useState<boolean>(false);
+    const userManuallyMutedRef = useRef<boolean>(false);
+
+    const togglePlay = useCallback((e?: React.MouseEvent | React.TouchEvent) => {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        const audio = audioRef.current;
+        if (!audio) return;
+
+        if (!audio.paused && !audio.muted) {
+            // Currently playing -> Mute & Pause
+            userManuallyMutedRef.current = true;
+            audio.pause();
+            audio.muted = true;
+            setIsPlaying(false);
+        } else {
+            // Currently paused/muted -> Unmute & Play
+            userManuallyMutedRef.current = false;
+            audio.muted = false;
+            audio.play()
+                .then(() => {
+                    setIsPlaying(true);
+                })
+                .catch((err) => {
+                    console.log('Audio playback error:', err);
+                });
+        }
+    }, []);
 
     useEffect(() => {
         const audio = audioRef.current;
@@ -26,7 +55,8 @@ export const BackgroundAudioPlayer: React.FC<BackgroundAudioPlayerProps> = ({
         audio.loop = true;
 
         const attemptPlay = () => {
-            if (!audioRef.current || userManuallyMuted) return;
+            if (!audioRef.current || userManuallyMutedRef.current) return;
+            audioRef.current.muted = false;
             const playPromise = audioRef.current.play();
             if (playPromise !== undefined) {
                 playPromise
@@ -34,7 +64,7 @@ export const BackgroundAudioPlayer: React.FC<BackgroundAudioPlayerProps> = ({
                         setIsPlaying(true);
                     })
                     .catch(() => {
-                        // If browser blocks unmuted audio on landing, keep ready for first touch/click
+                        // Autoplay blocked until gesture
                         setIsPlaying(false);
                     });
             }
@@ -43,9 +73,18 @@ export const BackgroundAudioPlayer: React.FC<BackgroundAudioPlayerProps> = ({
         // 1. Attempt immediate playback on landing
         attemptPlay();
 
-        // 2. Attach listeners for any early gesture (touch, click, scroll, key) to satisfy browser autoplay policy
-        const handleAnyInteraction = () => {
-            if (!userManuallyMuted && audioRef.current && audioRef.current.paused) {
+        // 2. Attach listeners for any early gesture (touch, click, scroll, key)
+        const handleAnyInteraction = (e: Event) => {
+            // Ignore if clicked on the music button itself so togglePlay handles it directly
+            if (
+                e.target &&
+                buttonRef.current &&
+                (buttonRef.current === e.target || buttonRef.current.contains(e.target as Node))
+            ) {
+                return;
+            }
+
+            if (!userManuallyMutedRef.current && audioRef.current && audioRef.current.paused) {
                 attemptPlay();
             }
         };
@@ -54,22 +93,23 @@ export const BackgroundAudioPlayer: React.FC<BackgroundAudioPlayerProps> = ({
         events.forEach((evt) => {
             window.addEventListener(evt, handleAnyInteraction, { capture: true, passive: true });
         });
-        window.addEventListener('nimantran:play-music', handleAnyInteraction);
+        window.addEventListener('nimantran:play-music', attemptPlay);
 
         return () => {
             events.forEach((evt) => {
                 window.removeEventListener(evt, handleAnyInteraction, { capture: true });
             });
-            window.removeEventListener('nimantran:play-music', handleAnyInteraction);
+            window.removeEventListener('nimantran:play-music', attemptPlay);
             if (audio) {
                 audio.pause();
             }
         };
-    }, [userManuallyMuted]);
+    }, []);
 
     // When autoPlayTrigger changes (e.g. user opens cover card)
     useEffect(() => {
-        if (autoPlayTrigger && !userManuallyMuted && audioRef.current && audioRef.current.paused) {
+        if (autoPlayTrigger && !userManuallyMutedRef.current && audioRef.current && audioRef.current.paused) {
+            audioRef.current.muted = false;
             audioRef.current
                 .play()
                 .then(() => {
@@ -79,38 +119,24 @@ export const BackgroundAudioPlayer: React.FC<BackgroundAudioPlayerProps> = ({
                     console.log('Audio autoplay error:', err);
                 });
         }
-    }, [autoPlayTrigger, userManuallyMuted]);
-
-    const togglePlay = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        if (!audioRef.current) return;
-
-        if (isPlaying) {
-            audioRef.current.pause();
-            setIsPlaying(false);
-            setUserManuallyMuted(true);
-        } else {
-            audioRef.current
-                .play()
-                .then(() => {
-                    setIsPlaying(true);
-                    setUserManuallyMuted(false);
-                })
-                .catch((err) => {
-                    console.log('Audio playback error:', err);
-                });
-        }
-    };
+    }, [autoPlayTrigger]);
 
     return (
         <div className={styles.audioPlayerContainer}>
-            <audio ref={audioRef} loop preload="auto" autoPlay>
+            <audio
+                ref={audioRef}
+                loop
+                preload="auto"
+                onPlay={() => setIsPlaying(true)}
+                onPause={() => setIsPlaying(false)}
+            >
                 <source src={audioUrl} type="audio/mp4" />
                 <source src="/music/shubha-aagaman.mp4" type="video/mp4" />
                 <source src="/music/with-tanpura-drone.m4a" type="audio/mp4" />
                 Your browser does not support the audio element.
             </audio>
             <button
+                ref={buttonRef}
                 type="button"
                 onClick={togglePlay}
                 className={styles.audioPlayerBtn}

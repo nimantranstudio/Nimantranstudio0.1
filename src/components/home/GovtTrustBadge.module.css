@@ -1,7 +1,7 @@
 .trustBadgeWrapper {
   display: inline-flex;
   align-items: center;
-  margin-top: 2rem;
+  justify-content: center;
   width: auto;
   max-width: 100%;
 }
@@ -14,26 +14,34 @@
   border: none;
   padding: 0;
   user-select: none;
+  filter: none;
+  opacity: 1;
+  transition: all 0.3s ease;
+}
+
+.trustPill:hover,
+.trustBadgeWrapper:hover .trustPill {
+  transform: translateY(-1px);
 }
 
 .shieldIcon {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #D4AF37;
   flex-shrink: 0;
+  transition: color 0.3s ease, transform 0.3s ease;
 }
 
 .shieldSvg {
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
 }
 
 .divider {
   width: 1px;
-  height: 26px;
-  background: #E8D8C3;
+  height: 24px;
   flex-shrink: 0;
+  transition: background 0.3s ease;
 }
 
 .content {
@@ -44,31 +52,90 @@
 
 .mainLine {
   font-family: var(--font-sans), system-ui, sans-serif;
-  font-size: 1.05rem;
-  color: #1E293B;
-  font-weight: 500;
+  font-size: 0.95rem;
+  font-weight: 550;
   display: flex;
   align-items: center;
   gap: 0.35rem;
   line-height: 1.3;
   white-space: nowrap;
+  letter-spacing: 0.01em;
 }
 
 .dot {
-  color: #94A3B8;
   font-weight: 400;
 }
 
-
 .subLine {
   font-family: var(--font-sans), system-ui, sans-serif;
-  font-size: 0.88rem;
-  color: #5A6B80;
+  font-size: 0.82rem;
   font-weight: 400;
   line-height: 1.3;
-  margin-top: 0.08rem;
-  letter-spacing: 0.01em;
+  margin-top: 0.1rem;
+  letter-spacing: 0.015em;
   white-space: nowrap;
+}
+
+/* === DARK THEME (For dark sections like below Pricing Card) === */
+.darkTheme .shieldIcon {
+  color: #D4AF37;
+}
+
+.darkTheme .divider {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.darkTheme .mainLine {
+  color: #FFFFFF;
+}
+
+.darkTheme .dot {
+  color: #D4AF37;
+}
+
+.darkTheme .subLine {
+  color: #94A3B8;
+}
+
+.darkTheme:hover .mainLine {
+  color: #FFF8E7;
+}
+
+.darkTheme:hover .subLine {
+  color: #CBD5E1;
+}
+
+.darkTheme:hover .divider {
+  background: rgba(212, 175, 55, 0.4);
+}
+
+/* === LIGHT THEME (For light backgrounds like Footer) === */
+.lightTheme .shieldIcon {
+  color: #D4AF37;
+}
+
+.lightTheme .divider {
+  background: #CBD5E1;
+}
+
+.lightTheme .mainLine {
+  color: #1E293B;
+}
+
+.lightTheme .dot {
+  color: #94A3B8;
+}
+
+.lightTheme .subLine {
+  color: #64748B;
+}
+
+.lightTheme:hover .mainLine {
+  color: #0F172A;
+}
+
+.lightTheme:hover .subLine {
+  color: #475569;
 }
 
 /* Mobile Responsiveness */
@@ -76,7 +143,6 @@
   .trustBadgeWrapper {
     justify-content: center;
     width: 100%;
-    margin-top: 1.5rem;
   }
 
   .trustPill {
@@ -84,19 +150,19 @@
   }
 
   .shieldSvg {
-    width: 20px;
-    height: 20px;
+    width: 19px;
+    height: 19px;
   }
 
   .divider {
-    height: 22px;
+    height: 20px;
   }
 
   .mainLine {
-    font-size: 0.92rem;
+    font-size: 0.86rem;
   }
 
   .subLine {
-    font-size: 0.78rem;
+    font-size: 0.74rem;
   }
 }

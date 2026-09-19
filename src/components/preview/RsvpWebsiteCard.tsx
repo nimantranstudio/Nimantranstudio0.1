@@ -201,6 +201,7 @@ export const RsvpWebsiteCard: React.FC<RsvpWebsiteCardProps> = ({
                     key={`rsvp-frame-${targetId}-${iframeKey}`}
                     src={iframeSrc}
                     title="Real Wedding Website & RSVP"
+                    allow="autoplay"
                     onLoad={() => setIsLoading(false)}
                     onError={() => {
                         setIsLoading(false);

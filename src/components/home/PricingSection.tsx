@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { Check, ShieldCheck, Star } from 'lucide-react';
 import Link from 'next/link';
+import { GovtTrustBadge } from './GovtTrustBadge';
 import styles from '@/app/page.module.css';
 
 const features = [
@@ -41,7 +42,7 @@ export const PricingSection = ({ price, originalPrice, savings }: PricingSection
                     >
                         <span className={styles.eyebrowText}>BEGIN YOUR CELEBRATION TODAY</span>
                         <h2 className={styles.premiumHeadline}>
-                            One Price. Your Entire Wedding Invitation Suite.
+                            One Price. Entire Wedding Suite.
                         </h2>
                         <p className={styles.premiumSubtext}>
                             Create and share on WhatsApp in under 5 minutes.
@@ -128,6 +129,17 @@ export const PricingSection = ({ price, originalPrice, savings }: PricingSection
                                 </span>
                             </div>
                         </div>
+                    </motion.div>
+
+                    {/* Government MSME Trust Badge below the pricing card */}
+                    <motion.div
+                        className={styles.pricingTrustBadgeOuter}
+                        initial={{ opacity: 0, y: 16 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.6, delay: 0.25 }}
+                    >
+                        <GovtTrustBadge theme="dark" />
                     </motion.div>
 
                 </div>

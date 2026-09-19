@@ -6,7 +6,6 @@ import HeroImage from "@/components/home/HeroImage";
 
 import { ThemeShowcase } from "@/components/home/ThemeShowcase";
 import { HeroActions } from "@/components/home/HeroActions";
-import { GovtTrustBadge } from "@/components/home/GovtTrustBadge";
 import { prisma } from "@/lib/prisma";
 import { getHeadlinePricing } from "@/lib/pricing";
 import * as motion from "framer-motion/client";
@@ -125,8 +124,6 @@ export default async function Home() {
               >
                 Just at ₹ 999 only · Ready in 10 minutes · Free Preview
               </motion.p>
-
-              <GovtTrustBadge />
             </div>
             {/* Right Column - Hero Image */}
             <HeroImage />
