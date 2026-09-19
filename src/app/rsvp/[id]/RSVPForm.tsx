@@ -6,7 +6,6 @@ import { Calendar, MapPin, Check, Info, Send, Heart } from 'lucide-react';
 import clsx from 'clsx';
 import Link from 'next/link';
 import { FloatingFlowers } from '@/components/ui/FloatingFlowers';
-import { MandalaBackground } from '@/components/ui/MandalaBackground';
 import { FlowerPetalDrift } from '@/components/ui/FlowerPetalDrift';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CountdownTimer } from './components/CountdownTimer';
@@ -410,7 +409,7 @@ export const RSVPForm = ({ wedding, isPreview = false }: RSVPFormProps) => {
 
     const renderDecorations = () => (
         <>
-            <MandalaBackground isPreview={isPreview} />
+            <div className={styles.pageBackground} aria-hidden="true" />
             <FloatingFlowers isPreview={isPreview} />
             <AddToCalendarModal
                 isOpen={showCalendarModal}
@@ -591,18 +590,8 @@ export const RSVPForm = ({ wedding, isPreview = false }: RSVPFormProps) => {
                             initial="hidden"
                             animate="visible"
                         >
-                            {/* Partition 1: Royal Couple Announcement with Faded Marble Floral Background (40% Visibility) */}
+                            {/* Partition 1: Royal Couple Announcement */}
                             <div className={styles.heroFirstSection}>
-                                <div className={styles.heroBackgroundLayer} aria-hidden="true">
-                                    <img
-                                        src="/images/rsvp-hero-marble-bg.png"
-                                        alt=""
-                                        className={styles.heroBackgroundImage}
-                                        loading="eager"
-                                    />
-                                    <div className={styles.heroBackgroundVignette} />
-                                </div>
-
                                 {/* Top-Left Botanical Corner Flourish */}
                                 <motion.div variants={flourishVariants} className={styles.cornerFlourishTL} aria-hidden="true">
                                     <svg width="64" height="64" viewBox="0 0 60 60" fill="none">
