@@ -1832,7 +1832,7 @@ Nimantran Studio includes a Mehendi-specific card design in every theme bundle �
     date: 'MAY 1, 2025',
     readTime: '6 min read',
     excerpt: 'Haldi sirf ek beauty ritual nahi hai — iske peeche hai generations ki wisdom, blessings ki ek poori language. Agar aap yeh jaanein ki yeh kyun hota hai, toh aap apne guests ko bhi explain kar paayenge.',
-    image: '/Image/bundle/item-Haldi_Invitation-1771520707312-326886494.png',
+    image: '/blog/haldi-ceremony-guide.png',
     metaDescription: 'What is Haldi ceremony? Complete guide to Haldi meaning, rituals, traditions across India, and how to invite guests. Hindi, English and Hinglish invitation wording included.',
     content: `
 ## Haldi Ka Matlab — Sirf Skin Care Nahi
@@ -1923,7 +1923,7 @@ Apne Haldi invitation mein clearly mention karein:
     date: 'APR 27, 2025',
     readTime: '8 min read',
     excerpt: 'Punjabi weddings are legendary — and for good reason. Here is a complete guide to every ritual, every function, and everything your guests need to know before they arrive.',
-    image: '/Image/theme/2 Wedding Ceremony-1775488556518-182041729.png',
+    image: '/blog/punjabi-wedding-guide.png',
     metaDescription: 'Complete Punjabi wedding guide: Anand Karaj ceremony, pre-wedding rituals, Jaggo, Chunni ceremony, Milni, and more. Everything guests and couples need to know.',
     content: `
 ## Punjabi Weddings: The Standard for Indian Wedding Celebrations
@@ -2019,7 +2019,7 @@ Nimantran Studio's Royal Rajputana and Heritage themes work beautifully for Punj
     date: 'APR 22, 2025',
     readTime: '7 min read',
     excerpt: 'Attending a South Indian wedding for the first time? Or planning one and want your guests to feel prepared? This guide covers everything — from Vara Pooja to the significance of the Thaali.',
-    image: '/Image/theme/134166668312847982-1772528498596-611804750.jpg',
+    image: '/blog/south-indian-wedding-traditions.jpg',
     metaDescription: 'Complete guide to South Indian wedding traditions — Tamil, Telugu, and Kannada wedding rituals explained. For guests attending and couples planning their ceremony.',
     content: `
 ## South Indian Weddings: Rich, Meaningful, and Deeply Rooted
@@ -2110,7 +2110,7 @@ Nimantran Studio's *Suvarna Sohala* theme was designed specifically for South In
     date: 'APR 14, 2025',
     readTime: '7 min read',
     excerpt: 'Sangeet ek performance nahi hai — yeh ek celebration hai jo carefully planned hoti hai. Yahan hai ek complete guide — music se leke guest invite karne tak.',
-    image: '/Image/bundle/item-Sangeet_Invitation-1771520707319-353497349.png',
+    image: '/blog/sangeet-night-planning.png',
     metaDescription: 'Complete Sangeet night planning guide for Indian weddings. Songs, performances, choreography, timeline, and invitation wording in English, Hindi, and Hinglish.',
     content: `
 ## Sangeet: Jab Dono Families Pehli Baar Ek Stage Par Aati Hain
@@ -2345,7 +2345,7 @@ Yahan hain 30 templates — formal se lekar modern tak.
     date: 'APR 30, 2025',
     readTime: '5 min read',
     excerpt: 'Sangeet invitation ka wording fun hona chahiye, not formal. Yahan hain 25 ready-to-use templates jo aapki Sangeet invite ko memorable bana denge.',
-    image: '/Image/bundle/item-Sangeet_Invitation-1772530182367-693463634.png',
+    image: '/blog/sangeet-wording-templates.png',
     metaDescription: '25 Sangeet invitation wording templates in English, Hindi, and Hinglish. Copy-paste ready messages for WhatsApp, digital cards, and printed invitations.',
     content: `
 ## Sangeet Wording: Fun Ka Permission Hai
@@ -2459,7 +2459,7 @@ Yahan hain 25 templates — har style ke liye.
     date: 'APR 25, 2025',
     readTime: '5 min read',
     excerpt: 'Not every couple wants "joyfully united under the blessings of." Here are invitation wording options for couples who want their cards to sound like them — not like every other wedding.',
-    image: '/Image/theme/2 Wedding Ceremony-1789382702862-114665241.png',
+    image: '/blog/modern-wedding-invitation-wording.png',
     metaDescription: 'Modern Indian wedding invitation wording templates for contemporary couples. Unique, personal, and non-traditional styles in English, Hinglish, and bilingual formats.',
     content: `
 ## The Problem With Generic Invitation Wording
@@ -2550,7 +2550,7 @@ Two tones. One invitation. Everyone happy.
     date: 'MAY 6, 2025',
     readTime: '5 min read',
     excerpt: 'Invitation WhatsApp par bhejne ke liye sirf "forward" press karna kaafi nahi hai. Yahan hai woh exact method jo 2x better response rate deta hai.',
-    image: '/images/experience/whatsapp.png',
+    image: '/blog/whatsapp-sharing-guide.png',
     metaDescription: 'How to share wedding invitations on WhatsApp the right way. Step-by-step guide for Indian couples including message format, timing, and tips for higher RSVP response rates.',
     content: `
 ## Forward Karna ≠ Inviting
@@ -2656,7 +2656,7 @@ Or more casual:
     date: 'APR 21, 2025',
     readTime: '6 min read',
     excerpt: 'Inviting relatives from the US, UK, Canada, or Australia requires a completely different communication strategy. Here is exactly what your NRI guests need — and when they need it.',
-    image: '/images/experience/tracking.png',
+    image: '/blog/nri-wedding-invitations.png',
     metaDescription: 'How to invite NRI guests to Indian weddings. Complete guide to international wedding invitations, timelines, visa coordination, and digital communication for diaspora families.',
     content: `
 ## The NRI Guest Problem
@@ -2780,7 +2780,7 @@ Digital invitations reach NRI guests in seconds, with:
     date: 'APR 16, 2025',
     readTime: '5 min read',
     excerpt: 'WhatsApp par Hindi mein wedding invitation message likhna mushkil lagta hai. Yahan hain 40 ready-to-copy templates — formal se casual tak, elders ke liye aur friends ke liye bhi.',
-    image: '/images/experience/whatsapp.png',
+    image: '/blog/wedding-message-hindi-whatsapp.png',
     metaDescription: '40 ready wedding invitation messages in Hindi for WhatsApp. Formal, informal, Hinglish — copy-paste ready templates for sending Indian wedding invitations on WhatsApp.',
     content: `
 ## WhatsApp Message aur Card — Dono Important Hain
