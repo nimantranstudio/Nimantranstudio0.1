@@ -2222,7 +2222,7 @@ DJ starts. Food served. Let the evening find its own energy.
     date: 'MAY 4, 2025',
     readTime: '6 min read',
     excerpt: 'Perfect Hindi wording for your wedding invitation — formal, semi-formal, aur modern styles mein. Sirf copy karo, paste karo, aur bhejo.',
-    image: '/Image/bundle/item-Wedding_Invitation-1771520707302-649091946.png',
+    image: '/Image/bundle/item-Wedding_Invitation-1769353124305-377911247.png',
     metaDescription: '30 ready-to-use wedding invitation wording templates in Hindi for Indian weddings. Formal, semi-formal, and modern styles. Copy-paste ready for WhatsApp and digital invitations.',
     content: `
 ## Hindi Invitation Wording Kyun Important Hai
@@ -2459,7 +2459,7 @@ Yahan hain 25 templates — har style ke liye.
     date: 'APR 25, 2025',
     readTime: '5 min read',
     excerpt: 'Not every couple wants "joyfully united under the blessings of." Here are invitation wording options for couples who want their cards to sound like them — not like every other wedding.',
-    image: '/Image/bundle/item-Wedding_Invitation-1772530182361-824697598.png',
+    image: '/Image/theme/2 Wedding Ceremony-1789382702862-114665241.png',
     metaDescription: 'Modern Indian wedding invitation wording templates for contemporary couples. Unique, personal, and non-traditional styles in English, Hinglish, and bilingual formats.',
     content: `
 ## The Problem With Generic Invitation Wording
