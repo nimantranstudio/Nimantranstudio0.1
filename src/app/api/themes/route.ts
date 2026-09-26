@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getThemeSlug } from '@/lib/themeSlug';
 
 export const dynamic = 'force-dynamic';
 
@@ -7,6 +8,7 @@ export const dynamic = 'force-dynamic';
 const STATIC_THEMES = [
     {
         id: 'clv_traditional_gold',
+        slug: 'traditional-gold',
         name: 'Traditional Gold',
         description: 'A timeless elegance with intricate gold leaf patterns.',
         thumbnail: '/assets/themes/gold-thumb.jpg',
@@ -17,6 +19,7 @@ const STATIC_THEMES = [
     },
     {
         id: 'clv_minimalist_slate',
+        slug: 'minimalist-slate',
         name: 'Minimalist Slate',
         description: 'Modern, clean typography for the contemporary couple.',
         thumbnail: '/assets/themes/slate-thumb.jpg',
@@ -47,6 +50,7 @@ export async function GET() {
 
         const formattedThemes = themes.map((theme: any) => ({
             id: theme.id,
+            slug: getThemeSlug(theme),
             name: theme.name,
             description: theme.description || '',
             thumbnail: theme.thumbnailUrl || '/placeholder-theme.jpg',

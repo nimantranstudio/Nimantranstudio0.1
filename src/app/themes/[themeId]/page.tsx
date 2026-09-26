@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import ThemeDetailClient from './ThemeDetailClient';
+import { findThemeByIdOrSlug, getThemeSlug } from '@/lib/themeSlug';
 
 export const revalidate = 3600;
 
@@ -8,13 +10,11 @@ export async function generateMetadata(
     { params }: { params: Promise<{ themeId: string }> }
 ): Promise<Metadata> {
     const { themeId } = await params;
-    const theme = await prisma.theme.findUnique({
-        where: { id: themeId },
-        select: { name: true, description: true, thumbnailUrl: true }
-    });
+    const theme = await findThemeByIdOrSlug(themeId);
 
     if (!theme) return { title: 'Theme Not Found | Nimantran Studio' };
 
+    const canonicalSlug = getThemeSlug(theme);
     const title = `${theme.name} Wedding Invitations | Nimantran Studio`;
     const description = theme.description ||
         'Beautiful Indian wedding invitation templates with built-in RSVP, guest management, and instant WhatsApp sharing.';
@@ -24,7 +24,7 @@ export async function generateMetadata(
         title,
         description,
         alternates: {
-            canonical: `https://www.nimantranstudio.in/themes/${themeId}`,
+            canonical: `https://www.nimantranstudio.in/themes/${canonicalSlug}`,
         },
         robots: {
             index: true,
@@ -38,7 +38,7 @@ export async function generateMetadata(
         openGraph: {
             title,
             description,
-            url: `https://www.nimantranstudio.in/themes/${themeId}`,
+            url: `https://www.nimantranstudio.in/themes/${canonicalSlug}`,
             images: [{ url: image, width: 1200, height: 630, alt: theme.name }],
             type: 'website',
             siteName: 'Nimantran Studio',
@@ -57,24 +57,8 @@ export default async function ThemeDetailPage({ params }: { params: Promise<{ th
 
     // Fetch core data in parallel
     const [themeData, packages, allThemes] = await Promise.all([
-        prisma.theme.findUnique({
-            where: { id: themeId },
-            include: { 
-                bundles: {
-                    include: { 
-                        bundleInvoices: true,
-                        bundleItems: {
-                            include: { event: true }
-                        }
-                    }
-                }
-            }
-        }),
+        findThemeByIdOrSlug(themeId),
         prisma.package.findMany({ where: { isActive: true } }),
-        // Needs the same bundles/bundleInvoices shape ThemeCard reads pricing
-        // from — without it, every recommended theme falls into ThemeCard's
-        // "no bundle data" branch and shows "Price TBD" regardless of whether
-        // real pricing exists (it did here; this query just never fetched it).
         prisma.theme.findMany({
             where: { isActive: true },
             take: 20,
@@ -101,6 +85,13 @@ export default async function ThemeDetailPage({ params }: { params: Promise<{ th
         );
     }
 
+    const canonicalSlug = getThemeSlug(themeData);
+
+    // If accessed via old CUID or alternative ID format, 308 redirect to clean slug
+    if (themeId !== canonicalSlug && (themeId === themeData.id || themeId.startsWith('cm'))) {
+        redirect(`/themes/${canonicalSlug}`);
+    }
+
     // Format theme data for the client (Self-healing from API logic)
     const formattedTheme = {
         ...themeData,
@@ -112,8 +103,6 @@ export default async function ThemeDetailPage({ params }: { params: Promise<{ th
             name: b.BundleName,
             description: b.bundleDescription || '',
             bundleItems: (b.bundleItems || [])
-                // Customer cards are HTML only. Designed (structured) templates are for
-                // the admin editor + video, so keep them out of the customer flow.
                 .filter((item: any) => !String(item.templatePath || '').startsWith('structured:'))
                 .map((item: any) => {
                     let p = item.templatePath || '';
@@ -125,7 +114,7 @@ export default async function ThemeDetailPage({ params }: { params: Promise<{ th
     };
 
     const recommendations = (allThemes || [])
-        .filter((t: any) => t.id !== themeId)
+        .filter((t: any) => t.id !== themeData.id)
         .slice(0, 4)
         .map((t: any) => ({
             ...t,
@@ -147,7 +136,7 @@ export default async function ThemeDetailPage({ params }: { params: Promise<{ th
             "price": "999",
             "priceCurrency": "INR",
             "availability": "https://schema.org/InStock",
-            "url": `https://www.nimantranstudio.in/themes/${themeId}`
+            "url": `https://www.nimantranstudio.in/themes/${canonicalSlug}`
         }
     };
 
@@ -158,7 +147,7 @@ export default async function ThemeDetailPage({ params }: { params: Promise<{ th
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
             />
             <ThemeDetailClient 
-                themeId={themeId}
+                themeId={themeData.id}
                 initialTheme={formattedTheme}
                 initialPackages={packages}
                 initialRecommendations={recommendations}
@@ -166,3 +155,4 @@ export default async function ThemeDetailPage({ params }: { params: Promise<{ th
         </>
     );
 }
+

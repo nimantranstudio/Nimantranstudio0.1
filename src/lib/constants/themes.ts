@@ -22,6 +22,7 @@ export interface BundleData {
 
 export interface Theme {
     id: string;
+    slug?: string;
     name: string;
     description: string;
     thumbnail: string;

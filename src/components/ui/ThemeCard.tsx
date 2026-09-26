@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRef, useCallback, useEffect, useState } from 'react';
 import type { Theme } from '@/lib/constants/themes';
+import { getThemeSlug } from '@/lib/themeSlug';
 import styles from './ThemeCard.module.css';
 import clsx from 'clsx';
 
@@ -13,6 +14,7 @@ interface ThemeCardProps {
 
 export const ThemeCard = ({ theme }: ThemeCardProps) => {
     const isBestSeller = theme.isBestSeller || theme.name.toLowerCase().includes('test theme');
+    const themeSlug = getThemeSlug(theme as any);
 
     // Build the list of images to cycle through on hover
     // previewImages can be a string (JSON) from the DB or an actual array
@@ -68,7 +70,7 @@ export const ThemeCard = ({ theme }: ThemeCardProps) => {
 
     return (
         <Link
-            href={`/themes/${theme.id}`}
+            href={`/themes/${themeSlug}`}
             className={styles.cardWrapper}
             onMouseEnter={startSlideshow}
             onMouseLeave={stopSlideshow}
