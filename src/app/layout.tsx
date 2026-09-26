@@ -64,6 +64,9 @@ export const metadata: Metadata = {
       { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
     ],
   },
+  other: {
+    'p:domain_verify': 'b81a9700673367a7ec0095c99101706e',
+  },
 };
 
 const rootStructuredData = {
@@ -103,6 +106,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning style={{ backgroundColor: '#FDFBF7' }}>
       <head>
+        <meta name="p:domain_verify" content="b81a9700673367a7ec0095c99101706e" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(rootStructuredData) }}

@@ -7,12 +7,14 @@ import { Volume2, VolumeX } from 'lucide-react';
 interface BackgroundAudioPlayerProps {
     audioUrl?: string;
     autoPlayTrigger?: boolean;
+    disabled?: boolean;
 }
 
 export const BackgroundAudioPlayer: React.FC<BackgroundAudioPlayerProps> = ({
     // Shubha Aagaman (Spring Vows) royal Indian wedding music
     audioUrl = '/music/shubha-aagaman.m4a',
     autoPlayTrigger,
+    disabled = false,
 }) => {
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const buttonRef = useRef<HTMLButtonElement | null>(null);
@@ -48,6 +50,16 @@ export const BackgroundAudioPlayer: React.FC<BackgroundAudioPlayerProps> = ({
     }, []);
 
     useEffect(() => {
+        const isEmbedded = typeof window !== 'undefined' && window.self !== window.top;
+        if (disabled || isEmbedded) {
+            if (audioRef.current) {
+                audioRef.current.pause();
+                audioRef.current.muted = true;
+            }
+            setIsPlaying(false);
+            return;
+        }
+
         const audio = audioRef.current;
         if (!audio) return;
 
@@ -70,7 +82,7 @@ export const BackgroundAudioPlayer: React.FC<BackgroundAudioPlayerProps> = ({
             }
         };
 
-        // 1. Attempt immediate playback on landing
+        // 1. Attempt immediate playback on landing for live guests
         attemptPlay();
 
         // 2. Attach listeners for any early gesture (touch, click, scroll, key)
@@ -104,10 +116,13 @@ export const BackgroundAudioPlayer: React.FC<BackgroundAudioPlayerProps> = ({
                 audio.pause();
             }
         };
-    }, []);
+    }, [disabled]);
 
     // When autoPlayTrigger changes (e.g. user opens cover card)
     useEffect(() => {
+        const isEmbedded = typeof window !== 'undefined' && window.self !== window.top;
+        if (disabled || isEmbedded) return;
+
         if (autoPlayTrigger && !userManuallyMutedRef.current && audioRef.current && audioRef.current.paused) {
             audioRef.current.muted = false;
             audioRef.current
@@ -119,7 +134,7 @@ export const BackgroundAudioPlayer: React.FC<BackgroundAudioPlayerProps> = ({
                     console.log('Audio autoplay error:', err);
                 });
         }
-    }, [autoPlayTrigger]);
+    }, [autoPlayTrigger, disabled]);
 
     return (
         <div className={styles.audioPlayerContainer}>

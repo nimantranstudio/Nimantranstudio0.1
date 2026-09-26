@@ -427,6 +427,7 @@ export const RSVPForm = ({ wedding, isPreview = false }: RSVPFormProps) => {
                 <BackgroundAudioPlayer
                     audioUrl={wedding.audioUrl || wedding.musicUrl || '/music/shubha-aagaman.m4a'}
                     autoPlayTrigger={true}
+                    disabled={isPreview}
                 />
 
                 <motion.div
@@ -496,6 +497,7 @@ export const RSVPForm = ({ wedding, isPreview = false }: RSVPFormProps) => {
                 <BackgroundAudioPlayer
                     audioUrl={wedding.audioUrl || wedding.musicUrl || '/music/shubha-aagaman.m4a'}
                     autoPlayTrigger={true}
+                    disabled={isPreview}
                 />
 
                 <motion.div
@@ -558,6 +560,7 @@ export const RSVPForm = ({ wedding, isPreview = false }: RSVPFormProps) => {
             <BackgroundAudioPlayer
                 audioUrl={wedding.audioUrl || wedding.musicUrl || '/music/shubha-aagaman.m4a'}
                 autoPlayTrigger={isCoverOpen}
+                disabled={isPreview}
             />
 
             <AnimatePresence mode="wait">
