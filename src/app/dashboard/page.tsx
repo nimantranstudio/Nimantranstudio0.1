@@ -20,7 +20,6 @@ import { auth } from '@/lib/firebase';
 import { 
     Users, 
     FileText, 
-    CheckCircle2, 
     Clock, 
     Plus,
     LayoutDashboard,
@@ -32,7 +31,6 @@ import {
     Edit3,
     MessageCircle,
     Download,
-    Sparkles,
     Check,
     Lock,
     Zap,
@@ -45,7 +43,6 @@ import {
     MoreVertical,
     Heart,
     Trash2,
-    CreditCard,
     ChevronLeft,
     ChevronRight,
     Search,
@@ -131,12 +128,21 @@ export default function DashboardPage() {
     const [rsvpSearchQuery, setRsvpSearchQuery] = useState('');
     const [dbWedding, setDbWedding] = useState<any>(null);
     const [isCheckingDb, setIsCheckingDb] = useState(true);
-    const [isPeekingDemo, setIsPeekingDemo] = useState(false);
 
     // The database is the SOLE authority for whether this authenticated user owns an active suite
     const hasActiveSuite = Boolean(dbWedding?.id);
     const isEmptyState = !isCheckingDb && !hasActiveSuite;
     const activeWeddingId = dbWedding?.id || null;
+
+    // The empty-state modal is fixed-position over a blurred, non-interactive
+    // dashboard. Without locking the body, the page still scrolls behind it —
+    // and since there's no wedding data yet, scrolling just revealed blank space.
+    useEffect(() => {
+        if (!isEmptyState) return;
+        const previous = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        return () => { document.body.style.overflow = previous; };
+    }, [isEmptyState]);
 
     const DEMO_GHOST_DATA = {
         coupleNames: 'Aditya & Ananya',
@@ -1054,7 +1060,7 @@ export default function DashboardPage() {
     return (
         <>
         {/* Floating Luxury Concierge Modal for Empty State */}
-        {isEmptyState && !isPeekingDemo && (
+        {isEmptyState && (
             <div className={redesignStyles.conciergeOverlay}>
                 <motion.div 
                     initial={{ opacity: 0, y: 28, scale: 0.96 }}
@@ -1076,8 +1082,7 @@ export default function DashboardPage() {
 
                     {/* Gold Badge */}
                     <div className={redesignStyles.conciergeBadge}>
-                        <Sparkles size={12} />
-                        <span>Nimantran Studio Concierge</span>
+                        <span>Nimantran Studio</span>
                     </div>
 
                     {/* Title & Description */}
@@ -1090,79 +1095,17 @@ export default function DashboardPage() {
                         </p>
                     </div>
 
-                    {/* Core Value Pillars */}
-                    <div className={redesignStyles.conciergeFeaturesGrid}>
-                        <div className={redesignStyles.conciergeFeatureItem}>
-                            <div className={redesignStyles.featureIconCircle} style={{ background: '#FEF3C7', color: '#D97706' }}>
-                                <CreditCard size={18} />
-                            </div>
-                            <div>
-                                <h4 className={redesignStyles.featureTitle}>Multi-Event Digital Suite</h4>
-                                <p className={redesignStyles.featureSub}>Save the Date, Haldi, Sangeet, Wedding & Reception cards.</p>
-                            </div>
-                        </div>
-
-                        <div className={redesignStyles.conciergeFeatureItem}>
-                            <div className={redesignStyles.featureIconCircle} style={{ background: '#ECFDF5', color: '#059669' }}>
-                                <CheckCircle2 size={18} />
-                            </div>
-                            <div>
-                                <h4 className={redesignStyles.featureTitle}>WhatsApp RSVP & Guest Manager</h4>
-                                <p className={redesignStyles.featureSub}>Live headcount tracking, dietary preferences & Excel exports.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Action CTAs: Side-by-side row */}
+                    {/* Action CTA */}
                     <div className={redesignStyles.conciergeActionsRow}>
                         <Link href="/themes" className={redesignStyles.primaryYellowBtn}>
                             <span>Choose a Theme & Begin</span>
                         </Link>
-
-                        <button 
-                            type="button"
-                            onClick={() => setIsPeekingDemo(true)}
-                            className={redesignStyles.peekDemoBtn}
-                        >
-                            <span>Peek Demo Dashboard</span>
-                        </button>
                     </div>
                 </motion.div>
             </div>
         )}
 
-        {/* Floating & Sticky Temporary Demo State Banner */}
-        {isEmptyState && isPeekingDemo && (
-            <motion.div 
-                initial={{ opacity: 0, y: -24, x: "-50%" }}
-                animate={{ opacity: 1, y: 0, x: "-50%" }}
-                exit={{ opacity: 0, y: -24, x: "-50%" }}
-                transition={{ type: "spring", duration: 0.45, bounce: 0 }}
-                className={redesignStyles.peekBanner}
-            >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-                    <span className={redesignStyles.livePulseDot} />
-                    <span style={{ fontSize: '0.88rem', fontWeight: 600, color: '#FFFFFF', letterSpacing: '-0.01em', whiteSpace: 'nowrap' }}>
-                        Previewing Sample Wedding Dashboard
-                    </span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <Link href="/themes" className={redesignStyles.peekCtaBtn}>
-                        <Sparkles size={13} />
-                        <span>Create Nimantran</span>
-                    </Link>
-                    <button 
-                        type="button"
-                        onClick={() => setIsPeekingDemo(false)}
-                        className={redesignStyles.peekCloseBtn}
-                    >
-                        Back to Concierge
-                    </button>
-                </div>
-            </motion.div>
-        )}
-
-        <div className={`${styles.dashboardContainer} ${isEmptyState && !isPeekingDemo ? redesignStyles.ghostDashboard : ''}`}>
+        <div className={`${styles.dashboardContainer} ${isEmptyState ? redesignStyles.ghostDashboard : ''}`}>
             <WelcomeDialog
                 open={showWelcome}
                 onClose={closeWelcome}
