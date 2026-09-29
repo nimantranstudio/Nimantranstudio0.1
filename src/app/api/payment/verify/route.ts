@@ -244,10 +244,55 @@ export async function POST(req: NextRequest) {
             });
         } catch (provisionErr: any) {
             console.error('Provisioning failed after payment:', provisionErr?.message);
-            await prisma.order.update({
-                where: { id: order.id },
-                data: { status: 'failed' },
-            });
+
+            // The payment signature already verified, so this customer is entitled
+            // to a suite. Previously this branch left them with NO Wedding row at
+            // all — so every later login resolved to the empty "choose a theme"
+            // state, with the paid order pointing at nothing and no way back.
+            //
+            // Fall back to a minimal wedding keyed to the same order. Placeholder
+            // names they can correct beat a dashboard that never appears; the
+            // order is still flagged for follow-up either way.
+            try {
+                const fallbackGroom = sanitize(formData?.groomName) || 'Groom';
+                const fallbackBride = sanitize(formData?.brideName) || 'Bride';
+                const fallbackSlug = await generateUniqueWeddingSlug(fallbackGroom, fallbackBride);
+                const fallbackWedding = await prisma.wedding.create({
+                    data: {
+                        ownerId: user.id,
+                        slug: fallbackSlug,
+                        themeId: sanitize(themeId),
+                        groomName: fallbackGroom,
+                        brideName: fallbackBride,
+                        rsvpContact: mobile,
+                        events: {
+                            create: [{
+                                name: 'Wedding Ceremony',
+                                eventType: 'Wedding',
+                                description: 'The Wedding Ceremony',
+                                date: sanitize(formData?.primaryDate),
+                                time: sanitize(formData?.primaryTime),
+                                venue: sanitize(formData?.defaultVenueName),
+                                allowCompanions: true,
+                                collectDietary: false,
+                            }],
+                        },
+                    },
+                });
+                weddingId = fallbackWedding.id;
+                weddingSlug = fallbackWedding.slug;
+                console.warn(`Provisioned fallback wedding ${weddingId} for order ${order.id} after validation failure`);
+                await prisma.order.update({
+                    where: { id: order.id },
+                    data: { status: 'needs_review', weddingId },
+                });
+            } catch (fallbackErr: any) {
+                console.error('Fallback provisioning ALSO failed:', fallbackErr?.message);
+                await prisma.order.update({
+                    where: { id: order.id },
+                    data: { status: 'failed' },
+                });
+            }
             // Do NOT rethrow — the payment succeeded; the user must still get in.
         }
 

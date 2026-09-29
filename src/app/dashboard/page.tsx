@@ -3,7 +3,7 @@
 import { useWeddingStore } from '@/store/wedding-store';
 import { formatDisplayDate, formatLongDisplayDate, formatDisplayTime, parseWeddingDate, calculateDaysRemaining } from '@/lib/format-date';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { WelcomeDialog } from '@/components/dashboard/WelcomeDialog';
 import { InvitationCard, InvitationCardRef } from '@/components/preview/InvitationCard';
 import { PreviewCard } from '@/components/preview/PreviewCard';
@@ -133,6 +133,39 @@ export default function DashboardPage() {
     const hasActiveSuite = Boolean(dbWedding?.id);
     const isEmptyState = !isCheckingDb && !hasActiveSuite;
     const activeWeddingId = dbWedding?.id || null;
+
+    /**
+     * What the dashboard renders. Once a paid suite exists the DB is the ONLY
+     * source; the Zustand draft store (formData/bundleItems) is ignored.
+     *
+     * That store keeps mutating the moment the user starts building another
+     * card — so it used to bleed straight into this page and replace the suite
+     * they actually paid for, which looked like the purchased dashboard had
+     * been lost. Unpaid edits must never surface here; they belong to the
+     * in-progress flow until a payment provisions them into a Wedding row.
+     *
+     * invitationFor is the exception: it isn't persisted on Wedding, so the
+     * draft remains its only source and it stays cosmetic-only.
+     */
+    const displayData = useMemo(() => {
+        if (!hasActiveSuite) return formData;
+        const firstEvent = dbWedding.events?.[0];
+        return {
+            ...formData,
+            groomName: dbWedding.groomName || '',
+            brideName: dbWedding.brideName || '',
+            groomParents: dbWedding.groomParents || '',
+            brideParents: dbWedding.brideParents || '',
+            invitationMessage: dbWedding.invitationMessage || '',
+            rsvpDeadline: dbWedding.rsvpDeadline || '',
+            primaryDate: firstEvent?.date || '',
+            primaryTime: firstEvent?.time || '',
+            defaultVenueName: firstEvent?.venue || '',
+            defaultVenueAddress: '',
+            primaryMapLink: firstEvent?.mapLink || '',
+            events: dbWedding.events || [],
+        };
+    }, [hasActiveSuite, dbWedding, formData]);
 
     // The empty-state modal is fixed-position over a blurred, non-interactive
     // dashboard. Without locking the body, the page still scrolls behind it —
@@ -374,8 +407,8 @@ export default function DashboardPage() {
     };
 
     const handleShareWhatsApp = async (item?: any, captureCardImage?: () => Promise<string | null | undefined>) => {
-        const bride = formData.brideName || '';
-        const groom = formData.groomName || '';
+        const bride = displayData.brideName || '';
+        const groom = displayData.groomName || '';
         const coupleName = [groom, bride].filter(Boolean).join(' & ') || 'Our Wedding';
         
         const eventName = item?.name || item?.event?.name || 'Wedding Invitation';
@@ -404,13 +437,13 @@ export default function DashboardPage() {
             greeting = 'Thank you for being a part of our wedding celebrations.\n\nYour love, blessings and presence made our special moments even more memorable.';
         }
 
-        const rawDate = item?.event?.date || formData.primaryDate || '';
-        const rawTime = item?.event?.time || formData.primaryTime || '';
+        const rawDate = item?.event?.date || displayData.primaryDate || '';
+        const rawTime = item?.event?.time || displayData.primaryTime || '';
         const dateStr = rawDate ? formatDisplayDate(rawDate) : '';
         const timeStr = rawTime ? formatDisplayTime(rawTime) : '';
-        const venueName = item?.event?.venue || formData.defaultVenueName || '';
-        const venueAddr = item?.event?.address || formData.defaultVenueAddress || '';
-        const mapsUrl = item?.event?.mapsUrl || formData.primaryMapLink || '';
+        const venueName = item?.event?.venue || displayData.defaultVenueName || '';
+        const venueAddr = item?.event?.address || displayData.defaultVenueAddress || '';
+        const mapsUrl = item?.event?.mapsUrl || displayData.primaryMapLink || '';
         const rsvpUrl = rsvpFullUrl || `${typeof window !== 'undefined' ? window.location.origin : ''}/rsvp/${lastSavedWeddingId || 'demo'}`;
 
         let message = `${header}\n\n${greeting}\n\n`;
@@ -570,8 +603,8 @@ export default function DashboardPage() {
     });
 
     useEffect(() => {
-        const rawDate = formData.primaryDate || (formData.events && formData.events.length > 0 ? formData.events[0].date : '');
-        const rawTime = formData.primaryTime || (formData.events && formData.events.length > 0 ? formData.events[0].time : '');
+        const rawDate = displayData.primaryDate || (displayData.events && displayData.events.length > 0 ? displayData.events[0].date : '');
+        const rawTime = displayData.primaryTime || (displayData.events && displayData.events.length > 0 ? displayData.events[0].time : '');
         const parsedTarget = parseWeddingDate(rawDate, rawTime);
 
         // If user has provided a date, use it; otherwise use a future reference date
@@ -602,7 +635,7 @@ export default function DashboardPage() {
         updateTimer();
         const interval = setInterval(updateTimer, 1000);
         return () => clearInterval(interval);
-    }, [formData.primaryDate, formData.primaryTime, formData.events]);
+    }, [displayData.primaryDate, displayData.primaryTime, displayData.events]);
 
     useEffect(() => {
         setIsMounted(true);
@@ -743,8 +776,12 @@ export default function DashboardPage() {
             return `/${path}`;
         };
 
-        // If user has saved DB events and no client bundleItems in store, build directly from DB
-        if (dbWedding && dbWedding.events && dbWedding.events.length > 0 && (!bundleItems || bundleItems.length === 0)) {
+        // A paid suite always renders from the DB. This previously also required
+        // the draft store to be empty (`bundleItems.length === 0`), so starting
+        // another card silently swapped the paid suite out for the unpaid draft.
+        // No formData fallbacks either — a blank field on a paid event must stay
+        // blank rather than borrow a value from whatever is being drafted now.
+        if (dbWedding && dbWedding.events && dbWedding.events.length > 0) {
             return dbWedding.events.map((evt: any, index: number) => ({
                 id: evt.id,
                 name: evt.name || `Event ${index + 1}`,
@@ -752,14 +789,19 @@ export default function DashboardPage() {
                 event: {
                     id: evt.id,
                     name: evt.name,
-                    date: evt.date || formData.primaryDate,
-                    time: evt.time || formData.primaryTime,
-                    venue: evt.venue || formData.defaultVenueName,
+                    date: evt.date || '',
+                    time: evt.time || '',
+                    venue: evt.venue || '',
                     mapLink: evt.mapLink,
                     description: evt.description
                 }
             }));
         }
+
+        // Everything below builds from the unpaid draft store. A paid owner must
+        // never reach it — an odd suite (e.g. provisioned with no events) should
+        // render empty rather than fall back to someone's in-progress draft.
+        if (hasActiveSuite) return [];
 
         if (!bundleItems || bundleItems.length === 0) {
             const displayImages = (bundleImages && bundleImages.length > 0) ? bundleImages : (theme?.previewImages || []);
@@ -774,12 +816,12 @@ export default function DashboardPage() {
 
             return displayImages.map((imgUrl, index) => {
                 const def = DEFAULT_CARD_DEFS[index % DEFAULT_CARD_DEFS.length];
-                const matchedEvt = (formData.events || []).find(e => 
+                const matchedEvt = (displayData.events || []).find(e => 
                     e.id.toLowerCase().includes(def.id) || (e.name && e.name.toLowerCase().includes(def.id))
-                ) || (formData.events?.[index]) || (formData.events?.[0]);
+                ) || (displayData.events?.[index]) || (displayData.events?.[0]);
 
-                const date = matchedEvt?.date || formData.primaryDate;
-                const time = matchedEvt?.time || formData.primaryTime;
+                const date = matchedEvt?.date || displayData.primaryDate;
+                const time = matchedEvt?.time || displayData.primaryTime;
 
                 return {
                     id: `design-${index}`,
@@ -790,7 +832,7 @@ export default function DashboardPage() {
                         name: matchedEvt?.heading || matchedEvt?.name || def.name,
                         date: date,
                         time: time,
-                        venue: matchedEvt?.venue || formData.defaultVenueName
+                        venue: matchedEvt?.venue || displayData.defaultVenueName
                     }
                 };
             });
@@ -816,7 +858,7 @@ export default function DashboardPage() {
             'evt_17': 'wedding'              // Thank you card
         };
 
-        const weddingEvents = formData.events || [];
+        const weddingEvents = displayData.events || [];
         const items: Array<{ id: string; name: string; image: string; event: any }> = [];
 
         for (const bi of bundleItems) {
@@ -859,18 +901,18 @@ export default function DashboardPage() {
                 event: matchedEvent ? {
                     id: matchedEvent.id,
                     name: matchedEvent.heading || matchedEvent.name,
-                    date: matchedEvent.date || formData.primaryDate,
-                    time: matchedEvent.time || formData.primaryTime,
-                    venue: matchedEvent.venue || formData.defaultVenueName,
+                    date: matchedEvent.date || displayData.primaryDate,
+                    time: matchedEvent.time || displayData.primaryTime,
+                    venue: matchedEvent.venue || displayData.defaultVenueName,
                     tagline: matchedEvent.tagline,
                     description: matchedEvent.description,
                     heading: matchedEvent.heading
                 } : {
                     id: bi.id,
                     name: displayName,
-                    date: formData.primaryDate,
-                    time: formData.primaryTime,
-                    venue: formData.defaultVenueName
+                    date: displayData.primaryDate,
+                    time: displayData.primaryTime,
+                    venue: displayData.defaultVenueName
                 }
             });
         }
@@ -1080,11 +1122,6 @@ export default function DashboardPage() {
                         />
                     </div>
 
-                    {/* Gold Badge */}
-                    <div className={redesignStyles.conciergeBadge}>
-                        <span>Nimantran Studio</span>
-                    </div>
-
                     {/* Title & Description */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
                         <h2 className={redesignStyles.conciergeTitle}>
@@ -1109,7 +1146,7 @@ export default function DashboardPage() {
             <WelcomeDialog
                 open={showWelcome}
                 onClose={closeWelcome}
-                coupleNames={[formData.groomName, formData.brideName].filter(Boolean).join(' & ') || undefined}
+                coupleNames={[displayData.groomName, displayData.brideName].filter(Boolean).join(' & ') || undefined}
                 orderId={welcomeReceipt?.orderId}
                 amount={welcomeReceipt?.amount}
                 planName={welcomeReceipt?.planName}
@@ -1156,17 +1193,17 @@ export default function DashboardPage() {
                             event={displayPreviewItems[selectedPreviewIndex]?.event || {
                                 id: `preview-${selectedPreviewIndex}`,
                                 name: `Preview ${selectedPreviewIndex + 1}`,
-                                date: formData.primaryDate,
-                                time: formData.primaryTime,
-                                venue: formData.defaultVenueName
+                                date: displayData.primaryDate,
+                                time: displayData.primaryTime,
+                                venue: displayData.defaultVenueName
                             }}
                             theme={theme}
-                            groomName={formData.groomName || undefined}
-                            brideName={formData.brideName || undefined}
+                            groomName={displayData.groomName || undefined}
+                            brideName={displayData.brideName || undefined}
                             invitationFor={formData.invitationFor}
-                            groomParents={formData.groomParents || undefined}
-                            brideParents={formData.brideParents || undefined}
-                            welcomeMessage={formData.invitationMessage || undefined}
+                            groomParents={displayData.groomParents || undefined}
+                            brideParents={displayData.brideParents || undefined}
+                            welcomeMessage={displayData.invitationMessage || undefined}
                             isPlaceholder={false}
                             isRawPreview={false}
                             type='image'
@@ -1189,12 +1226,12 @@ export default function DashboardPage() {
                             ref={(el) => { assetCardRefs.current[item.id] = el; }}
                             event={item.event}
                             theme={theme}
-                            groomName={formData.groomName || ''}
-                            brideName={formData.brideName || ''}
+                            groomName={displayData.groomName || ''}
+                            brideName={displayData.brideName || ''}
                             invitationFor={formData.invitationFor}
-                            groomParents={formData.groomParents}
-                            brideParents={formData.brideParents}
-                            welcomeMessage={formData.invitationMessage}
+                            groomParents={displayData.groomParents}
+                            brideParents={displayData.brideParents}
+                            welcomeMessage={displayData.invitationMessage}
                             isPlaceholder={false}
                             isRawPreview={false}
                             customImage={item.image}
@@ -1231,8 +1268,8 @@ export default function DashboardPage() {
                             <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.65rem', fontWeight: 600, color: '#111827', margin: 0, lineHeight: 1.25, letterSpacing: '-0.02em' }}>
                                 {isEmptyState 
                                     ? DEMO_GHOST_DATA.coupleNames 
-                                    : ((dbWedding?.groomName || formData.groomName || dbWedding?.brideName || formData.brideName) ? 
-                                        [dbWedding?.groomName || formData.groomName, dbWedding?.brideName || formData.brideName].filter(Boolean).join(' & ') 
+                                    : ((dbWedding?.groomName || displayData.groomName || dbWedding?.brideName || displayData.brideName) ? 
+                                        [dbWedding?.groomName || displayData.groomName, dbWedding?.brideName || displayData.brideName].filter(Boolean).join(' & ') 
                                         : DEMO_GHOST_DATA.coupleNames)}
                             </h3>
 
@@ -1256,7 +1293,7 @@ export default function DashboardPage() {
                                         </div>
                                     );
                                 }
-                                const userDateStr = dbWedding?.events?.[0]?.date || formData.primaryDate || (formData.events && formData.events.length > 0 ? formData.events[0].date : '');
+                                const userDateStr = dbWedding?.events?.[0]?.date || displayData.primaryDate || (displayData.events && displayData.events.length > 0 ? displayData.events[0].date : '');
                                 const countdownData = calculateDaysRemaining(userDateStr || '20-12-2025');
                                 const displayDate = formatLongDisplayDate(userDateStr) || '20 December 2025';
 
@@ -1407,7 +1444,7 @@ export default function DashboardPage() {
                                 {[...displayPreviewItems, ...displayPreviewItems, ...displayPreviewItems, ...displayPreviewItems].map((item, itemIdx) => {
                                     const originalIdx = itemIdx % (displayPreviewItems.length || 1);
                                     // Extract real date/time from item.event or formData
-                                    const rawDate = item.event?.date || (isEmptyState ? '28-12-2026' : formData.primaryDate);
+                                    const rawDate = item.event?.date || (isEmptyState ? '28-12-2026' : displayData.primaryDate);
                                     const dateDisplay = formatDisplayDate(rawDate) || '28-12-2026';
 
                                     return (
@@ -1440,12 +1477,12 @@ export default function DashboardPage() {
                                                     <PreviewCard
                                                         event={item.event}
                                                         theme={theme}
-                                                        groomName={isEmptyState ? 'Aditya' : (formData.groomName || '')}
-                                                        brideName={isEmptyState ? 'Ananya' : (formData.brideName || '')}
+                                                        groomName={isEmptyState ? 'Aditya' : (displayData.groomName || '')}
+                                                        brideName={isEmptyState ? 'Ananya' : (displayData.brideName || '')}
                                                         invitationFor={formData.invitationFor}
-                                                        groomParents={formData.groomParents}
-                                                        brideParents={formData.brideParents}
-                                                        welcomeMessage={formData.invitationMessage}
+                                                        groomParents={displayData.groomParents}
+                                                        brideParents={displayData.brideParents}
+                                                        welcomeMessage={displayData.invitationMessage}
                                                         isPlaceholder={false}
                                                         isRawPreview={false}
                                                         customImage={item.image}
@@ -1500,7 +1537,7 @@ export default function DashboardPage() {
                             const rsvpLink = isEmptyState ? '' : getRsvpPageLink();
                             const invitationTypeName = 'Wedding Ceremony';
 
-                            const weddingCeremonyEvent = formData.events?.find(e =>
+                            const weddingCeremonyEvent = displayData.events?.find(e =>
                                 e.id?.toLowerCase().includes('wedding') ||
                                 e.name?.toLowerCase().includes('wedding') ||
                                 e.eventType?.toLowerCase().includes('wedding')
@@ -1511,9 +1548,9 @@ export default function DashboardPage() {
                             );
 
                             // Date & Time
-                            const rawDate = formData.primaryDate || weddingCeremonyEvent?.date || dbWedding?.events?.[0]?.date || '';
+                            const rawDate = displayData.primaryDate || weddingCeremonyEvent?.date || dbWedding?.events?.[0]?.date || '';
                             const formattedDate = formatDisplayDate(rawDate);
-                            const rawTime = formData.primaryTime || weddingCeremonyEvent?.time || dbWedding?.events?.[0]?.time || '';
+                            const rawTime = displayData.primaryTime || weddingCeremonyEvent?.time || dbWedding?.events?.[0]?.time || '';
                             const formattedTime = formatDisplayTime(rawTime);
                             
                             const dateDisplay = (formattedDate || rawDate)
@@ -1521,10 +1558,10 @@ export default function DashboardPage() {
                                 : 'TBD';
 
                             // Venue
-                            const venueDisplay = formData.defaultVenueName || formData.defaultVenueAddress || weddingCeremonyEvent?.venue || dbWedding?.events?.[0]?.venue || 'TBD';
+                            const venueDisplay = displayData.defaultVenueName || displayData.defaultVenueAddress || weddingCeremonyEvent?.venue || dbWedding?.events?.[0]?.venue || 'TBD';
 
                             // RSVP Deadline
-                            const rawDeadline = formData.rsvpDeadline || weddingCeremonyEvent?.rsvpDeadline || dbWedding?.rsvpDeadline || '';
+                            const rawDeadline = displayData.rsvpDeadline || weddingCeremonyEvent?.rsvpDeadline || dbWedding?.rsvpDeadline || '';
                             const formattedDeadline = formatDisplayDate(rawDeadline);
                             const deadlineDisplay = (formattedDeadline || rawDeadline) ? `Respond by ${formattedDeadline || rawDeadline}` : 'No deadline';
 
@@ -1906,12 +1943,12 @@ export default function DashboardPage() {
                                                 ref={suitePreviewCardRef}
                                                 event={currentItem.event}
                                                 theme={theme}
-                                                groomName={isEmptyState ? 'Aditya' : (formData.groomName || '')}
-                                                brideName={isEmptyState ? 'Ananya' : (formData.brideName || '')}
+                                                groomName={isEmptyState ? 'Aditya' : (displayData.groomName || '')}
+                                                brideName={isEmptyState ? 'Ananya' : (displayData.brideName || '')}
                                                 invitationFor={formData.invitationFor}
-                                                groomParents={formData.groomParents}
-                                                brideParents={formData.brideParents}
-                                                welcomeMessage={formData.invitationMessage}
+                                                groomParents={displayData.groomParents}
+                                                brideParents={displayData.brideParents}
+                                                welcomeMessage={displayData.invitationMessage}
                                                 isPlaceholder={false}
                                                 isSecured={false}
                                                 customImage={currentItem.image}

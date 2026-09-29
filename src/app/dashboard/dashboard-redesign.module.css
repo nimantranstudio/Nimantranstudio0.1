@@ -754,7 +754,9 @@
 .conciergeCard {
     position: relative;
     width: 100%;
-    max-width: 620px;
+    /* Narrowed: the card now holds only a logo, title, one line of copy and a
+       single button — 620px left it looking mostly empty. */
+    max-width: 420px;
     background: linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(253, 250, 245, 0.93) 100%);
     backdrop-filter: blur(28px) saturate(190%);
     -webkit-backdrop-filter: blur(28px) saturate(190%);
@@ -893,14 +895,15 @@
 }
 
 .primaryYellowBtn {
-    flex: 1 1 0;
-    min-width: 0;
+    /* Sized to its label rather than stretching the row: it was sharing that
+       row with the demo-preview button, which is gone. */
+    flex: 0 0 auto;
     background: linear-gradient(135deg, #ECC878 0%, #D4AF37 100%);
     color: #111111 !important;
     border: 1px solid rgba(212, 175, 55, 0.45);
-    padding: 0.9rem 1.15rem;
+    padding: 0.7rem 1.6rem;
     border-radius: 9999px;
-    font-size: 0.92rem;
+    font-size: 0.86rem;
     font-weight: 600;
     display: inline-flex;
     align-items: center;
