@@ -36,6 +36,14 @@ export const FIELD_IDS = {
     VENUE:         'venue',
     HEADING:       'heading',
     SUBHEADING:    'subheading',
+    // "Creating Invite For" presentation layer — whichever of bride/groom is selected
+    // becomes primary, the other secondary. Additive: coexists with the bride/groom
+    // fields above, which keep their own literal meaning. See InvitationCard's
+    // primaryPerson/secondaryPerson.
+    PRIMARY_PERSON_NAME:      'primary-person-name',
+    PRIMARY_PERSON_PARENTS:   'primary-person-parents',
+    SECONDARY_PERSON_NAME:    'secondary-person-name',
+    SECONDARY_PERSON_PARENTS: 'secondary-person-parents',
 } as const;
 
 export type FieldId = typeof FIELD_IDS[keyof typeof FIELD_IDS];
@@ -56,6 +64,11 @@ export interface FieldPayloadInput {
     eventVenue?: string;
     heading?: string;
     subheading?: string;
+    /** Whichever of bride/groom is "Creating Invite For" — see PRIMARY_PERSON_NAME. */
+    primaryPersonName?: string;
+    primaryPersonParents?: string;
+    secondaryPersonName?: string;
+    secondaryPersonParents?: string;
 }
 
 /** Builds the postMessage payload from component props. Skips empty/undefined values. */
@@ -76,5 +89,9 @@ export function buildFieldPayload(input: FieldPayloadInput): TemplateFieldMap {
     set(FIELD_IDS.VENUE,         input.eventVenue); // alias used by some templates
     set(FIELD_IDS.HEADING,       input.heading);
     set(FIELD_IDS.SUBHEADING,    input.subheading);
+    set(FIELD_IDS.PRIMARY_PERSON_NAME,      input.primaryPersonName);
+    set(FIELD_IDS.PRIMARY_PERSON_PARENTS,   input.primaryPersonParents);
+    set(FIELD_IDS.SECONDARY_PERSON_NAME,    input.secondaryPersonName);
+    set(FIELD_IDS.SECONDARY_PERSON_PARENTS, input.secondaryPersonParents);
     return map;
 }

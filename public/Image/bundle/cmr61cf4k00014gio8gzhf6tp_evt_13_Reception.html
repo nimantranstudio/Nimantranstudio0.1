@@ -213,10 +213,10 @@
 
             <div class="couple-container stacked">
                 <div class="person-block groom-block">
-                    <!-- REPLACE: GROOM NAME -->
-                    <div id="groom-name" class="name-text">Rahul</div>
-                    <!-- REPLACE: GROOM'S PARENTS -->
-                    <div id="groom-parents" class="parent-text" style="display: none;">Son of Mr and Mrs Bajaj</div>
+                    <!-- REPLACE: PRIMARY PERSON NAME -->
+                    <div id="primary-person-name" data-field="primary-person-name" class="name-text">Rahul</div>
+                    <!-- REPLACE: PRIMARY PERSON PARENTS -->
+                    <div id="primary-person-parents" data-field="primary-person-parents" class="parent-text" style="display: none;">Son of Mr and Mrs Bajaj</div>
                 </div>
 
                 <div class="ampersand-block">
@@ -224,10 +224,10 @@
                 </div>
 
                 <div class="person-block bride-block">
-                    <!-- REPLACE: BRIDE NAME -->
-                    <div id="bride-name" class="name-text">Anjali</div>
-                    <!-- REPLACE: BRIDE'S PARENTS -->
-                    <div id="bride-parents" class="parent-text" style="display: none;">Daughter of Mr and Mrs Patel
+                    <!-- REPLACE: SECONDARY PERSON NAME -->
+                    <div id="secondary-person-name" data-field="secondary-person-name" class="name-text">Anjali</div>
+                    <!-- REPLACE: SECONDARY PERSON PARENTS -->
+                    <div id="secondary-person-parents" data-field="secondary-person-parents" class="parent-text" style="display: none;">Daughter of Mr and Mrs Patel
                     </div>
                 </div>
             </div>
@@ -247,76 +247,177 @@
         </div>
     </div>
     <script>
-        function fitNameText(el) {
-            if (!el) return;
-            el.style.fontSize = '';
-            el.style.whiteSpace = 'nowrap';
+        (function () {
+            function fitTextToContainer(el) {
+                if (!el) return;
+                var targetEl = el.closest('#event-subheading, .heading, .names') || el;
 
-            var container = el.parentElement;
-            if (!container) return;
-
-            var maxW = container.clientWidth;
-            if (!maxW) return;
-
-            var currentSize = parseFloat(window.getComputedStyle(el).fontSize);
-            var minSize = 10;
-
-            while (el.scrollWidth > maxW && currentSize > minSize) {
-                currentSize -= 0.5;
-                el.style.fontSize = currentSize + 'px';
-            }
-        }
-
-        function fitVenueText(el) {
-            if (!el) return;
-            el.style.fontSize = '';
-
-            var currentSize = parseFloat(window.getComputedStyle(el).fontSize);
-            var minSize = 9;
-
-            el.style.lineHeight = '1.3';
-
-            while (currentSize > minSize) {
-                var max2LinesHeight = currentSize * 1.3 * 2.15;
-                if (el.scrollHeight <= max2LinesHeight) {
-                    break;
+                if (!targetEl.dataset.origFontSize) {
+                    targetEl.style.fontSize = '';
+                    var comp = window.getComputedStyle(targetEl);
+                    var fs = parseFloat(comp.fontSize);
+                    if (fs) {
+                        targetEl.dataset.origFontSize = fs;
+                    }
                 }
-                currentSize -= 0.5;
-                el.style.fontSize = currentSize + 'px';
-            }
-        }
 
-        function fitAllFields() {
-            var nameSelectors = '.name-text, #groom-name, #bride-name, #person-name, [data-field="person-type"]';
-            document.querySelectorAll(nameSelectors).forEach(function (el) {
-                fitNameText(el);
-            });
+                if (targetEl.dataset.origFontSize) {
+                    targetEl.style.fontSize = targetEl.dataset.origFontSize + 'px';
+                } else {
+                    targetEl.style.fontSize = '';
+                }
 
-            var venueSelectors = '.venue-details, #event-venue, [data-field="venue-address"], [data-field="event-venue"]';
-            document.querySelectorAll(venueSelectors).forEach(function (el) {
-                fitVenueText(el);
-            });
-        }
-
-        window.addEventListener('DOMContentLoaded', fitAllFields);
-        window.addEventListener('load', fitAllFields);
-        window.addEventListener('resize', fitAllFields);
-
-        if (document.fonts && document.fonts.ready) {
-            document.fonts.ready.then(fitAllFields);
-        }
-
-        if (window.MutationObserver) {
-            var observer = new MutationObserver(function () {
-                fitAllFields();
-            });
-            window.addEventListener('DOMContentLoaded', function () {
-                var selectors = '.name-text, #groom-name, #bride-name, #person-name, [data-field="person-type"], .venue-details, #event-venue, [data-field="venue-address"], [data-field="event-venue"]';
-                document.querySelectorAll(selectors).forEach(function (el) {
-                    observer.observe(el, { childList: true, characterData: true, subtree: true });
+                targetEl.querySelectorAll('span').forEach(function (s) {
+                    s.style.fontSize = '';
                 });
-            });
-        }
+
+                var container = targetEl.parentElement;
+                if (!container) return;
+
+                var containerStyle = window.getComputedStyle(container);
+                var paddingH = (parseFloat(containerStyle.paddingLeft) || 0) + (parseFloat(containerStyle.paddingRight) || 0);
+                var maxW = container.clientWidth - paddingH;
+                if (!maxW || maxW <= 0) {
+                    maxW = container.getBoundingClientRect().width - paddingH;
+                }
+                if (!maxW || maxW <= 0) return;
+
+                var isMultiLine = targetEl.classList.contains('venue-details') ||
+                                  targetEl.classList.contains('welcome-message') ||
+                                  targetEl.id === 'event-venue' ||
+                                  targetEl.id === 'welcome-message' ||
+                                  targetEl.getAttribute('data-field') === 'venue-address' ||
+                                  targetEl.getAttribute('data-field') === 'event-venue' ||
+                                  targetEl.getAttribute('data-field') === 'welcome-message';
+
+                if (!isMultiLine) {
+                    targetEl.style.whiteSpace = 'nowrap';
+                }
+
+                var origSize = parseFloat(targetEl.dataset.origFontSize) || parseFloat(window.getComputedStyle(targetEl).fontSize) || 16;
+                var currentSize = origSize;
+                var minSize = Math.max(12, Math.min(14, origSize * 0.4));
+
+                if (!isMultiLine) {
+                    var range = document.createRange();
+                    while (currentSize > minSize) {
+                        try {
+                            range.selectNodeContents(targetEl);
+                            var textW = range.getBoundingClientRect().width;
+                            var scrollW = targetEl.scrollWidth;
+                            var actualW = Math.max(textW, scrollW);
+                            if (actualW <= maxW) {
+                                break;
+                            }
+                        } catch (e) {
+                            if (targetEl.scrollWidth <= maxW) {
+                                break;
+                            }
+                        }
+                        currentSize -= 0.5;
+                        targetEl.style.fontSize = currentSize + 'px';
+                    }
+                } else {
+                    targetEl.style.lineHeight = '1.3';
+                    var maxLinesHeight = currentSize * 1.3 * 2.5;
+                    while (currentSize > minSize) {
+                        if (targetEl.scrollHeight <= maxLinesHeight && targetEl.scrollWidth <= maxW) {
+                            break;
+                        }
+                        currentSize -= 0.5;
+                        targetEl.style.fontSize = currentSize + 'px';
+                    }
+                }
+            }
+
+            var dynamicSelectors = [
+                '.name-text',
+                '#primary-person-name',
+                '[data-field="primary-person-name"]',
+                '#primary-person-parents',
+                '[data-field="primary-person-parents"]',
+                '#secondary-person-name',
+                '[data-field="secondary-person-name"]',
+                '#secondary-person-parents',
+                '[data-field="secondary-person-parents"]',
+                '#groom-name',
+                '#bride-name',
+                '#person-name',
+                'bride-name',
+                'groom-name',
+                '[data-field="bride-name"]',
+                '[data-field="groom-name"]',
+                '[data-field="person-name"]',
+                '[data-field="person-type"]',
+                '.couple-names',
+                '#event-subheading',
+                '[data-field="event-subheading"]',
+                '.heading',
+                '#event-name',
+                '[data-field="event-name"]',
+                '.eventName',
+                '#groom-parents',
+                '[data-field="groom-parents"]',
+                '#bride-parents',
+                '[data-field="bride-parents"]',
+                '.parent-text',
+                '#event-date',
+                '[data-field="event-date"]',
+                '#event-time',
+                '[data-field="event-time"]',
+                '#event-venue',
+                '[data-field="venue-address"]',
+                '[data-field="event-venue"]',
+                '.venue-details',
+                '#welcome-message',
+                '[data-field="welcome-message"]',
+                '[data-field="family-name"]'
+            ].join(', ');
+
+            function fitAllFields() {
+                var elements = document.querySelectorAll(dynamicSelectors);
+                elements.forEach(function (el) {
+                    fitTextToContainer(el);
+                });
+            }
+
+            window.fitTextToContainer = fitTextToContainer;
+            window.fitNameText = fitTextToContainer;
+            window.fitVenueText = fitTextToContainer;
+            window.fitAllFields = fitAllFields;
+
+            window.addEventListener('DOMContentLoaded', fitAllFields);
+            window.addEventListener('load', fitAllFields);
+            window.addEventListener('resize', fitAllFields);
+
+            if (document.fonts && document.fonts.ready) {
+                document.fonts.ready.then(fitAllFields);
+            }
+
+            if (window.ResizeObserver) {
+                var resizeObserver = new ResizeObserver(function () {
+                    fitAllFields();
+                });
+                window.addEventListener('DOMContentLoaded', function () {
+                    var wrapper = document.querySelector('.invite-wrapper, .invitation-wrapper, .text-overlay, body');
+                    if (wrapper) {
+                        resizeObserver.observe(wrapper);
+                    }
+                });
+            }
+
+            if (window.MutationObserver) {
+                var observer = new MutationObserver(function () {
+                    fitAllFields();
+                });
+                window.addEventListener('DOMContentLoaded', function () {
+                    var wrapper = document.querySelector('.invite-wrapper, .invitation-wrapper, .text-overlay, body');
+                    if (wrapper) {
+                        observer.observe(wrapper, { childList: true, characterData: true, subtree: true });
+                    }
+                });
+            }
+        })();
     </script>
 </body>
 

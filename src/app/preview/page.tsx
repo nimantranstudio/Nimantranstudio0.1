@@ -750,6 +750,7 @@ function PreviewContent() {
                         theme={theme}
                         groomName={formData.groomName || ''}
                         brideName={formData.brideName || ''}
+                        invitationFor={formData.invitationFor}
                         groomParents={formData.groomParents}
                         brideParents={formData.brideParents}
                         welcomeMessage={formData.invitationMessage}
@@ -1020,6 +1021,7 @@ function PreviewContent() {
                                     theme={theme}
                                     groomName={formData.groomName || ''}
                                     brideName={formData.brideName || ''}
+                                    invitationFor={formData.invitationFor}
                                     groomParents={formData.groomParents || ''}
                                     brideParents={formData.brideParents || ''}
                                     welcomeMessage={formData.invitationMessage || ''}
@@ -1316,6 +1318,7 @@ function PreviewContent() {
                                                             theme={theme}
                                                             groomName={formData.groomName || ''}
                                                             brideName={formData.brideName || ''}
+                                                            invitationFor={formData.invitationFor}
                                                             groomParents={formData.groomParents}
                                                             brideParents={formData.brideParents}
                                                             welcomeMessage={formData.invitationMessage}
@@ -1360,6 +1363,7 @@ function PreviewContent() {
                                                             theme={theme}
                                                             groomName={formData.groomName || ''}
                                                             brideName={formData.brideName || ''}
+                                                            invitationFor={formData.invitationFor}
                                                             groomParents={formData.groomParents}
                                                             brideParents={formData.brideParents}
                                                             welcomeMessage={formData.invitationMessage}
@@ -1411,6 +1415,7 @@ function PreviewContent() {
                                                                     theme={theme}
                                                                     groomName={formData.groomName || ''}
                                                                     brideName={formData.brideName || ''}
+                                                                    invitationFor={formData.invitationFor}
                                                                     groomParents={formData.groomParents}
                                                                     brideParents={formData.brideParents}
                                                                     welcomeMessage={formData.invitationMessage}
@@ -1457,6 +1462,7 @@ function PreviewContent() {
                                                             theme={theme}
                                                             groomName={formData.groomName || ''}
                                                             brideName={formData.brideName || ''}
+                                                            invitationFor={formData.invitationFor}
                                                             groomParents={formData.groomParents}
                                                             brideParents={formData.brideParents}
                                                             welcomeMessage={formData.invitationMessage}
@@ -1501,6 +1507,7 @@ function PreviewContent() {
                                                             theme={theme}
                                                             groomName={formData.groomName || ''}
                                                             brideName={formData.brideName || ''}
+                                                            invitationFor={formData.invitationFor}
                                                             groomParents={formData.groomParents}
                                                             brideParents={formData.brideParents}
                                                             welcomeMessage={formData.invitationMessage}

@@ -437,12 +437,11 @@ function DetailsContent() {
         router.push('/preview?processing=true');
     };
 
-    // Swap names logic - mapped to invitationFor / bride/groom selection
+    // "Who is the Bride?" vs "Who is the Groom?" form-field ordering only — purely
+    // cosmetic. The card preview's primary/secondary ordering is InvitationCard's own
+    // job (driven by the raw names below + invitationFor); it must not be duplicated
+    // here by swapping which raw value is labeled "groom" vs "bride".
     const isBrideFirst = formData.invitationFor ? formData.invitationFor === 'bride' : formData.nameOrder === 'bride_first';
-    const displayGroomName = isBrideFirst ? formData.brideName : formData.groomName;
-    const displayBrideName = isBrideFirst ? formData.groomName : formData.brideName;
-    const displayGroomParents = isBrideFirst ? formData.brideParents : formData.groomParents;
-    const displayBrideParents = isBrideFirst ? formData.groomParents : formData.brideParents;
 
     return (
         <div className={styles.page}>
@@ -686,18 +685,18 @@ function DetailsContent() {
                                                     ref={cardRef}
                                                     event={previewEvent}
                                                     theme={activeTheme || { id: 'default', name: 'Default', description: '', thumbnail: '', previewImages: [] }}
-                                                    groomName={displayGroomName}
-                                                    brideName={displayBrideName}
+                                                    groomName={formData.groomName}
+                                                    brideName={formData.brideName}
                                                     invitationFor={formData.invitationFor}
-                                                    groomParents={displayGroomParents}
-                                                    brideParents={displayBrideParents}
+                                                    groomParents={formData.groomParents}
+                                                    brideParents={formData.brideParents}
                                                     customImage={templateUrl}
                                                     structuredLayout={activeStructuredLayout}
                                                     structuredCouple={{
-                                                        groomName: displayGroomName,
-                                                        brideName: displayBrideName,
-                                                        groomParents: displayGroomParents,
-                                                        brideParents: displayBrideParents,
+                                                        groomName: formData.groomName,
+                                                        brideName: formData.brideName,
+                                                        groomParents: formData.groomParents,
+                                                        brideParents: formData.brideParents,
                                                         primaryDate: formData.primaryDate,
                                                         primaryTime: formData.primaryTime,
                                                         defaultVenueName: formData.defaultVenueName,

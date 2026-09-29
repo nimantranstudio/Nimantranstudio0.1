@@ -82,13 +82,27 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
     const [iframeHeight, setIframeHeight] = useState(889);
     const isHTMLDesign = !!srcDoc || customImage?.toLowerCase().endsWith('.html') || (customImage?.includes('item-Wedding_Invitation') && customImage.toLowerCase().includes('.html')); // Robust check
 
+    // Single source of truth for "Creating Invite For": whichever of bride/groom is
+    // selected becomes primary, the other secondary. Used directly by the
+    // primary-person-name/parents + secondary-person-name/parents field contract
+    // (Wedding/Reception's own primary/secondary mapping), and — via effectiveBrideName
+    // below — by every other place in this component that needs "the selected person's
+    // name", so there is never a second, independently-derived bride/groom branch.
+    const primaryPerson = invitationFor === 'groom'
+        ? { name: groomName, parents: groomParents }
+        : { name: brideName, parents: brideParents };
+    const secondaryPerson = invitationFor === 'groom'
+        ? { name: brideName, parents: brideParents }
+        : { name: groomName, parents: groomParents };
+
     // Haldi/Mehendi/Sangeet templates carry one single-name "{name} ke {event}" slot
-    // (id/data-field="bride-name") — invitationFor picks whose name fills it. Every other
+    // (id/data-field="bride-name", "person-type", or the newer "primary-person-name") —
+    // it always shows the resolved primaryPerson, never the raw bride name. Every other
     // event (Wedding, Reception, Save the Date) always shows both names via their own
     // separate groom-name/bride-name fields, so this only ever substitutes here.
     const currentEventType = classifyEventType(event?.heading || event?.name);
     const isSingleNameCeremony = currentEventType === 'haldi' || currentEventType === 'mehendi' || currentEventType === 'sangeet';
-    const effectiveBrideName = (isSingleNameCeremony && invitationFor === 'groom') ? groomName : brideName;
+    const effectiveBrideName = isSingleNameCeremony ? primaryPerson.name : brideName;
     const [imageDimensions, setImageDimensions] = useState<{ width: number; height: number }>({ width: 1080, height: 1920 });
     const [imageRatio, setImageRatio] = useState<number>(9 / 16);
 
@@ -550,6 +564,34 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
             const doc = iframeRef.current?.contentDocument || iframeRef.current?.contentWindow?.document;
             if (!doc || !doc.body || !doc.head) return;
 
+            // Inject reactive postMessage listener once per iframe load, so every dynamic
+            // field (including primaryPerson/secondaryPerson) keeps updating live via the
+            // data-field bridge even on a saved-layout card, where the full DOM-scrape below
+            // deliberately stops short to avoid overwriting the user's custom positions/text.
+            // New templates use data-field attributes; legacy templates fall back to getElementById.
+            const ensureReactiveListener = () => {
+                const listenerWin = iframeRef.current?.contentWindow as any;
+                if (!listenerWin || listenerWin.__nimantranReady) return;
+                listenerWin.__nimantranReady = true;
+                const listenerDoc = doc;
+                listenerWin.addEventListener('message', function(e: any) {
+                    if (!e.data || e.data.type !== 'NIMANTRAN_UPDATE') return;
+                    const fields: Record<string, string> = e.data.payload;
+                    if (!fields) return;
+                    Object.keys(fields).forEach(function(fieldId) {
+                        const val = fields[fieldId];
+                        if (val == null) return;
+                        const dataEls = listenerDoc.querySelectorAll(`[data-field="${fieldId}"]`);
+                        if (dataEls.length) {
+                            dataEls.forEach((el: Element) => { (el as HTMLElement).textContent = val; });
+                            return;
+                        }
+                        const fallbackEl = listenerDoc.getElementById(fieldId);
+                        if (fallbackEl) fallbackEl.textContent = val;
+                    });
+                });
+            };
+
             const ensureMandalaAndRuntimeFixes = (docTarget: Document) => {
                 if (!docTarget || !docTarget.body || !docTarget.head) return;
 
@@ -750,15 +792,18 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                     }
                     // Ensure runtime preview fix and intricate mandala are attached even with saved layout
                     ensureMandalaAndRuntimeFixes(doc);
+                    ensureReactiveListener();
                     return;
                 }
             }
 
             // If a saved layout was already applied in a previous call within this session,
             // skip re-running the content mapping so user edits aren't overwritten,
-            // but guarantee runtime fixes and rotating mandala are active.
+            // but guarantee runtime fixes, the rotating mandala, and the reactive data-field
+            // bridge (primaryPerson/secondaryPerson, name/parents/date/time/venue) are active.
             if (hasLoadedSavedLayout.current && typeof window !== 'undefined' && localStorage.getItem(storageKey)) {
                 ensureMandalaAndRuntimeFixes(doc);
+                ensureReactiveListener();
                 return;
             }
 
@@ -797,6 +842,10 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                 'groom-parent-name': groomParents || 'Groom Parents',
                 'bride-parents': brideParents || 'Bride Parents',
                 'bride-parent-name': brideParents || 'Bride Parents',
+                'primary-person-name': primaryPerson.name || 'Primary Person Name',
+                'primary-person-parents': primaryPerson.parents || 'Primary Person Parents',
+                'secondary-person-name': secondaryPerson.name || 'Secondary Person Name',
+                'secondary-person-parents': secondaryPerson.parents || 'Secondary Person Parents',
                 'event-date': formatDate(event.date) || 'Event Date',
                 'event-time': formatTime(event.time) || 'Event Time',
                 'event-venue': event.venue || 'Event Venue',
@@ -892,7 +941,10 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                             normalizedId
                         ];
                         for (const cls of classesToTry) {
-                            const matchedEl = doc.querySelector(`.${cls}`);
+                            // Never steal an id from an element that already has one (e.g. a
+                            // newer template's id="primary-person-name") — this fallback exists
+                            // for genuinely id-less legacy uploads only.
+                            const matchedEl = doc.querySelector(`.${cls}:not([id])`);
                             if (matchedEl) {
                                 el = matchedEl as HTMLElement;
                                 el.id = id;
@@ -919,7 +971,11 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                             const elements = Array.from(doc.querySelectorAll('div, span, p, h1, h2, h3, h4, h5, h6'));
                             for (const element of elements) {
                                 const text = element.textContent?.trim();
-                                if (text && textsToLookFor.includes(text)) {
+                                // Skip elements that already have their own id (e.g. the newer
+                                // id="primary-person-name" convention) — matching here by leftover
+                                // demo placeholder text like "Anjali" would otherwise steal that id
+                                // and permanently break its own field's lookup on every future call.
+                                if (text && textsToLookFor.includes(text) && !element.id) {
                                     el = element as HTMLElement;
                                     // Assign the ID so it works next time
                                     el.id = id;
@@ -1003,6 +1059,20 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                 }
                 if (text.includes('Rahul')) {
                     text = text.replace(/Rahul/g, groomName || 'Groom');
+                    changed = true;
+                }
+                // Single-name ceremonies (Haldi/Mehendi/Sangeet) show only the resolved
+                // primaryPerson's name, and that name flips between the bride's and groom's
+                // literal value as "Creating Invite For" toggles. The Anjali/Rahul demo-
+                // placeholder swap above only ever matches the ORIGINAL placeholder text, so
+                // once this node has already been swapped once (e.g. now reads the groom's
+                // name) it can never match "Anjali" again and would get stuck showing the
+                // wrong person forever on a second toggle. Also swap the other person's name
+                // for the current primary person's name so repeated toggling keeps landing on
+                // the right value, for templates whose single-name slot has no id/data-field.
+                if (isSingleNameCeremony && primaryPerson.name && secondaryPerson.name && secondaryPerson.name !== primaryPerson.name && text.includes(secondaryPerson.name)) {
+                    const secondaryNameRegex = new RegExp(secondaryPerson.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g');
+                    text = text.replace(secondaryNameRegex, primaryPerson.name);
                     changed = true;
                 }
                 if (changed) {
@@ -1480,29 +1550,7 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                 });
             }
 
-            // Inject reactive postMessage listener once per iframe load.
-            // New templates use data-field attributes; legacy templates fall back to getElementById.
-            const listenerWin = iframeRef.current?.contentWindow as any;
-            if (listenerWin && !listenerWin.__nimantranReady) {
-                listenerWin.__nimantranReady = true;
-                const listenerDoc = doc;
-                listenerWin.addEventListener('message', function(e: any) {
-                    if (!e.data || e.data.type !== 'NIMANTRAN_UPDATE') return;
-                    const fields: Record<string, string> = e.data.payload;
-                    if (!fields) return;
-                    Object.keys(fields).forEach(function(fieldId) {
-                        const val = fields[fieldId];
-                        if (val == null) return;
-                        const dataEls = listenerDoc.querySelectorAll(`[data-field="${fieldId}"]`);
-                        if (dataEls.length) {
-                            dataEls.forEach((el: Element) => { (el as HTMLElement).textContent = val; });
-                            return;
-                        }
-                        const fallbackEl = listenerDoc.getElementById(fieldId);
-                        if (fallbackEl) fallbackEl.textContent = val;
-                    });
-                });
-            }
+            ensureReactiveListener();
         };
 
         const currentIframe = iframeRef.current;
@@ -1574,6 +1622,10 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
             eventDate:    formatLongDisplayDate(event?.date)  || undefined,
             eventTime:    formatDisplayTime(event?.time)  || undefined,
             eventVenue:   event?.venue || undefined,
+            primaryPersonName:      primaryPerson.name    || undefined,
+            primaryPersonParents:   primaryPerson.parents || undefined,
+            secondaryPersonName:    secondaryPerson.name    || undefined,
+            secondaryPersonParents: secondaryPerson.parents || undefined,
         });
         iframeRef.current.contentWindow.postMessage({ type: 'NIMANTRAN_UPDATE', payload }, '*');
     }, [isHTMLDesign, isReady, groomName, brideName, invitationFor, groomParents, brideParents, event, dashboardEditMode]);
