@@ -620,7 +620,12 @@ function DetailsContent() {
             <main className={styles.studioContainer}>
                 {/* Sticky Left Preview Column (40%) */}
                 <section className={styles.previewCol}>
-                    <div className={styles.previewCardStage}>
+                    <div
+                        className={styles.previewCardStage}
+                        style={{
+                            '--preview-aspect-ratio': activeChapter === 4 ? '9 / 16' : `${cardLayout.width} / ${cardLayout.height}`
+                        } as React.CSSProperties}
+                    >
                         {/* Outside Rotating Intricate Mandala on Left Side behind Card */}
                         <div className={styles.outsideMandala} aria-hidden="true">
                             <IntricateMandalaSvg idPrefix="details-outside-mandala" />

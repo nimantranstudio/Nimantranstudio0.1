@@ -114,7 +114,7 @@
 .previewCardStage {
     position: relative;
     width: 100%;
-    max-width: min(360px, calc((100vh - 140px) * 9 / 16));
+    max-width: min(360px, calc((100vh - 140px) * var(--preview-aspect-ratio, 500 / 705)));
     display: flex;
     flex-direction: column;
     align-items: center;
