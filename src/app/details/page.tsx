@@ -3,10 +3,11 @@
 export const dynamic = 'force-dynamic';
 
 import { useWeddingStore } from '@/store/wedding-store';
+import { PREVIEW_DEFAULTS, resolvePreviewField } from '@/lib/templates/preview-defaults';
 import { Input } from '@/components/form/Input';
 import styles from './details.module.css';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useState, useEffect, Suspense, useRef, useMemo } from 'react';
+import { useState, useEffect, Suspense, useRef, useMemo, useCallback } from 'react';
 import clsx from 'clsx';
 import { 
     ChevronDown, 
@@ -118,7 +119,8 @@ function DetailsContent() {
         setBundleData,
         addEvent,
         removeEvent,
-        updateEvent
+        updateEvent,
+        touchedFields
     } = useWeddingStore();
 
     // Studio Active Chapter State (1: Your Story, 2: The Wedding Ceremony, 3: Celebrate Every Moment, 4: Wedding Website & RSVP)
@@ -143,6 +145,20 @@ function DetailsContent() {
     const [isDetailsConfirmed, setIsDetailsConfirmed] = useState(false);
     const [isCrafting, setIsCrafting] = useState(false);
     const cardRef = useRef<InvitationCardRef>(null);
+    const [cardLayout, setCardLayout] = useState<{ width: number; height: number; aspectRatio: number }>({
+        width: 500,
+        height: 705,
+        aspectRatio: 500 / 705
+    });
+
+    const handleLayoutMeasure = useCallback((layout: { width: number; height: number; aspectRatio: number }) => {
+        setCardLayout(prev => {
+            if (prev.width === layout.width && prev.height === layout.height && prev.aspectRatio === layout.aspectRatio) {
+                return prev;
+            }
+            return layout;
+        });
+    }, []);
 
     // Step 1 — ASSIGN: give every "Celebrate Every Moment" section its Event.id.
     // `bundleItems` is already scoped to exactly one bundle (the theme's own, fetched per
@@ -244,22 +260,30 @@ function DetailsContent() {
         if (activeChapter === 3 && activePreviewEventId && activePreviewEventId !== 'wedding') {
             const foundEvent = formData.events?.find(e => e.id === activePreviewEventId);
             if (foundEvent) {
+                const venueTouched = touchedFields.includes(`event:${foundEvent.id}:venue`) || touchedFields.includes('defaultVenueName');
+                const dateTouched = touchedFields.includes(`event:${foundEvent.id}:date`);
+                const timeTouched = touchedFields.includes(`event:${foundEvent.id}:time`);
                 return {
                     ...foundEvent,
-                    venue: foundEvent.venue || formData.defaultVenueName || '',
+                    date: resolvePreviewField(foundEvent.date, dateTouched, PREVIEW_DEFAULTS.eventDate),
+                    time: resolvePreviewField(foundEvent.time, timeTouched, PREVIEW_DEFAULTS.eventTime),
+                    venue: resolvePreviewField(foundEvent.venue || formData.defaultVenueName || '', venueTouched, PREVIEW_DEFAULTS.eventVenue),
                     mapLink: foundEvent.mapLink || formData.primaryMapLink || '',
                 };
             }
         }
-        return { 
-            id: 'default', 
-            date: formData.primaryDate, 
-            time: formData.primaryTime, 
-            venue: formData.defaultVenueName || '', 
+        const primaryDateTouched = touchedFields.includes('primaryDate');
+        const primaryTimeTouched = touchedFields.includes('primaryTime');
+        const venueTouched = touchedFields.includes('defaultVenueName');
+        return {
+            id: 'default',
+            date: resolvePreviewField(formData.primaryDate, primaryDateTouched, PREVIEW_DEFAULTS.eventDate),
+            time: resolvePreviewField(formData.primaryTime, primaryTimeTouched, PREVIEW_DEFAULTS.eventTime),
+            venue: resolvePreviewField(formData.defaultVenueName || '', venueTouched, PREVIEW_DEFAULTS.eventVenue),
             mapLink: formData.primaryMapLink || '',
-            name: 'Wedding' 
+            name: 'Wedding'
         };
-    }, [activeChapter, activePreviewEventId, formData]);
+    }, [activeChapter, activePreviewEventId, formData, touchedFields]);
 
     const cameraY = isCrafting ? '-80%' :
                     activeChapter === 1 ? '0%' :
@@ -443,6 +467,15 @@ function DetailsContent() {
     // here by swapping which raw value is labeled "groom" vs "bride".
     const isBrideFirst = formData.invitationFor ? formData.invitationFor === 'bride' : formData.nameOrder === 'bride_first';
 
+    // Preview-only sample values — shown until the couple enters their own data.
+    // formData itself is never touched, so these never reach saveWedding(). An
+    // intentionally cleared field (touched but empty) stays empty rather than
+    // falling back to the sample, per touchedFields.
+    const previewGroomName = resolvePreviewField(formData.groomName, touchedFields.includes('groomName'), PREVIEW_DEFAULTS.groomName);
+    const previewBrideName = resolvePreviewField(formData.brideName, touchedFields.includes('brideName'), PREVIEW_DEFAULTS.brideName);
+    const previewGroomParents = resolvePreviewField(formData.groomParents, touchedFields.includes('groomParents'), PREVIEW_DEFAULTS.groomParents);
+    const previewBrideParents = resolvePreviewField(formData.brideParents, touchedFields.includes('brideParents'), PREVIEW_DEFAULTS.brideParents);
+
     return (
         <div className={styles.page}>
             <AnimatePresence>
@@ -594,7 +627,13 @@ function DetailsContent() {
                         </div>
 
                         <div className={styles.inviteFrame}>
-                            <div className={styles.paperSurface}>
+                            <div
+                                className={styles.paperSurface}
+                                style={{
+                                    aspectRatio: activeChapter === 4 ? '9 / 16' : `${cardLayout.width} / ${cardLayout.height}`,
+                                    '--preview-aspect-ratio': activeChapter === 4 ? '9 / 16' : `${cardLayout.width} / ${cardLayout.height}`
+                                } as React.CSSProperties}
+                            >
                                 <div className={styles.goldFoilOrnament}>
                                     <Sparkles size={28} />
                                 </div>
@@ -685,23 +724,24 @@ function DetailsContent() {
                                                     ref={cardRef}
                                                     event={previewEvent}
                                                     theme={activeTheme || { id: 'default', name: 'Default', description: '', thumbnail: '', previewImages: [] }}
-                                                    groomName={formData.groomName}
-                                                    brideName={formData.brideName}
+                                                    groomName={previewGroomName}
+                                                    brideName={previewBrideName}
                                                     invitationFor={formData.invitationFor}
-                                                    groomParents={formData.groomParents}
-                                                    brideParents={formData.brideParents}
+                                                    groomParents={previewGroomParents}
+                                                    brideParents={previewBrideParents}
                                                     customImage={templateUrl}
                                                     structuredLayout={activeStructuredLayout}
                                                     structuredCouple={{
-                                                        groomName: formData.groomName,
-                                                        brideName: formData.brideName,
-                                                        groomParents: formData.groomParents,
-                                                        brideParents: formData.brideParents,
+                                                        groomName: previewGroomName,
+                                                        brideName: previewBrideName,
+                                                        groomParents: previewGroomParents,
+                                                        brideParents: previewBrideParents,
                                                         primaryDate: formData.primaryDate,
                                                         primaryTime: formData.primaryTime,
                                                         defaultVenueName: formData.defaultVenueName,
                                                     }}
                                                     isRawPreview={false}
+                                                    onLayoutMeasure={handleLayoutMeasure}
                                                 />
                                             </motion.div>
                                         )}

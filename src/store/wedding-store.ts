@@ -19,6 +19,15 @@ interface WeddingState {
     bundleImages: string[];
     bundleItems: BundleItemInfo[];
     formData: WeddingFormData;
+    /**
+     * Field keys the user has ever set, even to an empty string — distinct from
+     * a field simply being '' (which is also the untouched-default value).
+     * Lets the preview show a sample value only for genuinely untouched fields,
+     * while an intentionally cleared field stays cleared. Top-level formData
+     * keys are tracked as-is (e.g. 'brideName'); per-event fields as
+     * `event:<eventId>:<field>` (e.g. 'event:abc123:venue').
+     */
+    touchedFields: string[];
     lastSavedWeddingId: string | null;
     lastSavedWeddingSlug: string | null;
 
@@ -32,6 +41,8 @@ interface WeddingState {
     addEvent: (event?: Partial<WeddingFormData['events'][0]>) => void;
     removeEvent: (id: string) => void;
     updateEvent: (id: string, eventData: Partial<WeddingFormData['events'][0]>) => void;
+    /** Marks preview-default field keys as touched without changing their value — used when loading real saved data so defaults never show over it. */
+    markFieldsTouched: (keys: string[]) => void;
     saveWedding: () => Promise<{ success: boolean; wedding?: any; error?: string }>;
     login: (phone: string, isAdmin?: boolean) => void;
     logout: () => void;
@@ -67,6 +78,7 @@ export const useWeddingStore = create<WeddingState>()(
             bundleImages: [],
             bundleItems: [],
             formData: INITIAL_FORM_DATA,
+            touchedFields: [],
             lastSavedWeddingId: null,
             lastSavedWeddingSlug: null,
             isAuthenticated: false,
@@ -78,7 +90,7 @@ export const useWeddingStore = create<WeddingState>()(
 
             login: (phone, isAdmin = false) => set({ isAuthenticated: true, userPhone: phone, isAdmin }),
             logout: () => set({ isAuthenticated: false, userPhone: null, isAdmin: false }),
-            resetForm: () => set({ formData: INITIAL_FORM_DATA }),
+            resetForm: () => set({ formData: INITIAL_FORM_DATA, touchedFields: [] }),
 
             setCheckoutComplete: (weddingId, phone, slug) =>
                 set((state) => ({
@@ -88,9 +100,18 @@ export const useWeddingStore = create<WeddingState>()(
                     lastSavedWeddingSlug: slug ?? state.lastSavedWeddingSlug,
                 })),
 
-            updateFormData: (data) => set((state) => ({
-                formData: { ...state.formData, ...data },
-            })),
+            updateFormData: (data) => set((state) => {
+                const newKeys = Object.keys(data).filter((k) => !state.touchedFields.includes(k));
+                return {
+                    formData: { ...state.formData, ...data },
+                    touchedFields: newKeys.length ? [...state.touchedFields, ...newKeys] : state.touchedFields,
+                };
+            }),
+
+            markFieldsTouched: (keys) => set((state) => {
+                const newKeys = keys.filter((k) => !state.touchedFields.includes(k));
+                return newKeys.length ? { touchedFields: [...state.touchedFields, ...newKeys] } : state;
+            }),
 
             addEvent: (event?: Partial<WeddingFormData['events'][0]>) => set((state) => ({
                 formData: {
@@ -117,14 +138,20 @@ export const useWeddingStore = create<WeddingState>()(
                 },
             })),
 
-            updateEvent: (id, eventData) => set((state) => ({
-                formData: {
-                    ...state.formData,
-                    events: state.formData.events.map((e) =>
-                        e.id === id ? { ...e, ...eventData } : e
-                    ),
-                },
-            })),
+            updateEvent: (id, eventData) => set((state) => {
+                const newKeys = Object.keys(eventData)
+                    .map((k) => `event:${id}:${k}`)
+                    .filter((k) => !state.touchedFields.includes(k));
+                return {
+                    formData: {
+                        ...state.formData,
+                        events: state.formData.events.map((e) =>
+                            e.id === id ? { ...e, ...eventData } : e
+                        ),
+                    },
+                    touchedFields: newKeys.length ? [...state.touchedFields, ...newKeys] : state.touchedFields,
+                };
+            }),
 
             saveWedding: async () => {
                 const { formData, selectedThemeId } = get();
@@ -184,7 +211,7 @@ export const useWeddingStore = create<WeddingState>()(
         }),
         {
             name: 'nimantran-wedding-storage',
-            version: 3,
+            version: 4,
             migrate: (persistedState: any, version: number) => {
                 const state = persistedState as WeddingState;
 
@@ -215,6 +242,24 @@ export const useWeddingStore = create<WeddingState>()(
                     };
                 }
 
+                // v4: introduces touchedFields (preview-default gating). Backfill it from
+                // whatever's already non-empty, so existing real data is never mistaken
+                // for "untouched" and papered over with a sample preview value.
+                if (version < 4 && state?.formData) {
+                    const touched: string[] = Array.isArray((state as any).touchedFields) ? (state as any).touchedFields : [];
+                    const TOP_LEVEL_PREVIEW_FIELDS = ['groomName', 'brideName', 'groomParents', 'brideParents', 'primaryDate', 'primaryTime', 'defaultVenueName'] as const;
+                    TOP_LEVEL_PREVIEW_FIELDS.forEach((key) => {
+                        if (state.formData[key] && !touched.includes(key)) touched.push(key);
+                    });
+                    (state.formData.events || []).forEach((e) => {
+                        (['date', 'time', 'venue'] as const).forEach((field) => {
+                            const touchKey = `event:${e.id}:${field}`;
+                            if (e[field] && !touched.includes(touchKey)) touched.push(touchKey);
+                        });
+                    });
+                    (state as any).touchedFields = touched;
+                }
+
                 return state;
             },
             partialize: (state) => ({
@@ -223,6 +268,7 @@ export const useWeddingStore = create<WeddingState>()(
                 bundleImages: state.bundleImages,
                 bundleItems: state.bundleItems,
                 formData: state.formData,
+                touchedFields: state.touchedFields,
                 lastSavedWeddingId: state.lastSavedWeddingId,
                 isAuthenticated: state.isAuthenticated,
                 isAdmin: state.isAdmin,

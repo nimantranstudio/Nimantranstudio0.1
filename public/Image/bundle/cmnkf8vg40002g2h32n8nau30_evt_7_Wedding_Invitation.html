@@ -20,15 +20,16 @@
 
         body,
         html {
+            min-height: 100vh;
+            width: 100%;
             background-color: #2a0819;
             /* Dark background for desktop sides */
             font-family: 'Lora', serif;
             display: flex;
             justify-content: center;
-            align-items: flex-start;
-            /* Align to top */
-            min-height: 100vh;
-            min-height: 100dvh;
+            align-items: center;
+            /* Center the card on desktop */
+            -webkit-font-smoothing: antialiased;
         }
 
         /* Main Grid Wrapper */
@@ -38,13 +39,19 @@
             grid-template-rows: 1fr;
             width: 100%;
             max-width: 500px;
-            /* Standard max-width for mobile view on desktop */
-            min-height: 100vh;
-            /* Force full height of the screen */
-            min-height: 100dvh;
-            margin: 0 auto;
+            aspect-ratio: 500 / 705;
+            position: relative;
             background-color: #fdfbf7;
-            box-shadow: 0 0 40px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            container-type: inline-size;
+        }
+
+        @supports not (aspect-ratio: 1 / 1) {
+            .invite-wrapper {
+                height: 100vh;
+                width: calc(100vh * (500 / 705));
+            }
         }
 
         /* Image dictates the height of the grid */
@@ -69,8 +76,8 @@
             text-align: center;
             color: #4a0e2e;
             /* Dark burgundy color */
-            padding: 36% 16% 6% 16%;
-            /* TOP RIGHT BOTTOM LEFT - Slightly reduced top padding to shift content up */
+            padding: 25% 12% 5% 12%;
+            /* TOP RIGHT BOTTOM LEFT - Reduced top padding so text fits inside the arch boundary */
             overflow-wrap: break-word;
             word-wrap: break-word;
             hyphens: auto;
@@ -81,16 +88,16 @@
 
         /* Responsive Typography using clamp() for all screen sizes */
         .event-name {
-            font-size: clamp(24px, 6vw, 32px);
-            margin-bottom: clamp(12px, 2.5vh, 20px);
+            font-size: clamp(22px, 5.5vw, 30px);
+            margin-bottom: clamp(6px, 1.5vh, 12px);
             font-weight: 500;
             width: 100%;
         }
 
         .welcome-message {
-            font-size: clamp(14px, 3.2vw, 17px);
-            margin-bottom: clamp(8px, 2vh, 15px);
-            line-height: 1.4;
+            font-size: clamp(12px, 2.8vw, 15px);
+            margin-bottom: clamp(4px, 1vh, 8px);
+            line-height: 1.35;
             white-space: pre-line;
             width: 100%;
         }
@@ -104,8 +111,8 @@
             flex-direction: column;
             align-items: center;
             width: 100%;
-            gap: clamp(6px, 1.2vh, 12px);
-            margin: clamp(6px, 1.5vh, 15px) 0 clamp(8px, 2vh, 18px);
+            gap: clamp(4px, 0.8vh, 8px);
+            margin: clamp(4px, 1vh, 8px) 0 clamp(4px, 1vh, 10px);
         }
 
         .person-block,
@@ -115,7 +122,7 @@
             flex-direction: column;
             align-items: center;
             width: 100%;
-            gap: clamp(2px, 0.4vh, 4px);
+            gap: clamp(2px, 0.3vh, 3px);
         }
 
         .ampersand-block,
@@ -124,7 +131,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: clamp(2px, 0.5vh, 6px) 0;
+            margin: clamp(1px, 0.3vh, 4px) 0;
         }
 
         /* Shared Text Styles */
@@ -132,7 +139,7 @@
         .side-by-side .groom-block .name-text,
         .side-by-side .bride-block .name-text {
             font-family: 'Great Vibes', cursive;
-            font-size: clamp(32px, 8.5vw, 48px);
+            font-size: clamp(30px, 7.5vw, 46px);
             line-height: 1.1;
             color: #5c0a28;
             white-space: nowrap;
@@ -147,45 +154,59 @@
         .side-by-side .groom-block .parent-text,
         .side-by-side .bride-block .parent-text {
             font-family: 'Lora', serif;
-            font-size: clamp(12px, 3.2vw, 16px);
+            font-size: clamp(10px, 2.8vw, 14px);
             color: #4a0e2e;
             word-break: break-word;
             width: 100%;
             text-align: center;
-            line-height: 1.3;
+            line-height: 1.25;
         }
 
         .ampersand {
             font-family: 'Great Vibes', cursive;
-            font-size: clamp(22px, 5.5vw, 30px);
+            font-size: clamp(20px, 4.8vw, 28px);
             font-style: italic;
             color: #5c0a28;
         }
 
         .details-label {
-            font-size: clamp(12px, 3vw, 15px);
-            margin-top: clamp(12px, 1.4em, 18px);
+            font-size: clamp(10px, 2.6vw, 13px);
+            margin-top: clamp(6px, 0.8em, 10px);
             font-weight: bold;
         }
 
         .details-block {
-            font-size: clamp(12px, 3vw, 15px);
-            line-height: 1.4;
+            font-size: clamp(10px, 2.6vw, 13px);
+            line-height: 1.35;
             margin-bottom: 0;
             width: 100%;
         }
 
         .venue-label {
-            font-size: clamp(12px, 3vw, 15px);
-            margin-top: clamp(12px, 1.4em, 18px);
+            font-size: clamp(10px, 2.6vw, 13px);
+            margin-top: clamp(6px, 0.8em, 10px);
             font-weight: bold;
         }
 
         .venue-details {
-            font-size: clamp(11px, 2.8vw, 14px);
-            line-height: 1.5;
+            font-size: clamp(9px, 2.4vw, 12px);
+            line-height: 1.4;
             white-space: pre-line;
             width: 100%;
+        }
+
+        @media (max-width: 500px) {
+            body {
+                align-items: flex-start;
+            }
+
+            .invite-wrapper {
+                box-shadow: none;
+                max-height: unset;
+                height: auto;
+                aspect-ratio: 9/16;
+                width: 100%;
+            }
         }
     </style>
 </head>

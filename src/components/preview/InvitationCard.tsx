@@ -78,8 +78,13 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
 }, ref) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const iframeRef = useRef<HTMLIFrameElement>(null);
-    const [containerScale, setContainerScale] = useState(1);
-    const [iframeHeight, setIframeHeight] = useState(889);
+    // Available space measured on the outer frame (containerRef). Combined with
+    // iframeHeight (the card's OWN true height at 500px width — see the
+    // computeCardHeight natural-image-ratio logic below) this drives a "contain"
+    // fit: the card scales uniformly to fit inside whatever frame the page gives
+    // it, rather than being stretched to exactly fill a fixed-ratio frame.
+    const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
+    const [iframeHeight, setIframeHeight] = useState(705);
     const isHTMLDesign = !!srcDoc || customImage?.toLowerCase().endsWith('.html') || (customImage?.includes('item-Wedding_Invitation') && customImage.toLowerCase().includes('.html')); // Robust check
 
     // Single source of truth for "Creating Invite For": whichever of bride/groom is
@@ -504,15 +509,17 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
     const formatDate = (dateStr?: string) => formatLongDisplayDate(dateStr);
     const formatTime = (timeStr?: string) => formatDisplayTime(timeStr);
 
-    // Handle scaling based on container width
+    // Track the outer frame's available space (width AND height, not just width)
+    // so the card can be fit-scaled ("contain") into it rather than assuming the
+    // frame is always exactly the card's own shape.
     useEffect(() => {
         if (!isHTMLDesign || !containerRef.current) return;
 
         const handleResize = (entries: ResizeObserverEntry[]) => {
             for (const entry of entries) {
-                const width = entry.contentRect.width;
-                if (width > 0) {
-                    setContainerScale(width / 500);
+                const { width, height } = entry.contentRect;
+                if (width > 0 && height > 0) {
+                    setContainerSize({ width, height });
                 }
             }
         };
@@ -521,9 +528,9 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
         observer.observe(containerRef.current);
 
         // Initial measurement
-        const initialWidth = containerRef.current.getBoundingClientRect().width;
-        if (initialWidth > 0) {
-            setContainerScale(initialWidth / 500);
+        const rect = containerRef.current.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+            setContainerSize({ width: rect.width, height: rect.height });
         }
 
         return () => observer.disconnect();
@@ -533,25 +540,135 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
     useEffect(() => {
         if (!isHTMLDesign || !iframeRef.current || isRawPreview || !event || !theme) return;
 
+        // Determines the card's own true height at 500px width, from the background
+        // image's natural pixel ratio when available — the most reliable,
+        // template-agnostic signal, since it's the actual canvas the template was
+        // designed at, independent of any CSS box-model circularity (measuring a
+        // wrapper's rendered height is unreliable once that same wrapper has been
+        // forced to width/height:100% of a viewport sized FROM a previous
+        // measurement). Falls back to the wrapper's rendered height for templates
+        // without a recognizable background image. May resolve asynchronously if
+        // the image hasn't finished loading yet.
+        const computeCardHeight = (doc: Document, onReady: (h: number) => void) => {
+            // 1. Templates that use an <img> element for their artwork (e.g. #background-image or .bg-image)
+            const bgImg = (doc.getElementById('background-image') ||
+                           doc.querySelector('.bg-image') ||
+                           doc.querySelector('img.card-image') ||
+                           doc.querySelector('img.background-image')) as HTMLImageElement | null;
+            if (bgImg && bgImg.tagName === 'IMG') {
+                const fromNatural = () => {
+                    if (bgImg.naturalWidth > 0 && bgImg.naturalHeight > 0) {
+                        onReady(Math.round(500 * (bgImg.naturalHeight / bgImg.naturalWidth)));
+                        return true;
+                    }
+                    return false;
+                };
+                if (fromNatural()) return;
+                bgImg.addEventListener('load', () => { fromNatural(); }, { once: true });
+                return;
+            }
+
+            // 2. Templates that use a CSS background-image on .invitation-wrapper or another element
+            const wrapper = (doc.getElementById('invitation-wrapper') ||
+                            doc.querySelector('.invitation-wrapper') ||
+                            doc.querySelector('.invite-wrapper') ||
+                            doc.body?.firstElementChild) as HTMLElement | null;
+
+            const extractBgUrl = (val: string | null | undefined): string | null => {
+                if (!val || val === 'none') return null;
+                const match = val.match(/url\(\s*(['\"]?)(.*?)\1\s*\)/i);
+                return match && match[2] && !match[2].startsWith('about:') ? match[2] : null;
+            };
+
+            const win = doc.defaultView || window;
+            let bgUrl: string | null = null;
+            if (wrapper) {
+                const computed = win.getComputedStyle(wrapper);
+                bgUrl = extractBgUrl(computed.backgroundImage) || extractBgUrl(wrapper.style.backgroundImage);
+            }
+            if (!bgUrl && doc.body) {
+                const computedBody = win.getComputedStyle(doc.body);
+                bgUrl = extractBgUrl(computedBody.backgroundImage) || extractBgUrl(doc.body.style.backgroundImage);
+            }
+            if (!bgUrl) {
+                const bgEl = (doc.querySelector('.bg-image') || doc.querySelector('.background-image') || doc.querySelector('.card-image')) as HTMLElement | null;
+                if (bgEl) {
+                    const computedBg = win.getComputedStyle(bgEl);
+                    bgUrl = extractBgUrl(computedBg.backgroundImage) || extractBgUrl(bgEl.style.backgroundImage);
+                }
+            }
+
+            const fallback = () => {
+                // Inspect style tags for declared template aspect-ratio (e.g. 500 / 705)
+                const styleTags = doc.querySelectorAll('style');
+                for (const st of Array.from(styleTags)) {
+                    const matches = Array.from(st.textContent?.matchAll(/aspect-ratio\s*:\s*(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)/g) || []);
+                    for (const m of matches) {
+                        const w = parseFloat(m[1]);
+                        const h = parseFloat(m[2]);
+                        if (w > 0 && h > 0 && !(w === 9 && h === 16)) {
+                            onReady(Math.round(500 * (h / w)));
+                            return;
+                        }
+                    }
+                }
+                // Template aspect-ratio from computed style if available
+                if (wrapper) {
+                    const compAr = win.getComputedStyle(wrapper).aspectRatio;
+                    if (compAr && compAr !== 'auto') {
+                        const parts = compAr.split('/').map(s => parseFloat(s.trim()));
+                        if (parts.length === 2 && parts[0] > 0 && parts[1] > 0 && !(parts[0] === 9 && parts[1] === 16)) {
+                            onReady(Math.round(500 * (parts[1] / parts[0])));
+                            return;
+                        }
+                    }
+                }
+                // Last-resort fallback: standard 500x705 template dimensions (ratio ~0.7094)
+                onReady(705);
+            };
+
+            if (bgUrl) {
+                const img = new (win.Image || (window as any).Image)();
+                const handleLoaded = () => {
+                    const w = img.naturalWidth || img.width;
+                    const h = img.naturalHeight || img.height;
+                    if (w > 0 && h > 0) {
+                        onReady(Math.round(500 * (h / w)));
+                        return true;
+                    }
+                    return false;
+                };
+
+                img.onload = () => {
+                    if (!handleLoaded()) fallback();
+                };
+                img.onerror = () => {
+                    fallback();
+                };
+                img.src = bgUrl;
+                if (img.complete && handleLoaded()) return;
+                return;
+            }
+
+            fallback();
+        };
+
         const measureLayout = () => {
             if (!iframeRef.current) return;
             const doc = iframeRef.current.contentDocument || iframeRef.current.contentWindow?.document;
             if (!doc) return;
-            const wrapper = doc.getElementById('invitation-wrapper') ||
-                            doc.querySelector('.invitation-wrapper') ||
-                            doc.querySelector('.invite-wrapper') ||
-                            doc.body?.firstElementChild;
-            if (wrapper) {
-                const h = (wrapper as HTMLElement).offsetHeight;
-                if (h > 0 && h !== iframeHeight) {
-                    setIframeHeight(h);
+            computeCardHeight(doc, (h) => {
+                if (h > 0) {
+                    if (h !== iframeHeight) {
+                        setIframeHeight(h);
+                    }
                     onLayoutMeasure?.({
                         width: 500,
                         height: h,
                         aspectRatio: 500 / h
                     });
                 }
-            }
+            });
         };
 
         const updateContent = () => {
@@ -603,13 +720,14 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                     docTarget.head.appendChild(styleEl);
                 }
                 
-                // Fix viewport units and legacy 500/705 aspect ratios:
+                // Fix viewport units. (This used to also rewrite a literal "500 / 705"
+                // aspect-ratio to "9 / 16" — removed: the card's shape now comes from
+                // computeCardHeight's natural-image-ratio measurement below, not from a
+                // hardcoded constant, so overwriting a template's own declared ratio here
+                // would only fight that measurement instead of helping it.)
                 if (!docTarget.body.dataset.vwFixed) {
                     const styleTags = docTarget.querySelectorAll('style:not(#runtime-preview-fix)');
                     styleTags.forEach(tag => {
-                        if (tag.innerHTML.includes('500 / 705') || tag.innerHTML.includes('500/705')) {
-                            tag.innerHTML = tag.innerHTML.replace(/500\s*\/\s*705/g, '9 / 16');
-                        }
                         if (tag.innerHTML.includes('vw')) {
                             tag.innerHTML = tag.innerHTML.replace(/([\d.]+)vw(?=[\s;},!)])/g, '$1vmax');
                         }
@@ -632,7 +750,6 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                     }
                     .invitation-wrapper, .invite-wrapper {
                         max-height: none !important;
-                        aspect-ratio: 9/16 !important;
                         width: 100% !important;
                         height: 100% !important;
                         box-shadow: none !important;
@@ -741,32 +858,23 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                     ` : ''}
                 `;
 
-                // Auto-adjust height based on content
-                const wrapper = docTarget.querySelector('.invitation-wrapper') || 
-                               docTarget.querySelector('.invite-wrapper') || 
-                               docTarget.body.firstElementChild;
-                if (wrapper) {
-                    setTimeout(() => {
-                        const h = (wrapper as HTMLElement).offsetHeight;
-                        if (h > 0 && h !== iframeHeight) {
-                            setIframeHeight(h);
+                // Auto-adjust height based on content (see computeCardHeight above —
+                // prefers the background image's natural ratio over measuring a wrapper
+                // that's already been forced to width/height:100%).
+                setTimeout(() => {
+                    computeCardHeight(docTarget, (h) => {
+                        if (h > 0) {
+                            if (h !== iframeHeight) {
+                                setIframeHeight(h);
+                            }
                             onLayoutMeasure?.({
                                 width: 500,
                                 height: h,
                                 aspectRatio: 500 / h
                             });
                         }
-                    }, 100);
-                } else {
-                    if (iframeHeight !== 889) {
-                        setIframeHeight(889);
-                        onLayoutMeasure?.({
-                            width: 500,
-                            height: 889,
-                            aspectRatio: 500 / 889
-                        });
-                    }
-                }
+                    });
+                }, 100);
             };
 
             // Load saved layout from localStorage if it exists and hasn't been loaded in this render session
@@ -829,27 +937,34 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                 // 'event-subheading' intentionally omitted: across every template it's the
                 // "{name} ke {event}" line wrapping a data-field="bride-name" span, never a tagline
                 // slot. See the data-field guard below for the general form of this protection.
-                'groom-name': groomName || 'Groom Name',
-                'bride-name': effectiveBrideName || 'Bride Name',
+                // Empty-string fallbacks (not a literal label like 'Groom Name'): when a
+                // caller has no value for a field, the card should show nothing there,
+                // never the field's own internal name as if it were content. Callers that
+                // want a complete-looking preview before real data exists (e.g. the
+                // Details page) are responsible for supplying sample values themselves —
+                // see src/lib/templates/preview-defaults.ts — so this fallback is only
+                // ever seen for a genuinely/intentionally empty field.
+                'groom-name': groomName || '',
+                'bride-name': effectiveBrideName || '',
                 // Haldi/Mehendi/Sangeet only — same value as 'bride-name' above (the
                 // "Creating Invite For" swap already lives in effectiveBrideName), exposed
                 // under its own key so these three templates' data-field="person-type" span
                 // is matched explicitly rather than by an incidental id="bride-name" match.
                 // undefined elsewhere: never touches Wedding/Reception/Save the Date, whose
                 // 'bride-name' key keeps meaning the literal bride's name.
-                'person-type': isSingleNameCeremony ? (effectiveBrideName || 'Bride Name') : undefined,
-                'groom-parents': groomParents || 'Groom Parents',
-                'groom-parent-name': groomParents || 'Groom Parents',
-                'bride-parents': brideParents || 'Bride Parents',
-                'bride-parent-name': brideParents || 'Bride Parents',
-                'primary-person-name': primaryPerson.name || 'Primary Person Name',
-                'primary-person-parents': primaryPerson.parents || 'Primary Person Parents',
-                'secondary-person-name': secondaryPerson.name || 'Secondary Person Name',
-                'secondary-person-parents': secondaryPerson.parents || 'Secondary Person Parents',
-                'event-date': formatDate(event.date) || 'Event Date',
-                'event-time': formatTime(event.time) || 'Event Time',
-                'event-venue': event.venue || 'Event Venue',
-                'venue': event.venue || 'Event Venue',
+                'person-type': isSingleNameCeremony ? (effectiveBrideName || '') : undefined,
+                'groom-parents': groomParents || '',
+                'groom-parent-name': groomParents || '',
+                'bride-parents': brideParents || '',
+                'bride-parent-name': brideParents || '',
+                'primary-person-name': primaryPerson.name || '',
+                'primary-person-parents': primaryPerson.parents || '',
+                'secondary-person-name': secondaryPerson.name || '',
+                'secondary-person-parents': secondaryPerson.parents || '',
+                'event-date': formatDate(event.date) || '',
+                'event-time': formatTime(event.time) || '',
+                'event-venue': event.venue || '',
+                'venue': event.venue || '',
                 'ampersand': '&',
                 'date_label': 'On',
                 'time_label': 'At',
@@ -1734,6 +1849,20 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
     const isContract = variant === 'contract';
     const isSaveTheDate = variant === 'save-the-date';
 
+    // "Contain" fit: scale the card uniformly so it fits entirely inside whatever
+    // frame the page gives it, using the card's OWN true height (iframeHeight —
+    // see computeCardHeight's natural-image-ratio measurement above) rather than
+    // assuming the frame is always exactly this shape. Falls back to a
+    // width-only scale until the frame's height has been measured, matching the
+    // pre-measurement default this always had.
+    const fitScale = containerSize.width > 0 && containerSize.height > 0
+        ? Math.min(containerSize.width / 500, containerSize.height / iframeHeight)
+        : (containerSize.width > 0 ? containerSize.width / 500 : 1);
+    const scaledCardWidth = 500 * fitScale;
+    const scaledCardHeight = iframeHeight * fitScale;
+    const cardOffsetX = Math.max(0, (containerSize.width - scaledCardWidth) / 2);
+    const cardOffsetY = Math.max(0, (containerSize.height - scaledCardHeight) / 2);
+
     if (isHTMLDesign) {
         return (
             <div
@@ -1745,9 +1874,17 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                     overflow: 'hidden',
                     position: 'relative',
                     background: 'transparent',
-                    aspectRatio: '9/16',
+                    // Frame height follows the card's own measured ratio (iframeHeight,
+                    // from computeCardHeight's natural-image measurement) instead of a
+                    // fixed 9/16 — otherwise a card whose true ratio is shorter/taller
+                    // than 9:16 sits correctly-proportioned but letterboxed inside a
+                    // frame sized for a different shape. iframeHeight defaults to 705
+                    // (500 * 16/9), so this starts at 9/16 and smoothly settles to the
+                    // real ratio once the template's background image reports its
+                    // natural size. No explicit height here — aspect-ratio needs the
+                    // other dimension to be auto to take effect.
+                    aspectRatio: 500 / iframeHeight,
                     width: '100%',
-                    height: '100%'
                 }}
             >
                 {/* Loading shimmer - visible until iframe is ready */}
@@ -1764,13 +1901,13 @@ export const InvitationCard = forwardRef<InvitationCardRef, InvitationCardProps>
                 )}
                 <div style={{
                     position: 'absolute',
-                    top: 0,
-                    left: 0,
+                    top: cardOffsetY,
+                    left: cardOffsetX,
                     width: '500px',
                     height: `${iframeHeight}px`,
                     opacity: isReady ? 1 : 0,
                     filter: isReady ? 'blur(0px)' : 'blur(4px)',
-                    transform: `scale(${containerScale}) translateY(${isReady ? '0px' : '8px'})`,
+                    transform: `scale(${fitScale}) translateY(${isReady ? '0px' : '8px'})`,
                     transformOrigin: 'top left',
                     pointerEvents: (onClick && !showSizingBoxes) ? 'none' : 'auto',
                     transition: 'opacity 500ms cubic-bezier(0.23, 1, 0.32, 1), filter 500ms cubic-bezier(0.23, 1, 0.32, 1), transform 500ms cubic-bezier(0.23, 1, 0.32, 1)'

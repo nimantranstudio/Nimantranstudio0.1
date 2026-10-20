@@ -185,7 +185,7 @@
 /* Luxurious Off-white Paper Surface */
 .paperSurface {
     width: 100%;
-    aspect-ratio: 9/16;
+    aspect-ratio: var(--preview-aspect-ratio, 500 / 705);
     border: 1px solid rgba(179, 157, 115, 0.25); /* Gold outline */
     border-radius: 14px;
     background: #FCFAF7;
