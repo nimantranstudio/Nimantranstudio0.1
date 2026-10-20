@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Allura&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Great+Vibes&family=Pinyon+Script&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap"
         rel="stylesheet">
     <style>
         * {
@@ -24,12 +24,12 @@
             width: 100%;
             background-color: #2a0819;
             /* Dark background for desktop sides */
-            font-family: 'Cormorant Garamond', serif;
+            font-family: 'Lora', serif;
             display: flex;
             justify-content: center;
             align-items: center;
+            /* Center the card on desktop */
             -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
         }
 
         /* Main Grid Wrapper */
@@ -40,10 +40,9 @@
             width: 100%;
             max-width: 500px;
             aspect-ratio: 500 / 705;
-            margin: 0 auto;
+            position: relative;
             background-color: #fdfbf7;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-            position: relative;
             overflow: hidden;
             container-type: inline-size;
         }
@@ -62,67 +61,49 @@
             height: 100%;
             display: block;
             object-fit: fill;
+            /* Stretches to cover empty space exactly, no cropping */
         }
 
-        /* Text overlay sits in the exact same grid cell, distributed across the pink arch */
+        /* Text overlay sits in the exact same grid cell */
         .text-overlay {
             grid-area: 1 / 1;
             z-index: 2;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: flex-start;
+            justify-content: center;
+            /* Center content vertically to use available space */
             text-align: center;
             color: #ffffff;
-            padding: 15% 12% 5% 12%;
-            overflow-wrap: normal;
-            word-wrap: normal;
-            word-break: normal;
-            hyphens: none;
-            -webkit-hyphens: none;
+            /* Dark burgundy color */
+            padding: 2% 12% 10% 12%;
+            /* TOP RIGHT BOTTOM LEFT - Reduced top padding so text fits inside the arch boundary */
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+            hyphens: auto;
             width: 100%;
             height: 100%;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+            /* Take full height for vertical centering */
         }
 
-        /* 2. Main Heading: Playfair Display / Cormorant Garamond (Elegant serif) */
+        /* Responsive Typography using clamp() for all screen sizes */
         .event-name {
-            font-family: 'Playfair Display', 'Cormorant Garamond', serif;
-            font-size: clamp(19px, 4.8vw, 27px);
-            font-weight: 600;
-            color: #ffffff;
-            line-height: 1.2;
-            letter-spacing: 0.15em;
-            text-transform: uppercase;
-            margin-top: clamp(2px, 0.6vh, 6px);
-            margin-bottom: clamp(2px, 0.4vh, 4px);
-            width: 100%;
-            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-            margin-top: 15%;
-        }
-
-        /* 3. Invitation/Event Message: Cormorant Garamond / EB Garamond (Highly readable) */
-        .welcome-message {
-            font-family: 'Cormorant Garamond', 'EB Garamond', serif;
-            font-size: clamp(11px, 2.4vw, 13.5px);
+            font-size: clamp(22px, 5.5vw, 30px);
+            margin-bottom: clamp(6px, 1.5vh, 12px);
             font-weight: 500;
-            color: rgba(255, 255, 255, 0.95);
-            line-height: 1.35;
-            letter-spacing: 0.02em;
-            margin-top: clamp(2px, 0.4vh, 4px);
-            margin-bottom: clamp(4px, 1vh, 8px);
-            white-space: normal;
-            text-wrap: stable;
             width: 100%;
-            /* padding: 0 clamp(4px, 1.5vw, 10px); */
-            hyphens: none;
-            -webkit-hyphens: none;
-            word-break: normal;
-            margin-top: -10%;
-            padding: inherit;
         }
 
-        /* Couple Container (Stacked Layout) */
+        .welcome-message {
+            font-size: clamp(12px, 2.8vw, 15px);
+            margin-bottom: clamp(4px, 1vh, 8px);
+            line-height: 1.35;
+            white-space: pre-line;
+            width: 100%;
+        }
+
+        /* Couple Container (Names + Parents) */
+        /* Couple Container (Stacked Layout: Groom + Parents, &, Bride + Parents) */
         .couple-container,
         .couple-container.side-by-side,
         .couple-container.stacked {
@@ -130,7 +111,8 @@
             flex-direction: column;
             align-items: center;
             width: 100%;
-            margin: 0 0 clamp(4px, 1vh, 8px) 0;
+            gap: clamp(4px, 0.8vh, 8px);
+            margin: clamp(4px, 1vh, 8px) 0 clamp(4px, 1vh, 10px);
         }
 
         .person-block,
@@ -140,57 +122,40 @@
             flex-direction: column;
             align-items: center;
             width: 100%;
-            gap: clamp(1px, 0.2vh, 3px);
+            gap: clamp(2px, 0.3vh, 3px);
         }
 
-        /* Groom Block: Positioned in top half, clearly ABOVE the background divider line */
-        .groom-block {
-            margin-bottom: 0;
-        }
-
-        /* Ampersand Block / Space in upper quadrant */
         .ampersand-block,
         .side-by-side .ampersand-block,
         .stacked .ampersand-block {
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: clamp(3px, 0.8vh, 8px) 0 clamp(3px, 0.8vh, 8px) 0;
+            margin: clamp(1px, 0.3vh, 4px) 0;
         }
 
-        .bride-block {
-            margin: 0;
-        }
-
-        /* 1. Couple Names: Great Vibes / Allura / Pinyon Script (Decorative script) */
+        /* Shared Text Styles */
         .name-text,
         .side-by-side .groom-block .name-text,
         .side-by-side .bride-block .name-text {
-            font-family: 'Great Vibes', 'Allura', 'Pinyon Script', cursive;
-            font-size: clamp(28px, 7.2vw, 40px);
-            font-weight: 400;
+            font-family: 'Great Vibes', cursive;
+            font-size: clamp(30px, 7.5vw, 46px);
             line-height: 1.1;
             color: #ffffff;
-            letter-spacing: 0.02em;
             white-space: nowrap;
             width: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
-            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
-            /* margin-top: 3%; */
         }
 
         .parent-text,
         .side-by-side .groom-block .parent-text,
         .side-by-side .bride-block .parent-text {
-            font-family: 'Cormorant Garamond', 'EB Garamond', serif;
-            font-size: clamp(10px, 2.4vw, 13px);
-            font-style: italic;
-            font-weight: 500;
-            letter-spacing: 0.03em;
-            color: rgba(255, 255, 255, 0.9);
+            font-family: 'Lora', serif;
+            font-size: clamp(10px, 2.8vw, 14px);
+            color: #ffffff;
             word-break: break-word;
             width: 100%;
             text-align: center;
@@ -198,57 +163,34 @@
         }
 
         .ampersand {
-            font-family: 'Great Vibes', 'Pinyon Script', cursive;
-            font-size: clamp(17px, 4.2vw, 23px);
+            font-family: 'Great Vibes', cursive;
+            font-size: clamp(20px, 4.8vw, 28px);
             font-style: italic;
-            font-weight: 400;
-            color: rgba(255, 255, 255, 0.92);
+            color: #ffffff;
         }
 
-        /* 4. Dates, Venue, Timings: Cormorant Garamond (Clean elegant serif) */
         .details-label {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: clamp(10px, 2.3vw, 12px);
-            font-weight: 700;
-            letter-spacing: 0.18em;
-            text-transform: uppercase;
-            color: #ffffff;
-            margin-top: clamp(4px, 1vh, 8px);
-            margin-bottom: clamp(1px, 0.2vh, 2px);
+            font-size: clamp(10px, 2.6vw, 13px);
+            margin-top: clamp(6px, 0.8em, 10px);
+            font-weight: bold;
         }
 
         .details-block {
-            font-family: 'Cormorant Garamond', 'EB Garamond', serif;
-            /* font-family: math; */
-            font-size: clamp(11px, 2.8vw, 14px);
-            font-weight: 600;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            color: #ffffff;
-            line-height: 1.25;
+            font-size: clamp(10px, 2.6vw, 13px);
+            line-height: 1.35;
             margin-bottom: 0;
             width: 100%;
         }
 
         .venue-label {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: clamp(10px, 2.3vw, 12px);
-            font-weight: 700;
-            letter-spacing: 0.18em;
-            text-transform: uppercase;
-            color: #ffffff;
-            margin-top: clamp(5px, 1vh, 10px);
-            margin-bottom: clamp(1px, 0.2vh, 2px);
+            font-size: clamp(10px, 2.6vw, 13px);
+            margin-top: clamp(6px, 0.8em, 10px);
+            font-weight: bold;
         }
 
         .venue-details {
-            font-family: 'Cormorant Garamond', 'EB Garamond', serif;
-            font-size: clamp(10px, 2.5vw, 13px);
-            font-weight: 600;
-            letter-spacing: 0.03em;
-            text-transform: none;
-            line-height: 1.35;
-            color: #ffffff;
+            font-size: clamp(9px, 2.4vw, 12px);
+            line-height: 1.4;
             white-space: pre-line;
             width: 100%;
         }
@@ -280,8 +222,8 @@
             <div id="event-name" class="event-name">Wedding</div>
 
             <!-- REPLACE: WELCOME MESSAGE -->
-            <div id="welcome-message" class="welcome-message">With hearts filled with joy and love, we invite you to
-                celebrate the beautiful beginning of our journey together.</div>
+            <div id="welcome-message" class="welcome-message">We are pleased to invite you
+                to the wedding of</div>
 
             <div class="couple-container stacked">
                 <div class="person-block groom-block">
@@ -307,7 +249,7 @@
 
             <div class="details-label">On</div>
             <!-- REPLACE: DATE -->
-            <div id="event-date" class="details-block">16 February 2026</div>
+            <div id="event-date" class="details-block">16th February 2026</div>
 
             <div class="details-label">At</div>
             <!-- REPLACE: TIME -->

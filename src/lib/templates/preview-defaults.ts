@@ -13,13 +13,13 @@
  * so this file doesn't duplicate that logic.
  */
 export const PREVIEW_DEFAULTS = {
-    brideName: 'Priyanka',
-    groomName: 'Vivek',
-    brideParents: 'Bhartee Bhagwan Dhage',
-    groomParents: 'Sanjeevni sunil mhatre',
-    eventDate: '12 Feb 2023',
+    brideName: 'Anjali',
+    groomName: 'Rahul',
+    brideParents: 'Mr and Mrs Patel',
+    groomParents: 'Mr and Mrs Bajaj',
+    eventDate: '01 jan 2026',
     eventTime: '7.00 Pm',
-    eventVenue: 'Chinar garden Road, Gulmohar Colony, Padegaon, Chhatrapati Sambhajinagar, Maharashtra 431002',
+    eventVenue: 'The Rajputana palace, Adarsh Nagar, Rajasthan',
 } as const;
 
 /**
