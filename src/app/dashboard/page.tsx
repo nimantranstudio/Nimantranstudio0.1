@@ -782,10 +782,32 @@ export default function DashboardPage() {
         // No formData fallbacks either — a blank field on a paid event must stay
         // blank rather than borrow a value from whatever is being drafted now.
         if (dbWedding && dbWedding.events && dbWedding.events.length > 0) {
+            // The couple's own card for each ceremony comes from that ceremony's
+            // TEMPLATE, matched by event type. The previous fallback here was
+            // `theme.previewImages[index]` — the theme's marketing showcase
+            // PNGs, which have another couple's details ("PRERNA & SUMIT",
+            // demo dates) baked into the artwork. Those rendered as the card
+            // background with the real couple's text drawn over them, so every
+            // card showed two weddings at once; and because they were matched
+            // by position rather than type, a Sangeet slot could show Haldi art.
+            const themeBundleItems: any[] = (theme as any)?.bundles?.flatMap((b: any) => b.bundleItems || []) || [];
+
+            const templateForEvent = (evt: any): string | null => {
+                if (themeBundleItems.length === 0) return null;
+                const evtType = classifyEventType(evt.eventType || evt.name || '');
+                const match = themeBundleItems.find((bi: any) => {
+                    const biType = classifyEventType(bi.eventType || bi.event?.eventName || bi.templateName || '');
+                    return biType && evtType && biType === evtType;
+                });
+                return match?.templatePath ? ensureLeadingSlash(match.templatePath) : null;
+            };
+
             return dbWedding.events.map((evt: any, index: number) => ({
                 id: evt.id,
                 name: evt.name || `Event ${index + 1}`,
-                image: evt.generatedCard?.imageUrl || (theme?.previewImages?.[index] || '/assets/themes/gold-1.jpg'),
+                // Stored capture first (already personalised), then this event's own
+                // template. Never another couple's showcase art.
+                image: evt.generatedCard?.imageUrl || templateForEvent(evt) || '',
                 event: {
                     id: evt.id,
                     name: evt.name,
