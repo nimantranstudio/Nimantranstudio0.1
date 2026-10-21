@@ -4,6 +4,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import styles from '../rsvp.module.css';
 import { Calendar, Clock, MapPin } from 'lucide-react';
+import { formatDisplayTime } from '@/lib/format-date';
 
 export interface WeddingEventItem {
     id: string;
@@ -93,9 +94,9 @@ export const EventCard: React.FC<EventCardProps> = ({ event, coupleNames, index 
                         <div className={styles.eventDetailRow}>
                             <Clock size={15} className={styles.eventDetailIcon} />
                             <span className={styles.eventDetailText}>
-                                {event.time.includes('AM') || event.time.includes('PM')
-                                    ? event.time
-                                    : `${event.time} onwards`}
+                                {/* Stored as 24h ("15:00"); guests read 12h. formatDisplayTime
+                                    returns the value untouched if it already carries am/pm. */}
+                                {`${formatDisplayTime(event.time)} onwards`}
                             </span>
                         </div>
                     )}
