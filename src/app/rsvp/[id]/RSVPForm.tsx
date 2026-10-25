@@ -138,18 +138,21 @@ export const RSVPForm = ({ wedding, isPreview = false }: RSVPFormProps) => {
 
     const coupleNames = [wedding.groomName, wedding.brideName].filter(Boolean).map(cleanText).join(' & ');
 
-    // Helper to format parent names dynamically
+    // Helper to format parent names dynamically.
+    //
+    // "Mr. & Mrs." is a courtesy prefix for a bare name ("Neeraj Kumar"). It must
+    // NOT be added when the couple already typed their own titles — matching only
+    // at the START of the string missed "Lt. Mr.Neeraj Kumar & Mrs.Lata Rani" and
+    // rendered "Mr. & Mrs. Lt. Mr.Neeraj Kumar & Mrs.Lata Rani". Honorifics can
+    // appear anywhere (a rank first, or only before the second name), so test the
+    // whole string. \b keeps this off ordinary names — "Srinivas" isn't "Sri",
+    // "Lata" isn't "Lt".
+    const HONORIFIC = /\b(mr|mrs|ms|miss|smt|shri|sri|dr|lt|col|capt|maj|gen|prof|late)\b/i;
+
     const formatParentName = (name?: string | null) => {
         const trimmed = cleanText(name);
         if (!trimmed) return '';
-        if (
-            trimmed.toLowerCase().startsWith('mr') ||
-            trimmed.toLowerCase().startsWith('smt') ||
-            trimmed.toLowerCase().startsWith('shri') ||
-            trimmed.toLowerCase().startsWith('dr')
-        ) {
-            return trimmed;
-        }
+        if (HONORIFIC.test(trimmed)) return trimmed;
         return `Mr. & Mrs. ${trimmed}`;
     };
 
