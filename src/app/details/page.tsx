@@ -39,6 +39,9 @@ import { InvitationCard, InvitationCardRef } from '@/components/preview/Invitati
 import { PreviewCard } from '@/components/preview/PreviewCard';
 import { resolveEventSections } from '@/lib/templates/event-type';
 import { IntricateMandalaSvg } from '@/components/ui/IntricateMandala';
+import { DEFAULT_TEMPLATE_ID, getWebsiteTemplate } from '@/website/templates/registry';
+import { WebsiteDetailsPreview } from '@/website/components/WebsiteDetailsPreview';
+import { payForWebsite } from '@/website/checkout';
 
 // Motion variants for welcome popup transitions (animation-vocabulary / emil-design-eng / review-animations)
 const overlayVariants = {
@@ -120,8 +123,19 @@ function DetailsContent() {
         addEvent,
         removeEvent,
         updateEvent,
-        touchedFields
+        touchedFields,
+        userPhone,
+        setCheckoutComplete
     } = useWeddingStore();
+
+    // Website journey (/websites → here → Razorpay → dashboard), set by
+    // ?flow=website&template=<id>. It swaps the card preview for the chosen
+    // website design and "Publish and Pay" opens the payment window directly.
+    // Without the flag this page is the card flow, unchanged.
+    const websiteTemplate = searchParams.get('flow') === 'website'
+        ? getWebsiteTemplate(searchParams.get('template')) ?? getWebsiteTemplate(DEFAULT_TEMPLATE_ID)
+        : undefined;
+    const isWebsiteFlow = !!websiteTemplate;
 
     // Studio Active Chapter State (1: Your Story, 2: The Wedding Ceremony, 3: Celebrate Every Moment, 4: Wedding Website & RSVP)
     const [activeChapter, setActiveChapter] = useState<number>(1);
@@ -143,6 +157,9 @@ function DetailsContent() {
     const [showWelcomeOverlay, setShowWelcomeOverlay] = useState(false);
     const [activeTheme, setActiveTheme] = useState<Theme | null>(null);
     const [isDetailsConfirmed, setIsDetailsConfirmed] = useState(false);
+    // Website flow: idle → opening (creating the order) → publishing (paid, server finishing).
+    const [publishState, setPublishState] = useState<'idle' | 'opening' | 'publishing'>('idle');
+    const [publishError, setPublishError] = useState<string | null>(null);
     const [isCrafting, setIsCrafting] = useState(false);
     const cardRef = useRef<InvitationCardRef>(null);
     const [cardLayout, setCardLayout] = useState<{ width: number; height: number; aspectRatio: number }>({
@@ -312,9 +329,17 @@ function DetailsContent() {
         }
     }, [searchParams]);
 
+    // Website journey: the review checklist links straight to the chapter that needs attention.
+    useEffect(() => {
+        if (!isWebsiteFlow) return;
+        const chapter = Number(searchParams.get('chapter'));
+        if (chapter >= 1 && chapter <= 4) setActiveChapter(chapter);
+    }, [isWebsiteFlow, searchParams]);
+
     // Fetch theme config and refresh bundleItems from DB on every details page load
     useEffect(() => {
-        if (!selectedThemeId) return;
+        // The website journey shows no card, so it needs no card theme.
+        if (!selectedThemeId || isWebsiteFlow) return;
 
         async function fetchTheme() {
             try {
@@ -339,6 +364,11 @@ function DetailsContent() {
     // Auto-save useEffect with 1s debounce
     useEffect(() => {
         if (!isMounted) return;
+        // Website journey: the form already persists in this browser (the wedding
+        // store), and the website is not created until checkout. Skipping the
+        // server save means no Wedding rows are written while customers explore,
+        // even when they happen to be logged in.
+        if (isWebsiteFlow) return;
 
         setSaveStatus('saving');
         const timer = setTimeout(async () => {
@@ -449,6 +479,34 @@ function DetailsContent() {
 
     // Complete editing CTA
     const handleFinish = async () => {
+        if (websiteTemplate) {
+            // Opens Razorpay (UPI QR / apps) straight away. Once paid, the
+            // server verifies it, saves the wedding, records Order + Payment,
+            // publishes the WeddingWebsite and sends the WhatsApp link.
+            if (publishState !== 'idle') return;
+            setPublishError(null);
+            setPublishState('opening');
+            try {
+                const result = await payForWebsite({
+                    templateCode: websiteTemplate.id,
+                    templateName: websiteTemplate.name,
+                    formData: formData as any,
+                    contact: formData.rsvpContact || userPhone,
+                    onPaymentCaptured: () => setPublishState('publishing'),
+                });
+                if (result.status === 'dismissed') {
+                    setPublishState('idle');
+                    return;
+                }
+                setCheckoutComplete(result.weddingId, userPhone);
+                router.push('/dashboard?welcome=true');
+            } catch (err: any) {
+                setPublishState('idle');
+                setPublishError(err?.message || 'Something went wrong. Please try again.');
+            }
+            return;
+        }
+
         setSaveStatus('saving');
         
         saveWedding().then(result => {
@@ -599,7 +657,11 @@ function DetailsContent() {
             <header className={styles.header}>
                 <div className={styles.headerContainer}>
                     <Breadcrumbs
-                        items={[
+                        items={websiteTemplate ? [
+                            { label: 'Home', href: '/' },
+                            { label: 'Wedding Websites', href: '/websites' },
+                            { label: 'Wedding Details', active: true },
+                        ] : [
                             { label: 'Home', href: '/' },
                             { label: 'Themes', href: '/themes' },
                             { label: `${themeName}${selectedPlan ? ` (${selectedPlan})` : ''}`, href: `/themes/${selectedThemeId}` },
@@ -618,7 +680,13 @@ function DetailsContent() {
             </header>
 
             <main className={styles.studioContainer}>
-                {/* Sticky Left Preview Column (40%) */}
+                {websiteTemplate ? (
+                    // Website journey: live preview of the chosen website design.
+                    <section className={styles.previewCol}>
+                        <WebsiteDetailsPreview templateId={websiteTemplate.id} templateName={websiteTemplate.name} />
+                    </section>
+                ) : (
+                /* Sticky Left Preview Column (40%) */
                 <section className={styles.previewCol}>
                     <div
                         className={styles.previewCardStage}
@@ -784,6 +852,7 @@ function DetailsContent() {
                         ↺ Refresh Preview
                     </button>
                 </section>
+                )}
 
                 {/* Right Column Workspace (60%) */}
                 <section className={styles.workspaceCol} style={{ position: 'relative' }}>
@@ -1378,9 +1447,13 @@ function DetailsContent() {
 
                     {/* Final Unveiling Action Card */}
                     <div className={styles.actionCard}>
-                        <h4 className={styles.actionHeadline}>Let's bring your invitation to life.</h4>
+                        <h4 className={styles.actionHeadline}>
+                            {websiteTemplate ? 'Publish your wedding website.' : "Let's bring your invitation to life."}
+                        </h4>
                         <p className={styles.actionSubtext}>
-                            We'll craft your invitation with care, just as your guests will experience it.
+                            {websiteTemplate
+                                ? 'Pay once and your website goes live, with its own link to share with guests on WhatsApp.'
+                                : "We'll craft your invitation with care, just as your guests will experience it."}
                         </p>
 
                         <div className={styles.actionGroup}>
@@ -1400,10 +1473,23 @@ function DetailsContent() {
                                 <button 
                                     className={styles.actionBtnPrimary} 
                                     onClick={handleFinish}
+                                    disabled={!!websiteTemplate && publishState !== 'idle'}
+                                    aria-busy={publishState !== 'idle' || undefined}
                                 >
-                                    Generate Nimantran
+                                    {websiteTemplate
+                                        ? publishState === 'opening'
+                                            ? 'Opening secure payment…'
+                                            : publishState === 'publishing'
+                                                ? 'Publishing your website…'
+                                                : `Publish and Pay · ₹${websiteTemplate.price}`
+                                        : 'Generate Nimantran'}
                                 </button>
                             </div>
+                            {websiteTemplate && publishError && (
+                                <p role="alert" style={{ color: '#A1322B', fontSize: '0.95rem', textAlign: 'center', margin: 0 }}>
+                                    {publishError}
+                                </p>
+                            )}
                         </div>
                     </div>
                 </section>

@@ -10,6 +10,35 @@ import { ensureInvoiceNumber } from '@/lib/invoice/invoice-number';
 import { generateUniqueWeddingSlug } from '@/lib/slug';
 import sanitizeHtml from 'sanitize-html';
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://www.nimantranstudio.in';
+
+const PAYMENT_STATUS: Record<string, 'CREATED' | 'AUTHORIZED' | 'CAPTURED' | 'FAILED' | 'REFUNDED'> = {
+    created: 'CREATED',
+    authorized: 'AUTHORIZED',
+    captured: 'CAPTURED',
+    failed: 'FAILED',
+    refunded: 'REFUNDED',
+};
+
+/** Price snapshot for a website order, from the Razorpay order notes. */
+function websiteOrderFields(notes: Record<string, string>, paidPaise: number) {
+    const listPricePaise = Number(notes.listPricePaise) || paidPaise;
+    const salePricePaise = Number(notes.salePricePaise) || paidPaise;
+    const gstRateBps = Number(notes.gstRateBps) || 1800;
+    // GST is included in the price: tax = total − total / (1 + rate).
+    const taxPaise = paidPaise - Math.round((paidPaise * 10000) / (10000 + gstRateBps));
+    return {
+        productType: 'WEBSITE' as const,
+        websiteTemplateId: notes.templateId || null,
+        currency: 'INR',
+        listPricePaise,
+        discountPaise: Math.max(0, listPricePaise - salePricePaise),
+        taxPaise,
+        totalPaise: paidPaise,
+        paidAt: new Date(),
+    };
+}
+
 function sanitize(str: any): string {
     if (!str) return '';
     return sanitizeHtml(String(str), { allowedTags: [], allowedAttributes: {} });
@@ -101,6 +130,7 @@ export async function POST(req: NextRequest) {
         const themeId = notes.themeId;
         const bundleId = notes.bundleId;
         const packageId = notes.packageId || null;
+        const isWebsite = notes.productType === 'WEBSITE';
 
         // Prefer the WhatsApp number the couple explicitly entered at checkout;
         // fall back to the Razorpay payment contact. This is the account + welcome number.
@@ -155,6 +185,7 @@ export async function POST(req: NextRequest) {
                     paymentMethod: rzpPayment.method || null,
                     contactEmail: email,
                     contactPhone: mobile,
+                    ...(isWebsite ? websiteOrderFields(notes, Number(rzpPayment.amount)) : {}),
                 },
             }));
 
@@ -168,8 +199,53 @@ export async function POST(req: NextRequest) {
                     paymentMethod: rzpPayment.method || null,
                     contactEmail: email,
                     contactPhone: mobile,
+                    ...(isWebsite ? websiteOrderFields(notes, Number(rzpPayment.amount)) : {}),
                 },
             });
+        }
+
+        // Website orders: keep every payment attempt as its own row. The
+        // unique (gateway, gatewayPaymentId) makes a repeat verify a no-op.
+        if (isWebsite) {
+            try {
+                const status = PAYMENT_STATUS[String(rzpPayment.status)] || 'CREATED';
+                const at = rzpPayment.created_at ? new Date(Number(rzpPayment.created_at) * 1000) : new Date();
+                const paymentData = {
+                    status,
+                    method: rzpPayment.method || null,
+                    amountPaise: Number(rzpPayment.amount),
+                    currency: String(rzpPayment.currency || 'INR'),
+                    capturedAt: status === 'CAPTURED' ? new Date() : null,
+                    authorizedAt: status === 'AUTHORIZED' || status === 'CAPTURED' ? at : null,
+                    errorCode: (rzpPayment as any).error_code || null,
+                    errorReason: (rzpPayment as any).error_reason || null,
+                    errorDescription: (rzpPayment as any).error_description || null,
+                    // Support reference only; no card or bank numbers.
+                    gatewayResponse: {
+                        id: rzpPayment.id,
+                        status: rzpPayment.status,
+                        method: rzpPayment.method,
+                        amount: rzpPayment.amount,
+                        currency: rzpPayment.currency,
+                        captured: rzpPayment.captured,
+                        created_at: rzpPayment.created_at,
+                    },
+                };
+                await prisma.payment.upsert({
+                    where: { gateway_gatewayPaymentId: { gateway: 'RAZORPAY', gatewayPaymentId: razorpay_payment_id } },
+                    update: paymentData,
+                    create: {
+                        ...paymentData,
+                        orderId: order.id,
+                        userId: user.id,
+                        gateway: 'RAZORPAY',
+                        gatewayOrderId: razorpay_order_id,
+                        gatewayPaymentId: razorpay_payment_id,
+                    },
+                });
+            } catch (paymentErr: any) {
+                console.error('Recording website payment failed:', paymentErr?.message);
+            }
         }
 
         // Payment is confirmed at this point (signature verified above) — issue
@@ -296,6 +372,45 @@ export async function POST(req: NextRequest) {
             // Do NOT rethrow — the payment succeeded; the user must still get in.
         }
 
+        // 5b. Website orders: publish the wedding website. The guest page is
+        //     /rsvp/{slug} (the slug lives on Wedding and never changes);
+        //     this records what was bought, for how much, and where it lives.
+        let websiteId: string | null = null;
+        if (isWebsite && weddingId) {
+            const now = new Date();
+            const validityDays = Number(notes.validityDays) || 0;
+            try {
+                const website = await prisma.weddingWebsite.upsert({
+                    where: { weddingId },
+                    update: {},
+                    create: {
+                        weddingId,
+                        userId: user.id,
+                        templateId: notes.templateId,
+                        templateVersion: Number(notes.templateVersion) || 1,
+                        status: 'PUBLISHED',
+                        orderId: order.id,
+                        pricePaidPaise: Number(rzpPayment.amount),
+                        purchasedAt: now,
+                        publicUrl: `${APP_URL}/rsvp/${weddingSlug || weddingId}`,
+                        firstPublishedAt: now,
+                        publishedAt: now,
+                        publishAttempts: 1,
+                        expiresAt: validityDays > 0 ? new Date(now.getTime() + validityDays * 86_400_000) : null,
+                        linkMessageStatus: 'PENDING',
+                        linkSentTo: mobile,
+                    },
+                });
+                websiteId = website.id;
+                await prisma.order.update({ where: { id: order.id }, data: { weddingWebsiteId: website.id } });
+            } catch (websiteErr: any) {
+                console.error(`Publishing website failed for order ${order.id}:`, websiteErr?.message);
+                await prisma.order
+                    .update({ where: { id: order.id }, data: { status: 'needs_review' } })
+                    .catch(() => {});
+            }
+        }
+
         // 6. Fire-and-forget WhatsApp welcome + receipt. Never blocks the response.
         const groomName = sanitize(formData?.groomName) || undefined;
         const brideName = sanitize(formData?.brideName) || undefined;
@@ -320,7 +435,18 @@ export async function POST(req: NextRequest) {
                 slug: weddingSlug || undefined,
                 orderId: order.id,
                 heroImageUrl: heroUrl,
-            }).catch((e) => console.error('RSVP link dispatch failed:', e));
+            })
+                .then((result) => {
+                    // Website orders: record whether the link message went out.
+                    if (!websiteId) return;
+                    return prisma.weddingWebsite.update({
+                        where: { id: websiteId },
+                        data: result.success
+                            ? { linkMessageStatus: 'SENT', linkMessageId: result.id ?? null, linkSentAt: new Date(), linkMessageError: null }
+                            : { linkMessageStatus: 'FAILED', linkMessageError: result.error ?? 'Send failed' },
+                    });
+                })
+                .catch((e) => console.error('RSVP link dispatch failed:', e));
         }
 
         // 7. Issue the session and return.

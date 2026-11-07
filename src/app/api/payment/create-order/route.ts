@@ -12,6 +12,62 @@ import { rateLimit, clientKey } from '@/lib/rate-limit';
  * verify step reads the entitlement server-to-server rather than trusting the
  * browser.
  */
+/**
+ * Razorpay order for a wedding website design. The price comes from the
+ * WebsiteTemplate row (server-side only), and everything verify needs to
+ * record the purchase is stamped into the order notes, which verify reads
+ * back from Razorpay rather than trusting the browser.
+ */
+async function createWebsiteOrder(templateCode: string) {
+    const keyId = process.env.RAZORPAY_KEY_ID;
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+    if (!keyId || !keySecret) {
+        return NextResponse.json({ error: 'Razorpay credentials not configured' }, { status: 500 });
+    }
+
+    const template = await prisma.websiteTemplate.findUnique({ where: { code: templateCode } });
+    if (!template || template.status !== 'ACTIVE') {
+        return NextResponse.json({ error: 'This website design is not available to buy' }, { status: 404 });
+    }
+    if (!template.cardThemeId || !template.cardBundleId) {
+        return NextResponse.json({ error: 'Online checkout is not set up for this design yet' }, { status: 409 });
+    }
+
+    // Same test-mode switch as card orders: a flat ₹10 when PAYMENT_TEST_MODE=true.
+    const testMode = process.env.PAYMENT_TEST_MODE === 'true';
+    const amountPaise = testMode ? 1000 : template.salePricePaise;
+    if (amountPaise < 100) {
+        return NextResponse.json({ error: 'Amount below minimum' }, { status: 409 });
+    }
+
+    const razorpay = new Razorpay({ key_id: keyId, key_secret: keySecret });
+    const order = await razorpay.orders.create({
+        amount: amountPaise,
+        currency: template.currency,
+        receipt: `ns_web_${Date.now()}`,
+        // Razorpay notes are strings (max 15 keys).
+        notes: {
+            productType: 'WEBSITE',
+            templateId: template.id,
+            templateCode: template.code,
+            templateVersion: String(template.version),
+            listPricePaise: String(template.listPricePaise),
+            salePricePaise: String(template.salePricePaise),
+            gstRateBps: String(template.gstRateBps),
+            validityDays: template.validityDays == null ? '' : String(template.validityDays),
+            themeId: template.cardThemeId,
+            bundleId: template.cardBundleId,
+        },
+    });
+
+    return NextResponse.json({
+        orderId: order.id,
+        amount: order.amount,
+        currency: order.currency,
+        key: keyId,
+    });
+}
+
 export async function POST(req: NextRequest) {
     try {
         // Unauthenticated by necessity (checkout precedes the session), so cap
@@ -24,7 +80,14 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        const { themeId, packageName, currency = 'INR' } = await req.json();
+        const { themeId, packageName, currency = 'INR', productType, templateCode } = await req.json();
+
+        // Wedding website purchase: priced from WebsiteTemplate, not from a
+        // card bundle. The card path below is unchanged.
+        if (productType === 'WEBSITE') {
+            // await, so gateway errors reach the catch below like card orders.
+            return await createWebsiteOrder(String(templateCode || ''));
+        }
 
         if (!themeId || !packageName) {
             return NextResponse.json(

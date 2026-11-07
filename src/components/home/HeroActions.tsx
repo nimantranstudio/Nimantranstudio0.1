@@ -13,8 +13,8 @@ export function HeroActions() {
       transition={{ type: "spring", bounce: 0, duration: 0.8, delay: 0.1 }}
     >
       <motion.div whileTap={{ scale: 0.97 }} style={{ display: 'inline-block' }}>
-      <Link href="/themes" className="btn btn-primary">
-        Explore Nimantran
+      <Link href="/websites" className="btn btn-primary">
+        Create Wedding Website
       </Link>
       </motion.div>
     </motion.div>

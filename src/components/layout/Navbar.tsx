@@ -22,7 +22,8 @@ import { clsx } from 'clsx';
 
 const NAV_LINKS = [
     { name: 'Home', href: '/' },
-    { name: 'Themes', href: '/themes' },
+    { name: 'Wedding Websites', href: '/websites' },
+    { name: 'Invitation Cards', href: '/themes' },
 ];
 
 export const Navbar = () => {
@@ -339,11 +340,11 @@ export const Navbar = () => {
                                 ) : (
                                     <div className={styles.mobileGuestActions}>
                                         <Link
-                                            href="/themes"
+                                            href="/websites"
                                             className={styles.mobileCtaBtn}
                                             onClick={() => setIsOpen(false)}
                                         >
-                                            <span>Create Nimantran</span>
+                                            <span>Create Wedding Website</span>
                                         </Link>
                                         <Link
                                             href="/login"

@@ -1,0 +1,241 @@
+/* The design list on /websites.
+   Follows the /themes page: warm off-white page, Playfair titles, gold primary button. */
+
+.page {
+    min-height: 100vh;
+    padding-bottom: 6rem;
+    background-color: #FDFBF7;
+}
+
+.header {
+    padding: 1.25rem 0 0.5rem;
+    margin-bottom: 2rem;
+}
+
+.hero {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.eyebrow {
+    display: block;
+    margin-bottom: 0.75rem;
+    font: 600 0.85rem/1 var(--font-sans);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #8C6D34;
+}
+
+.title {
+    font-size: 3.5rem;
+    line-height: 1.15;
+    margin-bottom: 1.25rem;
+    color: var(--secondary);
+    font-family: var(--font-serif);
+    text-wrap: balance;
+}
+
+.subtitle {
+    font-size: 1.25rem;
+    line-height: 1.6;
+    color: var(--muted-foreground);
+    max-width: 640px;
+    margin: 0 auto;
+}
+
+/* ── Selection ───────────────────────────────────────────── */
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 380px));
+    justify-content: center;
+    gap: 2rem;
+    max-width: 1240px;
+    margin: 0 auto;
+}
+
+.card {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    background: var(--card);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    padding: 0;
+    font: inherit;
+    color: inherit;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+}
+
+.card:focus-visible {
+    outline: 2px solid var(--secondary);
+    outline-offset: 3px;
+}
+
+.cardSelected {
+    border-color: var(--primary);
+    box-shadow: 0 10px 28px rgba(200, 169, 81, 0.22);
+}
+
+.cardSelected:hover {
+    border-color: var(--primary);
+}
+
+.card:has(.radio:focus-visible) {
+    outline: 2px solid var(--secondary);
+    outline-offset: 3px;
+}
+
+/* The design's real website in a phone mockup. The site renders at a 390×844
+   phone viewport (9:19.5) and is scaled to fit this height, never stretched. */
+.phoneStage {
+    position: relative;
+    height: 600px;
+    padding-top: 1.5rem;
+    background: radial-gradient(ellipse at 50% 35%, #FBF6EC 0%, #F1E8D8 100%);
+}
+
+/* Covers the screen so a click anywhere on the mockup selects the card. */
+.phoneStage::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+}
+
+.previewButton {
+    position: absolute;
+    left: 50%;
+    /* Sits above the design's own bottom controls (music toggle). */
+    bottom: 5rem;
+    z-index: 2;
+    transform: translateX(-50%);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.7rem 1.4rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.96);
+    border: 1px solid #E6D3A6;
+    color: var(--secondary);
+    font: 600 0.95rem/1 var(--font-sans);
+    box-shadow: 0 6px 18px rgba(31, 31, 31, 0.18);
+    white-space: nowrap;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.previewButton:hover {
+    background: #FFFFFF;
+    box-shadow: 0 8px 22px rgba(31, 31, 31, 0.24);
+}
+
+.previewButton:focus-visible {
+    outline: 2px solid var(--secondary);
+    outline-offset: 3px;
+}
+
+.radio {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.selectedBadge {
+    position: absolute;
+    z-index: 2;
+    top: 0.85rem;
+    right: 0.85rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    background: var(--secondary);
+    color: #FFFFFF;
+    font: 600 0.85rem/1 var(--font-sans);
+}
+
+.cardBody {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1.25rem 1.5rem 1.5rem;
+}
+
+.cardTitle {
+    cursor: pointer;
+    font-family: var(--font-serif);
+    font-size: 1.6rem;
+    color: var(--secondary);
+}
+
+.cardText {
+    font-size: 1.05rem;
+    line-height: 1.55;
+    color: var(--muted-foreground);
+}
+
+/* Price and the design's own "Use this design" button, inside the card. */
+.cardFooter {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 0.75rem;
+    padding-top: 1.1rem;
+    border-top: 1px solid var(--border);
+}
+
+.price {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    margin: 0;
+}
+
+.priceAmount {
+    font-family: var(--font-serif);
+    font-size: 1.9rem;
+    line-height: 1;
+    color: var(--secondary);
+    font-variant-numeric: lining-nums tabular-nums;
+}
+
+.priceNote {
+    font-size: 0.95rem;
+    color: var(--muted-foreground);
+}
+
+.cardsNote {
+    margin: 3rem auto 0;
+    text-align: center;
+    color: var(--muted-foreground);
+    font-size: 1.05rem;
+}
+
+.cardsNote a {
+    color: var(--foreground);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.fullWidth {
+    width: 100%;
+}
+
+@media (max-width: 768px) {
+    .title {
+        font-size: 2.5rem;
+    }
+
+    .phoneStage {
+        height: 540px;
+    }
+}

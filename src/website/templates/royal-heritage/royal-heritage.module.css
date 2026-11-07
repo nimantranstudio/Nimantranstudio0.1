@@ -1,0 +1,2322 @@
+/* ==========================================================================
+   THE ROYAL HERITAGE — Isolated CSS Module
+   Palette: Rajasthani Sandstone Ivory, Champagne Brass, Deep Sindoor Maroon
+   Zero :root declarations — all tokens scoped strictly to .root
+   ========================================================================== */
+
+.root {
+    --rh-bg: #FBF7F0;
+    --rh-bg-warm: #F3EBDD;
+    --rh-surface: #FFFDF9;
+    --rh-maroon: #5B1620;
+    --rh-maroon-deep: #430F17;
+    --rh-maroon-soft: rgba(91, 22, 32, 0.08);
+    --rh-gold: #B08942;
+    --rh-gold-soft: rgba(176, 137, 66, 0.34);
+    --rh-gold-faint: rgba(176, 137, 66, 0.18);
+    --rh-ink: #2A1A16;
+    --rh-ink-soft: #574139;
+    --rh-ink-muted: #735B50;
+    --rh-ivory-on-dark: #FAF4EA;
+    --rh-champagne-on-dark: #E6CFA0;
+    --rh-font-display: 'Cinzel', var(--font-playfair), 'Playfair Display', Georgia, serif;
+    --rh-font-serif: 'Cormorant Garamond', var(--font-playfair), Georgia, serif;
+    --rh-font-sans: 'Jost', var(--font-inter), -apple-system, BlinkMacSystemFont, sans-serif;
+    --rh-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+    min-height: 100dvh;
+    width: 100%;
+    background-color: var(--rh-bg);
+    color: var(--rh-ink);
+    font-family: var(--rh-font-sans);
+    position: relative;
+    overflow-x: clip;
+    -webkit-font-smoothing: antialiased;
+}
+
+.previewRoot {
+    min-height: 100%;
+}
+
+/* Subtle sandstone ambient wash (no grid or stripe overlays) */
+.ambientBackdrop {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background:
+        radial-gradient(ellipse 80% 50% at 50% 0%, rgba(226, 202, 158, 0.24) 0%, transparent 70%),
+        radial-gradient(ellipse 65% 45% at 85% 95%, rgba(91, 22, 32, 0.04) 0%, transparent 65%);
+}
+
+/* ── GRAND OPENING VEIL (COVER SCREEN) ──────────────────────────────────── */
+
+.coverOverlay {
+    min-height: 100dvh;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(1.25rem, 4vw, 2.75rem);
+    position: relative;
+    z-index: 5;
+}
+
+.coverOuterShell {
+    width: 100%;
+    max-width: 560px;
+    padding: 8px;
+    background: var(--rh-bg-warm);
+    border: 1px solid var(--rh-gold-soft);
+    border-radius: 16px;
+}
+
+.coverInnerFrame {
+    position: relative;
+    background: var(--rh-surface);
+    border: 1px solid var(--rh-gold-soft);
+    border-radius: 10px;
+    padding: clamp(2.5rem, 6vw, 4rem) clamp(1.5rem, 5vw, 3rem);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.coverArchSvg {
+    width: 100%;
+    max-width: 240px;
+    height: auto;
+    color: var(--rh-gold);
+    margin-bottom: 1.25rem;
+}
+
+.coverKicker {
+    font-family: var(--rh-font-sans);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--rh-maroon);
+    margin-bottom: 1.5rem;
+}
+
+.coverSealMedallion {
+    width: 124px;
+    height: 124px;
+    border-radius: 999px;
+    padding: 6px;
+    background: var(--rh-bg-warm);
+    border: 1px solid var(--rh-gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.65rem;
+}
+
+.coverSealInner {
+    width: 100%;
+    height: 100%;
+    border-radius: 999px;
+    background: var(--rh-maroon);
+    color: var(--rh-ivory-on-dark);
+    border: 1px solid var(--rh-champagne-on-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    font-family: var(--rh-font-display);
+    font-size: 1.85rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+}
+
+.coverSealDiamond {
+    font-size: 0.8rem;
+    color: var(--rh-champagne-on-dark);
+}
+
+.coverCoupleTitle {
+    font-family: var(--rh-font-display);
+    font-size: clamp(1.55rem, 4.5vw, 2.2rem);
+    font-weight: 500;
+    line-height: 1.25;
+    letter-spacing: 0.02em;
+    color: var(--rh-ink);
+    margin: 0 0 0.65rem;
+    text-wrap: balance;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    max-width: 100%;
+}
+
+.coverDateLine {
+    font-family: var(--rh-font-serif);
+    font-style: italic;
+    font-size: 1.15rem;
+    color: var(--rh-ink-soft);
+    margin: 0 0 2rem;
+}
+
+.unveilBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 0.85rem 1.35rem 0.85rem 1.75rem;
+    border-radius: 999px;
+    border: 1px solid var(--rh-maroon);
+    background: var(--rh-maroon);
+    color: var(--rh-ivory-on-dark);
+    font-family: var(--rh-font-sans);
+    font-size: 0.84rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: transform 180ms var(--rh-ease), background-color 180ms ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .unveilBtn:hover {
+        background: var(--rh-maroon-deep);
+        transform: translateY(-2px);
+    }
+    .unveilBtn:hover .btnIconCircle {
+        transform: translateX(2px);
+    }
+}
+
+.unveilBtn:active {
+    transform: scale(0.97);
+}
+
+.btnIconCircle {
+    width: 30px;
+    height: 30px;
+    border-radius: 999px;
+    background: rgba(250, 244, 234, 0.15);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 200ms var(--rh-ease);
+}
+
+.coverFootnote {
+    margin-top: 1.4rem;
+    font-family: var(--rh-font-serif);
+    font-style: italic;
+    font-size: 0.98rem;
+    color: var(--rh-ink-muted);
+}
+
+/* ── MAIN CONTAINER & FULL-SCREEN SCROLL-ZOOM PALACE HERO ───────────────── */
+
+.mainContent {
+    position: relative;
+    z-index: 2;
+}
+
+.heroZoomTrack {
+    position: relative;
+    width: 100%;
+    height: 185vh;
+    height: 185dvh;
+}
+
+.heroStickyViewport {
+    position: sticky;
+    top: 0;
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: #1B0D0B;
+}
+
+.heroBgMedia {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    transform-origin: 50% 52%;
+    will-change: transform;
+    z-index: 0;
+}
+
+.heroFullscreenImg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 48%;
+    display: block;
+}
+
+.heroVignette {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background:
+        linear-gradient(
+            180deg,
+            rgba(20, 10, 8, 0.68) 0%,
+            rgba(24, 12, 10, 0.34) 28%,
+            rgba(24, 12, 10, 0.52) 68%,
+            rgba(20, 10, 8, 0.84) 100%
+        ),
+        radial-gradient(
+            ellipse 64% 58% at 50% 50%,
+            rgba(22, 10, 8, 0.56) 0%,
+            rgba(22, 10, 8, 0.12) 100%
+        );
+}
+
+.topBar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 5;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 1.35rem clamp(5.5rem, 10vw, 7.5rem) 1rem clamp(1.25rem, 4vw, 2.75rem);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.monogramCrest {
+    font-family: var(--rh-font-display);
+    font-size: 0.98rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    color: var(--rh-champagne-on-dark);
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.45);
+    white-space: nowrap;
+}
+
+.topNavLinks {
+    display: flex;
+    align-items: center;
+    gap: 1.65rem;
+}
+
+.topNavLink {
+    font-family: var(--rh-font-sans);
+    font-size: 0.76rem;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(250, 244, 234, 0.88);
+    text-decoration: none;
+    text-shadow: 0 1px 10px rgba(0, 0, 0, 0.45);
+    transition: color 160ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .topNavLink:hover {
+        color: var(--rh-champagne-on-dark);
+    }
+}
+
+.heroCenterStage {
+    position: relative;
+    z-index: 3;
+    width: 100%;
+    max-width: 780px;
+    padding: clamp(3.15rem, 5.2vh, 4.1rem) clamp(1.15rem, 4vw, 2.5rem) clamp(2rem, 4vh, 2.85rem);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    will-change: transform, opacity;
+}
+
+.blessingVerse {
+    font-family: var(--rh-font-serif);
+    font-style: italic;
+    font-size: clamp(1.04rem, 1.85vw, 1.26rem);
+    line-height: 1.42;
+    color: var(--rh-champagne-on-dark);
+    text-shadow: 0 2px 16px rgba(0, 0, 0, 0.55);
+    margin: 0 0 0.65rem;
+}
+
+.coupleDisplay {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.12rem;
+    margin: 0 0 0.95rem;
+    width: 100%;
+}
+
+.personDisplayName {
+    font-family: var(--rh-font-display);
+    font-size: clamp(2.15rem, 5vw, 3.95rem);
+    font-weight: 500;
+    line-height: 1.03;
+    letter-spacing: 0.02em;
+    color: #FFFDF9;
+    text-shadow: 0 4px 28px rgba(12, 5, 4, 0.65);
+    margin: 0;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    max-width: 100%;
+}
+
+.ampersandRow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.85rem;
+    margin: 0.15rem 0;
+}
+
+.ampersandGlyph {
+    font-family: var(--rh-font-serif);
+    font-style: italic;
+    font-size: clamp(1.45rem, 2.5vw, 2rem);
+    color: var(--rh-champagne-on-dark);
+    line-height: 1;
+}
+
+.ampersandRule {
+    width: 58px;
+    height: 1px;
+    background: rgba(230, 207, 160, 0.55);
+}
+
+.lineageGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.65rem 1.75rem;
+    width: 100%;
+    max-width: 620px;
+    padding: 0.72rem 1.25rem;
+    margin-bottom: 0.95rem;
+    background: rgba(24, 11, 9, 0.44);
+    backdrop-filter: blur(8px);
+    border-top: 1px solid rgba(230, 207, 160, 0.42);
+    border-bottom: 1px solid rgba(230, 207, 160, 0.42);
+    border-radius: 10px;
+}
+
+.lineageItem {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    min-width: 0;
+}
+
+.lineageRelation {
+    font-family: var(--rh-font-serif);
+    font-style: italic;
+    font-size: 0.94rem;
+    color: var(--rh-champagne-on-dark);
+}
+
+.lineageParents {
+    font-family: var(--rh-font-sans);
+    font-size: 0.9rem;
+    font-weight: 500;
+    line-height: 1.35;
+    color: var(--rh-ivory-on-dark);
+    overflow-wrap: break-word;
+}
+
+/* ── HERO SCRATCH-TO-REVEAL ROYAL WEDDING DATE FRAME ────────────────────── */
+
+@keyframes rhFoilSweep {
+    0% {
+        transform: translateX(-130%) skewX(-22deg);
+    }
+    55%, 100% {
+        transform: translateX(230%) skewX(-22deg);
+    }
+}
+
+@keyframes rhSparklePop {
+    0%, 100% {
+        transform: scale(0.75) rotate(0deg);
+        opacity: 0.45;
+    }
+    50% {
+        transform: scale(1.25) rotate(18deg);
+        opacity: 1;
+    }
+}
+
+.scratchPlaqueOuter {
+    position: relative;
+    width: 100%;
+    max-width: 470px;
+    margin: 0 auto 1.15rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.scratchHeaderTag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.28rem 0.85rem;
+    margin-bottom: -11px;
+    position: relative;
+    z-index: 5;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #6B1722 0%, #481018 100%);
+    border: 1px solid #E6CFA0;
+    color: #F7E7BE;
+    font-family: var(--rh-font-sans);
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.42);
+}
+
+.instantRevealChip {
+    appearance: none;
+    margin-left: 0.35rem;
+    padding: 0.14rem 0.55rem;
+    border-radius: 999px;
+    border: 1px solid rgba(247, 231, 190, 0.55);
+    background: rgba(255, 249, 236, 0.15);
+    color: #FFFDF9;
+    font-family: var(--rh-font-sans);
+    font-size: 0.6rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background-color 160ms ease, transform 160ms ease;
+}
+
+.instantRevealChip:hover {
+    background: rgba(247, 231, 190, 0.3);
+    transform: translateY(-1px);
+}
+
+.scratchStageWrap {
+    position: relative;
+    width: 100%;
+    min-height: 98px;
+    border-radius: 14px;
+    padding: 4px;
+    background: linear-gradient(135deg, #F3DFAC 0%, #B88B36 50%, #F3DFAC 100%);
+    box-shadow:
+        0 16px 38px rgba(0, 0, 0, 0.48),
+        0 0 0 1px rgba(255, 252, 240, 0.32);
+    overflow: hidden;
+    transition: box-shadow 350ms var(--rh-ease), transform 350ms var(--rh-ease);
+}
+
+.scratchStageRevealed {
+    box-shadow:
+        0 18px 44px rgba(0, 0, 0, 0.52),
+        0 0 28px rgba(230, 207, 160, 0.42);
+}
+
+.revealedDateContent {
+    position: relative;
+    z-index: 1;
+    min-height: 90px;
+    border-radius: 10px;
+    padding: 0.95rem 1.25rem 0.85rem;
+    background:
+        radial-gradient(circle at 50% 0%, rgba(128, 30, 44, 0.95) 0%, rgba(56, 11, 18, 0.98) 100%);
+    border: 1px solid rgba(230, 207, 160, 0.55);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    text-align: center;
+}
+
+.revealedDateOrnamentRow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    color: #E6CFA0;
+    font-size: 0.68rem;
+    opacity: 0.9;
+}
+
+.revealedDateLine {
+    width: 36px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(230, 207, 160, 0.8), transparent);
+}
+
+.revealedMainDate {
+    font-family: var(--rh-font-display);
+    font-size: clamp(1.22rem, 2.7vw, 1.68rem);
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    line-height: 1.2;
+    color: #FFF9EC;
+    text-shadow: 0 2px 14px rgba(0, 0, 0, 0.45);
+    overflow-wrap: break-word;
+}
+
+.revealedSubMeta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem 0.65rem;
+    font-family: var(--rh-font-sans);
+    font-size: 0.84rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #F3DFAC;
+}
+
+.revealedGem {
+    color: #E6CFA0;
+    font-size: 0.72rem;
+}
+
+.revealedSaveBtn {
+    margin-top: 0.35rem;
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.34rem 0.9rem;
+    border-radius: 999px;
+    border: 1px solid rgba(243, 223, 172, 0.7);
+    background: rgba(255, 249, 236, 0.14);
+    color: #FFFDF9;
+    font-family: var(--rh-font-sans);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background-color 180ms ease, transform 180ms ease;
+}
+
+.revealedSaveBtn:hover {
+    background: rgba(243, 223, 172, 0.28);
+    transform: translateY(-1px);
+}
+
+.scratchCanvasLayer {
+    position: absolute;
+    inset: 4px;
+    z-index: 3;
+    border-radius: 10px;
+    overflow: hidden;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.scratchingActive {
+    cursor: grabbing;
+}
+
+.scratchCanvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    touch-action: none;
+}
+
+.foilShimmerSweep {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 253, 242, 0.48) 50%,
+        rgba(255, 255, 255, 0) 100%
+    );
+    width: 55%;
+    animation: rhFoilSweep 3.4s ease-in-out infinite;
+}
+
+.revealSparkleBurst {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.sparkleDot {
+    position: absolute;
+    color: #F7E5B4;
+    font-size: 0.9rem;
+    text-shadow: 0 0 8px rgba(247, 229, 180, 0.85);
+    animation: rhSparklePop 2.2s ease-in-out infinite;
+}
+
+.heroActions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.9rem;
+}
+
+.heroPrimaryCta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem;
+    padding: 0.9rem 1.85rem;
+    border-radius: 999px;
+    background: var(--rh-maroon);
+    border: 1px solid var(--rh-champagne-on-dark);
+    color: var(--rh-ivory-on-dark);
+    font-family: var(--rh-font-sans);
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    text-decoration: none;
+    cursor: pointer;
+    white-space: nowrap;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+    transition: transform 180ms var(--rh-ease), background-color 180ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .heroPrimaryCta:hover {
+        background: var(--rh-maroon-deep);
+        transform: translateY(-2px);
+    }
+}
+
+.heroSecondaryCta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.9rem 1.65rem;
+    border-radius: 999px;
+    background: rgba(24, 11, 9, 0.44);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(230, 207, 160, 0.65);
+    color: var(--rh-ivory-on-dark);
+    font-family: var(--rh-font-sans);
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    text-decoration: none;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: transform 180ms var(--rh-ease), background-color 180ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .heroSecondaryCta:hover {
+        background: rgba(230, 207, 160, 0.2);
+        transform: translateY(-2px);
+    }
+}
+
+@keyframes rhScrollPulse {
+    0%, 100% {
+        transform: scaleY(0.65);
+        opacity: 0.45;
+    }
+    50% {
+        transform: scaleY(1);
+        opacity: 0.95;
+    }
+}
+
+.scrollCue {
+    position: absolute;
+    bottom: 1.15rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 4;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    pointer-events: none;
+}
+
+.scrollCueLabel {
+    font-family: var(--rh-font-sans);
+    font-size: 0.64rem;
+    font-weight: 600;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: rgba(230, 207, 160, 0.85);
+}
+
+.scrollCueLine {
+    width: 1px;
+    height: 26px;
+    background: linear-gradient(180deg, var(--rh-champagne-on-dark), transparent);
+    transform-origin: top;
+    animation: rhScrollPulse 2.4s ease-in-out infinite;
+}
+
+/* Shared Sandstone Section CTAs (used in Venue & RSVP confirmation) */
+.primaryCta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem;
+    padding: 0.88rem 1.75rem;
+    border-radius: 999px;
+    background: var(--rh-maroon);
+    border: 1px solid var(--rh-maroon);
+    color: var(--rh-ivory-on-dark);
+    font-family: var(--rh-font-sans);
+    font-size: 0.84rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-decoration: none;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: transform 180ms var(--rh-ease), background-color 180ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .primaryCta:hover {
+        background: var(--rh-maroon-deep);
+        transform: translateY(-2px);
+    }
+}
+
+.primaryCta:active {
+    transform: scale(0.97);
+}
+
+.secondaryCta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.88rem 1.55rem;
+    border-radius: 999px;
+    background: transparent;
+    border: 1px solid var(--rh-gold);
+    color: var(--rh-ink);
+    font-family: var(--rh-font-sans);
+    font-size: 0.84rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-decoration: none;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: transform 180ms var(--rh-ease), background-color 180ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .secondaryCta:hover {
+        background: var(--rh-bg-warm);
+        transform: translateY(-2px);
+    }
+}
+
+.secondaryCta:active {
+    transform: scale(0.97);
+}
+
+/* ── SECTION 2: DARBAR MAROON PROCLAMATION & COUNTDOWN ──────────────────── */
+
+.darbarBand {
+    background: var(--rh-maroon);
+    color: var(--rh-ivory-on-dark);
+    padding: clamp(3.5rem, 7vw, 5.5rem) clamp(1.15rem, 4vw, 2.5rem);
+    border-top: 2px solid var(--rh-gold);
+    border-bottom: 2px solid var(--rh-gold);
+}
+
+.darbarInner {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: clamp(2rem, 5vw, 3.25rem) clamp(1.25rem, 4vw, 3rem);
+    border: 1px solid rgba(230, 207, 160, 0.34);
+    border-radius: 14px;
+    text-align: center;
+}
+
+.darbarOrnament {
+    color: var(--rh-champagne-on-dark);
+    margin-bottom: 1.15rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.9rem;
+}
+
+.darbarOrnamentLine {
+    width: 44px;
+    height: 1px;
+    background: rgba(230, 207, 160, 0.45);
+}
+
+.darbarQuote {
+    font-family: var(--rh-font-serif);
+    font-style: italic;
+    font-size: clamp(1.35rem, 3vw, 1.9rem);
+    line-height: 1.55;
+    color: var(--rh-ivory-on-dark);
+    max-width: 56ch;
+    margin: 0 auto 2.5rem;
+    text-wrap: pretty;
+    overflow-wrap: break-word;
+}
+
+.countdownRow {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: clamp(0.65rem, 2vw, 1.35rem);
+    max-width: 620px;
+    margin: 0 auto;
+}
+
+.countdownPillar {
+    padding: 1.1rem 0.5rem;
+    border-radius: 10px;
+    background: rgba(255, 250, 240, 0.06);
+    border: 1px solid rgba(230, 207, 160, 0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.countdownDigits {
+    font-family: var(--rh-font-display);
+    font-size: clamp(1.55rem, 3.6vw, 2.35rem);
+    font-weight: 500;
+    line-height: 1;
+    color: var(--rh-champagne-on-dark);
+    font-variant-numeric: tabular-nums;
+}
+
+.countdownUnit {
+    font-family: var(--rh-font-sans);
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(250, 244, 234, 0.78);
+}
+
+.celebratedBanner {
+    font-family: var(--rh-font-display);
+    font-size: 1.25rem;
+    letter-spacing: 0.08em;
+    color: var(--rh-champagne-on-dark);
+}
+
+/* ── SECTION 3: INTERACTIVE ROYAL PALACE DOUBLE-DOOR CEREMONIES ────────── */
+
+@keyframes rhBellPendulum {
+    0%, 100% {
+        transform: rotate(-4deg);
+    }
+    50% {
+        transform: rotate(4deg);
+    }
+}
+
+@keyframes rhSealPulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 0.68;
+    }
+    50% {
+        transform: scale(1.24);
+        opacity: 0;
+    }
+}
+
+.ceremoniesSection {
+    position: relative;
+    max-width: 1220px;
+    margin: 0 auto;
+    padding: clamp(4.25rem, 8vw, 6.75rem) clamp(1.15rem, 4vw, 2.5rem);
+    scroll-margin-top: 2rem;
+}
+
+.sectionHeadingBlock {
+    text-align: center;
+    max-width: 650px;
+    margin: 0 auto clamp(2.5rem, 5vw, 3.75rem);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.ceremoniesCrownMotif {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    color: var(--rh-gold);
+    margin-bottom: 0.75rem;
+}
+
+.ceremoniesCrownLine {
+    width: 44px;
+    height: 1px;
+    background: var(--rh-gold-soft);
+}
+
+.sectionTitle {
+    font-family: var(--rh-font-display);
+    font-size: clamp(1.95rem, 4.2vw, 2.9rem);
+    font-weight: 500;
+    line-height: 1.18;
+    letter-spacing: 0.02em;
+    color: var(--rh-ink);
+    margin: 0 0 0.65rem;
+    text-wrap: balance;
+}
+
+.sectionLead {
+    font-family: var(--rh-font-serif);
+    font-style: italic;
+    font-size: clamp(1.1rem, 2.2vw, 1.28rem);
+    line-height: 1.55;
+    color: var(--rh-ink-soft);
+    margin: 0;
+}
+
+.unveilAllGatesBtn {
+    margin-top: 1.35rem;
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.7rem 1.45rem;
+    border-radius: 999px;
+    border: 1px solid var(--rh-gold);
+    background: var(--rh-surface);
+    color: var(--rh-maroon);
+    font-family: var(--rh-font-sans);
+    font-size: 0.76rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    cursor: pointer;
+    box-shadow: 0 8px 22px rgba(91, 22, 32, 0.08);
+    transition: background-color 180ms ease, color 180ms ease, transform 180ms var(--rh-ease);
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .unveilAllGatesBtn:hover {
+        background: var(--rh-maroon);
+        border-color: var(--rh-maroon);
+        color: var(--rh-ivory-on-dark);
+        transform: translateY(-2px);
+    }
+}
+
+.pavilionGrid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: stretch;
+    gap: clamp(1.65rem, 3.2vw, 2.35rem);
+}
+
+/* Sculpted Rajasthani Jharokha / Mehrab Designer Palace Gate */
+.shahiGateOuter {
+    flex: 1 1 324px;
+    max-width: 374px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 0 5px;
+    filter: drop-shadow(0 20px 38px rgba(48, 26, 14, 0.16));
+    transition: transform 280ms var(--rh-ease), filter 280ms ease;
+}
+
+.shahiGateIsOpen {
+    filter: drop-shadow(0 24px 46px rgba(91, 22, 32, 0.2));
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .shahiGateOuter:hover {
+        transform: translateY(-5px);
+        filter: drop-shadow(0 28px 50px rgba(74, 32, 18, 0.24));
+    }
+}
+
+/* 1. Top Carved Sandstone Chhajja Cornice & Bracket Frieze */
+.jharokhaCornice {
+    display: flex;
+    flex-direction: column;
+    margin: 0 -5px;
+    z-index: 8;
+}
+
+.jharokhaCorniceTopLedge {
+    height: 9px;
+    border-radius: 4px 4px 0 0;
+    background: linear-gradient(180deg, #F7E9D2 0%, #DFC092 62%, #C1955D 100%);
+    border: 1.2px solid #8A5D2E;
+    box-shadow: inset 0 1px 0 rgba(255, 252, 244, 0.85);
+}
+
+.jharokhaCorniceDentils {
+    height: 8px;
+    margin: 0 3px;
+    border-left: 1.2px solid #8A5D2E;
+    border-right: 1.2px solid #8A5D2E;
+    border-bottom: 1.2px solid #7A4F24;
+    background:
+        repeating-linear-gradient(
+            90deg,
+            #D7B483 0px,
+            #D7B483 8px,
+            #8E6031 8px,
+            #8E6031 12px,
+            #EFE0C6 12px,
+            #EFE0C6 20px
+        );
+    box-shadow: 0 3px 8px rgba(42, 20, 8, 0.18);
+}
+
+/* 2. Gateway Sandstone Outer Frame & Doorway Window */
+.shahiArchCrown {
+    flex: 1;
+    display: flex;
+    padding: 4px 4px 0;
+    background: linear-gradient(180deg, #ECD4B0 0%, #DEC094 100%);
+    border-left: 1.4px solid #8A5D2E;
+    border-right: 1.4px solid #8A5D2E;
+    box-shadow: inset 0 0 0 1px rgba(255, 248, 234, 0.65);
+}
+
+.shahiArchWindow {
+    position: relative;
+    flex: 1;
+    min-height: 515px;
+    border-left: 1px solid #9B6E3B;
+    border-right: 1px solid #9B6E3B;
+    background:
+        radial-gradient(circle at 50% 35%, #FFFDF9 0%, #FAF2E4 100%);
+    overflow: hidden;
+    perspective: 1100px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Sculpted Multi-Foiled Cusped Mehrab Arch SVG Facade */
+.jharokhaArchSvgWrap {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    aspect-ratio: 360 / 168;
+    z-index: 6;
+    pointer-events: none;
+}
+
+.jharokhaArchSvg {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+/* Fluted Rajasthani Sandstone Columns Framing Left & Right */
+.jharokhaPillarLeft,
+.jharokhaPillarRight {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 6.1111%;
+    z-index: 5;
+    pointer-events: none;
+    background:
+        repeating-linear-gradient(
+            90deg,
+            rgba(122, 79, 37, 0.22) 0px,
+            rgba(122, 79, 37, 0.22) 1.5px,
+            rgba(255, 247, 232, 0.45) 1.5px,
+            rgba(255, 247, 232, 0.45) 4px,
+            rgba(216, 181, 132, 0.35) 4px,
+            rgba(216, 181, 132, 0.35) 7px
+        ),
+        linear-gradient(90deg, #C99F6B 0%, #F1DEC0 46%, #CFA570 100%);
+}
+
+.jharokhaPillarLeft {
+    left: 0;
+    border-right: 1.4px solid #8A5D2E;
+    box-shadow: 3px 0 10px rgba(42, 20, 8, 0.14);
+}
+
+.jharokhaPillarRight {
+    right: 0;
+    border-left: 1.4px solid #8A5D2E;
+    box-shadow: -3px 0 10px rgba(42, 20, 8, 0.14);
+}
+
+.pillarBaseCapital {
+    position: absolute;
+    left: -2px;
+    right: -2px;
+    bottom: 0;
+    height: 18px;
+    background: linear-gradient(180deg, #E8CFA8 0%, #C79A61 100%);
+    border-top: 1.5px solid #8A5D2E;
+    box-shadow: inset 0 2px 0 rgba(255, 248, 235, 0.7);
+}
+
+/* Swaying Pierced-Brass Palace Diya Lanterns inside Cusped Arch */
+.hangingBellsRow {
+    position: absolute;
+    top: 46px;
+    left: 0;
+    right: 0;
+    z-index: 7;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 9.5%;
+    pointer-events: none;
+}
+
+.bellSvgLeft {
+    width: 30px;
+    height: 82px;
+    transform-origin: top center;
+    filter: drop-shadow(0 3px 6px rgba(42, 20, 8, 0.28));
+    animation: rhBellPendulum 4s ease-in-out infinite;
+}
+
+.bellSvgRight {
+    width: 30px;
+    height: 82px;
+    transform-origin: top center;
+    filter: drop-shadow(0 3px 6px rgba(42, 20, 8, 0.28));
+    animation: rhBellPendulum 4.5s ease-in-out infinite reverse;
+}
+
+/* Golden Inner Sanctum Light Spill */
+.sanctumGlow {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0;
+    background:
+        radial-gradient(circle at 50% 26%, rgba(230, 207, 160, 0.52) 0%, rgba(255, 253, 249, 0) 68%);
+    transition: opacity 700ms ease;
+}
+
+.sanctumGlowActive {
+    opacity: 1;
+}
+
+/* Revealed Ceremony Sanctum Interior */
+.sanctumInterior {
+    position: relative;
+    z-index: 2;
+    flex: 1;
+    padding: 5.5rem clamp(1.5rem, 4vw, 1.95rem) 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    text-align: center;
+    opacity: 0;
+    transform: translateY(14px) scale(0.97);
+    pointer-events: none;
+    transition:
+        opacity 480ms ease 140ms,
+        transform 540ms var(--rh-ease) 120ms;
+}
+
+.sanctumInteriorVisible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+
+.sanctumTopTools {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin-bottom: 0.65rem;
+}
+
+.sanctumRoman {
+    width: 30px;
+    height: 30px;
+    border-radius: 999px;
+    background: var(--rh-bg-warm);
+    border: 1px solid var(--rh-gold);
+    color: var(--rh-maroon);
+    font-family: var(--rh-font-display);
+    font-size: 0.76rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.closeGateMiniBtn {
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.28rem 0.68rem;
+    border-radius: 999px;
+    border: 1px solid var(--rh-gold-soft);
+    background: var(--rh-bg);
+    color: var(--rh-ink-muted);
+    font-family: var(--rh-font-sans);
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: border-color 160ms ease, color 160ms ease;
+}
+
+.closeGateMiniBtn:hover {
+    border-color: var(--rh-maroon);
+    color: var(--rh-maroon);
+}
+
+.sanctumBody {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 0;
+}
+
+.sanctumKicker {
+    font-family: var(--rh-font-serif);
+    font-style: italic;
+    font-size: 0.96rem;
+    color: var(--rh-gold);
+    margin-bottom: 0.2rem;
+}
+
+.ceremonyTitle {
+    font-family: var(--rh-font-display);
+    font-size: clamp(1.26rem, 2.2vw, 1.5rem);
+    font-weight: 600;
+    line-height: 1.24;
+    letter-spacing: 0.02em;
+    color: var(--rh-ink);
+    margin: 0 0 0.8rem;
+    overflow-wrap: break-word;
+    max-width: 100%;
+}
+
+/* High-Visibility Royal Maroon & Gold Date Plaque */
+.royalDatePlaque {
+    width: 100%;
+    background: linear-gradient(180deg, #671925 0%, #4E111A 100%);
+    color: var(--rh-ivory-on-dark);
+    border: 1px solid var(--rh-gold);
+    border-radius: 10px;
+    padding: 0.62rem 0.85rem;
+    margin: 0 0 0.9rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.14rem;
+    box-shadow:
+        0 8px 18px rgba(91, 22, 32, 0.16),
+        inset 0 0 0 2px rgba(230, 207, 160, 0.16);
+}
+
+.royalDateWeekday {
+    font-family: var(--rh-font-sans);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--rh-champagne-on-dark);
+}
+
+.royalDateMain {
+    font-family: var(--rh-font-display);
+    font-size: clamp(1rem, 1.85vw, 1.16rem);
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: #FFFDF9;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    line-height: 1.25;
+}
+
+.royalDateGem {
+    font-size: 0.72rem;
+    color: var(--rh-champagne-on-dark);
+}
+
+.ceremonyDesc {
+    font-family: var(--rh-font-serif);
+    font-style: italic;
+    font-size: 1.04rem;
+    line-height: 1.48;
+    color: var(--rh-ink-soft);
+    margin: 0 0 0.9rem;
+    overflow-wrap: break-word;
+    max-width: 100%;
+}
+
+.ceremonyMetaList {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.58rem;
+    padding: 0.85rem 0.35rem;
+    margin-bottom: 1.05rem;
+    border-top: 1px solid var(--rh-gold-faint);
+    border-bottom: 1px solid var(--rh-gold-faint);
+}
+
+.ceremonyTimeHighlight {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    padding: 0.32rem 0.85rem;
+    border-radius: 999px;
+    background: var(--rh-bg-warm);
+    border: 1px solid var(--rh-gold-soft);
+    font-family: var(--rh-font-sans);
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--rh-maroon);
+}
+
+.ceremonyMetaItem {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 0.45rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    line-height: 1.48;
+    color: var(--rh-ink);
+    text-align: center;
+    max-width: 100%;
+}
+
+.ceremonyMetaIcon {
+    color: var(--rh-maroon);
+    flex-shrink: 0;
+    margin-top: 0.16rem;
+}
+
+.ceremonyMetaText {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.pavilionActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+    width: 100%;
+}
+
+.pavilionBtn {
+    flex: 1 1 118px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.65rem 0.85rem;
+    border-radius: 999px;
+    border: 1px solid var(--rh-gold);
+    background: var(--rh-bg);
+    color: var(--rh-maroon);
+    font-family: var(--rh-font-sans);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: transform 160ms var(--rh-ease), border-color 160ms ease, background-color 160ms ease, color 160ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .pavilionBtn:hover {
+        border-color: var(--rh-maroon);
+        background: var(--rh-maroon);
+        color: var(--rh-ivory-on-dark);
+    }
+}
+
+.pavilionBtn:active {
+    transform: scale(0.97);
+}
+
+/* ── 3D CARVED ROYAL DOUBLE DOORS OVERLAY ───────────────────────────────── */
+
+.palaceDoorsStage {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    perspective: 1100px;
+    pointer-events: auto;
+}
+
+.palaceDoorsOpened {
+    pointer-events: none;
+}
+
+.palaceDoorLeaf {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 50.4%;
+    background:
+        radial-gradient(circle at 50% 34%, rgba(230, 207, 160, 0.16) 0%, transparent 65%),
+        linear-gradient(180deg, var(--gate-door-top, #6B1722) 0%, var(--gate-door-bottom, #420B13) 100%);
+    backface-visibility: hidden;
+    transform-style: preserve-3d;
+    transition:
+        transform 820ms cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 520ms ease 260ms;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 7.4rem 1.35rem 1.4rem;
+}
+
+.palaceDoorLeft {
+    left: 0;
+    transform-origin: 6% center;
+    border-right: 1.5px solid rgba(230, 207, 160, 0.75);
+    box-shadow: inset -10px 14px 26px rgba(0, 0, 0, 0.34);
+}
+
+.palaceDoorRight {
+    right: 0;
+    transform-origin: 94% center;
+    border-left: 1.5px solid rgba(230, 207, 160, 0.75);
+    box-shadow: inset 10px 14px 26px rgba(0, 0, 0, 0.34);
+}
+
+.palaceDoorsOpened .palaceDoorLeft {
+    transform: rotateY(-104deg);
+    opacity: 0;
+}
+
+.palaceDoorsOpened .palaceDoorRight {
+    transform: rotateY(104deg);
+    opacity: 0;
+}
+
+.doorCarvedPanel {
+    flex: 1;
+    border: 1px solid rgba(230, 207, 160, 0.36);
+    border-radius: 10px;
+    margin-bottom: 0.85rem;
+    background:
+        repeating-linear-gradient(
+            45deg,
+            rgba(230, 207, 160, 0.06) 0px,
+            rgba(230, 207, 160, 0.06) 1px,
+            transparent 1px,
+            transparent 12px
+        ),
+        repeating-linear-gradient(
+            -45deg,
+            rgba(230, 207, 160, 0.06) 0px,
+            rgba(230, 207, 160, 0.06) 1px,
+            transparent 1px,
+            transparent 12px
+        );
+    box-shadow: inset 0 0 0 3px rgba(0, 0, 0, 0.2);
+}
+
+.doorCarvedLowerPanel {
+    height: 82px;
+    border: 1px solid rgba(230, 207, 160, 0.32);
+    border-radius: 8px;
+    box-shadow: inset 0 0 0 3px rgba(0, 0, 0, 0.18);
+}
+
+.doorBrassStudTop,
+.doorBrassStudBottom {
+    position: absolute;
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    background: #E6CFA0;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+
+.palaceDoorLeft .doorBrassStudTop {
+    top: 36%;
+    right: 12px;
+}
+.palaceDoorLeft .doorBrassStudBottom {
+    bottom: 24%;
+    right: 12px;
+}
+.palaceDoorRight .doorBrassStudTop {
+    top: 36%;
+    left: 12px;
+}
+.palaceDoorRight .doorBrassStudBottom {
+    bottom: 24%;
+    left: 12px;
+}
+
+/* Interactive Ceremony Seal Trigger Overlay */
+.gateUnveilTrigger {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    width: 100%;
+    height: 100%;
+    appearance: none;
+    border: none;
+    background: radial-gradient(circle at 50% 56%, rgba(16, 6, 6, 0.48) 0%, rgba(16, 6, 6, 0.14) 74%);
+    color: #FFFDF9;
+    padding: 6.4rem 1.85rem 1.75rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.72rem;
+    text-align: center;
+    cursor: pointer;
+    transition: opacity 320ms ease, transform 380ms var(--rh-ease);
+}
+
+.palaceDoorsOpened .gateUnveilTrigger {
+    opacity: 0;
+    transform: scale(0.9);
+    pointer-events: none;
+}
+
+.closedGateNumeral {
+    font-family: var(--rh-font-sans);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--rh-champagne-on-dark);
+}
+
+.closedGateTitle {
+    font-family: var(--rh-font-display);
+    font-size: clamp(1.42rem, 2.5vw, 1.72rem);
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: 0.03em;
+    color: #FFFDF9;
+    text-shadow: 0 3px 18px rgba(0, 0, 0, 0.65);
+    max-width: 16ch;
+    overflow-wrap: break-word;
+}
+
+.royalKnockerSeal {
+    position: relative;
+    width: 68px;
+    height: 68px;
+    margin: 0.45rem 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.knockerPulseRing {
+    position: absolute;
+    inset: 0;
+    border-radius: 999px;
+    border: 1.5px solid #F3DFAC;
+    animation: rhSealPulse 2.4s ease-out infinite;
+}
+
+.knockerCore {
+    position: relative;
+    width: 56px;
+    height: 56px;
+    border-radius: 999px;
+    background: radial-gradient(circle at 35% 30%, #F7E5B4 0%, #C79942 68%, #8F6822 100%);
+    border: 2px solid #FFF8E6;
+    color: #3E0E15;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow:
+        0 10px 26px rgba(0, 0, 0, 0.45),
+        inset 0 0 0 3px rgba(91, 22, 32, 0.28);
+    transition: transform 220ms var(--rh-ease);
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .gateUnveilTrigger:hover .knockerCore {
+        transform: scale(1.09);
+    }
+}
+
+.closedGateDatePreview {
+    font-family: var(--rh-font-display);
+    font-size: 0.96rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #F6E4B5;
+    padding: 0.3rem 0.9rem;
+    border-radius: 999px;
+    background: rgba(15, 5, 6, 0.46);
+    border: 1px solid rgba(230, 207, 160, 0.48);
+}
+
+.tapToOpenPill {
+    margin-top: 0.35rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.42rem;
+    padding: 0.48rem 1.05rem;
+    border-radius: 999px;
+    background: rgba(250, 244, 234, 0.14);
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(230, 207, 160, 0.65);
+    color: #FFFDF9;
+    font-family: var(--rh-font-sans);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    transition: background-color 180ms ease, transform 180ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .gateUnveilTrigger:hover .tapToOpenPill {
+        background: rgba(230, 207, 160, 0.28);
+        transform: translateY(-1px);
+    }
+}
+
+/* Stepped Royal Sandstone & Marble Plinth Base */
+.gatePlinth {
+    margin: 0 -5px;
+    background: linear-gradient(180deg, #EFE0C6 0%, #D9B786 58%, #BE925B 100%);
+    border: 1.3px solid #8A5D2E;
+    border-radius: 0 0 6px 6px;
+    padding: 4px 10px 5px;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 252, 244, 0.8),
+        0 6px 14px rgba(42, 20, 8, 0.14);
+}
+
+.gatePlinthInner {
+    height: 4px;
+    border-top: 1px solid rgba(122, 79, 37, 0.45);
+    border-bottom: 1px solid rgba(255, 248, 234, 0.65);
+}
+
+/* ── SECTION 4: PALACE REFLECTIONS GALLERY & VENUE SPOTLIGHT ────────────── */
+
+.heritageShowcaseSection {
+    background: var(--rh-bg-warm);
+    border-top: 1px solid var(--rh-gold-soft);
+    border-bottom: 1px solid var(--rh-gold-soft);
+    padding: clamp(4rem, 8vw, 6.25rem) clamp(1.15rem, 4vw, 2.5rem);
+}
+
+.showcaseContainer {
+    max-width: 1180px;
+    margin: 0 auto;
+}
+
+.galleryMosaic {
+    display: grid;
+    grid-template-columns: 1.25fr 0.95fr;
+    gap: clamp(1rem, 2.5vw, 1.75rem);
+    margin-bottom: clamp(2rem, 4.5vw, 3rem);
+}
+
+.galleryFrameBtn {
+    padding: 6px;
+    background: var(--rh-surface);
+    border: 1px solid var(--rh-gold-soft);
+    border-radius: 14px;
+    cursor: pointer;
+    display: block;
+    width: 100%;
+    text-align: left;
+    transition: border-color 200ms ease;
+}
+
+.galleryImgWrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    border-radius: 9px;
+    overflow: hidden;
+    background: #E5DAC6;
+}
+
+.galleryImg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 650ms var(--rh-ease);
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .galleryFrameBtn:hover {
+        border-color: var(--rh-maroon);
+    }
+    .galleryFrameBtn:hover .galleryImg {
+        transform: scale(1.035);
+    }
+}
+
+.venueBanner {
+    background: var(--rh-surface);
+    border: 1px solid var(--rh-gold);
+    border-radius: 14px;
+    padding: clamp(1.75rem, 4vw, 2.5rem);
+    display: grid;
+    grid-template-columns: minmax(0, 1.3fr) auto;
+    gap: 1.5rem 2.5rem;
+    align-items: center;
+}
+
+.venueHeading {
+    font-family: var(--rh-font-display);
+    font-size: clamp(1.35rem, 2.6vw, 1.75rem);
+    font-weight: 500;
+    margin: 0 0 0.45rem;
+    color: var(--rh-ink);
+}
+
+.venueAddress {
+    font-family: var(--rh-font-serif);
+    font-size: 1.15rem;
+    line-height: 1.55;
+    color: var(--rh-ink-soft);
+    margin: 0 0 0.65rem;
+    overflow-wrap: anywhere;
+}
+
+.conciergeLine {
+    font-family: var(--rh-font-sans);
+    font-size: 0.88rem;
+    color: var(--rh-ink-muted);
+    margin: 0;
+}
+
+.conciergeLink {
+    color: var(--rh-maroon);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.venueBannerActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+/* ── SECTION 5: THE ROYAL GUEST REGISTER (RSVP) ─────────────────────────── */
+
+.rsvpSection {
+    max-width: 740px;
+    margin: 0 auto;
+    padding: clamp(4rem, 8vw, 6.5rem) clamp(1.15rem, 4vw, 2rem);
+    scroll-margin-top: 2rem;
+}
+
+.ledgerShell {
+    padding: 8px;
+    background: var(--rh-bg-warm);
+    border: 1px solid var(--rh-gold);
+    border-radius: 16px;
+}
+
+.ledgerInner {
+    background: var(--rh-surface);
+    border: 1px solid var(--rh-gold-soft);
+    border-radius: 10px;
+    padding: clamp(1.75rem, 5vw, 3rem) clamp(1.25rem, 4.5vw, 2.75rem);
+}
+
+.rsvpForm {
+    display: flex;
+    flex-direction: column;
+    gap: 1.45rem;
+}
+
+.fieldGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.fieldLabelRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.fieldLabel {
+    font-family: var(--rh-font-sans);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--rh-ink);
+}
+
+.errorInline {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #B91C1C;
+}
+
+.attendanceTabs {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.5rem;
+    padding: 5px;
+    border-radius: 12px;
+    background: var(--rh-bg-warm);
+    border: 1px solid var(--rh-gold-soft);
+}
+
+.attendanceTab {
+    position: relative;
+    padding: 0.8rem 0.5rem;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--rh-ink-soft);
+    font-family: var(--rh-font-sans);
+    font-size: 0.85rem;
+    font-weight: 600;
+    line-height: 1.25;
+    cursor: pointer;
+    transition: color 160ms ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.attendanceTab[data-active='true'] {
+    color: var(--rh-ivory-on-dark);
+}
+
+.attendancePillBg {
+    position: absolute;
+    inset: 0;
+    border-radius: 8px;
+    background: var(--rh-maroon);
+    z-index: 0;
+}
+
+.attendanceTabLabel {
+    position: relative;
+    z-index: 1;
+}
+
+.inputField,
+.textareaField {
+    width: 100%;
+    padding: 0.9rem 1.05rem;
+    border-radius: 10px;
+    border: 1px solid rgba(135, 104, 62, 0.42);
+    background: var(--rh-bg);
+    color: var(--rh-ink);
+    font-family: var(--rh-font-sans);
+    font-size: 0.98rem;
+    outline: none;
+    transition: border-color 180ms ease, background-color 180ms ease;
+}
+
+.inputField::placeholder,
+.textareaField::placeholder {
+    color: var(--rh-ink-muted);
+    opacity: 0.85;
+}
+
+.inputField:focus,
+.textareaField:focus {
+    border-color: var(--rh-maroon);
+    background: #FFFFFF;
+}
+
+.inputFieldError {
+    border-color: #B91C1C;
+    background: #FEF2F2;
+}
+
+.textareaField {
+    min-height: 92px;
+    resize: vertical;
+    line-height: 1.55;
+}
+
+.twoColFields {
+    display: grid;
+    grid-template-columns: 0.9fr 1.1fr;
+    gap: 1.1rem;
+}
+
+.stepperBox {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 48px;
+    padding: 0 0.4rem;
+    border-radius: 10px;
+    border: 1px solid rgba(135, 104, 62, 0.42);
+    background: var(--rh-bg);
+}
+
+.stepperBtn {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: 1px solid var(--rh-gold-soft);
+    background: var(--rh-surface);
+    color: var(--rh-ink);
+    font-size: 1.15rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 140ms ease-out, background-color 140ms ease;
+}
+
+.stepperBtn:active:not(:disabled) {
+    transform: scale(0.92);
+}
+
+.stepperBtn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.stepperCount {
+    font-family: var(--rh-font-display);
+    font-size: 1.15rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.deadlineNote {
+    margin: 0;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    background: var(--rh-bg-warm);
+    color: var(--rh-ink-soft);
+    font-size: 0.86rem;
+    text-align: center;
+}
+
+.errorAlert {
+    padding: 0.8rem 1rem;
+    border-radius: 8px;
+    background: #FEF2F2;
+    border: 1px solid #FCA5A5;
+    color: #991B1B;
+    font-size: 0.88rem;
+    text-align: center;
+}
+
+.submitBtn {
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem;
+    padding: 1rem 1.75rem;
+    border-radius: 999px;
+    border: 1px solid var(--rh-maroon);
+    background: var(--rh-maroon);
+    color: var(--rh-ivory-on-dark);
+    font-family: var(--rh-font-sans);
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: transform 180ms var(--rh-ease), background-color 180ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .submitBtn:hover:not(:disabled) {
+        background: var(--rh-maroon-deep);
+        transform: translateY(-2px);
+    }
+}
+
+.submitBtn:active:not(:disabled) {
+    transform: scale(0.98);
+}
+
+.submitBtn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+/* Confirmation & Returning Guest States */
+.confirmationBlock {
+    text-align: center;
+    padding: 1rem 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.confirmationBadge {
+    width: 76px;
+    height: 76px;
+    border-radius: 999px;
+    background: var(--rh-maroon);
+    color: var(--rh-champagne-on-dark);
+    border: 2px solid var(--rh-gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+}
+
+.confirmationTitle {
+    font-family: var(--rh-font-display);
+    font-size: clamp(1.65rem, 4vw, 2.2rem);
+    font-weight: 500;
+    margin: 0 0 0.75rem;
+    color: var(--rh-ink);
+}
+
+.confirmationBody {
+    font-family: var(--rh-font-serif);
+    font-size: 1.18rem;
+    line-height: 1.6;
+    color: var(--rh-ink-soft);
+    max-width: 42ch;
+    margin: 0 0 1.5rem;
+}
+
+.confirmationActions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+    width: 100%;
+}
+
+.textActionLink {
+    margin-top: 1.35rem;
+    background: none;
+    border: none;
+    color: var(--rh-maroon);
+    font-family: var(--rh-font-sans);
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    cursor: pointer;
+}
+
+/* ── FOOTER COLOPHON ─────────────────────────────────────────────────────── */
+
+.footer {
+    border-top: 1px solid var(--rh-gold-soft);
+    padding: clamp(3rem, 6vw, 4.5rem) 1.25rem 5rem;
+    text-align: center;
+    background: var(--rh-bg);
+}
+
+.footerMonogram {
+    font-family: var(--rh-font-display);
+    font-size: 1.5rem;
+    color: var(--rh-maroon);
+    letter-spacing: 0.12em;
+    margin-bottom: 0.75rem;
+}
+
+.footerNote {
+    font-family: var(--rh-font-serif);
+    font-style: italic;
+    font-size: 1.15rem;
+    color: var(--rh-ink-soft);
+    max-width: 44ch;
+    margin: 0 auto 0.5rem;
+}
+
+.footerSignoff {
+    font-family: var(--rh-font-display);
+    font-size: 1rem;
+    color: var(--rh-ink);
+    margin: 0 0 2rem;
+}
+
+.studioCredit {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    color: var(--rh-ink-muted);
+    font-family: var(--rh-font-sans);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    text-decoration: none;
+    opacity: 0.82;
+    transition: opacity 160ms ease;
+}
+
+.studioCredit:hover {
+    opacity: 1;
+}
+
+.studioLogo {
+    height: 16px;
+    width: auto;
+    object-fit: contain;
+}
+
+/* ── MOBILE-FIRST RESPONSIVE ADAPTATIONS ────────────────────────────────── */
+
+@media (max-width: 920px) {
+    .heroZoomTrack {
+        height: 170vh;
+        height: 170dvh;
+    }
+
+    .lineageGrid {
+        grid-template-columns: 1fr;
+        text-align: center;
+        padding: 0.85rem 1rem;
+    }
+
+    .galleryMosaic {
+        grid-template-columns: 1fr;
+    }
+
+    .venueBanner {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+
+    .venueBannerActions {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 560px) {
+    .topBar {
+        padding: 1rem 4.75rem 0.75rem 1rem;
+    }
+
+    .topNavLinks {
+        gap: 0.75rem;
+    }
+
+    .topNavLink {
+        font-size: 0.68rem;
+        letter-spacing: 0.08em;
+    }
+
+    .heroCenterStage {
+        padding: 3.35rem 1rem 2.35rem;
+    }
+
+    .personDisplayName {
+        font-size: clamp(1.9rem, 8vw, 2.55rem);
+    }
+
+    .scratchHeaderTag {
+        font-size: 0.6rem;
+        letter-spacing: 0.1em;
+        padding: 0.25rem 0.65rem;
+    }
+
+    .shahiGateOuter {
+        flex: 1 1 100%;
+        max-width: 100%;
+    }
+
+    .shahiArchWindow {
+        min-height: 485px;
+    }
+
+    .sanctumInterior {
+        padding: 5.15rem 1.35rem 1.35rem;
+    }
+
+    .countdownRow {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .attendanceTabs {
+        grid-template-columns: 1fr;
+    }
+
+    .twoColFields {
+        grid-template-columns: 1fr;
+    }
+
+    .heroActions {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .heroPrimaryCta,
+    .heroSecondaryCta,
+    .primaryCta,
+    .secondaryCta {
+        width: 100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .heroZoomTrack {
+        height: 100vh;
+        height: 100dvh;
+    }
+
+    .scrollCueLine,
+    .foilShimmerSweep,
+    .bellSvgLeft,
+    .bellSvgRight,
+    .knockerPulseRing,
+    .sparkleDot {
+        animation: none !important;
+    }
+
+    .palaceDoorLeaf,
+    .sanctumInterior {
+        transition-duration: 0.01ms !important;
+    }
+}
+

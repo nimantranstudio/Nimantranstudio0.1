@@ -21,12 +21,12 @@ export const CTASection = () => {
                             with <span style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontWeight: 400 }}>elegance?</span>
                         </h2>
                         <p className={styles.ctaDescription}>
-                            Create and download your digital invitation in less than
+                            Create your wedding website with every ceremony and RSVP in less than
                             <br className="hidden md:block" /> 5 minutes. No designer needed.
                         </p>
 
-                        <Link href="/themes" className={styles.ctaButton}>
-                            Explore Nimantran
+                        <Link href="/websites" className={styles.ctaButton}>
+                            Create Wedding Website
                         </Link>
 
                         <p className={styles.ctaFooter}>

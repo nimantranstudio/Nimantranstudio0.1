@@ -9,24 +9,26 @@ datasource db {
 }
 
 model User {
-  id               String          @id @default(cuid())
-  email            String?         @unique
+  id               String           @id @default(cuid())
+  email            String?          @unique
   name             String?
-  createdAt        DateTime        @default(now())
-  updatedAt        DateTime        @updatedAt
-  isMobileVerified Boolean         @default(false)
-  mobileNumber     String          @unique
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  isMobileVerified Boolean          @default(false)
+  mobileNumber     String           @unique
   // Firebase Auth's own stable identity, set the first time a user completes
   // Firebase Phone Auth (see /api/auth/sync). Nullable: existing users created
   // before this migration have no Firebase session yet and get linked on their
   // next login instead of being backfilled — matched by mobileNumber then,
   // same as always.
-  firebaseUid      String?         @unique
-  role             String          @default("user")
-  status           String          @default("active")
+  firebaseUid      String?          @unique
+  role             String           @default("user")
+  status           String           @default("active")
   orders           Order[]
   weddings         Wedding[]
   generatedCards   GeneratedCard[]
+  weddingWebsites  WeddingWebsite[]
+  payments         Payment[]
 
   @@map("User")
 }
@@ -66,12 +68,13 @@ model Bundle {
   thumbnailUrl  String?
   itemImages    String?
 
-  themeRef        Theme?          @relation(fields: [themeId], references: [id])
-  videoTemplateId String?
-  videoTemplate   VideoTemplate?  @relation(fields: [videoTemplateId], references: [id])
-  bundleItems     BundleItem[]
-  orders          Order[]
-  bundleInvoices  BundleInvoice[]
+  themeRef         Theme?            @relation(fields: [themeId], references: [id])
+  videoTemplateId  String?
+  videoTemplate    VideoTemplate?    @relation(fields: [videoTemplateId], references: [id])
+  bundleItems      BundleItem[]
+  orders           Order[]
+  bundleInvoices   BundleInvoice[]
+  websiteTemplates WebsiteTemplate[]
 
   @@map("Bundle")
 }
@@ -104,26 +107,47 @@ model Event {
 }
 
 model Order {
-  id                String          @id @default(cuid())
+  id                String    @id @default(cuid())
   userId            String
   bundleId          String
   packageId         String?
-  totalAmount       Float
-  status            String          @default("pending") // pending | created | paid | ready | failed
-  razorpayOrderId   String?         @unique
-  razorpayPaymentId String?
+  totalAmount       Float // legacy rupee amount; still filled for every order
+  status            String    @default("pending") // pending | created | paid | ready | needs_review | failed | refunded | cancelled
+  razorpayOrderId   String?   @unique
+  razorpayPaymentId String? // the successful payment; every attempt is in Payment
   paymentMethod     String?
   contactEmail      String?
   contactPhone      String?
   weddingId         String?
-  invoiceNumber     String?         @unique
+  invoiceNumber     String?   @unique
   invoiceIssuedAt   DateTime?
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
-  bundle            Bundle          @relation(fields: [bundleId], references: [id])
-  user              User            @relation(fields: [userId], references: [id])
-  videoRenderJob    VideoRenderJob?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
+  // ── Wedding website orders (all optional; card orders leave them empty) ──
+  productType       ProductType @default(CARD_BUNDLE)
+  weddingWebsiteId  String?
+  websiteTemplateId String?
+  // Price as charged at checkout, in paise (₹2,499 = 249900). A snapshot:
+  // later template price changes never alter what this order says.
+  currency          String      @default("INR")
+  listPricePaise    Int?
+  discountPaise     Int?
+  taxPaise          Int? // GST included in totalPaise
+  totalPaise        Int?
+  paidAt            DateTime?
+  refundedPaise     Int         @default(0)
+
+  bundle           Bundle           @relation(fields: [bundleId], references: [id])
+  user             User             @relation(fields: [userId], references: [id])
+  videoRenderJob   VideoRenderJob?
+  weddingWebsite   WeddingWebsite?  @relation("WebsiteOrders", fields: [weddingWebsiteId], references: [id], onDelete: Restrict)
+  purchasedWebsite WeddingWebsite?  @relation("WebsitePurchaseOrder")
+  websiteTemplate  WebsiteTemplate? @relation(fields: [websiteTemplateId], references: [id], onDelete: Restrict)
+  payments         Payment[]
+
+  @@index([productType, status, paidAt])
+  @@index([weddingWebsiteId])
   @@map("Order")
 }
 
@@ -155,21 +179,26 @@ model VideoRenderJob {
 }
 
 model Theme {
-  id              String         @id @default(cuid())
-  name            String
-  description     String?
-  thumbnailUrl    String?
-  previewImages   String?
-  isActive        Boolean        @default(true)
-  sequence        Int            @default(0)
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-  isBestSeller    Boolean        @default(false)
-  isPopular       Boolean        @default(false)
-  bundles         Bundle[]
-  weddings        Wedding[]
-  videoTemplateId String?
-  videoTemplate   VideoTemplate? @relation(fields: [videoTemplateId], references: [id])
+  id               String            @id @default(cuid())
+  name             String
+  description      String?
+  thumbnailUrl     String?
+  previewImages    String?
+  isActive         Boolean           @default(true)
+  sequence         Int               @default(0)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  isBestSeller     Boolean           @default(false)
+  isPopular        Boolean           @default(false)
+  bundles          Bundle[]
+  weddings         Wedding[]
+  videoTemplateId  String?
+  videoTemplate    VideoTemplate?    @relation(fields: [videoTemplateId], references: [id])
+  websiteTemplates WebsiteTemplate[]
+  // Exists in the live database but was never added here; declared so a
+  // `prisma db push` doesn't drop it. Unused by the app (empty on all themes
+  // as of 2026-11-07).
+  rsvpConfig       Json?
 
   @@map("Theme")
 }
@@ -193,6 +222,7 @@ model Wedding {
   owner             User            @relation(fields: [ownerId], references: [id])
   theme             Theme           @relation(fields: [themeId], references: [id])
   generatedCards    GeneratedCard[]
+  website           WeddingWebsite?
 
   @@map("Wedding")
 }
@@ -364,4 +394,172 @@ model Template {
   updatedAt DateTime @updatedAt
 
   @@map("Template")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Wedding websites
+//
+// WebsiteTemplate  — the designs customers choose from, with their price.
+// WeddingWebsite   — one per wedding: design, purchase, URL, publish, expiry,
+//                    WhatsApp link delivery.
+// Order            — (extended above) the purchase and its price snapshot.
+// Payment          — every gateway payment attempt, never overwritten.
+//
+// Money is whole paise (Int), never Float. Times are stored in UTC.
+// The couple, events and URL slug stay on Wedding / WeddingEvent; nothing
+// here copies them, so existing /rsvp/{slug} links are never affected.
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum ProductType {
+  CARD_BUNDLE
+  WEBSITE
+  WEBSITE_RENEWAL
+}
+
+enum WebsiteTemplateStatus {
+  DRAFT // being built, hidden
+  COMING_SOON // listed, can't be bought
+  ACTIVE // on sale
+  RETIRED // no longer sold; published sites keep working
+}
+
+enum WebsiteStatus {
+  DRAFT // created at "Publish my website", not paid yet
+  PUBLISHED // live for guests
+  PUBLISH_FAILED // paid, but publishing hit an error (retried)
+  UNPUBLISHED // taken offline (refund, admin or owner)
+  EXPIRED // past expiresAt
+}
+
+enum PaymentStatus {
+  CREATED
+  AUTHORIZED
+  CAPTURED
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+enum MessageStatus {
+  PENDING
+  SENT
+  DELIVERED
+  READ
+  FAILED
+}
+
+model WebsiteTemplate {
+  id             String                @id @default(cuid())
+  // Matches the design's id in src/website/templates/registry.ts and its
+  // URL. Never renamed once on sale.
+  code           String                @unique
+  name           String
+  tagline        String?
+  description    String?
+  thumbnailUrl   String?
+  status         WebsiteTemplateStatus @default(DRAFT)
+  // Bumped when the design changes; each website keeps the version it bought.
+  version        Int                   @default(1)
+  currency       String                @default("INR")
+  listPricePaise Int // struck-through price
+  salePricePaise Int // what the customer pays (GST included)
+  gstRateBps     Int                   @default(1800) // 18.00%
+  validityDays   Int? // empty = never expires
+  sortOrder      Int                   @default(0)
+  // Order.bundleId and Wedding.themeId are required, so website purchases are
+  // recorded against this design's own hidden (inactive) card theme + bundle.
+  cardThemeId    String?
+  cardBundleId   String?
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+
+  websites   WeddingWebsite[]
+  orders     Order[]
+  cardTheme  Theme?           @relation(fields: [cardThemeId], references: [id], onDelete: Restrict)
+  cardBundle Bundle?          @relation(fields: [cardBundleId], references: [id], onDelete: Restrict)
+
+  @@index([status, sortOrder])
+  @@map("WebsiteTemplate")
+}
+
+model WeddingWebsite {
+  id              String        @id @default(cuid())
+  weddingId       String        @unique // one website per wedding
+  userId          String // buyer (same as wedding.ownerId)
+  templateId      String
+  templateVersion Int // design version this customer has
+  status          WebsiteStatus @default(DRAFT)
+
+  // Purchase summary for the dashboard. Full detail is on the Order.
+  orderId        String?   @unique // the first (purchase) order
+  pricePaidPaise Int?
+  purchasedAt    DateTime?
+
+  // Public link as published, e.g. https://www.nimantranstudio.in/rsvp/vivek-weds-priyanka.
+  // The slug itself lives on Wedding.slug and is never changed.
+  publicUrl        String?
+  firstPublishedAt DateTime?
+  publishedAt      DateTime?
+  publishAttempts  Int       @default(0)
+  lastPublishError String?
+  expiresAt        DateTime? // empty = never expires
+  unpublishedAt    DateTime?
+  unpublishReason  String?
+
+  // WhatsApp message carrying the website link (to the buyer's registered number).
+  linkMessageStatus MessageStatus?
+  linkMessageId     String? // provider message id (MSG91 request_id)
+  linkSentTo        String?
+  linkSentAt        DateTime?
+  linkDeliveredAt   DateTime?
+  linkMessageError  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  wedding       Wedding         @relation(fields: [weddingId], references: [id])
+  user          User            @relation(fields: [userId], references: [id])
+  template      WebsiteTemplate @relation(fields: [templateId], references: [id])
+  purchaseOrder Order?          @relation("WebsitePurchaseOrder", fields: [orderId], references: [id], onDelete: Restrict)
+  orders        Order[]         @relation("WebsiteOrders") // purchase + renewals
+
+  @@index([userId])
+  @@index([templateId])
+  @@index([status, expiresAt])
+  @@map("WeddingWebsite")
+}
+
+model Payment {
+  id               String        @id @default(cuid())
+  orderId          String
+  userId           String?
+  gateway          String        @default("RAZORPAY")
+  gatewayOrderId   String // order_…
+  gatewayPaymentId String // pay_… ; one row per attempt
+  status           PaymentStatus
+  amountPaise      Int
+  currency         String        @default("INR")
+  method           String? // upi, card, …
+  errorCode        String?
+  errorReason      String?
+  errorDescription String?
+  authorizedAt     DateTime?
+  capturedAt       DateTime?
+  failedAt         DateTime?
+  refundedPaise    Int           @default(0)
+  refundId         String? // gateway refund id (latest)
+  refundedAt       DateTime?
+  refundReason     String?
+  // Latest gateway payment object (no card/bank numbers), for support.
+  gatewayResponse  Json?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id])
+  user  User? @relation(fields: [userId], references: [id])
+
+  @@unique([gateway, gatewayPaymentId]) // same attempt never stored twice
+  @@index([orderId])
+  @@index([status, createdAt])
+  @@map("Payment")
 }

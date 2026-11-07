@@ -1,6 +1,9 @@
 import { prisma } from '@/lib/prisma';
 import styles from './rsvp.module.css';
 import { RSVPForm } from './RSVPForm';
+import { PublishedWebsiteRenderer } from '@/website/components/PublishedWebsiteRenderer';
+import { getWebsiteTemplate } from '@/website/templates/registry';
+import type { WebsiteWedding } from '@/website/templates/types';
 import type { Metadata } from 'next';
 
 export const dynamic = 'force-dynamic';
@@ -124,6 +127,20 @@ const SAMPLE_PREVIEW_WEDDING = {
     updatedAt: new Date(),
     events: [
         {
+            id: 'evt_haldi',
+            weddingId: 'demo-preview',
+            name: 'Haldi Ceremony',
+            eventType: 'Haldi',
+            date: '27-12-2026',
+            time: '10:30 AM',
+            venue: 'The Courtyard Pavilion, Pune',
+            mapLink: 'https://maps.google.com',
+            description: 'Blessings of golden turmeric, marigold petals, and joyful laughter.',
+            allowCompanions: true,
+            collectDietary: true,
+            rsvpDeadline: '2026-12-20',
+        },
+        {
             id: 'evt_mehendi',
             weddingId: 'demo-preview',
             name: 'Mehendi Ceremony',
@@ -237,6 +254,68 @@ export default async function RSVPPage({
                 </div>
             );
         }
+    }
+
+    // Resolve selected website template (if this wedding purchased a website design).
+    // Wrapped in its own try/catch so card-only weddings or environments without
+    // the WeddingWebsite table fall back cleanly to Royal Sanctuary (`<RSVPForm>`).
+    let resolvedTemplateCode: string | null = null;
+    const requestedPreviewTemplate =
+        typeof sp.template === 'string' && getWebsiteTemplate(sp.template) ? sp.template : null;
+
+    if (isPreview || id === 'latest' || id === 'demo' || id === 'preview') {
+        resolvedTemplateCode = requestedPreviewTemplate;
+    } else if (wedding?.id) {
+        try {
+            const site = await prisma.weddingWebsite.findUnique({
+                where: { weddingId: wedding.id },
+                select: { template: { select: { code: true } } },
+            });
+            if (site?.template?.code && getWebsiteTemplate(site.template.code)) {
+                resolvedTemplateCode = site.template.code;
+            }
+        } catch {
+            // Fall back to default Royal Sanctuary template
+        }
+        if (isPreview && requestedPreviewTemplate) {
+            resolvedTemplateCode = requestedPreviewTemplate;
+        }
+    }
+
+    if (resolvedTemplateCode && resolvedTemplateCode !== 'royal-sanctuary') {
+        const serializedWedding: WebsiteWedding = {
+            id: String(wedding.id),
+            groomName: wedding.groomName || '',
+            brideName: wedding.brideName || '',
+            groomParents: wedding.groomParents ?? undefined,
+            brideParents: wedding.brideParents ?? undefined,
+            invitationMessage: wedding.invitationMessage ?? undefined,
+            rsvpContact: wedding.rsvpContact ?? undefined,
+            rsvpDeadline:
+                wedding.rsvpDeadline instanceof Date
+                    ? wedding.rsvpDeadline.toISOString()
+                    : wedding.rsvpDeadline ?? null,
+            events: Array.isArray(wedding.events)
+                ? wedding.events.map((evt: any) => ({
+                      id: String(evt.id),
+                      name: evt.name || '',
+                      date: evt.date ?? undefined,
+                      time: evt.time ?? undefined,
+                      venue: evt.venue ?? undefined,
+                      mapLink: evt.mapLink ?? undefined,
+                      description: evt.description ?? undefined,
+                      eventType: evt.eventType ?? undefined,
+                  }))
+                : [],
+        };
+
+        return (
+            <PublishedWebsiteRenderer
+                templateCode={resolvedTemplateCode}
+                wedding={serializedWedding}
+                isPreview={isPreview}
+            />
+        );
     }
 
     return (

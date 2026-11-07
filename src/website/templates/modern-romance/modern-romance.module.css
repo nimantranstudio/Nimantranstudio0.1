@@ -1,0 +1,1288 @@
+/* ============================================================================
+ * Design 2: The Modern Romance — Isolated CSS Module
+ * Aesthetic: International minimalist luxury & couture destination editorial.
+ * Palette: Warm alabaster (#FAF8F6), whisper blush (#F5EAE8), champagne (#EFE7DF),
+ *          deep espresso-plum ink (#231D1E), muted rose-gold (#A8746B).
+ * Zero :root declarations — 100% scoped to .root to prevent CSS leakage.
+ * ============================================================================ */
+
+.root {
+    --mr-bg: #FAF8F6;
+    --mr-blush: #F5EAE8;
+    --mr-blush-soft: #F9F2F0;
+    --mr-champagne: #EFE7DF;
+    --mr-surface: #FFFFFF;
+    --mr-ink: #231D1E;
+    --mr-ink-soft: #433739;
+    --mr-muted: #6E5D5F;
+    --mr-rose-gold: #A8746B;
+    --mr-rose-gold-deep: #8C5A52;
+    --mr-hairline: rgba(168, 116, 107, 0.24);
+    --mr-hairline-strong: rgba(168, 116, 107, 0.46);
+    --mr-error: #B42318;
+
+    --mr-font-display: 'Bodoni Moda', var(--font-playfair), Didot, 'Playfair Display', Georgia, serif;
+    --mr-font-sans: 'Manrope', var(--font-inter), -apple-system, BlinkMacSystemFont, sans-serif;
+
+    position: relative;
+    min-height: 100vh;
+    min-height: 100dvh;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: clip;
+    background-color: var(--mr-bg);
+    color: var(--mr-ink);
+    font-family: var(--mr-font-sans);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+}
+
+.previewRoot {
+    min-height: 100%;
+}
+
+/* Subtle floating botanical line-art animation */
+@keyframes mrFloatGentle {
+    0%, 100% {
+        transform: translate3d(0, 0, 0) rotate(0deg);
+    }
+    50% {
+        transform: translate3d(0, -7px, 0) rotate(1.4deg);
+    }
+}
+
+.floatingFloralTop {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    width: clamp(74px, 11vw, 128px);
+    height: auto;
+    color: var(--mr-rose-gold);
+    opacity: 0.34;
+    pointer-events: none;
+    animation: mrFloatGentle 9s ease-in-out infinite;
+}
+
+.floatingFloralBottom {
+    position: absolute;
+    bottom: 1.5rem;
+    left: 1.5rem;
+    width: clamp(70px, 10vw, 118px);
+    height: auto;
+    color: var(--mr-rose-gold);
+    opacity: 0.3;
+    pointer-events: none;
+    animation: mrFloatGentle 11s ease-in-out infinite reverse;
+}
+
+/* ============================================================================
+ * OPENING EXPERIENCE — Editorial Letterpress Folio
+ * ============================================================================ */
+
+.coverOverlay {
+    position: relative;
+    min-height: 100vh;
+    min-height: 100dvh;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(1rem, 3.5vw, 2.5rem);
+    background:
+        radial-gradient(circle at 18% 15%, rgba(245, 234, 232, 0.9) 0%, rgba(250, 248, 246, 0) 52%),
+        radial-gradient(circle at 84% 85%, rgba(239, 231, 223, 0.85) 0%, rgba(250, 248, 246, 0) 55%),
+        var(--mr-bg);
+}
+
+.coverSheet {
+    position: relative;
+    width: 100%;
+    max-width: 560px;
+    background: rgba(255, 255, 255, 0.78);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--mr-hairline-strong);
+    padding: clamp(2.25rem, 6vw, 4rem) clamp(1.35rem, 4.5vw, 3rem) clamp(2.75rem, 7vw, 4.25rem);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 24px 60px rgba(35, 29, 30, 0.05);
+    overflow: hidden;
+}
+
+.coverDateNumeric {
+    font-family: var(--mr-font-sans);
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.34em;
+    text-transform: uppercase;
+    color: var(--mr-rose-gold-deep);
+    margin-bottom: 1.5rem;
+}
+
+.coverMonogram {
+    font-family: var(--mr-font-display);
+    font-size: clamp(2.75rem, 8vw, 4.25rem);
+    font-weight: 400;
+    line-height: 1;
+    letter-spacing: 0.04em;
+    color: var(--mr-ink);
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.45rem;
+    margin-bottom: 1.25rem;
+}
+
+.coverMonogramAmp {
+    font-family: var(--mr-font-display);
+    font-style: italic;
+    font-size: 0.62em;
+    color: var(--mr-rose-gold);
+}
+
+.coverHairline {
+    width: 48px;
+    height: 1px;
+    background: var(--mr-hairline-strong);
+    margin: 0 auto 1.35rem;
+}
+
+.coverKicker {
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--mr-muted);
+    margin: 0 0 0.75rem;
+}
+
+.coverCoupleNames {
+    font-family: var(--mr-font-display);
+    font-size: clamp(1.55rem, 4.8vw, 2.35rem);
+    font-weight: 400;
+    line-height: 1.22;
+    letter-spacing: 0.01em;
+    color: var(--mr-ink);
+    margin: 0 0 0.65rem;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+}
+
+.coverLocation {
+    font-size: 0.84rem;
+    color: var(--mr-muted);
+    letter-spacing: 0.06em;
+    margin: 0 0 2rem;
+    max-width: 36ch;
+    overflow-wrap: anywhere;
+}
+
+.enterBtn {
+    appearance: none;
+    border: 1px solid var(--mr-ink);
+    background: var(--mr-ink);
+    color: #FAF8F6;
+    font-family: var(--mr-font-sans);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    padding: 0.92rem 2rem;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.7rem;
+    cursor: pointer;
+    transition: background-color 0.25s ease, color 0.25s ease, transform 0.2s ease, border-color 0.25s ease;
+}
+
+.enterBtn:hover {
+    background: var(--mr-rose-gold-deep);
+    border-color: var(--mr-rose-gold-deep);
+    transform: translateY(-1px);
+}
+
+.enterBtn:active {
+    transform: scale(0.98);
+}
+
+/* ============================================================================
+ * MAIN CONTENT & MINIMALIST EDITORIAL MASTHEAD
+ * ============================================================================ */
+
+.mainContent {
+    position: relative;
+    width: 100%;
+}
+
+.masthead {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    background: rgba(250, 248, 246, 0.88);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--mr-hairline);
+}
+
+.mastheadInner {
+    max-width: 1220px;
+    margin: 0 auto;
+    padding: 0.9rem clamp(1.15rem, 4vw, 3rem);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.mastheadBrand {
+    font-family: var(--mr-font-display);
+    font-size: 1.05rem;
+    letter-spacing: 0.14em;
+    color: var(--mr-ink);
+    white-space: nowrap;
+}
+
+.mastheadNav {
+    display: flex;
+    align-items: center;
+    gap: clamp(0.85rem, 2.4vw, 2rem);
+    padding-right: clamp(4.2rem, 9vw, 6.5rem); /* Clear fixed top-right music toggle */
+}
+
+.mastheadLink {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--mr-muted);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.mastheadLink:hover {
+    color: var(--mr-ink);
+}
+
+@media (max-width: 560px) {
+    .mastheadNav {
+        gap: 0.75rem;
+        padding-right: 4.5rem;
+    }
+    .mastheadLinkHideMobile {
+        display: none;
+    }
+}
+
+/* ============================================================================
+ * 1. ASYMMETRIC MAGAZINE COVER SPREAD HERO
+ * ============================================================================ */
+
+.heroSpread {
+    max-width: 1220px;
+    margin: 0 auto;
+    padding: clamp(2.25rem, 5.5vw, 5rem) clamp(1.15rem, 4vw, 3rem) clamp(3.25rem, 7vw, 6rem);
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+    gap: clamp(2.25rem, 5vw, 4.75rem);
+    align-items: center;
+}
+
+@media (max-width: 900px) {
+    .heroSpread {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 2.5rem;
+        text-align: center;
+    }
+}
+
+.heroEditorialCol {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 0;
+}
+
+@media (max-width: 900px) {
+    .heroEditorialCol {
+        align-items: center;
+    }
+}
+
+.issueMetaRow {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--mr-rose-gold-deep);
+    margin-bottom: 1.5rem;
+}
+
+@media (max-width: 900px) {
+    .issueMetaRow {
+        justify-content: center;
+    }
+}
+
+.issueRule {
+    width: 28px;
+    height: 1px;
+    background: var(--mr-rose-gold);
+}
+
+.coupleHeadline {
+    margin: 0 0 1.75rem;
+    width: 100%;
+}
+
+.editorialName {
+    display: block;
+    font-family: var(--mr-font-display);
+    font-size: clamp(2.45rem, 6.2vw, 4.85rem);
+    font-weight: 400;
+    line-height: 1.04;
+    letter-spacing: -0.015em;
+    color: var(--mr-ink);
+    overflow-wrap: anywhere;
+}
+
+.editorialConjunction {
+    display: block;
+    font-family: var(--mr-font-display);
+    font-style: italic;
+    font-size: clamp(1.35rem, 2.8vw, 2.1rem);
+    color: var(--mr-rose-gold);
+    margin: 0.35rem 0;
+    padding-left: clamp(0rem, 2vw, 1.5rem);
+}
+
+@media (max-width: 900px) {
+    .editorialConjunction {
+        padding-left: 0;
+    }
+}
+
+.parentsEditorialRow {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 1.15rem 2rem;
+    padding: 1.35rem 0;
+    border-top: 1px solid var(--mr-hairline);
+    border-bottom: 1px solid var(--mr-hairline);
+    margin-bottom: 1.75rem;
+}
+
+.parentBlock {
+    min-width: 0;
+}
+
+.parentLabel {
+    display: block;
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--mr-rose-gold-deep);
+    margin-bottom: 0.25rem;
+}
+
+.parentValue {
+    display: block;
+    font-family: var(--mr-font-display);
+    font-size: 1.02rem;
+    color: var(--mr-ink-soft);
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+
+.heroDateVenueLine {
+    font-size: 0.92rem;
+    font-weight: 500;
+    color: var(--mr-ink-soft);
+    letter-spacing: 0.04em;
+    margin: 0 0 2rem;
+    overflow-wrap: anywhere;
+}
+
+.heroCtaGroup {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.85rem;
+}
+
+@media (max-width: 900px) {
+    .heroCtaGroup {
+        justify-content: center;
+    }
+}
+
+.solidPillBtn {
+    appearance: none;
+    border: 1px solid var(--mr-ink);
+    background: var(--mr-ink);
+    color: #FAF8F6;
+    font-family: var(--mr-font-sans);
+    font-size: 0.74rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    text-decoration: none;
+    padding: 0.88rem 1.75rem;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    cursor: pointer;
+    transition: background-color 0.22s ease, border-color 0.22s ease, transform 0.2s ease;
+}
+
+.solidPillBtn:hover {
+    background: var(--mr-rose-gold-deep);
+    border-color: var(--mr-rose-gold-deep);
+    transform: translateY(-1px);
+}
+
+.outlinePillBtn {
+    appearance: none;
+    border: 1px solid var(--mr-hairline-strong);
+    background: transparent;
+    color: var(--mr-ink);
+    font-family: var(--mr-font-sans);
+    font-size: 0.74rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    text-decoration: none;
+    padding: 0.88rem 1.65rem;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    cursor: pointer;
+    transition: background-color 0.22s ease, border-color 0.22s ease, transform 0.2s ease;
+}
+
+.outlinePillBtn:hover {
+    background: var(--mr-blush);
+    border-color: var(--mr-rose-gold);
+    transform: translateY(-1px);
+}
+
+/* Right Portrait Frame */
+.heroPortraitCol {
+    position: relative;
+    width: 100%;
+    max-width: 470px;
+    margin: 0 auto;
+}
+
+.portraitOffsetMat {
+    position: relative;
+    padding: 0.85rem;
+    background: var(--mr-champagne);
+    border: 1px solid var(--mr-hairline);
+}
+
+.portraitImgWrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    overflow: hidden;
+    background: var(--mr-blush);
+}
+
+.portraitImg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.portraitOffsetMat:hover .portraitImg {
+    transform: scale(1.03);
+}
+
+.portraitCaption {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding-top: 0.75rem;
+    font-size: 0.68rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--mr-muted);
+}
+
+/* ============================================================================
+ * 2. EDITORIAL PULL-QUOTE & HAIRLINE COUNTDOWN
+ * ============================================================================ */
+
+.editorialQuoteBand {
+    position: relative;
+    background: var(--mr-blush);
+    border-top: 1px solid var(--mr-hairline);
+    border-bottom: 1px solid var(--mr-hairline);
+    padding: clamp(3.5rem, 8vw, 6.25rem) clamp(1.25rem, 4vw, 3rem);
+    overflow: hidden;
+}
+
+.editorialQuoteInner {
+    max-width: 860px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.sectionEyebrow {
+    display: inline-block;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--mr-rose-gold-deep);
+    margin-bottom: 1.25rem;
+}
+
+.pullQuoteText {
+    font-family: var(--mr-font-display);
+    font-style: italic;
+    font-size: clamp(1.3rem, 2.8vw, 2.05rem);
+    font-weight: 400;
+    line-height: 1.55;
+    color: var(--mr-ink);
+    margin: 0 auto 2.75rem;
+    max-width: 44ch;
+    overflow-wrap: anywhere;
+}
+
+.hairlineCountdown {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    max-width: 640px;
+    margin: 0 auto;
+    border-top: 1px solid var(--mr-hairline-strong);
+    border-bottom: 1px solid var(--mr-hairline-strong);
+}
+
+.countdownCell {
+    padding: 1.35rem 0.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-right: 1px solid var(--mr-hairline);
+}
+
+.countdownCell:last-child {
+    border-right: none;
+}
+
+.countdownNumber {
+    font-family: var(--mr-font-display);
+    font-size: clamp(1.65rem, 3.8vw, 2.6rem);
+    font-weight: 400;
+    line-height: 1.05;
+    color: var(--mr-ink);
+    font-variant-numeric: tabular-nums;
+}
+
+.countdownLabel {
+    margin-top: 0.35rem;
+    font-size: 0.64rem;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--mr-muted);
+}
+
+@media (max-width: 440px) {
+    .countdownCell {
+        padding: 1rem 0.25rem;
+    }
+    .countdownLabel {
+        letter-spacing: 0.12em;
+        font-size: 0.58rem;
+    }
+}
+
+.celebratedNote {
+    font-family: var(--mr-font-display);
+    font-style: italic;
+    font-size: 1.2rem;
+    color: var(--mr-rose-gold-deep);
+    margin: 0;
+}
+
+/* ============================================================================
+ * 3. SOPHISTICATED EVENT TIMELINE — HORIZONTAL EDITORIAL INDEX
+ * ============================================================================ */
+
+.itinerarySection {
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: clamp(3.75rem, 8vw, 6.75rem) clamp(1.15rem, 4vw, 3rem);
+}
+
+.editorialHeaderRow {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: clamp(2rem, 4.5vw, 3.25rem);
+}
+
+.sectionHeading {
+    font-family: var(--mr-font-display);
+    font-size: clamp(1.95rem, 4.2vw, 3rem);
+    font-weight: 400;
+    line-height: 1.12;
+    color: var(--mr-ink);
+    margin: 0;
+}
+
+.sectionSubcopy {
+    font-size: 0.92rem;
+    color: var(--mr-muted);
+    max-width: 42ch;
+    margin: 0;
+}
+
+.editorialTable {
+    border-top: 1px solid var(--mr-hairline-strong);
+}
+
+.scheduleRow {
+    display: grid;
+    grid-template-columns: 210px minmax(0, 1.25fr) minmax(0, 1fr);
+    gap: 1.5rem 2.25rem;
+    padding: clamp(1.65rem, 3.5vw, 2.5rem) 0.75rem;
+    border-bottom: 1px solid var(--mr-hairline);
+    align-items: start;
+    transition: background-color 0.25s ease;
+}
+
+@media (hover: hover) {
+    .scheduleRow:hover {
+        background-color: rgba(245, 234, 232, 0.45);
+    }
+}
+
+@media (max-width: 860px) {
+    .scheduleRow {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0.95rem;
+        padding: 1.75rem 0.25rem;
+    }
+}
+
+.scheduleDateCol {
+    display: flex;
+    align-items: baseline;
+    gap: 0.85rem;
+}
+
+.scheduleBigDay {
+    font-family: var(--mr-font-display);
+    font-size: clamp(2.1rem, 3.6vw, 2.85rem);
+    font-weight: 400;
+    line-height: 0.95;
+    color: var(--mr-ink);
+    font-variant-numeric: tabular-nums;
+}
+
+.scheduleDateMeta {
+    display: flex;
+    flex-direction: column;
+}
+
+.scheduleMonthYear {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--mr-rose-gold-deep);
+}
+
+.scheduleTime {
+    font-size: 0.83rem;
+    color: var(--mr-muted);
+    margin-top: 0.2rem;
+}
+
+.scheduleTitleCol {
+    min-width: 0;
+}
+
+.scheduleEventTitle {
+    font-family: var(--mr-font-display);
+    font-size: clamp(1.4rem, 2.5vw, 1.8rem);
+    font-weight: 400;
+    line-height: 1.2;
+    color: var(--mr-ink);
+    margin: 0 0 0.45rem;
+    overflow-wrap: anywhere;
+}
+
+.scheduleEventDesc {
+    font-size: 0.92rem;
+    color: var(--mr-muted);
+    margin: 0;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+
+.scheduleVenueCol {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.85rem;
+}
+
+.scheduleVenueName {
+    font-size: 0.9rem;
+    color: var(--mr-ink-soft);
+    line-height: 1.55;
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.scheduleActionRow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+}
+
+.miniEditorialBtn {
+    appearance: none;
+    border: 1px solid var(--mr-hairline-strong);
+    background: var(--mr-surface);
+    color: var(--mr-ink);
+    font-family: var(--mr-font-sans);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    padding: 0.52rem 0.95rem;
+    border-radius: 999px;
+    min-height: 36px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.38rem;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+}
+
+.miniEditorialBtn:hover {
+    border-color: var(--mr-ink);
+    background: var(--mr-ink);
+    color: #FAF8F6;
+}
+
+/* ============================================================================
+ * 4. ASYMMETRIC EDITORIAL TRIPTYCH GALLERY & DESTINATION VENUE
+ * ============================================================================ */
+
+.gallerySection {
+    background: var(--mr-champagne);
+    border-top: 1px solid var(--mr-hairline);
+    border-bottom: 1px solid var(--mr-hairline);
+    padding: clamp(3.75rem, 8vw, 6.5rem) clamp(1.15rem, 4vw, 3rem);
+}
+
+.galleryContainer {
+    max-width: 1140px;
+    margin: 0 auto;
+}
+
+.triptychGrid {
+    display: grid;
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.25fr);
+    gap: clamp(1rem, 2.5vw, 1.75rem);
+    margin-top: 2.25rem;
+}
+
+@media (max-width: 760px) {
+    .triptychGrid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.triptychRightStack {
+    display: grid;
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+    gap: clamp(1rem, 2.5vw, 1.75rem);
+}
+
+.galleryBtnFrame {
+    appearance: none;
+    border: 1px solid var(--mr-hairline);
+    padding: 0.6rem;
+    background: var(--mr-surface);
+    width: 100%;
+    cursor: pointer;
+    display: block;
+    text-align: left;
+    transition: transform 0.28s ease, box-shadow 0.28s ease;
+}
+
+.galleryBtnFrame:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 18px 40px rgba(35, 29, 30, 0.08);
+}
+
+.triptychTallWrap {
+    width: 100%;
+    height: 100%;
+    min-height: 320px;
+    aspect-ratio: 3 / 4;
+    overflow: hidden;
+}
+
+.triptychWideWrap {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+}
+
+.galleryPhoto {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.75s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.galleryBtnFrame:hover .galleryPhoto {
+    transform: scale(1.04);
+}
+
+/* Destination Venue Card */
+.destinationCard {
+    margin-top: clamp(2.25rem, 5vw, 3.5rem);
+    background: var(--mr-surface);
+    border: 1px solid var(--mr-hairline-strong);
+    padding: clamp(1.75rem, 4vw, 3rem);
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) auto;
+    gap: 1.75rem 2.5rem;
+    align-items: center;
+}
+
+@media (max-width: 800px) {
+    .destinationCard {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.destinationTitle {
+    font-family: var(--mr-font-display);
+    font-size: clamp(1.45rem, 2.8vw, 1.95rem);
+    font-weight: 400;
+    color: var(--mr-ink);
+    margin: 0.35rem 0 0.65rem;
+}
+
+.destinationAddress {
+    font-size: 0.96rem;
+    color: var(--mr-ink-soft);
+    line-height: 1.65;
+    margin: 0 0 0.75rem;
+    overflow-wrap: anywhere;
+}
+
+.destinationContact {
+    font-size: 0.85rem;
+    color: var(--mr-muted);
+    margin: 0;
+}
+
+.destinationContactLink {
+    color: var(--mr-ink);
+    font-weight: 600;
+    text-decoration: none;
+    border-bottom: 1px solid var(--mr-rose-gold);
+}
+
+.destinationActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+/* ============================================================================
+ * 5. MINIMALIST ATELIER RSVP
+ * ============================================================================ */
+
+.rsvpSection {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: clamp(4rem, 9vw, 7rem) clamp(1.15rem, 4vw, 2.5rem);
+}
+
+.rsvpSectionHeader {
+    text-align: center;
+    margin-bottom: 2.5rem;
+}
+
+.rsvpAtelierBox {
+    background: var(--mr-surface);
+    border: 1px solid var(--mr-hairline-strong);
+    padding: clamp(1.75rem, 5vw, 3.5rem);
+    box-shadow: 0 22px 54px rgba(35, 29, 30, 0.04);
+}
+
+.rsvpForm {
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+}
+
+.fieldBlock {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+}
+
+.fieldTopRow {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.fieldLabel {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--mr-muted);
+}
+
+.fieldErrorTag {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--mr-error);
+}
+
+.statusSegment {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.5rem;
+}
+
+@media (max-width: 540px) {
+    .statusSegment {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.statusOptionBtn {
+    position: relative;
+    appearance: none;
+    border: 1px solid var(--mr-hairline-strong);
+    background: var(--mr-bg);
+    color: var(--mr-ink-soft);
+    font-family: var(--mr-font-sans);
+    font-size: 0.8rem;
+    font-weight: 500;
+    padding: 0.85rem 0.75rem;
+    cursor: pointer;
+    overflow: hidden;
+    transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.statusOptionBtn[data-active='true'] {
+    color: #FAF8F6;
+    border-color: var(--mr-ink);
+}
+
+.statusOptionActiveBg {
+    position: absolute;
+    inset: 0;
+    background: var(--mr-ink);
+    z-index: 0;
+}
+
+.statusOptionText {
+    position: relative;
+    z-index: 1;
+}
+
+.underlineInput {
+    width: 100%;
+    border: none;
+    border-bottom: 1px solid var(--mr-hairline-strong);
+    border-radius: 0;
+    background: transparent;
+    padding: 0.75rem 0.1rem;
+    font-family: var(--mr-font-sans);
+    font-size: 1rem;
+    color: var(--mr-ink);
+    transition: border-color 0.2s ease;
+}
+
+.underlineInput::placeholder {
+    color: rgba(110, 93, 95, 0.55);
+}
+
+.underlineInput:focus {
+    outline: none;
+    border-bottom-color: var(--mr-ink);
+}
+
+.underlineInputError {
+    border-bottom-color: var(--mr-error);
+}
+
+.splitRow {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+    gap: 1.5rem;
+}
+
+@media (max-width: 560px) {
+    .splitRow {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.stepperRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--mr-hairline-strong);
+    padding: 0.35rem 0;
+}
+
+.stepperCircle {
+    width: 36px;
+    height: 36px;
+    border-radius: 999px;
+    border: 1px solid var(--mr-hairline-strong);
+    background: transparent;
+    color: var(--mr-ink);
+    font-size: 1.05rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.stepperCircle:hover:not(:disabled) {
+    background: var(--mr-blush);
+    border-color: var(--mr-rose-gold);
+}
+
+.stepperCircle:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.stepperValue {
+    font-family: var(--mr-font-display);
+    font-size: 1.35rem;
+    color: var(--mr-ink);
+    font-variant-numeric: tabular-nums;
+}
+
+.underlineTextarea {
+    width: 100%;
+    min-height: 86px;
+    resize: vertical;
+    border: 1px solid var(--mr-hairline-strong);
+    background: var(--mr-bg);
+    padding: 0.85rem 0.95rem;
+    font-family: var(--mr-font-sans);
+    font-size: 0.95rem;
+    color: var(--mr-ink);
+    transition: border-color 0.2s ease;
+}
+
+.underlineTextarea:focus {
+    outline: none;
+    border-color: var(--mr-ink);
+    background: var(--mr-surface);
+}
+
+.deadlineLine {
+    font-size: 0.8rem;
+    color: var(--mr-muted);
+    text-align: center;
+    margin: 0;
+}
+
+.errorBox {
+    padding: 0.75rem 1rem;
+    background: rgba(180, 35, 24, 0.06);
+    border: 1px solid rgba(180, 35, 24, 0.28);
+    color: var(--mr-error);
+    font-size: 0.85rem;
+    text-align: center;
+}
+
+.submitEditorialBtn {
+    appearance: none;
+    width: 100%;
+    border: 1px solid var(--mr-ink);
+    background: var(--mr-ink);
+    color: #FAF8F6;
+    font-family: var(--mr-font-sans);
+    font-size: 0.76rem;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    padding: 1.05rem 1.75rem;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    cursor: pointer;
+    transition: background-color 0.22s ease, border-color 0.22s ease, transform 0.2s ease;
+}
+
+.submitEditorialBtn:hover:not(:disabled) {
+    background: var(--mr-rose-gold-deep);
+    border-color: var(--mr-rose-gold-deep);
+    transform: translateY(-1px);
+}
+
+.submitEditorialBtn:disabled {
+    opacity: 0.65;
+    cursor: wait;
+}
+
+/* Confirmation state */
+.confirmState {
+    text-align: center;
+    padding: 1.25rem 0.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.confirmIconRing {
+    width: 60px;
+    height: 60px;
+    border-radius: 999px;
+    border: 1px solid var(--mr-rose-gold);
+    background: var(--mr-blush);
+    color: var(--mr-rose-gold-deep);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.confirmTitle {
+    font-family: var(--mr-font-display);
+    font-size: clamp(1.5rem, 3.2vw, 2rem);
+    font-weight: 400;
+    color: var(--mr-ink);
+    margin: 0;
+}
+
+.confirmText {
+    font-size: 0.94rem;
+    color: var(--mr-muted);
+    max-width: 42ch;
+    margin: 0;
+}
+
+.confirmBtnRow {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.resetLinkBtn {
+    appearance: none;
+    border: none;
+    background: none;
+    font-family: var(--mr-font-sans);
+    font-size: 0.8rem;
+    color: var(--mr-rose-gold-deep);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    cursor: pointer;
+    margin-top: 0.35rem;
+}
+
+/* ============================================================================
+ * 6. EDITORIAL FOOTER
+ * ============================================================================ */
+
+.footer {
+    border-top: 1px solid var(--mr-hairline);
+    background: var(--mr-blush-soft);
+    padding: clamp(3rem, 6vw, 4.5rem) 1.5rem 2.75rem;
+    text-align: center;
+}
+
+.footerInitials {
+    font-family: var(--mr-font-display);
+    font-size: 1.8rem;
+    letter-spacing: 0.14em;
+    color: var(--mr-ink);
+    margin-bottom: 0.75rem;
+}
+
+.footerCaption {
+    font-family: var(--mr-font-display);
+    font-style: italic;
+    font-size: 1.05rem;
+    color: var(--mr-muted);
+    max-width: 40ch;
+    margin: 0 auto 1.75rem;
+}
+
+.studioAttribution {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    color: var(--mr-muted);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    opacity: 0.82;
+    transition: opacity 0.2s ease;
+}
+
+.studioAttribution:hover {
+    opacity: 1;
+}
+
+.studioLogo {
+    height: 18px;
+    width: auto;
+    object-fit: contain;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .floatingFloralTop,
+    .floatingFloralBottom {
+        animation: none !important;
+    }
+    .portraitImg,
+    .galleryPhoto,
+    .enterBtn,
+    .solidPillBtn,
+    .outlinePillBtn,
+    .submitEditorialBtn {
+        transition: none !important;
+    }
+}
+

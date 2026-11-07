@@ -12,7 +12,9 @@ export default function RootWrapper({ children }: { children: React.ReactNode })
 
     const isAdmin = pathname?.startsWith('/admin');
     const isRsvpPage = pathname?.startsWith('/rsvp/');
-    const isHidden = isAdmin || isRsvpPage;
+    // The website-design preview iframe shows a guest's view, so no studio chrome.
+    const isWebsiteFrame = pathname?.startsWith('/website-frame/');
+    const isHidden = isAdmin || isRsvpPage || isWebsiteFrame;
     const isLandingPage = pathname === '/';
 
     return (
