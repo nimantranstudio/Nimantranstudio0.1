@@ -196,12 +196,10 @@ export default async function RSVPPage({
     // Fetch the wedding from the database
     let wedding: any = null;
     try {
-        if (id === 'latest') {
-            wedding = await prisma.wedding.findFirst({
-                orderBy: { createdAt: 'desc' },
-                include: { events: true },
-            });
-        } else if (id !== 'demo' && id !== 'preview') {
+        // 'latest' used to load the newest wedding in the whole database, which
+        // showed a real customer's names, venues and contact number to anyone.
+        // It now falls through to the sample wedding below, like 'demo'.
+        if (id !== 'latest' && id !== 'demo' && id !== 'preview') {
             wedding = await prisma.wedding.findFirst({
                 where: {
                     OR: [{ id }, { slug: id }],
