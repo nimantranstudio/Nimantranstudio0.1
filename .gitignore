@@ -67,3 +67,9 @@ public/Image/bundle/item-*.html
 
 # Scratch & temporary scripts
 scratch/
+
+# Database recovery dumps — these contain real customer PII (names, phone
+# numbers, event details). Keep them outside the repo entirely; this is a
+# backstop so a stray `git add .` can never publish one.
+recovery-backup-*.json
+*-recovery-dump.json
