@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Disable dev indicators (the "N" badge in the corner)
+  devIndicators: false,
   // Console logging for debugging fetches in development
   logging: {
     fetches: {

@@ -193,3 +193,15 @@ a {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
+
+/* Hide Next.js Development Indicator ("N" button) and Dev Tools */
+nextjs-portal,
+[data-nextjs-dev-tools],
+[data-nextjs-dev-tools-button],
+[data-nextjs-toast],
+div[data-nextjs-dev-tools-wrapper] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
