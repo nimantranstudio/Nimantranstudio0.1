@@ -36,6 +36,7 @@ export const RsvpWebsiteCard: React.FC<RsvpWebsiteCardProps> = ({
     const [iframeKey, setIframeKey] = useState(0);
 
     const containerRef = useRef<HTMLDivElement>(null);
+    const iframeRef = useRef<HTMLIFrameElement>(null);
     const [scale, setScale] = useState(1);
     const [dimensions, setDimensions] = useState({ width: 390, height: 693 });
 
@@ -109,7 +110,7 @@ export const RsvpWebsiteCard: React.FC<RsvpWebsiteCardProps> = ({
         return () => ro.disconnect();
     }, []);
 
-    const targetId = resolvedWeddingId || 'latest';
+    const targetId = initialWeddingId || resolvedWeddingId || 'demo';
     const iframeSrc = `/rsvp/${targetId}?preview=true`;
 
     // Fallback wedding data structure if database is completely empty or iframe errors
@@ -133,6 +134,44 @@ export const RsvpWebsiteCard: React.FC<RsvpWebsiteCardProps> = ({
         ],
     };
 
+    const handleIframeLoad = () => {
+        setIsLoading(false);
+        try {
+            const iframeDoc = iframeRef.current?.contentDocument;
+            if (iframeDoc) {
+                const style = iframeDoc.createElement('style');
+                style.innerHTML = `
+                    nextjs-portal,
+                    [data-nextjs-dev-tools],
+                    [data-nextjs-dev-tools-button],
+                    [data-nextjs-toast],
+                    div[data-nextjs-dev-tools-wrapper] {
+                        display: none !important;
+                        visibility: hidden !important;
+                        opacity: 0 !important;
+                        pointer-events: none !important;
+                    }
+                `;
+                iframeDoc.head?.appendChild(style);
+
+                const cleanupPortals = () => {
+                    const portals = iframeDoc.querySelectorAll('nextjs-portal, [data-nextjs-dev-tools], [data-nextjs-dev-tools-button]');
+                    portals.forEach(p => p.remove());
+                };
+                cleanupPortals();
+
+                const observer = new MutationObserver(() => {
+                    cleanupPortals();
+                });
+                if (iframeDoc.body) {
+                    observer.observe(iframeDoc.body, { childList: true, subtree: true });
+                }
+            }
+        } catch {
+            // cross-origin safe fallback
+        }
+    };
+
     return (
         <div
             ref={containerRef}
@@ -148,31 +187,27 @@ export const RsvpWebsiteCard: React.FC<RsvpWebsiteCardProps> = ({
                 flexDirection: 'column',
             }}
         >
-            {/* Loading Indicator */}
+            {/* Refined Minimalist Apple-style Loading Indicator */}
             {isLoading && !hasIframeError && (
                 <div
                     style={{
                         position: 'absolute',
                         inset: 0,
                         display: 'flex',
-                        flexDirection: 'column',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        background: 'radial-gradient(ellipse at center, #FFFDF9 0%, #F5EFE6 100%)',
+                        background: '#FAF7F2',
                         zIndex: 10,
-                        gap: '10px',
-                        padding: '1rem',
-                        textAlign: 'center',
                     }}
                 >
                     <div
                         style={{
-                            width: '40px',
-                            height: '40px',
+                            width: '26px',
+                            height: '26px',
                             borderRadius: '50%',
-                            border: '2px solid rgba(197, 160, 89, 0.25)',
+                            border: '2px solid rgba(197, 160, 89, 0.2)',
                             borderTopColor: '#C5A059',
-                            animation: 'spin 0.8s linear infinite',
+                            animation: 'spin 0.7s linear infinite',
                         }}
                     />
                     <style>{`
@@ -180,28 +215,17 @@ export const RsvpWebsiteCard: React.FC<RsvpWebsiteCardProps> = ({
                             to { transform: rotate(360deg); }
                         }
                     `}</style>
-                    <span
-                        style={{
-                            fontSize: '0.75rem',
-                            fontFamily: 'var(--font-sans)',
-                            letterSpacing: '0.06em',
-                            color: '#8C6D34',
-                            fontWeight: 600,
-                            textTransform: 'uppercase',
-                        }}
-                    >
-                        Loading Live Wedding Website
-                    </span>
                 </div>
             )}
 
             {/* Live Real RSVP Website rendered via Scaled Responsive iframe */}
             {!hasIframeError ? (
                 <iframe
+                    ref={iframeRef}
                     key={`rsvp-frame-${targetId}-${iframeKey}`}
                     src={iframeSrc}
                     title="Real Wedding Website & RSVP"
-                    onLoad={() => setIsLoading(false)}
+                    onLoad={handleIframeLoad}
                     onError={() => {
                         setIsLoading(false);
                         setHasIframeError(true);

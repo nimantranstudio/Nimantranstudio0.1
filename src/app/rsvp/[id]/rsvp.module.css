@@ -1837,21 +1837,363 @@
     object-fit: contain;
 }
 
-/* ─── PREVIEW ADAPTATIONS ────────────────────────────────────────────────── */
+/* ─── PREVIEW ADAPTATIONS (MOBILE PHONE MOCKUP HIGH-DPI SHARPNESS) ────── */
 .previewWrapper {
     max-width: 100% !important;
     padding: 0 !important;
     width: 100% !important;
+    min-height: 100% !important;
 }
 
+/* 1. Royal Cover Screen (Unopened Cover State) */
+.previewCoverWrapper {
+    min-height: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 0 !important;
+}
+
+.previewCoverCard {
+    min-height: 100% !important;
+    height: 100% !important;
+    padding: 2.75rem 0.75rem 1.75rem !important;
+    justify-content: space-between !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+}
+
+.previewCoverCard .coverHeaderBlock {
+    margin-top: 0.35rem !important;
+    z-index: 5 !important;
+}
+
+.previewCoverCard .coverPreTag {
+    font-size: 0.62rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.22em !important;
+    color: #9E7B48 !important;
+}
+
+.previewCoverCard .coverCenterStage {
+    height: 250px !important;
+    margin: 0.15rem 0 !important;
+    position: relative !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.previewCoverCard .coverRotatingMandala {
+    width: 244px !important;
+    height: 244px !important;
+    opacity: 0.92 !important;
+}
+
+.previewCoverCard .coverSealHalo {
+    width: 164px !important;
+    height: 164px !important;
+}
+
+.previewCoverCard .coverSealDisc {
+    width: 130px !important;
+    height: 130px !important;
+    padding: 0.65rem 0.5rem !important;
+    box-shadow:
+        0 0 0 1.5px #ECC878,
+        0 0 0 3.5px #FAF7F2,
+        0 0 0 5px #C5A059,
+        0 10px 28px rgba(140, 105, 55, 0.22),
+        inset 0 1.5px 4px rgba(255, 255, 255, 0.95) !important;
+}
+
+.previewCoverCard .coverSealDisc::before {
+    inset: 6px !important;
+}
+
+.previewCoverCard .coverMonogram {
+    font-size: 1.55rem !important;
+    line-height: 1 !important;
+    gap: 0.15rem !important;
+    margin-bottom: 0 !important;
+}
+
+.previewCoverCard .coverMonogramInitial {
+    font-size: 1.55rem !important;
+    line-height: 1 !important;
+}
+
+.previewCoverCard .coverMonogramAmp {
+    font-size: 1.15rem !important;
+    margin: 0 0.15rem !important;
+    color: #C5A059 !important;
+}
+
+.previewCoverCard .coverDiscDivider {
+    width: 44px !important;
+    margin: 0.25rem 0 0.2rem !important;
+    gap: 0.25rem !important;
+}
+
+.previewCoverCard .coverDiscDiamond {
+    font-size: 0.32rem !important;
+}
+
+.previewCoverCard .coverTapText {
+    font-size: 0.54rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.18em !important;
+    color: #8A6D3B !important;
+    line-height: 1 !important;
+}
+
+.previewCoverCard .coverFooterBlock {
+    margin-bottom: 0.5rem !important;
+    z-index: 5 !important;
+}
+
+.previewCoverCard .coverPromptHint {
+    font-size: 0.68rem !important;
+    letter-spacing: 0.02em !important;
+    color: #8A734C !important;
+    gap: 0.35rem !important;
+}
+
+.previewCoverCard .coverPulseDot {
+    width: 5px !important;
+    height: 5px !important;
+}
+
+/* 2. Inside Wedding Invitation Website (Opened State) */
 .previewCard {
     max-height: none !important;
     overflow: visible !important;
-    padding: 1.5rem 0.5rem !important;
+    padding: 2.75rem 0.65rem 3.5rem !important;
     border-radius: 0 !important;
     background: transparent !important;
     box-shadow: none !important;
     border: none !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.previewCard .heroDetailedSection {
+    padding: 0 !important;
+    margin: 0 0 1.5rem !important;
+    width: 100% !important;
+}
+
+.previewCard .heroBlessingText {
+    font-size: 0.76rem !important;
+    line-height: 1.4 !important;
+    color: #7A6858 !important;
+    margin-bottom: 0.75rem !important;
+}
+
+.previewCard .heroInviteTag {
+    font-size: 0.60rem !important;
+    letter-spacing: 0.20em !important;
+    color: #9E7B48 !important;
+    margin-bottom: 1.25rem !important;
+    padding: 0 0.5rem !important;
+}
+
+.previewCard .heroVerticalCoupleBlock {
+    gap: 0.75rem !important;
+    width: 100% !important;
+}
+
+.previewCard .heroPersonBlock {
+    width: 100% !important;
+}
+
+.previewCard .heroPersonName {
+    font-size: 1.75rem !important;
+    line-height: 1.15 !important;
+    letter-spacing: -0.01em !important;
+    color: #2D221A !important;
+    margin: 0 0 0.3rem !important;
+}
+
+.previewCard .heroPersonLineage {
+    gap: 0.2rem !important;
+    margin-top: 0.15rem !important;
+}
+
+.previewCard .heroPersonRole {
+    font-size: 0.72rem !important;
+    color: #8C7868 !important;
+}
+
+.previewCard .heroPersonParents {
+    font-size: 0.82rem !important;
+    color: #4A3C32 !important;
+    line-height: 1.35 !important;
+    font-weight: 500 !important;
+}
+
+.previewCard .heroVerticalAmpersandWrap {
+    margin: 0.85rem 0 !important;
+    gap: 0.75rem !important;
+}
+
+.previewCard .heroAmpersand {
+    font-size: 1.45rem !important;
+    color: #C5A059 !important;
+}
+
+.previewCard .heroOccasionsText {
+    font-size: 0.75rem !important;
+    margin: 1.25rem 0 0.85rem !important;
+}
+
+.previewCard .heroDiamondDivider {
+    margin: 0.85rem 0 1.25rem !important;
+}
+
+.previewCard .sanctuarySection {
+    margin: 1rem 0 !important;
+    width: 100% !important;
+}
+
+.previewCard .sanctuaryHeader {
+    margin-bottom: 0.85rem !important;
+}
+
+.previewCard .sanctuaryBadge {
+    font-size: 0.58rem !important;
+    letter-spacing: 0.18em !important;
+}
+
+.previewCard .sanctuaryTitle {
+    font-size: 1.35rem !important;
+    line-height: 1.2 !important;
+    margin: 0.35rem 0 0.25rem !important;
+}
+
+.previewCard .sanctuarySubtitle {
+    font-size: 0.74rem !important;
+    line-height: 1.4 !important;
+    padding: 0 0.5rem !important;
+}
+
+.previewCard .sanctuaryStageWrap {
+    height: 180px !important;
+    margin: 0.75rem 0 !important;
+}
+
+.previewCard .sanctuaryInnerCard {
+    padding: 0.85rem 0.5rem !important;
+}
+
+.previewCard .innerCardDateTag {
+    font-size: 0.55rem !important;
+    letter-spacing: 0.18em !important;
+}
+
+.previewCard .innerCardDateMain {
+    font-size: 1.05rem !important;
+    margin: 0.25rem 0 !important;
+}
+
+.previewCard .innerCardDateSub {
+    font-size: 0.70rem !important;
+}
+
+.previewCard .sanctuaryTimerGrid {
+    gap: 0.35rem !important;
+    margin-top: 0.45rem !important;
+}
+
+.previewCard .sanctuaryTimerBox {
+    padding: 0.35rem 0.25rem !important;
+    min-width: 44px !important;
+}
+
+.previewCard .sanctuaryTimerNum {
+    font-size: 1.05rem !important;
+}
+
+.previewCard .sanctuaryTimerLabel {
+    font-size: 0.50rem !important;
+}
+
+.previewCard .sanctuaryDoorsWrapper {
+    height: 180px !important;
+}
+
+.previewCard .quoteCard {
+    padding: 1rem 0.85rem !important;
+    margin: 1rem 0 !important;
+}
+
+.previewCard .quoteText {
+    font-size: 0.80rem !important;
+    line-height: 1.45 !important;
+}
+
+.previewCard .ornamentDivider {
+    margin: 1.25rem 0 !important;
+}
+
+.previewCard .eventsSection {
+    margin: 1.5rem 0 !important;
+    width: 100% !important;
+}
+
+.previewCard .sectionSubHead {
+    font-size: 0.58rem !important;
+    letter-spacing: 0.2em !important;
+}
+
+.previewCard .sectionTitle {
+    font-size: 1.45rem !important;
+    line-height: 1.2 !important;
+    margin: 0.35rem 0 0.25rem !important;
+}
+
+.previewCard .sectionSubtitle {
+    font-size: 0.74rem !important;
+    margin-bottom: 1rem !important;
+}
+
+.previewCard .eventsTimeline {
+    gap: 0.85rem !important;
+    width: 100% !important;
+}
+
+.previewCard .timelineCard {
+    padding: 1rem 0.85rem !important;
+    border-radius: 16px !important;
+    margin-bottom: 0.75rem !important;
+}
+
+.previewCard .eventCardTitle {
+    font-size: 1.15rem !important;
+    margin-bottom: 0.35rem !important;
+}
+
+.previewCard .eventCardDesc {
+    font-size: 0.75rem !important;
+    line-height: 1.4 !important;
+    margin-bottom: 0.65rem !important;
+}
+
+.previewCard .eventDetailsList {
+    gap: 0.4rem !important;
+}
+
+.previewCard .eventDetailRow {
+    gap: 0.45rem !important;
+    font-size: 0.72rem !important;
+}
+
+.previewCard .eventSecondaryBtn {
+    padding: 0.45rem 0.75rem !important;
+    font-size: 0.70rem !important;
+    border-radius: 9999px !important;
+    margin-top: 0.65rem !important;
 }
 
 /* ─── RESPONSIVE BREAKPOINTS ─────────────────────────────────────────────── */

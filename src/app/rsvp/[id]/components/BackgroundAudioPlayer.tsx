@@ -136,6 +136,10 @@ export const BackgroundAudioPlayer: React.FC<BackgroundAudioPlayerProps> = ({
         }
     }, [autoPlayTrigger, disabled]);
 
+    if (disabled) {
+        return null;
+    }
+
     return (
         <div className={styles.audioPlayerContainer}>
             <audio

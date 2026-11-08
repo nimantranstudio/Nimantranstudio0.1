@@ -131,6 +131,11 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* Choose Your Template / Wedding Theme Section */}
+      <ThemeShowcase initialThemes={themes} />
+
+      <BundleGridSection />
+
       {/* Simple Process Section */}
       <section className={styles.process}>
         <div className="container">
@@ -191,10 +196,6 @@ export default async function Home() {
           </div>
         </div>
       </section>
-
-      <BundleGridSection />
-
-      <ThemeShowcase initialThemes={themes} />
 
       <PricingSection
         price={pricing.price}

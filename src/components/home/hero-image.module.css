@@ -19,7 +19,17 @@
     align-items: center;
 }
 
-.slideWrapper {
+@keyframes floatScene {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-8px);
+    }
+}
+
+.slideWrapper,
+.slideContent {
     position: absolute;
     inset: 0;
     display: flex;
@@ -27,7 +37,37 @@
     align-items: center;
     width: 100%;
     height: 100%;
-    will-change: opacity, transform;
+    will-change: opacity, transform, filter;
+    transition: opacity 0.45s cubic-bezier(0.23, 1, 0.32, 1), 
+                transform 0.45s cubic-bezier(0.23, 1, 0.32, 1), 
+                filter 0.45s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.slideVisible {
+    opacity: 1;
+    transform: scale(1);
+    filter: blur(0px);
+    pointer-events: auto;
+    z-index: 2;
+}
+
+.slideHidden {
+    opacity: 0;
+    transform: scale(0.97);
+    filter: blur(5px);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.carouselDisplayArea {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: floatScene 6s ease-in-out infinite;
+    will-change: transform;
 }
 
 .imageWrapper {
@@ -104,11 +144,13 @@
     white-space: nowrap;
     transition: box-shadow 0.25s ease, background 0.25s ease, transform 0.2s ease;
     cursor: default;
+    user-select: none;
 }
 
 .tag:hover {
     box-shadow: 0 12px 36px rgba(0, 0, 0, 0.1);
     background: rgba(255, 255, 255, 0.9);
+    transform: translateY(-2px);
 }
 
 .tagIcon {
@@ -117,10 +159,159 @@
     align-items: center;
 }
 
+/* Phone Mockup Screen Styles - Apple iPhone 16 Pro Design */
+.phoneWrapper {
+    position: relative;
+    width: 268px;
+    max-width: 82vw;
+    height: 536px;
+    z-index: 10;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 8px;
+    filter: drop-shadow(0 25px 50px rgba(0, 0, 0, 0.22));
+}
+
+.websitePhoneFrame {
+    width: 100%;
+    height: 100%;
+    background: #141518;
+    border-radius: 44px;
+    border: 3.5px solid #2d2f36;
+    box-shadow: 
+        0 0 0 1px rgba(255, 255, 255, 0.08) inset,
+        0 20px 40px -10px rgba(0, 0, 0, 0.4),
+        0 1px 3px rgba(0, 0, 0, 0.3);
+    overflow: visible;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Apple Physical Side Hardware Buttons */
+.phoneButtonAction {
+    position: absolute;
+    left: -6.5px;
+    top: 96px;
+    width: 3.5px;
+    height: 22px;
+    background: #2d2f36;
+    border-radius: 2px 0 0 2px;
+}
+
+.phoneButtonVolumeUp {
+    position: absolute;
+    left: -6.5px;
+    top: 132px;
+    width: 3.5px;
+    height: 42px;
+    background: #2d2f36;
+    border-radius: 2px 0 0 2px;
+}
+
+.phoneButtonVolumeDown {
+    position: absolute;
+    left: -6.5px;
+    top: 184px;
+    width: 3.5px;
+    height: 42px;
+    background: #2d2f36;
+    border-radius: 2px 0 0 2px;
+}
+
+.phoneButtonPower {
+    position: absolute;
+    right: -6.5px;
+    top: 140px;
+    width: 3.5px;
+    height: 60px;
+    background: #2d2f36;
+    border-radius: 0 2px 2px 0;
+}
+
+/* Apple Precision Dynamic Island */
+.dynamicIsland {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 78px;
+    height: 20px;
+    background: #000000;
+    border-radius: 9999px;
+    z-index: 35;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 9px;
+    gap: 7px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.dynamicIslandLens {
+    width: 8px;
+    height: 8px;
+    background: radial-gradient(circle at 35% 35%, #1e293b 0%, #090a0f 100%);
+    border-radius: 50%;
+    box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.15);
+}
+
+.dynamicIslandSensor {
+    width: 5px;
+    height: 5px;
+    background: #090a0f;
+    border-radius: 50%;
+    opacity: 0.6;
+}
+
+.websitePhoneScreen {
+    width: 100%;
+    height: 100%;
+    border-radius: 38px;
+    overflow: hidden;
+    position: relative;
+    background: #FAF7F2;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Native High-DPI Smooth Scroll Area inside phone chassis */
+.phoneScreenScrollArea {
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    background: #FAF7F2;
+    position: relative;
+}
+
+.phoneScreenScrollArea::-webkit-scrollbar {
+    display: none;
+}
+
+/* Apple Home Indicator Bar */
+.phoneHomeIndicator {
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 96px;
+    height: 4px;
+    background: rgba(30, 30, 30, 0.28);
+    border-radius: 9999px;
+    z-index: 40;
+    pointer-events: none;
+}
+
 /* Subtle Minimal Frosted Capsule Indicator */
 .carouselIndicators {
     position: absolute;
-    bottom: 0.25rem;
+    bottom: -18px;
     left: 50%;
     transform: translateX(-50%);
     display: inline-flex;
@@ -164,7 +355,7 @@
 
 @media (max-width: 900px) {
     .container {
-        height: 480px;
+        height: 510px;
     }
 
     .scene {
@@ -175,6 +366,48 @@
 
     .imageWrapper {
         width: 250px;
+    }
+
+    .phoneWrapper {
+        width: 245px;
+        height: 460px;
+    }
+
+    .phoneDevice {
+        border-radius: 36px;
+        padding: 7px;
+    }
+
+    .phoneScreen {
+        border-radius: 30px;
+        padding: 1rem 0.5rem 0.85rem;
+    }
+
+    .phoneNotch {
+        width: 74px;
+        height: 18px;
+    }
+
+    .phoneMandalaWrap {
+        width: 280px;
+        height: 280px;
+    }
+
+    .phoneCenterStage {
+        height: 230px;
+    }
+
+    .phoneSealDisc {
+        width: 144px;
+        height: 144px;
+    }
+
+    .phoneMonogramInitial {
+        font-size: 1.35rem;
+    }
+
+    .phoneMonogramAmp {
+        font-size: 1rem;
     }
 
     .imageWrapper2 {

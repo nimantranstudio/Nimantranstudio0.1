@@ -1,77 +1,136 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { motion } from 'framer-motion';
 import { Globe, ClipboardCheck, Users, BarChart, Smartphone, Calendar } from 'lucide-react';
 import styles from './hero-image.module.css';
+import { HeroMobileScreen } from './HeroMobileScreen';
 
 const HeroImage = () => {
-    return (
-        <div className={styles.container}>
-            <div className={styles.scene}>
-                <div className={styles.slideWrapper}>
-                    <motion.div
-                        className={styles.imageWrapper}
-                        animate={{ y: [0, -10, 0] }}
-                        transition={{
-                            y: { duration: 6, repeat: Infinity, ease: "easeInOut" },
-                        }}
-                    >
-                        <Image
-                            src="/hero-image.png"
-                            alt="Elegant traditional Indian wedding invitation design by Nimantran Studio"
-                            width={500}
-                            height={667}
-                            style={{ width: '100%', height: 'auto' }}
-                            priority
-                            fetchPriority="high"
-                            sizes="(max-width: 768px) 100vw, 460px"
-                        />
-                    </motion.div>
+    // 0 = Couple Image, 1 = Mobile Wedding Invitation Screen
+    const [activeIndex, setActiveIndex] = useState<number>(0);
+    const [isInteracting, setIsInteracting] = useState<boolean>(false);
+    const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-                    {/* Floating Feature Tags */}
-                    <FloatingTag
-                        icon={<Smartphone size={18} />}
-                        text="Create Invites"
-                        delay={0.1}
-                        top="12%"
-                        left="2%"
+    // Auto-advance carousel every 10 seconds (paused while user interacts with the phone)
+    useEffect(() => {
+        if (isInteracting) {
+            if (timerRef.current) clearInterval(timerRef.current);
+            return;
+        }
+
+        timerRef.current = setInterval(() => {
+            setActiveIndex((prev) => (prev === 0 ? 1 : 0));
+        }, 10000);
+
+        return () => {
+            if (timerRef.current) clearInterval(timerRef.current);
+        };
+    }, [isInteracting]);
+
+    const handleSelectSlide = (idx: number) => {
+        setActiveIndex(idx);
+        // Reset 10-second interval when user manually clicks indicator
+        if (timerRef.current) clearInterval(timerRef.current);
+        if (!isInteracting) {
+            timerRef.current = setInterval(() => {
+                setActiveIndex((prev) => (prev === 0 ? 1 : 0));
+            }, 10000);
+        }
+    };
+
+    return (
+        <div
+            className={styles.container}
+            onMouseEnter={() => setIsInteracting(true)}
+            onMouseLeave={() => setIsInteracting(false)}
+        >
+            <div className={styles.scene}>
+                {/* Unified floating container: floats once on parent so slides never shear out-of-phase */}
+                <div className={styles.carouselDisplayArea}>
+                    {/* Slide 0: Couple Image */}
+                    <div
+                        className={`${styles.slideContent} ${activeIndex === 0 ? styles.slideVisible : styles.slideHidden}`}
+                    >
+                        <div className={styles.imageWrapper}>
+                            <Image
+                                src="/hero-image.png"
+                                alt="Elegant traditional Indian wedding invitation design by Nimantran Studio"
+                                width={500}
+                                height={667}
+                                style={{ width: '100%', height: 'auto' }}
+                                priority
+                                fetchPriority="high"
+                                sizes="(max-width: 768px) 100vw, 460px"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Slide 1: Mobile Wedding Invitation Screen - Preloaded in DOM from first paint */}
+                    <div
+                        className={`${styles.slideContent} ${activeIndex === 1 ? styles.slideVisible : styles.slideHidden}`}
+                    >
+                        <div className={styles.phoneWrapper}>
+                            <HeroMobileScreen onInteract={(interacting) => setIsInteracting(interacting)} />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Floating Feature Tags */}
+                <FloatingTag
+                    icon={<Smartphone size={18} />}
+                    text="Create Invites"
+                    top="12%"
+                    left="2%"
+                />
+                <FloatingTag
+                    icon={<Globe size={18} />}
+                    text="Wedding Website"
+                    top="34%"
+                    left="-6%"
+                />
+                <FloatingTag
+                    icon={<Users size={18} />}
+                    text="Guest Management"
+                    top="62%"
+                    left="0%"
+                />
+                <FloatingTag
+                    icon={<Calendar size={18} />}
+                    text="Multi Event Control"
+                    top="22%"
+                    right="-2%"
+                />
+                <FloatingTag
+                    icon={<ClipboardCheck size={18} />}
+                    text="RSVP Tracking"
+                    top="42%"
+                    right="-8%"
+                />
+                <FloatingTag
+                    icon={<BarChart size={18} />}
+                    text="Analytics Dashboard"
+                    top="66%"
+                    right="2%"
+                />
+
+                {/* Carousel Indicators Below Image */}
+                <div className={styles.carouselIndicators} role="tablist" aria-label="Hero visual carousel">
+                    <button
+                        type="button"
+                        className={`${styles.indicatorDot} ${activeIndex === 0 ? styles.activeDot : ''}`}
+                        onClick={() => handleSelectSlide(0)}
+                        aria-label="Couple photo slide"
+                        aria-selected={activeIndex === 0}
+                        role="tab"
                     />
-                    <FloatingTag
-                        icon={<Globe size={18} />}
-                        text="Wedding Website"
-                        delay={0.15}
-                        top="34%"
-                        left="-6%"
-                    />
-                    <FloatingTag
-                        icon={<Users size={18} />}
-                        text="Guest Management"
-                        delay={0.2}
-                        top="62%"
-                        left="0%"
-                    />
-                    <FloatingTag
-                        icon={<Calendar size={18} />}
-                        text="Multi Event Control"
-                        delay={0.25}
-                        top="22%"
-                        right="-2%"
-                    />
-                    <FloatingTag
-                        icon={<ClipboardCheck size={18} />}
-                        text="RSVP Tracking"
-                        delay={0.3}
-                        top="42%"
-                        right="-8%"
-                    />
-                    <FloatingTag
-                        icon={<BarChart size={18} />}
-                        text="Analytics Dashboard"
-                        delay={0.35}
-                        top="66%"
-                        right="2%"
+                    <button
+                        type="button"
+                        className={`${styles.indicatorDot} ${activeIndex === 1 ? styles.activeDot : ''}`}
+                        onClick={() => handleSelectSlide(1)}
+                        aria-label="Mobile wedding invitation slide"
+                        aria-selected={activeIndex === 1}
+                        role="tab"
                     />
                 </div>
             </div>
@@ -80,29 +139,31 @@ const HeroImage = () => {
 };
 
 // Helper Component for Tags
-const FloatingTag = ({ icon, text, delay, top, left, right, bottom }: { icon: React.ReactNode, text: string, delay: number, top?: string, left?: string, right?: string, bottom?: string }) => {
+const FloatingTag = ({
+    icon,
+    text,
+    top,
+    left,
+    right,
+    bottom,
+}: {
+    icon: React.ReactNode;
+    text: string;
+    top?: string;
+    left?: string;
+    right?: string;
+    bottom?: string;
+}) => {
     return (
-        <motion.div
+        <div
             className={styles.tag}
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{
-                opacity: 1,
-                scale: 1,
-            }}
-            transition={{
-                type: "spring",
-                bounce: 0,
-                duration: 0.6,
-                delay: delay
-            }}
             style={{ top, left, right, bottom }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.96 }}
         >
             <span className={styles.tagIcon}>{icon}</span>
             <span>{text}</span>
-        </motion.div>
+        </div>
     );
 };
 
 export default HeroImage;
+
