@@ -51,6 +51,28 @@ export const WEBSITE_TEMPLATES: WebsiteTemplate[] = [
         status: 'active',
         load: () => import('./garden-of-love'),
     },
+    {
+        id: 'blossom-oud',
+        name: 'Blossom & Oud',
+        tagline: 'Wax-sealed couture envelope, Moroccan botanicals, and ambient oud elegance',
+        description:
+            'A four-flap wax-sealed envelope opens to an illustrated fountain courtyard video hero, ornate Arabic calligraphy arch, scroll-driven floral timeline, Beldi Country Club sketch, dress-code palette, and RSVP.',
+        thumbnail: '/website-templates/blossom-oud/thumb.webp',
+        price: 999,
+        status: 'active',
+        load: () => import('./blossom-oud'),
+    },
+    {
+        id: 'midnight-velour',
+        name: 'Midnight Velour',
+        tagline: 'Parting golden stage curtains, midnight navy-slate, and champagne-gold script',
+        description:
+            'A monogram ring preloader and parting golden curtains unveil a cinematic hero video, blush-ivory stationery cards with white-rose & gold-leaf florals, live countdown, two-day timeline, dress-code palette with 7-photo lookbook, drink-preference RSVP, and interactive venue map.',
+        thumbnail: '/website-templates/midnight-velour/thumb.webp',
+        price: 999,
+        status: 'active',
+        load: () => import('./midnight-velour'),
+    },
 ];
 
 export const DEFAULT_TEMPLATE_ID = WEBSITE_TEMPLATES[0].id;
