@@ -3306,15 +3306,6 @@ export default function RoyalHeritageTemplate({ wedding, isPreview = false }: We
                 </RevealOnScroll>
             </section>
 
-            {/* 10. Kitna Jaante Ho? — Ladkiwale vs Ladkewale Trivia Game */}
-            <section className={R.section} id="trivia">
-                <RevealOnScroll>
-                    <div className={R.card}>
-                        <DastakTriviaSection partnerOne={partnerOne} partnerTwo={partnerTwo} />
-                    </div>
-                </RevealOnScroll>
-            </section>
-
             {/* 11. Moments — Our Gallery Jharokha Wall */}
             <section className={R.section} id="gallery">
                 <RevealOnScroll>
@@ -3326,74 +3317,6 @@ export default function RoyalHeritageTemplate({ wedding, isPreview = false }: We
                     frames={galleryFrames}
                     altForIndex={(idx) => `${partnerOne} & ${partnerTwo}, photo ${idx + 1}`}
                 />
-            </section>
-
-            {/* 12. Wedding Hashtag */}
-            <section className={`${R.section} ${R.hashtagSection}`}>
-                <RevealOnScroll>
-                    <span className={R.eyebrowDark}>Tag your photos</span>
-                    <p className={R.hashtag}>{hashtag}</p>
-                </RevealOnScroll>
-            </section>
-
-            {/* 13. The Setting (Main Venue) */}
-            <section className={`${R.section} ${R.venueSection}`}>
-                <RevealOnScroll>
-                    <span className={R.eyebrowDark}>The setting</span>
-                    <h2 className={R.heading}>{mainVenueName}</h2>
-                    <div className={R.card}>
-                        <p className={R.venueAddr}>{fullVenueAddress}</p>
-                        <div className={R.venueActions}>
-                            <button
-                                type="button"
-                                className={R.copyBtn}
-                                onClick={() => {
-                                    navigator.clipboard?.writeText(fullVenueAddress).then(
-                                        () => {
-                                            setCopiedAddr(true);
-                                            window.setTimeout(() => setCopiedAddr(false), 2200);
-                                        },
-                                        () => undefined
-                                    );
-                                }}
-                            >
-                                {copiedAddr ? 'Copied ✦' : 'Copy address'}
-                            </button>
-                            <a
-                                className={R.copyBtn}
-                                href={
-                                    data.googleMapsLink ||
-                                    `https://maps.google.com/?q=${encodeURIComponent(
-                                        fullVenueAddress
-                                    )}`
-                                }
-                                target="_blank"
-                                rel="noreferrer"
-                            >
-                                Open map
-                            </a>
-                        </div>
-                    </div>
-                </RevealOnScroll>
-            </section>
-
-            {/* 14. Your Journey — For Our Guests */}
-            <section className={R.section} id="travel">
-                <RevealOnScroll>
-                    <span className={R.eyebrowDark}>Your journey</span>
-                    <h2 className={R.heading}>For our guests</h2>
-                    <Divider />
-                </RevealOnScroll>
-                <div className={R.infoGrid}>
-                    {guestInfoCards.map((card, idx) => (
-                        <RevealOnScroll key={card.id} delay={0.06 * idx}>
-                            <div className={R.infoCard}>
-                                <span className={R.infoHead}>{card.label}</span>
-                                <p>{card.value}</p>
-                            </div>
-                        </RevealOnScroll>
-                    ))}
-                </div>
             </section>
 
             {/* 15. Join the Celebration — Chitthi RSVP Card */}
@@ -3617,66 +3540,6 @@ export default function RoyalHeritageTemplate({ wedding, isPreview = false }: We
                     </div>
                 </RevealOnScroll>
             </section>
-
-            {/* 17. Finale Footer */}
-            <footer className={R.finale}>
-                <RevealOnScroll>
-                    <Diamond className={R.finaleDiamond} />
-                    <span className={R.finaleMono}>
-                        {monoFirst}
-                        <span className={R.monoDot}>·</span>
-                        {monoSecond}
-                    </span>
-                    <p className={R.finaleCopy}>
-                        Our door is open, and the lamps are lit. We cannot wait to welcome you in.
-                    </p>
-                    <div className={R.finaleCtas}>
-                        <button
-                            type="button"
-                            className={R.ctaPrimary}
-                            onClick={() => {
-                                siteRef.current?.querySelector('#rsvp')?.scrollIntoView({
-                                    behavior: prefersReducedMotion() ? 'auto' : 'smooth',
-                                    block: 'start',
-                                });
-                            }}
-                        >
-                            RSVP now
-                        </button>
-                        <button
-                            type="button"
-                            className={R.ctaGhost}
-                            onClick={() => {
-                                siteRef.current?.scrollIntoView({
-                                    behavior: prefersReducedMotion() ? 'auto' : 'smooth',
-                                    block: 'start',
-                                });
-                            }}
-                        >
-                            Back to top
-                        </button>
-                    </div>
-                    <div className={R.finaleNames}>
-                        {partnerOne} &amp; {partnerTwo} · {formatShortDots(isoDate)}
-                    </div>
-                    {footerCalLinks ? (
-                        <div className={R.calRow}>
-                            <a href={footerCalLinks.google} target="_blank" rel="noreferrer">
-                                Google Calendar
-                            </a>
-                            <a
-                                href={footerCalLinks.apple}
-                                download={`${footerCalLinks.title}.ics`}
-                            >
-                                Apple / iCal
-                            </a>
-                        </div>
-                    ) : null}
-                    <span className={R.credit}>
-                        Made with&nbsp;<span className={R.creditBrand}>Nimantran Studio</span>
-                    </span>
-                </RevealOnScroll>
-            </footer>
 
             {/* Floating Dastak Audio Toggle */}
             <DastakMusicToggle src={audioTrackSrc} />
