@@ -1,0 +1,1319 @@
+/* ==========================================================================
+   Blossom & Oud — 100% Replica of https://webgencyinvitations.com/blossomoud
+   ========================================================================== */
+
+@font-face {
+  font-family: 'Webgency';
+  src: url('/website-templates/blossom-oud/fonts/SourceSans3-Regular.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Webgency';
+  src: url('/website-templates/blossom-oud/fonts/Rufina-Regular.woff') format('woff');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Webgency';
+  src: url('/website-templates/blossom-oud/fonts/Rufina-Bold.woff') format('woff');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Webgency';
+  src: url('/website-templates/blossom-oud/fonts/BeauRivage-Regular.woff') format('woff');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'NewFonts';
+  src: url('/website-templates/blossom-oud/fonts/GT_Super_Display_Lig.woff') format('woff');
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'NewFonts';
+  src: url('/website-templates/blossom-oud/fonts/Amiri-Bold.woff') format('woff');
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'NewFonts';
+  src: url('/website-templates/blossom-oud/fonts/ImperialScript-Regul.woff') format('woff');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'NewFonts';
+  src: url('/website-templates/blossom-oud/fonts/ArticaPro.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'NewFonts';
+  src: url('/website-templates/blossom-oud/fonts/TheSilverEditorial-R.woff') format('woff');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'NewFonts';
+  src: url('/website-templates/blossom-oud/fonts/Ovo-Regular.woff2') format('woff2'),
+       url('/website-templates/blossom-oud/fonts/Vazir_Regular.woff') format('woff');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'NewFonts';
+  src: url('/website-templates/blossom-oud/fonts/Canela-Light-Trial.woff') format('woff');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'NewFonts';
+  src: url('/website-templates/blossom-oud/fonts/decotype-thuluth-reg.woff') format('woff');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'NewFonts';
+  src: url('/website-templates/blossom-oud/fonts/ReemKufi-Regular.woff2') format('woff2');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Ovo';
+  src: url('/website-templates/blossom-oud/fonts/Ovo-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+.blossom-oud-root {
+  --t-headline-font: 'Webgency', Arial, sans-serif;
+  --t-text-font: 'Webgency', Arial, sans-serif;
+  font-family: 'Webgency', Arial, sans-serif;
+  background-color: #f9e6d4;
+  color: #2a2a2a;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+  -webkit-font-smoothing: antialiased;
+}
+
+.blossom-oud-root.bo-locked {
+  height: 100vh;
+  max-height: 850px;
+  overflow: hidden;
+}
+
+/* Base Tilda Zero-Block primitives */
+.blossom-oud-root .t396 {
+  -webkit-text-size-adjust: 100%;
+  position: relative;
+}
+
+.blossom-oud-root .t396__artboard {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  background-color: #f9e6d4;
+}
+
+.blossom-oud-root .t396__carrier {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.blossom-oud-root .t396__filter {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+}
+
+.blossom-oud-root .tn-elem {
+  position: absolute;
+  box-sizing: border-box;
+  display: table;
+}
+
+.blossom-oud-root .tn-atom {
+  display: table-cell;
+  vertical-align: middle;
+  width: 100%;
+  box-sizing: border-box;
+  -webkit-text-size-adjust: 100%;
+}
+
+.blossom-oud-root .tn-atom__img {
+  width: 100%;
+  display: block;
+}
+
+/* ==========================================================================
+   Record 1 (#rec2443433693) — 4-Flap Envelope & Wax Seal Opening Overlay
+   ========================================================================== */
+#rec2443433693 {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 850px;
+  z-index: 990;
+  pointer-events: auto;
+}
+
+#rec2443433693.bo-envelope-done {
+  pointer-events: none;
+}
+
+#rec2443433693 .t396__artboard {
+  position: absolute;
+  width: 100%;
+  height: 850px;
+  z-index: 990;
+  background-color: transparent;
+}
+
+/* Right Flap (1773848137949) */
+#rec2443433693 .tn-elem[data-elem-id="1773848137949"] {
+  display: block;
+  z-index: 3;
+  top: 25px;
+  left: calc(50% - 600px + 421px);
+  width: 867px;
+  height: 800px;
+  transition: transform 2000ms cubic-bezier(0.22, 1, 0.36, 1) 1800ms, opacity 500ms ease 3600ms;
+}
+#rec2443433693 .tn-elem[data-elem-id="1773848137949"] .tn-atom {
+  display: block;
+  height: 100%;
+  transform: rotate(90deg);
+}
+#rec2443433693 .tn-elem[data-elem-id="1773848137949"] .tn-atom__img {
+  object-fit: fill;
+  height: 100%;
+  filter: drop-shadow(-6px 0 18px rgba(74, 52, 25, 0.16));
+}
+#rec2443433693.bo-envelope-opening .tn-elem[data-elem-id="1773848137949"] {
+  transform: translate3d(559px, 0, 0);
+  opacity: 0;
+}
+
+/* Left Flap (1780755508216000001) */
+#rec2443433693 .tn-elem[data-elem-id="1780755508216000001"] {
+  display: block;
+  z-index: 3;
+  top: 25px;
+  left: calc(50% - 600px + -87px);
+  width: 867px;
+  height: 800px;
+  transition: transform 2000ms cubic-bezier(0.22, 1, 0.36, 1) 1800ms, opacity 500ms ease 3600ms;
+}
+#rec2443433693 .tn-elem[data-elem-id="1780755508216000001"] .tn-atom {
+  display: block;
+  height: 100%;
+  transform: rotate(270deg);
+}
+#rec2443433693 .tn-elem[data-elem-id="1780755508216000001"] .tn-atom__img {
+  object-fit: fill;
+  height: 100%;
+  filter: drop-shadow(6px 0 18px rgba(74, 52, 25, 0.16));
+}
+#rec2443433693.bo-envelope-opening .tn-elem[data-elem-id="1780755508216000001"] {
+  transform: translate3d(-559px, 0, 0);
+  opacity: 0;
+}
+
+/* Bottom Flap (1773847988093) */
+#rec2443433693 .tn-elem[data-elem-id="1773847988093"] {
+  display: block;
+  z-index: 3;
+  top: 221px;
+  left: calc(50% - 600px + 100px);
+  width: 1000px;
+  height: 785px;
+  transition: transform 1500ms cubic-bezier(0.22, 1, 0.36, 1) 1800ms, opacity 500ms ease 3200ms;
+}
+#rec2443433693 .tn-elem[data-elem-id="1773847988093"] .tn-atom {
+  display: block;
+  height: 100%;
+  transform: rotate(180deg);
+}
+#rec2443433693 .tn-elem[data-elem-id="1773847988093"] .tn-atom__img {
+  object-fit: fill;
+  height: 100%;
+  filter: drop-shadow(0 -8px 20px rgba(74, 52, 25, 0.18));
+}
+#rec2443433693.bo-envelope-opening .tn-elem[data-elem-id="1773847988093"] {
+  transform: translate3d(0, 606px, 0);
+  opacity: 0;
+}
+
+/* Top Flap (1773847892509) */
+#rec2443433693 .tn-elem[data-elem-id="1773847892509"] {
+  display: block;
+  z-index: 3;
+  top: -98px;
+  left: calc(50% - 600px + 105px);
+  width: 991px;
+  height: 583px;
+  transition: transform 1500ms cubic-bezier(0.22, 1, 0.36, 1) 1800ms, opacity 500ms ease 3200ms;
+}
+#rec2443433693 .tn-elem[data-elem-id="1773847892509"] .tn-atom {
+  display: block;
+  height: 100%;
+}
+#rec2443433693 .tn-elem[data-elem-id="1773847892509"] .tn-atom__img {
+  object-fit: fill;
+  height: 100%;
+  filter: drop-shadow(0 10px 22px rgba(74, 52, 25, 0.22));
+}
+#rec2443433693.bo-envelope-opening .tn-elem[data-elem-id="1773847892509"] {
+  transform: translate3d(0, -430px, 0);
+  opacity: 0;
+}
+
+/* Wax Seal Button (.popup-enter, 1773847037346) */
+#rec2443433693 .tn-elem[data-elem-id="1773847037346"] {
+  z-index: 5;
+  top: 310px;
+  left: calc(50% - 600px + 520px);
+  width: 160px;
+  height: auto;
+  cursor: pointer;
+  transition: transform 1500ms cubic-bezier(0.22, 1, 0.36, 1) 600ms, opacity 1200ms ease 800ms;
+}
+#rec2443433693 .tn-elem[data-elem-id="1773847037346"]:hover {
+  transform: scale(1.04);
+}
+#rec2443433693.bo-envelope-opening .tn-elem[data-elem-id="1773847037346"] {
+  transform: scale(1.22);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* "Appuyez pour ouvrir" Prompt Text (1777183175514000001) */
+#rec2443433693 .tn-elem[data-elem-id="1777183175514000001"] {
+  color: #866739;
+  text-align: center;
+  z-index: 5;
+  top: 468px;
+  left: calc(50% - 600px + 492px);
+  width: 217px;
+  height: auto;
+  cursor: pointer;
+  transition: opacity 1200ms ease;
+}
+#rec2443433693 .tn-elem[data-elem-id="1777183175514000001"] .tn-atom {
+  vertical-align: middle;
+  color: #866739;
+  font-size: 20px;
+  font-family: var(--t-text-font, Arial);
+  line-height: 1.55;
+  font-weight: 600;
+}
+#rec2443433693.bo-envelope-opening .tn-elem[data-elem-id="1777183175514000001"] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Line flower under prompt (1779615926470000001) */
+#rec2443433693 .tn-elem[data-elem-id="1779615926470000001"] {
+  z-index: 5;
+  top: 510px;
+  left: calc(50% - 600px + 506px);
+  width: 188px;
+  height: auto;
+  pointer-events: none;
+  transition: opacity 1200ms ease;
+}
+#rec2443433693.bo-envelope-opening .tn-elem[data-elem-id="1779615926470000001"] {
+  opacity: 0;
+}
+
+@media screen and (max-width: 479px) {
+  #rec2443433693 .tn-elem[data-elem-id="1773848137949"] {
+    top: 83px;
+    left: calc(50% - 160px + -75px);
+    width: 856px;
+    height: 684px;
+  }
+  #rec2443433693 .tn-elem[data-elem-id="1780755508216000001"] {
+    top: 105px;
+    left: calc(50% - 160px + -475px);
+    width: 856px;
+    height: 640px;
+  }
+  #rec2443433693 .tn-elem[data-elem-id="1773847988093"] {
+    left: calc(50% - 160px + -247px);
+    width: 815px;
+    height: 787px;
+  }
+  #rec2443433693 .tn-elem[data-elem-id="1773847892509"] {
+    top: -99px;
+    left: calc(50% - 160px + -244px);
+    width: 807px;
+    height: 569px;
+  }
+}
+
+/* ==========================================================================
+   Record 2 (#rec2443433703) — Floating Audio Control Button
+   ========================================================================== */
+.bo-audio-control {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 60px;
+  height: 60px;
+  background-color: #747B54;
+  border-radius: 50%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  z-index: 9999;
+  border: none;
+  transition: transform 0.25s ease, opacity 0.4s ease;
+}
+.bo-audio-control:hover {
+  transform: scale(1.06);
+}
+.bo-audio-control svg {
+  width: 28px;
+  height: 28px;
+}
+
+/* ==========================================================================
+   Record 3 (#rec2443433723) — Animated Video Hero with Canvas Bottom-Fade
+   ========================================================================== */
+#rec2443433723 .t396__artboard {
+  height: 782px;
+  background-color: #f9e6d4;
+}
+#rec2443433723 .tn-elem[data-elem-id="1776948113983"] {
+  z-index: 3;
+  top: 0px;
+  left: calc(50% - 220px);
+  width: 440px;
+  height: 782px;
+}
+#rec2443433723 .tn-elem[data-elem-id="1779566247730000001"] {
+  color: #866739;
+  text-align: center;
+  z-index: 4;
+  top: 334px;
+  left: calc(50% - 280px);
+  width: 560px;
+  height: auto;
+}
+#rec2443433723 .tn-elem[data-elem-id="1779566247730000001"] .tn-atom {
+  vertical-align: middle;
+  color: #866739;
+  font-size: 59px;
+  font-family: 'NewFonts', Arial, sans-serif;
+  line-height: 0.42;
+  font-weight: 300;
+}
+#rec2443433723 .tn-elem[data-elem-id="1779566247730000004"] {
+  color: #866739;
+  text-align: center;
+  z-index: 4;
+  top: 368px;
+  left: calc(50% - 27px);
+  width: 55px;
+  height: auto;
+}
+#rec2443433723 .tn-elem[data-elem-id="1779566247730000004"] .tn-atom {
+  vertical-align: middle;
+  color: #866739;
+  font-size: 28px;
+  font-family: 'NewFonts', Arial, sans-serif;
+  line-height: 1.1;
+  font-weight: 300;
+}
+#rec2443433723 .tn-elem[data-elem-id="1779566247730000003"] {
+  color: #866739;
+  text-align: center;
+  z-index: 4;
+  top: 466px;
+  left: calc(50% - 280px);
+  width: 560px;
+  height: 37px;
+}
+#rec2443433723 .tn-elem[data-elem-id="1779566247730000003"] .tn-atom {
+  vertical-align: middle;
+  color: #866739;
+  font-size: 19px;
+  font-family: 'NewFonts', Arial, sans-serif;
+  line-height: 0.5;
+  font-weight: 600;
+}
+#rec2443433723 .tn-elem[data-elem-id="1779626065755000001"] {
+  color: #866739;
+  text-align: center;
+  z-index: 4;
+  top: 491px;
+  left: calc(50% - 280px);
+  width: 560px;
+  height: 37px;
+}
+#rec2443433723 .tn-elem[data-elem-id="1779626065755000001"] .tn-atom {
+  vertical-align: middle;
+  color: #866739;
+  font-size: 19px;
+  font-family: 'NewFonts', Arial, sans-serif;
+  line-height: 0.5;
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   Record 4 (#rec2443433743) — Ornate Botanical Arch Invitation Card
+   ========================================================================== */
+#rec2443433743 .t396__artboard {
+  height: 780px;
+  background-color: #f9e6d4;
+}
+#rec2443433743 .tn-elem[data-elem-id="1779613840466"] {
+  z-index: 3;
+  top: 43px;
+  left: calc(50% - 178px);
+  width: 356px;
+  height: auto;
+}
+#rec2443433743 .tn-elem[data-elem-id="1779471640878"] {
+  z-index: 3;
+  top: 159px;
+  left: calc(50% - 106px);
+  width: 209px;
+  height: auto;
+}
+#rec2443433743 .tn-elem[data-elem-id="1779542665396"] {
+  z-index: 3;
+  top: 234px;
+  left: calc(50% - 18px);
+  width: 37px;
+  height: auto;
+  animation: boEmblemPulse 3.6s ease-in-out infinite;
+}
+@keyframes boEmblemPulse {
+  0%, 100% { transform: scale(1); }
+  30% { transform: scale(1.16); }
+  55% { transform: scale(1); }
+  80% { transform: scale(1.08); }
+}
+#rec2443433743 .tn-elem[data-elem-id="1779624381838000001"] {
+  color: #454545;
+  text-align: center;
+  z-index: 3;
+  top: 285px;
+  left: calc(50% - 122px);
+  width: 245px;
+  height: auto;
+}
+#rec2443433743 .tn-elem[data-elem-id="1779624381838000001"] .tn-atom {
+  vertical-align: middle;
+  color: #454545;
+  font-size: 22px;
+  font-family: 'NewFonts', Arial, sans-serif;
+  line-height: 1.3;
+  font-weight: 900;
+}
+#rec2443433743 .tn-elem[data-elem-id="1779472210551000005"] {
+  color: #876836;
+  text-align: center;
+  z-index: 3;
+  top: 617px;
+  left: calc(50% - 132px);
+  width: 265px;
+  height: auto;
+}
+#rec2443433743 .tn-elem[data-elem-id="1779472210551000005"] .tn-atom {
+  vertical-align: middle;
+  color: #876836;
+  font-size: 34px;
+  font-family: 'NewFonts', Arial, sans-serif;
+  line-height: 1.25;
+  font-weight: 300;
+}
+#rec2443433743 .tn-elem[data-elem-id="1779471050704"] {
+  z-index: 3;
+  top: 662px;
+  left: calc(50% - 107px);
+  width: 217px;
+  height: auto;
+}
+
+/* ==========================================================================
+   Record 5 (#rec2443433753) — Countdown ("La Célébration Commence")
+   ========================================================================== */
+#rec2443433753 .t396__artboard {
+  height: 248px;
+  background-color: #f9e6d4;
+}
+#rec2443433753 .tn-elem[data-elem-id="1771277026942000001"] {
+  color: #866739;
+  text-align: center;
+  z-index: 3;
+  top: 45px;
+  left: calc(50% - 280px);
+  width: 560px;
+  height: auto;
+}
+#rec2443433753 .tn-elem[data-elem-id="1771277026942000001"] .tn-atom {
+  vertical-align: middle;
+  color: #866739;
+  font-size: 41px;
+  font-family: 'NewFonts', Arial, sans-serif;
+  line-height: 1.55;
+  font-weight: 300;
+}
+#rec2443433753 .tn-elem[data-elem-id="1779543504626"] {
+  z-index: 3;
+  top: 110px;
+  left: calc(50% - 69px);
+  width: 139px;
+  height: auto;
+}
+#rec2443433753 .tn-elem[data-elem-id="1771277551711000001"] {
+  z-index: 3;
+  top: 73px;
+  left: calc(50% - 265px);
+  width: 531px;
+  height: 170px;
+}
+.blossom-oud-root #countdownContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  margin: 80px 20px;
+}
+.blossom-oud-root .time-block {
+  text-align: center;
+}
+.blossom-oud-root .time-block .number {
+  font-size: 45px;
+  color: #866739;
+  font-family: 'Ovo', 'NewFonts', serif;
+  line-height: 1.1;
+}
+.blossom-oud-root .time-block .label {
+  font-size: 19px;
+  margin-top: 8px;
+  font-weight: 400;
+  color: #866739;
+  font-family: 'Ovo', 'NewFonts', serif;
+}
+.blossom-oud-root .separator {
+  font-size: 52px;
+  margin-top: -40px;
+  color: #866739;
+  line-height: 1;
+}
+
+/* ==========================================================================
+   Record 6 (#rec2443433773) — Event Timeline ("Chronologie de l'événement")
+   ========================================================================== */
+#rec2443433773 .t396__artboard {
+  height: 489px;
+  background-color: #f9e6d4;
+  overflow: visible;
+}
+#rec2443433773 .tn-elem[data-elem-id="1771277026942000001"] {
+  color: #866739;
+  text-align: center;
+  z-index: 3;
+  top: 45px;
+  left: calc(50% - 280px);
+  width: 560px;
+  height: auto;
+}
+#rec2443433773 .tn-elem[data-elem-id="1771277026942000001"] .tn-atom {
+  vertical-align: middle;
+  color: #866739;
+  font-size: 41px;
+  font-family: 'NewFonts', Arial, sans-serif;
+  line-height: 1.55;
+  font-weight: 300;
+}
+#rec2443433773 .tn-elem[data-elem-id="1779543504626"] {
+  z-index: 3;
+  top: 110px;
+  left: calc(50% - 71px);
+  width: 139px;
+  height: auto;
+}
+/* Vertical gold line */
+#rec2443433773 .tn-elem[data-elem-id="1780760554668000010"] {
+  z-index: 3;
+  top: 201px;
+  left: calc(50% - 2px);
+  width: 2px;
+  height: auto;
+}
+#rec2443433773 .tn-elem[data-elem-id="1780760554668000010"] .tn-atom {
+  opacity: 0.7;
+}
+/* Diamond markers */
+#rec2443433773 .tn-elem[data-elem-id="1780760766910000019"] {
+  z-index: 3;
+  top: 198px;
+  left: calc(50% - 8px);
+  width: 14px;
+  height: auto;
+}
+#rec2443433773 .tn-elem[data-elem-id="1780760688963"] {
+  z-index: 3;
+  top: 280px;
+  left: calc(50% - 8px);
+  width: 14px;
+  height: auto;
+}
+#rec2443433773 .tn-elem[data-elem-id="1780760716135000016"] {
+  z-index: 3;
+  top: 368px;
+  left: calc(50% - 8px);
+  width: 14px;
+  height: auto;
+}
+#rec2443433773 .tn-elem[data-elem-id="1780760740624000017"] {
+  z-index: 3;
+  top: 445px;
+  left: calc(50% - 8px);
+  width: 14px;
+  height: auto;
+}
+/* Scroll-scrubbing flower */
+#rec2443433773 .tn-elem[data-elem-id="1780760554668000015"] {
+  z-index: 4;
+  top: 181px;
+  left: calc(50% - 28px);
+  width: 55px;
+  height: auto;
+  will-change: transform;
+  transition: transform 0.12s linear;
+}
+/* Timeline times (left column) */
+#rec2443433773 .bo-timeline-time {
+  color: #2a2a2a;
+  text-align: center;
+  z-index: 3;
+  left: calc(50% - 136px);
+  width: 85px;
+  height: auto;
+}
+#rec2443433773 .bo-timeline-time .tn-atom {
+  vertical-align: middle;
+  color: #2a2a2a;
+  font-size: 30px;
+  font-family: 'NewFonts', Arial, sans-serif;
+  line-height: 1.55;
+  font-weight: 600;
+}
+/* Timeline labels (right column) */
+#rec2443433773 .bo-timeline-label {
+  color: #2a2a2a;
+  text-align: center;
+  z-index: 3;
+  left: calc(50% + 42px);
+  width: 110px;
+  height: auto;
+}
+#rec2443433773 .bo-timeline-label .tn-atom {
+  vertical-align: middle;
+  color: #2a2a2a;
+  font-size: 20px;
+  font-family: 'NewFonts', Arial, sans-serif;
+  line-height: 1.1;
+  font-weight: 100;
+}
+
+/* ==========================================================================
+   Record 7 (#rec2443433783) — Venue ("Lieu")
+   ========================================================================== */
+#rec2443433783 .t396__artboard {
+  height: 541px;
+  background-color: #f9e6d4;
+}
+#rec2443433783 .tn-elem[data-elem-id="1771277026942000001"] {
+  color: #866739;
+  text-align: center;
+  z-index: 3;
+  top: 45px;
+  left: calc(50% - 280px);
+  width: 560px;
+  height: auto;
+}
+#rec2443433783 .tn-elem[data-elem-id="1771277026942000001"] .tn-atom {
+  vertical-align: middle;
+  color: #866739;
+  font-size: 41px;
+  font-family: 'NewFonts', Arial, sans-serif;
+  line-height: 1.55;
+  font-weight: 300;
+}
+#rec2443433783 .tn-elem[data-elem-id="1779543504626"] {
+  z-index: 3;
+  top: 110px;
+  left: calc(50% - 71px);
+  width: 139px;
+  height: auto;
+}
+#rec2443433783 .tn-elem[data-elem-id="1779544675299"] {
+  z-index: 3;
+  top: 151px;
+  left: calc(50% - 18px);
+  width: 36px;
+  height: auto;
+  animation: boPinFloat 2.4s ease-in-out infinite;
+}
+@keyframes boPinFloat {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-4px) scale(1.05); }
+}
+#rec2443433783 .tn-elem[data-elem-id="1779544773135"] {
+  color: #454545;
+  text-align: center;
+  z-index: 3;
+  top: 203px;
+  left: calc(50% - 280px);
+  width: 560px;
+  height: auto;
+}
+#rec2443433783 .tn-elem[data-elem-id="1779544773135"] .tn-atom {
+  vertical-align: middle;
+  color: #454545;
+  font-size: 23px;
+  font-family: 'NewFonts', Arial, sans-serif;
+  line-height: 1.55;
+  font-weight: 100;
+}
+#rec2443433783 .tn-elem[data-elem-id="1779545032699000001"] {
+  color: #2a2a2a;
+  text-align: center;
+  z-index: 3;
+  top: 235px;
+  left: calc(50% - 280px);
+  width: 560px;
+  height: auto;
+}
+#rec2443433783 .tn-elem[data-elem-id="1779545032699000001"] .tn-atom {
+  vertical-align: middle;
+  color: #2a2a2a;
+  font-size: 19px;
+  font-family: 'NewFonts', Arial, sans-serif;
+  line-height: 1.55;
+  font-weight: 100;
+}
+#rec2443433783 .tn-elem[data-elem-id="1780761005554"] {
+  z-index: 3;
+  top: 285px;
+  left: calc(50% - 210px);
+  width: 420px;
+  height: auto;
+}
+
+/* ==========================================================================
+   Record 8 (#rec2443433793) — Dress Code & Color Palette
+   ========================================================================== */
+#rec2443433793 .t396__artboard {
+  height: 579px;
+  background-color: #f9e6d4;
+}
+#rec2443433793 .tn-elem[data-elem-id="1771277026942000001"] {
+  color: #866739;
+  text-align: center;
+  z-index: 3;
+  top: 44px;
+  left: calc(50% - 280px);
+  width: 560px;
+  height: auto;
+}
+#rec2443433793 .tn-elem[data-elem-id="1771277026942000001"] .tn-atom {
+  vertical-align: middle;
+  color: #866739;
+  font-size: 41px;
+  font-family: 'NewFonts', Arial, sans-serif;
+  line-height: 1.55;
+  font-weight: 300;
+}
+#rec2443433793 .tn-elem[data-elem-id="1779543504626"] {
+  z-index: 3;
+  top: 109px;
+  left: calc(50% - 71px);
+  width: 139px;
+  height: auto;
+}
+#rec2443433793 .tn-elem[data-elem-id="1780772300356"] {
+  z-index: 3;
+  top: 154px;
+  left: calc(50% - 123px);
+  width: 236px;
+  height: auto;
+}
+#rec2443433793 .tn-elem[data-elem-id="1779544773135"] {
+  color: #2a2a2a;
+  text-align: center;
+  z-index: 3;
+  top: 342px;
+  left: calc(50% - 167px);
+  width: 335px;
+  height: auto;
+}
+#rec2443433793 .tn-elem[data-elem-id="1779544773135"] .tn-atom {
+  vertical-align: middle;
+  color: #2a2a2a;
+  font-size: 21px;
+  font-family: 'NewFonts', Arial, sans-serif;
+  line-height: 1.2;
+  font-weight: 100;
+}
+#rec2443433793 .tn-elem[data-elem-id="1780768374065000001"] {
+  color: #866739;
+  text-align: center;
+  z-index: 3;
+  top: 446px;
+  left: calc(50% - 280px);
+  width: 560px;
+  height: auto;
+}
+#rec2443433793 .tn-elem[data-elem-id="1780768374065000001"] .tn-atom {
+  vertical-align: middle;
+  color: #866739;
+  font-size: 32px;
+  font-family: 'NewFonts', Arial, sans-serif;
+  line-height: 1.55;
+  font-weight: 300;
+}
+
+/* Color Palette Swatches */
+.bo-swatch-ring {
+  z-index: 3;
+  top: 507px;
+  width: 57px;
+  height: 57px;
+}
+.bo-swatch-ring .tn-atom {
+  border-radius: 3000px;
+  background-color: #fffaf8;
+  display: block;
+  width: 57px;
+  height: 57px;
+}
+.bo-swatch-fill {
+  z-index: 4;
+  top: 508px;
+  width: 55px;
+  height: 55px;
+}
+.bo-swatch-fill .tn-atom {
+  border-radius: 3000px;
+  display: block;
+  width: 55px;
+  height: 55px;
+}
+
+/* ==========================================================================
+   Record 9 (#rec2443433803) — Ladies & Gentlemen Attire Notes
+   ========================================================================== */
+#rec2443433803 .t396__artboard {
+  height: 249px;
+  background-color: #f9e6d4;
+}
+#rec2443433803 .tn-elem[data-elem-id="1780767478919000003"] {
+  color: #866739;
+  text-align: center;
+  z-index: 3;
+  top: 0px;
+  left: calc(50% - 280px);
+  width: 560px;
+  height: auto;
+}
+#rec2443433803 .tn-elem[data-elem-id="1780767478919000003"] .tn-atom {
+  vertical-align: middle;
+  color: #866739;
+  font-size: 33px;
+  font-family: 'NewFonts', Arial, sans-serif;
+  line-height: 1.55;
+  font-weight: 300;
+}
+#rec2443433803 .tn-elem[data-elem-id="1780767449362000001"] {
+  color: #2a2a2a;
+  text-align: center;
+  z-index: 3;
+  top: 54px;
+  left: calc(50% - 150px);
+  width: 301px;
+  height: auto;
+}
+#rec2443433803 .tn-elem[data-elem-id="1780767449362000001"] .tn-atom {
+  vertical-align: middle;
+  color: #2a2a2a;
+  font-size: 21px;
+  font-family: 'NewFonts', Arial, sans-serif;
+  line-height: 1.2;
+  font-weight: 100;
+}
+#rec2443433803 .tn-elem[data-elem-id="1780767518772000004"] {
+  color: #866739;
+  text-align: center;
+  z-index: 3;
+  top: 131px;
+  left: calc(50% - 280px);
+  width: 560px;
+  height: auto;
+}
+#rec2443433803 .tn-elem[data-elem-id="1780767518772000004"] .tn-atom {
+  vertical-align: middle;
+  color: #866739;
+  font-size: 33px;
+  font-family: 'NewFonts', Arial, sans-serif;
+  line-height: 1.55;
+  font-weight: 300;
+}
+#rec2443433803 .tn-elem[data-elem-id="1780767518772000005"] {
+  color: #2a2a2a;
+  text-align: center;
+  z-index: 3;
+  top: 185px;
+  left: calc(50% - 150px);
+  width: 301px;
+  height: auto;
+}
+#rec2443433803 .tn-elem[data-elem-id="1780767518772000005"] .tn-atom {
+  vertical-align: middle;
+  color: #2a2a2a;
+  font-size: 21px;
+  font-family: 'NewFonts', Arial, sans-serif;
+  line-height: 1.2;
+  font-weight: 100;
+}
+
+/* ==========================================================================
+   Record 10 (#rec2443433813) — RSVP Form ("Confirmez Votre Présence")
+   ========================================================================== */
+#rec2443433813 .t396__artboard {
+  height: 529px;
+  background-color: #f9e6d4;
+}
+#rec2443433813 .tn-elem[data-elem-id="1771277026942000001"] {
+  color: #866739;
+  text-align: center;
+  z-index: 3;
+  top: 45px;
+  left: calc(50% - 280px);
+  width: 560px;
+  height: auto;
+}
+#rec2443433813 .tn-elem[data-elem-id="1771277026942000001"] .tn-atom {
+  vertical-align: middle;
+  color: #866739;
+  font-size: 41px;
+  font-family: 'NewFonts', Arial, sans-serif;
+  line-height: 1.55;
+  font-weight: 300;
+}
+#rec2443433813 .tn-elem[data-elem-id="1779543504626"] {
+  z-index: 3;
+  top: 110px;
+  left: calc(50% - 71px);
+  width: 139px;
+  height: auto;
+}
+#rec2443433813 .tn-elem[data-elem-id="1779545532876"] {
+  z-index: 3;
+  top: 159px;
+  left: calc(50% - 171px);
+  width: 343px;
+  height: auto;
+}
+
+.bo-rsvp-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 100%;
+  text-align: left;
+}
+.bo-rsvp-input {
+  width: 100%;
+  height: 45px;
+  padding: 0 15px;
+  border: 1px solid #ac9778;
+  border-radius: 5px;
+  background: transparent;
+  color: #2a2a2a;
+  font-size: 15px;
+  font-family: 'NewFonts', Arial, sans-serif;
+  font-weight: 100;
+  outline: none;
+  box-sizing: border-box;
+}
+.bo-rsvp-input::placeholder {
+  color: #2a2a2a;
+  opacity: 0.55;
+}
+.bo-rsvp-question {
+  font-family: 'NewFonts', Arial, sans-serif;
+  font-weight: 100;
+  font-size: 17px;
+  color: #000000;
+  margin-bottom: 8px;
+}
+.bo-rsvp-radios {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.bo-rsvp-radio-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'NewFonts', Arial, sans-serif;
+  font-weight: 100;
+  font-size: 14px;
+  color: #000000;
+  cursor: pointer;
+}
+.bo-rsvp-radio-label input[type="radio"] {
+  accent-color: #ac9778;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  cursor: pointer;
+}
+.bo-rsvp-submit-wrap {
+  text-align: center;
+  margin-top: 10px;
+}
+.bo-rsvp-submit {
+  width: 160px;
+  height: 42px;
+  background-color: #747b54;
+  color: #ffffff;
+  font-family: 'NewFonts', Arial, sans-serif;
+  font-weight: 100;
+  font-size: 14px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.bo-rsvp-submit:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+.bo-rsvp-success {
+  margin-top: 8px;
+  padding: 10px 14px;
+  border-radius: 5px;
+  background-color: rgba(116, 123, 84, 0.14);
+  border: 1px solid #747b54;
+  color: #4f5536;
+  font-family: 'NewFonts', Arial, sans-serif;
+  font-weight: 100;
+  font-size: 15px;
+  text-align: center;
+}
+
+/* ==========================================================================
+   Record 11 (#rec2443433823 & #rec2443433843) — Google Maps Itinerary
+   ========================================================================== */
+#rec2443433823 .t396__artboard {
+  height: 159px;
+  background-color: #f9e6d4;
+}
+#rec2443433823 .tn-elem[data-elem-id="1771277026942000001"] {
+  color: #866739;
+  text-align: center;
+  z-index: 3;
+  top: 45px;
+  left: calc(50% - 280px);
+  width: 560px;
+  height: auto;
+}
+#rec2443433823 .tn-elem[data-elem-id="1771277026942000001"] .tn-atom {
+  vertical-align: middle;
+  color: #866739;
+  font-size: 41px;
+  font-family: 'NewFonts', Arial, sans-serif;
+  line-height: 1.55;
+  font-weight: 300;
+}
+#rec2443433823 .tn-elem[data-elem-id="1779543504626"] {
+  z-index: 3;
+  top: 110px;
+  left: calc(50% - 71px);
+  width: 139px;
+  height: auto;
+}
+
+#rec2443433843 .t396__artboard {
+  height: 343px;
+  background-color: #f9e6d4;
+}
+#rec2443433843 .tn-elem[data-elem-id="1773673546575"] {
+  z-index: 3;
+  top: 2px;
+  left: calc(50% - 170px);
+  width: 341px;
+  height: auto;
+  pointer-events: none;
+}
+#rec2443433843 .tn-elem[data-elem-id="1773673546575"] .tn-atom {
+  opacity: 0.8;
+}
+#rec2443433843 .bo-map-embed-wrap {
+  position: absolute;
+  z-index: 2;
+  top: 5px;
+  left: calc(50% - 167.5px);
+  width: 335px;
+  height: 335px;
+  border-radius: 15px;
+  overflow: hidden;
+}
+
+/* ==========================================================================
+   Record 12 (#rec2443433853) — Closing Chandelier & Farewell
+   ========================================================================== */
+#rec2443433853 .t396__artboard {
+  height: 371px;
+  background-color: #f9e6d4;
+}
+#rec2443433853 .tn-elem[data-elem-id="1779550300881"] {
+  z-index: 3;
+  top: 45px;
+  left: calc(50% - 117px);
+  width: 213px;
+  height: auto;
+  transform-origin: top center;
+  animation: boChandelierSwing 6s ease-in-out infinite;
+}
+@keyframes boChandelierSwing {
+  0%, 100% { transform: rotate(6deg); }
+  25% { transform: rotate(-7deg); }
+  50% { transform: rotate(5deg); }
+  75% { transform: rotate(-4deg); }
+}
+#rec2443433853 .tn-elem[data-elem-id="1763405219328"] {
+  color: #866739;
+  text-align: center;
+  z-index: 3;
+  top: 196px;
+  left: calc(50% - 280px);
+  width: 560px;
+  height: auto;
+}
+#rec2443433853 .tn-elem[data-elem-id="1763405219328"] .tn-atom {
+  vertical-align: middle;
+  color: #866739;
+  font-size: 41px;
+  font-family: 'NewFonts', Arial, sans-serif;
+  line-height: 1.55;
+  font-weight: 300;
+}
+#rec2443433853 .tn-elem[data-elem-id="1779625933115000002"] {
+  z-index: 3;
+  top: 260px;
+  left: calc(50% - 82px);
+  width: 165px;
+  height: auto;
+}
+#rec2443433853 .tn-elem[data-elem-id="1779625933115000001"] {
+  z-index: 3;
+  top: 290px;
+  left: calc(50% - 25px);
+  width: 50px;
+  height: auto;
+}
+
+/* ==========================================================================
+   Record 13 (#rec2443433863) — Fixed Ambient Overlay Video (#bgVideo)
+   ========================================================================== */
+.bo-ambient-video-overlay {
+  position: fixed;
+  top: 0;
+  left: calc(50% - 220px);
+  width: 440px;
+  height: 100vh;
+  z-index: 20;
+  pointer-events: none;
+  overflow: hidden;
+  mix-blend-mode: screen;
+  opacity: 0.42;
+}
+.bo-ambient-video-overlay video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ==========================================================================
+   Scroll-Reveal Animations (Matching Tilda SBS / FadeInUp / ZoomIn)
+   ========================================================================== */
+.bo-reveal {
+  opacity: 0;
+  transform: translate3d(0, 28px, 0);
+  transition: opacity 1.4s cubic-bezier(0.22, 1, 0.36, 1), transform 1.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.bo-reveal.bo-visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+.bo-reveal-zoom {
+  opacity: 0;
+  transform: scale(0.84);
+  transition: opacity 1.4s cubic-bezier(0.22, 1, 0.36, 1), transform 1.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.bo-reveal-zoom.bo-visible {
+  opacity: 1;
+  transform: scale(1);
+}
+.bo-reveal-left {
+  opacity: 0;
+  transform: translate3d(-26px, 0, 0);
+  transition: opacity 1.3s cubic-bezier(0.22, 1, 0.36, 1), transform 1.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.bo-reveal-left.bo-visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+.bo-reveal-right {
+  opacity: 0;
+  transform: translate3d(26px, 0, 0);
+  transition: opacity 1.3s cubic-bezier(0.22, 1, 0.36, 1), transform 1.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.bo-reveal-right.bo-visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+

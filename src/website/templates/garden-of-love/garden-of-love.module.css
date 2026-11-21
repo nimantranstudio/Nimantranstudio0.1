@@ -1,0 +1,1361 @@
+/* ============================================================================
+ * Design 3: The Garden of Love — Isolated CSS Module
+ * Aesthetic: Exclusive European botanical conservatory & outdoor garden wedding.
+ * Palette: Pressed linen ivory (#F6F5F0), sage mist (#E6ECE4), botanical sage (#4A614E),
+ *          deep conservatory forest (#2D4031), dusty rose (#B87D7D), forest ink (#212D23).
+ * Zero :root declarations — 100% scoped to .root to prevent CSS leakage.
+ * ============================================================================ */
+
+.root {
+    --gol-linen: #F6F5F0;
+    --gol-paper: #FCFBF8;
+    --gol-sage-mist: #E6ECE4;
+    --gol-sage-tint: #EFF3ED;
+    --gol-sage: #4A614E;
+    --gol-forest: #2D4031;
+    --gol-ink: #212D23;
+    --gol-ink-soft: #39483B;
+    --gol-muted: #566658;
+    --gol-rose: #B87D7D;
+    --gol-rose-deep: #9B6060;
+    --gol-rose-soft: rgba(184, 125, 125, 0.15);
+    --gol-border: rgba(74, 97, 78, 0.2);
+    --gol-border-strong: rgba(74, 97, 78, 0.38);
+    --gol-error: #B42318;
+
+    --gol-font-display: 'Marcellus', var(--font-playfair), Georgia, serif;
+    --gol-font-serif: 'Lora', Georgia, 'Times New Roman', serif;
+    --gol-font-sans: 'Manrope', var(--font-inter), -apple-system, BlinkMacSystemFont, sans-serif;
+
+    position: relative;
+    min-height: 100vh;
+    min-height: 100dvh;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: clip;
+    background-color: var(--gol-linen);
+    color: var(--gol-ink);
+    font-family: var(--gol-font-sans);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+}
+
+.previewRoot {
+    min-height: 100%;
+}
+
+@keyframes golBreezeSway {
+    0%, 100% {
+        transform: rotate(0deg) translateY(0);
+    }
+    50% {
+        transform: rotate(2.2deg) translateY(-5px);
+    }
+}
+
+.swayingBranchLeft {
+    position: absolute;
+    top: -8px;
+    left: -8px;
+    width: clamp(95px, 15vw, 165px);
+    height: auto;
+    color: var(--gol-sage);
+    opacity: 0.24;
+    pointer-events: none;
+    transform-origin: top left;
+    animation: golBreezeSway 8.5s ease-in-out infinite;
+}
+
+.swayingBranchRight {
+    position: absolute;
+    bottom: -8px;
+    right: -8px;
+    width: clamp(95px, 15vw, 165px);
+    height: auto;
+    color: var(--gol-rose);
+    opacity: 0.25;
+    pointer-events: none;
+    transform-origin: bottom right;
+    animation: golBreezeSway 10s ease-in-out infinite reverse;
+}
+
+/* ============================================================================
+ * OPENING EXPERIENCE — Pressed Botanical Wreath Stationery Gate
+ * ============================================================================ */
+
+.coverOverlay {
+    position: relative;
+    min-height: 100vh;
+    min-height: 100dvh;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(1rem, 3.5vw, 2.5rem);
+    background:
+        radial-gradient(ellipse at 50% 0%, rgba(230, 236, 228, 0.85) 0%, rgba(246, 245, 240, 0) 62%),
+        radial-gradient(ellipse at 85% 95%, rgba(184, 125, 125, 0.14) 0%, rgba(246, 245, 240, 0) 55%),
+        var(--gol-linen);
+}
+
+.coverCard {
+    position: relative;
+    width: 100%;
+    max-width: 550px;
+    background: var(--gol-linen);
+    border: 1px solid var(--gol-border-strong);
+    border-radius: 220px 220px 24px 24px;
+    padding: clamp(2.35rem, 6vw, 3.6rem) clamp(1.35rem, 4.5vw, 2.75rem) clamp(2.75rem, 6.5vw, 3.85rem);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow:
+        0 24px 60px rgba(33, 45, 35, 0.08),
+        inset 0 0 0 6px var(--gol-paper),
+        inset 0 0 0 7px var(--gol-border);
+    overflow: hidden;
+}
+
+.wreathBox {
+    position: relative;
+    width: clamp(148px, 34vw, 196px);
+    height: clamp(148px, 34vw, 196px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.85rem;
+}
+
+.wreathImg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    mix-blend-mode: multiply;
+    pointer-events: none;
+    user-select: none;
+}
+
+.wreathMonogram {
+    position: relative;
+    z-index: 1;
+    font-family: var(--gol-font-display);
+    font-size: clamp(1.45rem, 3.8vw, 1.95rem);
+    letter-spacing: 0.08em;
+    color: var(--gol-forest);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.wreathAmp {
+    font-family: var(--gol-font-serif);
+    font-style: italic;
+    font-size: 0.8em;
+    color: var(--gol-rose-deep);
+}
+
+.coverSubscript {
+    font-family: var(--gol-font-serif);
+    font-style: italic;
+    font-size: 0.92rem;
+    color: var(--gol-sage);
+    margin: 0 0 0.55rem;
+}
+
+.coverCoupleTitle {
+    font-family: var(--gol-font-display);
+    font-size: clamp(1.65rem, 5vw, 2.5rem);
+    font-weight: 400;
+    line-height: 1.2;
+    color: var(--gol-ink);
+    margin: 0 0 0.65rem;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+}
+
+.coverDatePlace {
+    font-size: 0.84rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gol-muted);
+    margin: 0 0 1.85rem;
+    max-width: 34ch;
+    overflow-wrap: anywhere;
+}
+
+.gardenOpenBtn {
+    appearance: none;
+    border: 1px solid var(--gol-forest);
+    background: var(--gol-forest);
+    color: #FCFBF8;
+    font-family: var(--gol-font-sans);
+    font-size: 0.76rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding: 0.92rem 1.95rem;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    cursor: pointer;
+    box-shadow: 0 10px 26px rgba(45, 64, 49, 0.2);
+    transition: background-color 0.24s ease, border-color 0.24s ease, transform 0.2s ease;
+}
+
+.gardenOpenBtn:hover {
+    background: var(--gol-sage);
+    border-color: var(--gol-sage);
+    transform: translateY(-1px);
+}
+
+.gardenOpenBtn:active {
+    transform: scale(0.98);
+}
+
+/* ============================================================================
+ * MAIN CONTENT & CONSERVATORY TOP BAR
+ * ============================================================================ */
+
+.mainContent {
+    position: relative;
+    width: 100%;
+}
+
+.gardenNavHeader {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    background: rgba(246, 245, 240, 0.9);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--gol-border);
+}
+
+.gardenNavInner {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0.85rem clamp(1.15rem, 4vw, 2.75rem);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.gardenNavCrest {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-family: var(--gol-font-display);
+    font-size: 1rem;
+    letter-spacing: 0.1em;
+    color: var(--gol-forest);
+    white-space: nowrap;
+}
+
+.gardenNavLinks {
+    display: flex;
+    align-items: center;
+    gap: clamp(0.85rem, 2.2vw, 1.85rem);
+    padding-right: clamp(4.2rem, 9vw, 6.5rem); /* Clear fixed music button */
+}
+
+.gardenNavLink {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--gol-muted);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.gardenNavLink:hover {
+    color: var(--gol-forest);
+}
+
+@media (max-width: 560px) {
+    .gardenNavLinks {
+        gap: 0.75rem;
+        padding-right: 4.5rem;
+    }
+    .hideOnSmallMobile {
+        display: none;
+    }
+}
+
+/* ============================================================================
+ * 1. PANORAMIC ARCHED CONSERVATORY HERO + OVERLAPPING STATIONERY PLAQUE
+ * ============================================================================ */
+
+.heroGardenSection {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: clamp(1.5rem, 3.5vw, 2.75rem) clamp(1rem, 4vw, 2.75rem) clamp(3.5rem, 7vw, 5.5rem);
+}
+
+.heroArchFrame {
+    position: relative;
+    width: 100%;
+    border-radius: clamp(110px, 24vw, 280px) clamp(110px, 24vw, 280px) 24px 24px;
+    padding: 0.65rem;
+    background: var(--gol-paper);
+    border: 1px solid var(--gol-border-strong);
+    box-shadow: 0 24px 56px rgba(33, 45, 35, 0.08);
+}
+
+.heroArchInner {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    min-height: 270px;
+    max-height: 540px;
+    border-radius: clamp(104px, 23vw, 272px) clamp(104px, 23vw, 272px) 18px 18px;
+    overflow: hidden;
+    background: var(--gol-sage-mist);
+}
+
+@media (max-width: 640px) {
+    .heroArchInner {
+        aspect-ratio: 4 / 3;
+    }
+}
+
+.heroGardenImg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 42%;
+    display: block;
+}
+
+.heroStationeryPlaque {
+    position: relative;
+    z-index: 2;
+    max-width: 780px;
+    margin: clamp(-4.75rem, -7vw, -2.5rem) auto 0;
+    background: var(--gol-paper);
+    border: 1px solid var(--gol-border-strong);
+    border-radius: 28px;
+    padding: clamp(2rem, 5vw, 3.5rem) clamp(1.35rem, 4.5vw, 3.25rem);
+    text-align: center;
+    box-shadow:
+        0 22px 52px rgba(33, 45, 35, 0.09),
+        inset 0 0 0 5px var(--gol-linen),
+        inset 0 0 0 6px var(--gol-border);
+}
+
+@media (max-width: 560px) {
+    .heroStationeryPlaque {
+        margin-top: -2rem;
+        border-radius: 22px;
+    }
+}
+
+.plaqueSprig {
+    width: 96px;
+    height: 26px;
+    color: var(--gol-sage);
+    margin: 0 auto 0.85rem;
+    display: block;
+}
+
+.plaqueIntro {
+    font-family: var(--gol-font-serif);
+    font-style: italic;
+    font-size: clamp(0.95rem, 2vw, 1.1rem);
+    color: var(--gol-sage);
+    margin: 0 0 1rem;
+}
+
+.plaqueCoupleHeading {
+    margin: 0 0 1.4rem;
+}
+
+.plaquePersonName {
+    display: block;
+    font-family: var(--gol-font-display);
+    font-size: clamp(2.15rem, 5.4vw, 3.85rem);
+    font-weight: 400;
+    line-height: 1.1;
+    color: var(--gol-ink);
+    overflow-wrap: anywhere;
+}
+
+.plaqueFloralAmp {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0.35rem 0;
+    font-family: var(--gol-font-serif);
+    font-style: italic;
+    font-size: clamp(1.2rem, 2.4vw, 1.65rem);
+    color: var(--gol-rose-deep);
+}
+
+.plaqueAmpLine {
+    width: 34px;
+    height: 1px;
+    background: rgba(184, 125, 125, 0.55);
+}
+
+.plaqueParentsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem 1.75rem;
+    padding: 1.2rem 0;
+    margin: 0 auto 1.45rem;
+    max-width: 620px;
+    border-top: 1px solid var(--gol-border);
+    border-bottom: 1px solid var(--gol-border);
+}
+
+.plaqueParentCol {
+    min-width: 0;
+}
+
+.plaqueParentRole {
+    display: block;
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gol-sage);
+    margin-bottom: 0.2rem;
+}
+
+.plaqueParentName {
+    display: block;
+    font-family: var(--gol-font-serif);
+    font-size: 0.96rem;
+    color: var(--gol-ink-soft);
+    overflow-wrap: anywhere;
+}
+
+.plaqueDateBanner {
+    font-family: var(--gol-font-display);
+    font-size: clamp(0.95rem, 2vw, 1.12rem);
+    letter-spacing: 0.06em;
+    color: var(--gol-forest);
+    margin: 0 0 1.75rem;
+    overflow-wrap: anywhere;
+}
+
+.plaqueActions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.85rem;
+}
+
+.sagePrimaryBtn {
+    appearance: none;
+    border: 1px solid var(--gol-forest);
+    background: var(--gol-forest);
+    color: #FCFBF8;
+    font-family: var(--gol-font-sans);
+    font-size: 0.74rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    text-decoration: none;
+    padding: 0.88rem 1.7rem;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: background-color 0.22s ease, border-color 0.22s ease, transform 0.2s ease;
+}
+
+.sagePrimaryBtn:hover {
+    background: var(--gol-sage);
+    border-color: var(--gol-sage);
+    transform: translateY(-1px);
+}
+
+.linenSecondaryBtn {
+    appearance: none;
+    border: 1px solid var(--gol-border-strong);
+    background: var(--gol-linen);
+    color: var(--gol-forest);
+    font-family: var(--gol-font-sans);
+    font-size: 0.74rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    text-decoration: none;
+    padding: 0.88rem 1.65rem;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: background-color 0.22s ease, border-color 0.22s ease, transform 0.2s ease;
+}
+
+.linenSecondaryBtn:hover {
+    background: var(--gol-sage-mist);
+    border-color: var(--gol-sage);
+    transform: translateY(-1px);
+}
+
+/* ============================================================================
+ * 2. GARDEN NOTE & BOTANICAL MEDALLION COUNTDOWN
+ * ============================================================================ */
+
+.sageMistSection {
+    position: relative;
+    background: var(--gol-sage-mist);
+    border-top: 1px solid var(--gol-border);
+    border-bottom: 1px solid var(--gol-border);
+    padding: clamp(3.5rem, 8vw, 6rem) clamp(1.2rem, 4vw, 2.75rem);
+    overflow: hidden;
+}
+
+.sageMistInner {
+    max-width: 860px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.gardenKicker {
+    display: inline-block;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--gol-sage);
+    margin-bottom: 1rem;
+}
+
+.gardenStoryQuote {
+    font-family: var(--gol-font-serif);
+    font-style: italic;
+    font-size: clamp(1.2rem, 2.6vw, 1.72rem);
+    line-height: 1.68;
+    color: var(--gol-ink);
+    margin: 0 auto 2.6rem;
+    max-width: 46ch;
+    overflow-wrap: anywhere;
+}
+
+.medallionCountdownRow {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: clamp(0.65rem, 2vw, 1.35rem);
+    max-width: 580px;
+    margin: 0 auto;
+}
+
+.medallionToken {
+    background: var(--gol-paper);
+    border: 1px solid var(--gol-border-strong);
+    border-radius: 999px;
+    padding: clamp(1rem, 2.6vw, 1.5rem) 0.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 0 0 3px var(--gol-linen);
+}
+
+.medallionNum {
+    font-family: var(--gol-font-display);
+    font-size: clamp(1.45rem, 3.4vw, 2.2rem);
+    line-height: 1.05;
+    color: var(--gol-forest);
+    font-variant-numeric: tabular-nums;
+}
+
+.medallionLabel {
+    margin-top: 0.3rem;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gol-rose-deep);
+}
+
+@media (max-width: 420px) {
+    .medallionLabel {
+        font-size: 0.56rem;
+        letter-spacing: 0.1em;
+    }
+}
+
+.bloomedBanner {
+    font-family: var(--gol-font-serif);
+    font-style: italic;
+    font-size: 1.15rem;
+    color: var(--gol-forest);
+    margin: 0;
+}
+
+/* ============================================================================
+ * 3. CENTRAL ALTERNATING BOTANICAL VINE TIMELINE
+ * ============================================================================ */
+
+.timelineSection {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: clamp(3.75rem, 8vw, 6.5rem) clamp(1.15rem, 4vw, 2.75rem);
+}
+
+.centeredSectionHead {
+    text-align: center;
+    max-width: 580px;
+    margin: 0 auto clamp(2.5rem, 5.5vw, 4rem);
+}
+
+.sectionTitle {
+    font-family: var(--gol-font-display);
+    font-size: clamp(1.9rem, 4vw, 2.85rem);
+    font-weight: 400;
+    line-height: 1.18;
+    color: var(--gol-ink);
+    margin: 0 0 0.6rem;
+}
+
+.sectionSubtitle {
+    font-family: var(--gol-font-serif);
+    font-size: 0.98rem;
+    color: var(--gol-muted);
+    margin: 0;
+}
+
+.vineTimelineWrap {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(1.75rem, 3.8vw, 2.75rem);
+}
+
+/* Central vertical botanical stem */
+.vineTimelineWrap::before {
+    content: '';
+    position: absolute;
+    top: 12px;
+    bottom: 12px;
+    left: 50%;
+    width: 1px;
+    background: linear-gradient(
+        180deg,
+        transparent 0%,
+        var(--gol-sage) 8%,
+        var(--gol-sage) 92%,
+        transparent 100%
+    );
+    opacity: 0.42;
+    transform: translateX(-50%);
+}
+
+.vineRow {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 56px minmax(0, 1fr);
+    align-items: center;
+}
+
+.vineNodeCol {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+}
+
+.vineLeafBadge {
+    width: 38px;
+    height: 38px;
+    border-radius: 999px;
+    background: var(--gol-paper);
+    border: 1px solid var(--gol-sage);
+    color: var(--gol-sage);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 14px rgba(33, 45, 35, 0.08);
+}
+
+.vineCardLeft {
+    grid-column: 1;
+}
+
+.vineSpacerRight {
+    grid-column: 3;
+}
+
+.vineSpacerLeft {
+    grid-column: 1;
+}
+
+.vineCardRight {
+    grid-column: 3;
+}
+
+@media (max-width: 820px) {
+    .vineTimelineWrap::before {
+        left: 19px;
+        transform: none;
+    }
+
+    .vineRow {
+        grid-template-columns: 38px minmax(0, 1fr);
+        gap: 0.85rem;
+        align-items: start;
+    }
+
+    .vineNodeCol {
+        grid-column: 1;
+        grid-row: 1;
+        padding-top: 1.25rem;
+    }
+
+    .vineCardLeft,
+    .vineCardRight {
+        grid-column: 2;
+        grid-row: 1;
+    }
+
+    .vineSpacerLeft,
+    .vineSpacerRight {
+        display: none;
+    }
+}
+
+.gardenEventCard {
+    background: var(--gol-paper);
+    border: 1px solid var(--gol-border-strong);
+    border-radius: 26px 26px 14px 14px;
+    padding: clamp(1.4rem, 3vw, 2rem);
+    box-shadow: 0 14px 36px rgba(33, 45, 35, 0.05);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    min-width: 0;
+}
+
+@media (hover: hover) {
+    .gardenEventCard:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 20px 44px rgba(33, 45, 35, 0.09);
+    }
+}
+
+.eventDatePill {
+    display: inline-block;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--gol-rose-deep);
+    background: var(--gol-rose-soft);
+    padding: 0.3rem 0.75rem;
+    border-radius: 999px;
+    margin-bottom: 0.85rem;
+}
+
+.gardenEventTitle {
+    font-family: var(--gol-font-display);
+    font-size: clamp(1.35rem, 2.5vw, 1.7rem);
+    font-weight: 400;
+    line-height: 1.22;
+    color: var(--gol-ink);
+    margin: 0 0 0.5rem;
+    overflow-wrap: anywhere;
+}
+
+.gardenEventDesc {
+    font-family: var(--gol-font-serif);
+    font-style: italic;
+    font-size: 0.94rem;
+    color: var(--gol-muted);
+    margin: 0 0 1.1rem;
+    line-height: 1.55;
+    overflow-wrap: anywhere;
+}
+
+.gardenEventDetails {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding-top: 0.95rem;
+    border-top: 1px dashed var(--gol-border-strong);
+    margin-bottom: 1.15rem;
+}
+
+.gardenDetailLine {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.55rem;
+    font-size: 0.88rem;
+    color: var(--gol-ink-soft);
+    line-height: 1.48;
+}
+
+.gardenDetailIcon {
+    flex-shrink: 0;
+    color: var(--gol-sage);
+    margin-top: 0.18rem;
+}
+
+.gardenDetailText {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.gardenEventBtns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+}
+
+.gardenChipBtn {
+    appearance: none;
+    border: 1px solid var(--gol-border-strong);
+    background: var(--gol-linen);
+    color: var(--gol-forest);
+    font-family: var(--gol-font-sans);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.52rem 0.95rem;
+    border-radius: 999px;
+    min-height: 36px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.gardenChipBtn:hover {
+    background: var(--gol-forest);
+    border-color: var(--gol-forest);
+    color: #FCFBF8;
+}
+
+/* ============================================================================
+ * 4. MOMENTS IN BLOOM ARCHED GALLERY & CONSERVATORY LOCATION CARD
+ * ============================================================================ */
+
+.conservatorySection {
+    background: var(--gol-sage-tint);
+    border-top: 1px solid var(--gol-border);
+    padding: clamp(3.75rem, 8vw, 6.25rem) clamp(1.15rem, 4vw, 2.75rem);
+}
+
+.conservatoryContainer {
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.archedGalleryGrid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(1.15rem, 3vw, 2rem);
+}
+
+@media (max-width: 700px) {
+    .archedGalleryGrid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.archedGalleryBtn {
+    appearance: none;
+    border: 1px solid var(--gol-border-strong);
+    background: var(--gol-paper);
+    border-radius: 180px 180px 20px 20px;
+    padding: 0.65rem;
+    width: 100%;
+    cursor: pointer;
+    display: block;
+    box-shadow: 0 16px 38px rgba(33, 45, 35, 0.06);
+    transition: transform 0.28s ease, box-shadow 0.28s ease;
+}
+
+.archedGalleryBtn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 22px 46px rgba(33, 45, 35, 0.11);
+}
+
+.archedGalleryInner {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    border-radius: 174px 174px 14px 14px;
+    overflow: hidden;
+}
+
+.archedGalleryImg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.75s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.archedGalleryBtn:hover .archedGalleryImg {
+    transform: scale(1.045);
+}
+
+.conservatoryVenueCard {
+    margin-top: clamp(2.25rem, 4.5vw, 3.25rem);
+    background: var(--gol-paper);
+    border: 1px solid var(--gol-border-strong);
+    border-radius: 24px;
+    padding: clamp(1.75rem, 4vw, 2.85rem);
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) auto;
+    gap: 1.5rem 2.25rem;
+    align-items: center;
+    box-shadow: inset 0 0 0 4px var(--gol-linen);
+}
+
+@media (max-width: 800px) {
+    .conservatoryVenueCard {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.venueCardTitle {
+    font-family: var(--gol-font-display);
+    font-size: clamp(1.4rem, 2.8vw, 1.85rem);
+    font-weight: 400;
+    color: var(--gol-ink);
+    margin: 0.3rem 0 0.55rem;
+}
+
+.venueCardAddress {
+    font-size: 0.95rem;
+    color: var(--gol-ink-soft);
+    line-height: 1.65;
+    margin: 0 0 0.65rem;
+    overflow-wrap: anywhere;
+}
+
+.venueCardPhone {
+    font-size: 0.85rem;
+    color: var(--gol-muted);
+    margin: 0;
+}
+
+.venueCardPhoneLink {
+    color: var(--gol-forest);
+    font-weight: 600;
+    text-decoration: none;
+    border-bottom: 1px solid var(--gol-rose);
+}
+
+.venueCardActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+/* ============================================================================
+ * 5. SAGE-DRENCHED GARDEN PAVILION RSVP
+ * ============================================================================ */
+
+.gardenRsvpSection {
+    background: var(--gol-forest);
+    padding: clamp(4rem, 9vw, 6.75rem) clamp(1rem, 4vw, 2.5rem);
+}
+
+.gardenRsvpCard {
+    max-width: 720px;
+    margin: 0 auto;
+    background: var(--gol-linen);
+    border-radius: 28px;
+    padding: clamp(2rem, 5vw, 3.5rem) clamp(1.35rem, 4.5vw, 3.25rem);
+    box-shadow:
+        0 28px 70px rgba(13, 21, 15, 0.32),
+        inset 0 0 0 5px var(--gol-paper),
+        inset 0 0 0 6px var(--gol-border);
+}
+
+.rsvpHeaderCenter {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.rsvpCrestThumb {
+    width: 82px;
+    height: 82px;
+    object-fit: contain;
+    mix-blend-mode: multiply;
+    margin: 0 auto 0.5rem;
+    display: block;
+}
+
+.rsvpForm {
+    display: flex;
+    flex-direction: column;
+    gap: 1.4rem;
+}
+
+.fieldWrap {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+}
+
+.fieldLabelLine {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.fieldLabel {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--gol-forest);
+}
+
+.fieldError {
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: var(--gol-error);
+}
+
+.attendancePills {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.45rem;
+    padding: 0.32rem;
+    background: var(--gol-paper);
+    border: 1px solid var(--gol-border-strong);
+    border-radius: 16px;
+}
+
+@media (max-width: 540px) {
+    .attendancePills {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.attendancePillBtn {
+    position: relative;
+    appearance: none;
+    border: none;
+    background: transparent;
+    border-radius: 12px;
+    padding: 0.78rem 0.65rem;
+    font-family: var(--gol-font-sans);
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--gol-muted);
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.attendancePillBtn[data-active='true'] {
+    color: #FCFBF8;
+}
+
+.attendanceActiveFill {
+    position: absolute;
+    inset: 0;
+    border-radius: 12px;
+    background: var(--gol-sage);
+    z-index: 0;
+}
+
+.attendancePillText {
+    position: relative;
+    z-index: 1;
+}
+
+.gardenInput {
+    width: 100%;
+    padding: 0.88rem 1rem;
+    border-radius: 12px;
+    border: 1px solid var(--gol-border-strong);
+    background: var(--gol-paper);
+    color: var(--gol-ink);
+    font-family: var(--gol-font-sans);
+    font-size: 0.96rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.gardenInput::placeholder {
+    color: rgba(86, 102, 88, 0.58);
+}
+
+.gardenInput:focus {
+    outline: none;
+    border-color: var(--gol-sage);
+    box-shadow: 0 0 0 3px rgba(74, 97, 78, 0.14);
+}
+
+.gardenInputError {
+    border-color: var(--gol-error);
+}
+
+.twoColumnRow {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+    gap: 1rem;
+}
+
+@media (max-width: 560px) {
+    .twoColumnRow {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.gardenStepper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.42rem 0.55rem;
+    border-radius: 12px;
+    border: 1px solid var(--gol-border-strong);
+    background: var(--gol-paper);
+}
+
+.gardenStepperBtn {
+    width: 36px;
+    height: 36px;
+    border-radius: 999px;
+    border: 1px solid var(--gol-border-strong);
+    background: var(--gol-linen);
+    color: var(--gol-forest);
+    font-size: 1.05rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.gardenStepperBtn:hover:not(:disabled) {
+    background: var(--gol-sage-mist);
+}
+
+.gardenStepperBtn:disabled {
+    opacity: 0.38;
+    cursor: not-allowed;
+}
+
+.gardenStepperCount {
+    font-family: var(--gol-font-display);
+    font-size: 1.2rem;
+    color: var(--gol-ink);
+    font-variant-numeric: tabular-nums;
+}
+
+.gardenTextarea {
+    width: 100%;
+    min-height: 88px;
+    resize: vertical;
+    padding: 0.88rem 1rem;
+    border-radius: 12px;
+    border: 1px solid var(--gol-border-strong);
+    background: var(--gol-paper);
+    color: var(--gol-ink);
+    font-family: var(--gol-font-sans);
+    font-size: 0.95rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.gardenTextarea:focus {
+    outline: none;
+    border-color: var(--gol-sage);
+    box-shadow: 0 0 0 3px rgba(74, 97, 78, 0.14);
+}
+
+.deadlineNotice {
+    font-family: var(--gol-font-serif);
+    font-style: italic;
+    font-size: 0.86rem;
+    color: var(--gol-muted);
+    text-align: center;
+    margin: 0;
+}
+
+.submitErrorBanner {
+    padding: 0.75rem 1rem;
+    border-radius: 10px;
+    background: rgba(180, 35, 24, 0.08);
+    border: 1px solid rgba(180, 35, 24, 0.28);
+    color: var(--gol-error);
+    font-size: 0.85rem;
+    text-align: center;
+}
+
+.gardenSubmitBtn {
+    appearance: none;
+    width: 100%;
+    border: 1px solid var(--gol-forest);
+    background: var(--gol-forest);
+    color: #FCFBF8;
+    font-family: var(--gol-font-sans);
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding: 1.02rem 1.75rem;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    cursor: pointer;
+    box-shadow: 0 12px 28px rgba(45, 64, 49, 0.22);
+    transition: background-color 0.22s ease, border-color 0.22s ease, transform 0.2s ease;
+}
+
+.gardenSubmitBtn:hover:not(:disabled) {
+    background: var(--gol-sage);
+    border-color: var(--gol-sage);
+    transform: translateY(-1px);
+}
+
+.gardenSubmitBtn:disabled {
+    opacity: 0.65;
+    cursor: wait;
+}
+
+/* Confirmation view */
+.gardenConfirmation {
+    text-align: center;
+    padding: 1rem 0.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.95rem;
+}
+
+.gardenConfirmCircle {
+    width: 62px;
+    height: 62px;
+    border-radius: 999px;
+    background: var(--gol-sage-mist);
+    border: 1px solid var(--gol-sage);
+    color: var(--gol-forest);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.gardenConfirmTitle {
+    font-family: var(--gol-font-display);
+    font-size: clamp(1.5rem, 3vw, 1.95rem);
+    color: var(--gol-ink);
+    margin: 0;
+}
+
+.gardenConfirmCopy {
+    font-family: var(--gol-font-serif);
+    font-size: 0.96rem;
+    color: var(--gol-muted);
+    max-width: 42ch;
+    margin: 0;
+}
+
+.gardenConfirmActions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-top: 0.45rem;
+}
+
+.gardenTextReset {
+    appearance: none;
+    border: none;
+    background: none;
+    font-family: var(--gol-font-sans);
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--gol-sage);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    cursor: pointer;
+    margin-top: 0.35rem;
+}
+
+/* ============================================================================
+ * 6. BOTANICAL GARDEN FOOTER
+ * ============================================================================ */
+
+.footer {
+    background: var(--gol-linen);
+    border-top: 1px solid var(--gol-border);
+    padding: clamp(3rem, 6vw, 4.5rem) 1.5rem 2.75rem;
+    text-align: center;
+}
+
+.footerMonogram {
+    font-family: var(--gol-font-display);
+    font-size: 1.65rem;
+    letter-spacing: 0.14em;
+    color: var(--gol-forest);
+    margin-bottom: 0.65rem;
+}
+
+.footerBlessing {
+    font-family: var(--gol-font-serif);
+    font-style: italic;
+    font-size: 1rem;
+    color: var(--gol-muted);
+    max-width: 42ch;
+    margin: 0 auto 0.65rem;
+}
+
+.footerNames {
+    font-family: var(--gol-font-display);
+    font-size: 0.88rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gol-sage);
+    margin: 0 0 1.85rem;
+}
+
+.studioBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 1rem;
+    border-radius: 999px;
+    background: var(--gol-paper);
+    border: 1px solid var(--gol-border);
+    text-decoration: none;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    color: var(--gol-muted);
+    transition: border-color 0.2s ease;
+}
+
+.studioBadge:hover {
+    border-color: var(--gol-sage);
+}
+
+.studioLogo {
+    height: 18px;
+    width: auto;
+    object-fit: contain;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .swayingBranchLeft,
+    .swayingBranchRight {
+        animation: none !important;
+    }
+    .archedGalleryImg,
+    .gardenOpenBtn,
+    .sagePrimaryBtn,
+    .linenSecondaryBtn,
+    .gardenSubmitBtn,
+    .gardenEventCard {
+        transition: none !important;
+    }
+}
+
