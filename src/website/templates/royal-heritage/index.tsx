@@ -1616,27 +1616,28 @@ function CountdownSection({ date }: { date: string }) {
                         <span className={R.cdLatin}>Until the doors open</span>
                     </h2>
                 </RevealOnScroll>
-                {/* Horizontal scroll with the four countdown numbers in a row */}
-                <div className="cd-scroll">
+                {/* Marigold toran across the top; the four numbers sit in the open area below */}
+                <div className="cd-toran">
                     <img
-                        className="cd-scroll-img"
-                        src="/website-templates/royal-heritage/muhurat/countdown-scroll.webp"
+                        className="cd-toran-img"
+                        src="/website-templates/royal-heritage/muhurat/countdown-toran.webp"
                         alt=""
                         aria-hidden="true"
-                        width={1470}
-                        height={812}
+                        width={2730}
+                        height={1400}
                         loading="lazy"
                         decoding="async"
                     />
+                    <span className="cd-toran-glow" aria-hidden="true" />
                     <div
-                        className="cd-scroll-grid"
+                        className="cd-toran-grid"
                         role="timer"
                         aria-label={`${clock.days} days, ${clock.hours} hours, ${clock.minutes} minutes and ${clock.seconds} seconds to go`}
                     >
                         {cells.map((cell) => (
-                            <span key={cell.label} className="cd-scroll-cell" aria-hidden="true">
-                                <b className="cd-scroll-number">{String(cell.value).padStart(2, '0')}</b>
-                                <i className="cd-scroll-label">{cell.label}</i>
+                            <span key={cell.label} className="cd-toran-cell" aria-hidden="true">
+                                <b className="cd-toran-number">{String(cell.value).padStart(2, '0')}</b>
+                                <i className="cd-toran-label">{cell.label}</i>
                             </span>
                         ))}
                     </div>

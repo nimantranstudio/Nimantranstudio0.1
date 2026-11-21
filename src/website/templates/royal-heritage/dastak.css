@@ -3576,36 +3576,46 @@ to {
 
 
 /* ==========================================================================
-   Countdown on a horizontal scroll (cream parchment, red ends, gold frame):
-   the four numbers sit in a row inside the scroll, dark on cream.
+   Countdown under a marigold toran: the garland hangs across the top, the four
+   numbers sit in the open area below it (dark on the sandstone band).
    ========================================================================== */
-.cd-scroll {
+.cd-toran {
   position:relative;
   z-index:2;
   container-type:inline-size;
-  width:min(100%,46rem);
-  margin:clamp(16px,4cqw,30px) auto 0;
-  aspect-ratio:1470 / 812;
-  filter:drop-shadow(0 10px 16px rgba(70,34,6,.22))}
-.cd-scroll-img {
+  width:min(100%,44rem);
+  margin:clamp(10px,3cqw,22px) auto 0;
+  aspect-ratio:2730 / 1400}
+.cd-toran-img {
   position:absolute;
   inset:0;
   width:100%;
   height:100%;
   object-fit:contain;
+  object-position:top center;
   user-select:none;
-  pointer-events:none}
-.cd-scroll-grid {
+  pointer-events:none;
+  filter:drop-shadow(0 7px 9px rgba(70,34,6,.22))}
+.cd-toran-glow {
   position:absolute;
-  left:16%;
-  right:16%;
-  top:26%;
-  bottom:26%;
+  left:12%;
+  right:12%;
+  top:52%;
+  bottom:2%;
+  z-index:1;
+  pointer-events:none;
+  background:radial-gradient(60% 70% at 50% 45%,rgba(255,236,196,.55),rgba(255,228,176,.16) 55%,rgba(255,228,176,0) 78%)}
+.cd-toran-grid {
+  position:absolute;
+  left:15%;
+  right:15%;
+  top:58%;
+  bottom:8%;
   z-index:2;
   display:flex;
   align-items:center;
   pointer-events:none}
-.cd-scroll-cell {
+.cd-toran-cell {
   flex:1 1 0;
   min-width:0;
   display:flex;
@@ -3614,24 +3624,25 @@ to {
   justify-content:center;
   text-align:center;
   padding:0 1%}
-.cd-scroll-cell + .cd-scroll-cell {
-  border-left:1px solid rgba(100,22,34,.26)}
-.cd-scroll-number {
+.cd-toran-cell + .cd-toran-cell {
+  border-left:1px solid rgba(100,22,34,.24)}
+.cd-toran-number {
   display:block;
   font-family:var(--wed-font-display);
   font-weight:600;
-  font-size:clamp(18px,6.6cqw,40px);
+  font-size:clamp(17px,6cqw,38px);
   line-height:1;
   letter-spacing:.01em;
   font-variant-numeric:tabular-nums;
-  color:var(--wed-accent-deep)}
-.cd-scroll-label {
+  color:var(--wed-accent-deep);
+  text-shadow:0 1px 1px rgba(255,243,214,.6)}
+.cd-toran-label {
   display:block;
   margin-top:.5cqw;
   font-family:var(--wed-font-label);
   font-style:normal;
   font-weight:600;
-  font-size:clamp(8px,2cqw,13px);
+  font-size:clamp(8px,1.9cqw,12.5px);
   line-height:1.1;
   letter-spacing:.14em;
   text-indent:.14em;
