@@ -22,8 +22,11 @@ export async function generateMetadata({
         });
 
         if (wedding) {
-            const title = `${wedding.groomName} & ${wedding.brideName} — Wedding Invitation`;
-            const description = `Join us as ${wedding.groomName} & ${wedding.brideName} celebrate their wedding. Tap to view the full invitation, event details & RSVP online — Nimantran Studio.`;
+            const [firstName, secondName] = wedding.brideFirst
+                ? [wedding.brideName, wedding.groomName]
+                : [wedding.groomName, wedding.brideName];
+            const title = `${firstName} & ${secondName} — Wedding Invitation`;
+            const description = `Join us as ${firstName} & ${secondName} celebrate their wedding. Tap to view the full invitation, event details & RSVP online — Nimantran Studio.`;
 
             // Prefer the main "Wedding" ceremony's card over whichever event
             // happens to be first — that's the one guests care about.
@@ -75,7 +78,7 @@ export async function generateMetadata({
                             url: image,
                             width: 1200,
                             height: 630,
-                            alt: `${wedding.groomName} & ${wedding.brideName} Wedding Invitation`,
+                            alt: `${firstName} & ${secondName} Wedding Invitation`,
                         },
                     ],
                 },

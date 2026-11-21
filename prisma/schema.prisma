@@ -186,6 +186,9 @@ model Wedding {
   rsvpContact       String?
   rsvpDeadline      DateTime?
   invitationMessage String?
+  // Show the bride ("Daughter of …") before the groom on the wedding website.
+  // Off by default; set per wedding when the family asks for it.
+  brideFirst        Boolean         @default(false)
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
   events            WeddingEvent[]
