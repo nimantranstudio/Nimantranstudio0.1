@@ -11,7 +11,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { CountdownTimer } from './components/CountdownTimer';
 import { RoyalSanctuaryDoors } from './components/RoyalSanctuaryDoors';
 import { BackgroundAudioPlayer } from './components/BackgroundAudioPlayer';
-import { EventCard, WeddingEventItem } from './components/EventCard';
+import { EventCard, WeddingEventItem, readSiteOptions, sortEventsByDate } from './components/EventCard';
 import { GaneshaIcon } from './components/GaneshaIcon';
 import { RoyalCoverScreen } from './components/RoyalCoverScreen';
 import { AddToCalendarModal } from './components/AddToCalendarModal';
@@ -136,7 +136,11 @@ export const RSVPForm = ({ wedding, isPreview = false }: RSVPFormProps) => {
             .trim();
     };
 
-    const coupleNames = [wedding.groomName, wedding.brideName].filter(Boolean).map(cleanText).join(' & ');
+    // Some families list the bride first ("Ritika & Shaunak"). Wedding.brideFirst flips
+    // every place the two names appear together; default stays groom first.
+    const brideFirst = Boolean(wedding.brideFirst);
+    const orderedNames = brideFirst ? [wedding.brideName, wedding.groomName] : [wedding.groomName, wedding.brideName];
+    const coupleNames = orderedNames.filter(Boolean).map(cleanText).join(' & ');
 
     // Helper to format parent names dynamically.
     //
@@ -161,6 +165,9 @@ export const RSVPForm = ({ wedding, isPreview = false }: RSVPFormProps) => {
 
     // Find primary wedding event or date dynamically
     const eventsList: WeddingEventItem[] = wedding.events || [];
+    // Per-wedding display options (Wedding.siteOptions); empty = default design.
+    const siteOptions = readSiteOptions(wedding.siteOptions);
+    const itineraryEvents = siteOptions.sortEventsByDate ? sortEventsByDate(eventsList) : eventsList;
     const mainWeddingEvent =
         eventsList.find(
             (e) =>
@@ -257,11 +264,12 @@ export const RSVPForm = ({ wedding, isPreview = false }: RSVPFormProps) => {
     const calendarEventData = (() => {
         const groom = cleanText(wedding.groomName) || 'Groom';
         const bride = cleanText(wedding.brideName) || 'Bride';
-        const title = `${groom} & ${bride} — Wedding Ceremony`;
+        const [firstName, secondName] = brideFirst ? [bride, groom] : [groom, bride];
+        const title = `${firstName} & ${secondName} — Wedding Ceremony`;
         const venue = venueLocation || mainWeddingEvent?.venue || 'Wedding Venue';
         const location = venue;
         const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
-        const description = `Wedding celebration of ${groom} & ${bride}.\n\nView Invitation & Details: ${currentUrl}\n\nVenue: ${venue}`;
+        const description = `Wedding celebration of ${firstName} & ${secondName}.\n\nView Invitation & Details: ${currentUrl}\n\nVenue: ${venue}`;
 
         let startDate: Date;
         let endDate: Date;
@@ -605,32 +613,65 @@ export const RSVPForm = ({ wedding, isPreview = false }: RSVPFormProps) => {
 
                                 {/* Vertical Royal Lineage & Couple Block */}
                                 <motion.div variants={coupleContainerVariants} className={styles.heroVerticalCoupleBlock}>
-                                    {/* 1. Groom & Parental Lineage */}
-                                    <motion.div variants={slowItemVariants} className={styles.heroPersonBlock}>
-                                        <h1 className={styles.heroPersonName}>{cleanText(wedding.groomName)}</h1>
-                                        {wedding.groomParents && (
-                                            <div className={styles.heroPersonLineage}>
-                                                <span className={styles.heroPersonRole}>Son of</span>
-                                                <span className={styles.heroPersonParents}>{groomParentsFormatted}</span>
-                                            </div>
-                                        )}
-                                    </motion.div>
+                                    {brideFirst ? (
+                                        <>
+                                            {/* 3. Bride & Parental Lineage */}
+                                            <motion.div variants={slowItemVariants} className={styles.heroPersonBlock}>
+                                                <h1 className={styles.heroPersonName}>{cleanText(wedding.brideName)}</h1>
+                                                {wedding.brideParents && (
+                                                    <div className={styles.heroPersonLineage}>
+                                                        <span className={styles.heroPersonRole}>Daughter of</span>
+                                                        <span className={styles.heroPersonParents}>{brideParentsFormatted}</span>
+                                                    </div>
+                                                )}
+                                            </motion.div>
+                                            {/* 2. Central Elegant Ampersand Divider */}
+                                            <motion.div variants={ampersandVariants} className={styles.heroVerticalAmpersandWrap}>
+                                                <span className={styles.heroAmpersand}>&amp;</span>
+                                            </motion.div>
 
-                                    {/* 2. Central Elegant Ampersand Divider */}
-                                    <motion.div variants={ampersandVariants} className={styles.heroVerticalAmpersandWrap}>
-                                        <span className={styles.heroAmpersand}>&amp;</span>
-                                    </motion.div>
+                                            {/* 1. Groom & Parental Lineage */}
+                                            <motion.div variants={slowItemVariants} className={styles.heroPersonBlock}>
+                                                <h1 className={styles.heroPersonName}>{cleanText(wedding.groomName)}</h1>
+                                                {wedding.groomParents && (
+                                                    <div className={styles.heroPersonLineage}>
+                                                        <span className={styles.heroPersonRole}>Son of</span>
+                                                        <span className={styles.heroPersonParents}>{groomParentsFormatted}</span>
+                                                    </div>
+                                                )}
+                                            </motion.div>
 
-                                    {/* 3. Bride & Parental Lineage */}
-                                    <motion.div variants={slowItemVariants} className={styles.heroPersonBlock}>
-                                        <h1 className={styles.heroPersonName}>{cleanText(wedding.brideName)}</h1>
-                                        {wedding.brideParents && (
-                                            <div className={styles.heroPersonLineage}>
-                                                <span className={styles.heroPersonRole}>Daughter of</span>
-                                                <span className={styles.heroPersonParents}>{brideParentsFormatted}</span>
-                                            </div>
-                                        )}
-                                    </motion.div>
+                                        </>
+                                    ) : (
+                                        <>
+                                            {/* 1. Groom & Parental Lineage */}
+                                            <motion.div variants={slowItemVariants} className={styles.heroPersonBlock}>
+                                                <h1 className={styles.heroPersonName}>{cleanText(wedding.groomName)}</h1>
+                                                {wedding.groomParents && (
+                                                    <div className={styles.heroPersonLineage}>
+                                                        <span className={styles.heroPersonRole}>Son of</span>
+                                                        <span className={styles.heroPersonParents}>{groomParentsFormatted}</span>
+                                                    </div>
+                                                )}
+                                            </motion.div>
+
+                                            {/* 2. Central Elegant Ampersand Divider */}
+                                            <motion.div variants={ampersandVariants} className={styles.heroVerticalAmpersandWrap}>
+                                                <span className={styles.heroAmpersand}>&amp;</span>
+                                            </motion.div>
+
+                                            {/* 3. Bride & Parental Lineage */}
+                                            <motion.div variants={slowItemVariants} className={styles.heroPersonBlock}>
+                                                <h1 className={styles.heroPersonName}>{cleanText(wedding.brideName)}</h1>
+                                                {wedding.brideParents && (
+                                                    <div className={styles.heroPersonLineage}>
+                                                        <span className={styles.heroPersonRole}>Daughter of</span>
+                                                        <span className={styles.heroPersonParents}>{brideParentsFormatted}</span>
+                                                    </div>
+                                                )}
+                                            </motion.div>
+                                        </>
+                                    )}
                                 </motion.div>
 
                                 {/* Auspicious Occasions Note */}
@@ -701,12 +742,13 @@ export const RSVPForm = ({ wedding, isPreview = false }: RSVPFormProps) => {
 
                             <div className={styles.eventsTimeline}>
                                 {eventsList.length > 0 ? (
-                                    eventsList.map((evt, idx) => (
+                                    itineraryEvents.map((evt, idx) => (
                                         <EventCard
                                             key={evt.id || idx}
                                             event={evt}
                                             coupleNames={coupleNames}
                                             index={idx}
+                                            options={siteOptions}
                                         />
                                     ))
                                 ) : primaryDateStr || venueLocation ? (
@@ -934,7 +976,7 @@ export const RSVPForm = ({ wedding, isPreview = false }: RSVPFormProps) => {
                                 </p>
 
                                 <p className={styles.thankYouSignoff}>
-                                    With love, {wedding.groomName} {wedding.brideName ? `& ${wedding.brideName}` : ''}
+                                    With love, {orderedNames.filter(Boolean).join(' & ')}
                                 </p>
 
                                 <p className={styles.welcomingText}>

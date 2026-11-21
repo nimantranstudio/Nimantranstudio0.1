@@ -5,6 +5,7 @@ import { PublishedWebsiteRenderer } from '@/website/components/PublishedWebsiteR
 import { getWebsiteTemplate } from '@/website/templates/registry';
 import type { WebsiteWedding } from '@/website/templates/types';
 import type { Metadata } from 'next';
+import { permanentRedirect } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,8 +26,11 @@ export async function generateMetadata({
         });
 
         if (wedding) {
-            const title = `${wedding.groomName} & ${wedding.brideName} — Wedding Invitation`;
-            const description = `Join us as ${wedding.groomName} & ${wedding.brideName} celebrate their wedding. Tap to view the full invitation, event details & RSVP online — Nimantran Studio.`;
+            const [firstName, secondName] = wedding.brideFirst
+                ? [wedding.brideName, wedding.groomName]
+                : [wedding.groomName, wedding.brideName];
+            const title = `${firstName} & ${secondName} — Wedding Invitation`;
+            const description = `Join us as ${firstName} & ${secondName} celebrate their wedding. Tap to view the full invitation, event details & RSVP online — Nimantran Studio.`;
 
             // Prefer the main "Wedding" ceremony's card over whichever event
             // happens to be first — that's the one guests care about.
@@ -78,7 +82,7 @@ export async function generateMetadata({
                             url: image,
                             width: 1200,
                             height: 630,
-                            alt: `${wedding.groomName} & ${wedding.brideName} Wedding Invitation`,
+                            alt: `${firstName} & ${secondName} Wedding Invitation`,
                         },
                     ],
                 },
@@ -227,6 +231,26 @@ export default async function RSVPPage({
         }
     } catch (e) {
         console.error('Database connection error in /rsvp/[id]:', e);
+    }
+
+    // A link the couple has since changed (Wedding.previousSlug): send guests to
+    // the current link, keeping any query string (e.g. ?opened=true).
+    if (!wedding && id !== 'latest' && id !== 'demo' && id !== 'preview') {
+        let moved: { slug: string | null; id: string } | null = null;
+        try {
+            moved = await prisma.wedding.findUnique({ where: { previousSlug: id }, select: { slug: true, id: true } });
+        } catch (e) {
+            console.error('Previous-slug lookup error in /rsvp/[id]:', e);
+        }
+        if (moved) {
+            const qs = new URLSearchParams();
+            for (const [key, value] of Object.entries(sp)) {
+                if (typeof value === 'string') qs.append(key, value);
+                else if (Array.isArray(value)) value.forEach((v) => qs.append(key, v));
+            }
+            const query = qs.toString();
+            permanentRedirect(`/rsvp/${encodeURIComponent(moved.slug || moved.id)}${query ? `?${query}` : ''}`);
+        }
     }
 
     if (!wedding) {
