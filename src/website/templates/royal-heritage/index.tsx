@@ -1042,33 +1042,76 @@ function AmbientPetalCanvas({
         3.6s after entering viewport)
    ============================================================================ */
 
-const RANGOLI_PETAL_SPRITES = [
-    'petal-marigold-1',
-    'petal-marigold-2',
-    'petal-marigold-3',
-    'petal-marigold-4',
-    'petal-rose-1',
-    'petal-rose-2',
-    'marigold-head-1',
-    'marigold-head-2',
-    'leaf-sprig',
-];
-const RANGOLI_WEIGHTS = [0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 5, 5, 6, 7, 8];
+// Rose petals only, per request (was a mix of marigold petals/heads and leaves).
+const RANGOLI_PETAL_SPRITES = ['petal-rose-1', 'petal-rose-2'];
+const RANGOLI_WEIGHTS = [0, 1];
 const RANGOLI_RING_SPRITES = [
-    'petal-marigold-1',
     'petal-rose-1',
-    'petal-marigold-3',
-    'marigold-head-1',
-    'petal-marigold-2',
     'petal-rose-2',
-    'petal-marigold-4',
-    'leaf-sprig',
-    'petal-marigold-3',
     'petal-rose-1',
-    'petal-marigold-1',
-    'marigold-head-2',
+    'petal-rose-2',
+    'petal-rose-1',
+    'petal-rose-2',
+    'petal-rose-1',
+    'petal-rose-2',
+    'petal-rose-1',
+    'petal-rose-2',
+    'petal-rose-1',
+    'petal-rose-2',
 ];
-const RANGOLI_DRIFT_SPRITES = ['petal-marigold-1', 'petal-rose-2', 'petal-marigold-4'];
+const RANGOLI_DRIFT_SPRITES = ['petal-rose-1', 'petal-rose-2', 'petal-rose-1'];
+
+/** Tall brass samai (standing oil lamp) drawn in code — flanks the rangoli plate. */
+function Samai({ side }: { side: 'left' | 'right' }) {
+    return (
+        <span className={`rg-samai rg-samai-${side}`} aria-hidden="true">
+            <span className="rg-samai-glow" />
+            <svg viewBox="0 0 60 320" preserveAspectRatio="xMidYMax meet">
+                <defs>
+                    <linearGradient id={`samaiBrass-${side}`} x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0" stopColor="#6E4A10" />
+                        <stop offset=".28" stopColor="#F6D98A" />
+                        <stop offset=".55" stopColor="#C9952F" />
+                        <stop offset="1" stopColor="#5A3A0C" />
+                    </linearGradient>
+                    <linearGradient id={`samaiFlame-${side}`} x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0" stopColor="#FFF7E0" />
+                        <stop offset=".45" stopColor="#FFD166" />
+                        <stop offset="1" stopColor="#F2820C" />
+                    </linearGradient>
+                </defs>
+                {/* flame */}
+                <g className="rg-samai-flamewrap">
+                    <path
+                        className="rg-samai-flame"
+                        d="M30 18 C24 30 22 40 30 50 C38 40 36 30 30 18 Z"
+                        fill={`url(#samaiFlame-${side})`}
+                    />
+                </g>
+                {/* oil bowl / deepak at top */}
+                <path d="M14 58 Q30 70 46 58 Q42 74 30 76 Q18 74 14 58 Z" fill={`url(#samaiBrass-${side})`} />
+                <ellipse cx="30" cy="58" rx="16" ry="4.5" fill="#8E6418" />
+                {/* neck */}
+                <path d="M26 76 h8 l-1 14 h-6 z" fill={`url(#samaiBrass-${side})`} />
+                {/* upper knop */}
+                <ellipse cx="30" cy="96" rx="9" ry="7" fill={`url(#samaiBrass-${side})`} />
+                {/* shaft */}
+                <rect x="27" y="102" width="6" height="86" rx="2" fill={`url(#samaiBrass-${side})`} />
+                {/* middle bulb */}
+                <circle cx="30" cy="150" r="10" fill={`url(#samaiBrass-${side})`} />
+                <ellipse cx="30" cy="150" rx="10" ry="3.4" fill="#5A3A0C" opacity=".4" />
+                {/* lower shaft */}
+                <rect x="27.5" y="188" width="5" height="70" rx="2" fill={`url(#samaiBrass-${side})`} />
+                {/* base cascade */}
+                <ellipse cx="30" cy="262" rx="12" ry="5" fill={`url(#samaiBrass-${side})`} />
+                <path d="M16 272 Q30 264 44 272 L48 288 Q30 298 12 288 Z" fill={`url(#samaiBrass-${side})`} />
+                <ellipse cx="30" cy="300" rx="24" ry="8" fill={`url(#samaiBrass-${side})`} />
+                <ellipse cx="30" cy="300" rx="24" ry="8" fill="#5A3A0C" opacity=".25" />
+                <ellipse cx="30" cy="296" rx="18" ry="5" fill={`url(#samaiBrass-${side})`} />
+            </svg>
+        </span>
+    );
+}
 
 interface RangoliParticle {
     i: number;
@@ -1533,14 +1576,8 @@ function MuhuratRangoliSweep({ date }: { date: string }) {
                         ))}
                     </span>
                 ) : null}
-                <span className={`${R.rgDiya} ${R.rgDiyaLeft}`} aria-hidden="true">
-                    <span className={R.rgDiyaGlow} />
-                    <img src={`${ART_BASE}/diya.webp`} alt="" width={240} height={196} loading="lazy" />
-                </span>
-                <span className={`${R.rgDiya} ${R.rgDiyaRight}`} aria-hidden="true">
-                    <span className={R.rgDiyaGlow} />
-                    <img src={`${ART_BASE}/diya.webp`} alt="" width={240} height={196} loading="lazy" />
-                </span>
+                <Samai side="left" />
+                <Samai side="right" />
                 {armed ? <canvas ref={canvasRef} className={R.rgCanvas} aria-hidden="true" /> : null}
             </div>
             {canCanvas ? (
