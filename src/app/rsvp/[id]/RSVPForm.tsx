@@ -11,7 +11,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { CountdownTimer } from './components/CountdownTimer';
 import { RoyalSanctuaryDoors } from './components/RoyalSanctuaryDoors';
 import { BackgroundAudioPlayer } from './components/BackgroundAudioPlayer';
-import { EventCard, WeddingEventItem } from './components/EventCard';
+import { EventCard, WeddingEventItem, readSiteOptions, sortEventsByDate } from './components/EventCard';
 import { GaneshaIcon } from './components/GaneshaIcon';
 import { RoyalCoverScreen } from './components/RoyalCoverScreen';
 import { AddToCalendarModal } from './components/AddToCalendarModal';
@@ -165,6 +165,9 @@ export const RSVPForm = ({ wedding, isPreview = false }: RSVPFormProps) => {
 
     // Find primary wedding event or date dynamically
     const eventsList: WeddingEventItem[] = wedding.events || [];
+    // Per-wedding display options (Wedding.siteOptions); empty = default design.
+    const siteOptions = readSiteOptions(wedding.siteOptions);
+    const itineraryEvents = siteOptions.sortEventsByDate ? sortEventsByDate(eventsList) : eventsList;
     const mainWeddingEvent =
         eventsList.find(
             (e) =>
@@ -739,12 +742,13 @@ export const RSVPForm = ({ wedding, isPreview = false }: RSVPFormProps) => {
 
                             <div className={styles.eventsTimeline}>
                                 {eventsList.length > 0 ? (
-                                    eventsList.map((evt, idx) => (
+                                    itineraryEvents.map((evt, idx) => (
                                         <EventCard
                                             key={evt.id || idx}
                                             event={evt}
                                             coupleNames={coupleNames}
                                             index={idx}
+                                            options={siteOptions}
                                         />
                                     ))
                                 ) : primaryDateStr || venueLocation ? (

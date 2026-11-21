@@ -193,6 +193,10 @@ model Wedding {
   // Show the bride ("Daughter of …") before the groom on the wedding website.
   // Off by default; set per wedding when the family asks for it.
   brideFirst        Boolean         @default(false)
+  // Small per-wedding display options for the wedding website, e.g.
+  // { "sortEventsByDate": true, "eventGetDirections": true, "eventAddToCalendar": true }.
+  // Empty = the default design. See WeddingSiteOptions in rsvp/[id]/components/EventCard.tsx.
+  siteOptions       Json?
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
   events            WeddingEvent[]
