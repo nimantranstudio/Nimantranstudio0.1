@@ -177,6 +177,10 @@ model Theme {
 model Wedding {
   id                String          @id @default(cuid())
   slug              String?         @unique
+  // A retired link (e.g. after the couple asked for the names to be swapped).
+  // /rsvp/{previousSlug} permanently redirects to /rsvp/{slug}, so links that
+  // were already shared keep working. Never reused for another wedding.
+  previousSlug      String?         @unique
   ownerId           String
   themeId           String
   groomName         String

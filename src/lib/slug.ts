@@ -51,7 +51,8 @@ export async function generateUniqueWeddingSlug(
     while (true) {
         const existing = await prisma.wedding.findFirst({
             where: {
-                slug: candidate,
+                // A retired link still redirects to its wedding, so never hand it out again.
+                OR: [{ slug: candidate }, { previousSlug: candidate }],
                 ...(excludeWeddingId ? { NOT: { id: excludeWeddingId } } : {}),
             },
             select: { id: true },

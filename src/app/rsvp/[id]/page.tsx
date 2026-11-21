@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma';
 import styles from './rsvp.module.css';
 import { RSVPForm } from './RSVPForm';
 import type { Metadata } from 'next';
+import { permanentRedirect } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
@@ -215,6 +216,26 @@ export default async function RSVPPage({
         }
     } catch (e) {
         console.error('Database connection error in /rsvp/[id]:', e);
+    }
+
+    // A link the couple has since changed (Wedding.previousSlug): send guests to
+    // the current link, keeping any query string (e.g. ?opened=true).
+    if (!wedding && id !== 'latest' && id !== 'demo' && id !== 'preview') {
+        let moved: { slug: string | null; id: string } | null = null;
+        try {
+            moved = await prisma.wedding.findUnique({ where: { previousSlug: id }, select: { slug: true, id: true } });
+        } catch (e) {
+            console.error('Previous-slug lookup error in /rsvp/[id]:', e);
+        }
+        if (moved) {
+            const qs = new URLSearchParams();
+            for (const [key, value] of Object.entries(sp)) {
+                if (typeof value === 'string') qs.append(key, value);
+                else if (Array.isArray(value)) value.forEach((v) => qs.append(key, v));
+            }
+            const query = qs.toString();
+            permanentRedirect(`/rsvp/${encodeURIComponent(moved.slug || moved.id)}${query ? `?${query}` : ''}`);
+        }
     }
 
     if (!wedding) {

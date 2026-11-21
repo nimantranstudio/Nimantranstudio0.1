@@ -31,7 +31,12 @@ export const RoyalCoverScreen: React.FC<RoyalCoverScreenProps> = ({
         wedding?.brideName
     );
 
-    const coupleNames = `${wedding?.groomName || 'Groom'} & ${wedding?.brideName || 'Bride'}`;
+    // Wedding.brideFirst: monogram and names read bride first ("R & S").
+    const brideFirst = Boolean(wedding?.brideFirst);
+    const [firstInitial, secondInitial] = brideFirst ? [brideInitial, groomInitial] : [groomInitial, brideInitial];
+    const coupleNames = brideFirst
+        ? `${wedding?.brideName || 'Bride'} & ${wedding?.groomName || 'Groom'}`
+        : `${wedding?.groomName || 'Groom'} & ${wedding?.brideName || 'Bride'}`;
 
     const handleOpenClick = () => {
         if (isWhiteWashing) return;
@@ -106,11 +111,11 @@ export const RoyalCoverScreen: React.FC<RoyalCoverScreenProps> = ({
                     >
                         {/* Monogram Couple Initials */}
                         <div className={styles.coverMonogram}>
-                            <span className={styles.coverMonogramInitial}>{groomInitial}</span>
+                            <span className={styles.coverMonogramInitial}>{firstInitial}</span>
                             {wedding?.brideName && wedding.brideName.trim() ? (
                                 <>
                                     <span className={styles.coverMonogramAmp}>&amp;</span>
-                                    <span className={styles.coverMonogramInitial}>{brideInitial}</span>
+                                    <span className={styles.coverMonogramInitial}>{secondInitial}</span>
                                 </>
                             ) : null}
                         </div>
