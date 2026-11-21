@@ -1430,6 +1430,12 @@ function PardaOpening({
         }
     };
 
+    // Tapping anywhere on the curtain opens it (not just the small tassel), so a
+    // guest who taps the cover rather than the rope still gets in.
+    const handleCoverClick = () => {
+        if (phase === 'sealed') triggerOpen(false, 112);
+    };
+
     if (phase === 'hidden') return null;
 
     const toLineText = greeting?.toLabel || 'To our dearest guests';
@@ -1447,8 +1453,10 @@ function PardaOpening({
             aria-modal="true"
             aria-label="Open wedding invitation"
             onKeyDown={handleKeyDown}
+            onClick={handleCoverClick}
             style={{
                 backgroundColor: '#D8496B',
+                cursor: phase === 'sealed' ? 'pointer' : undefined,
                 '--parda-ratio': String(ARCH_RATIO),
                 '--parda-ap-x0': `${PARDA_APERTURE.left}%`,
                 '--parda-ap-x1': `${PARDA_APERTURE.right}%`,
