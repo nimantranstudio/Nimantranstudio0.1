@@ -5,8 +5,6 @@ import dynamic from 'next/dynamic';
 import type { WebsiteTemplateProps } from '../templates/types';
 
 const RoyalHeritage = dynamic(() => import('../templates/royal-heritage'));
-const ModernRomance = dynamic(() => import('../templates/modern-romance'));
-const GardenOfLove = dynamic(() => import('../templates/garden-of-love'));
 
 export interface PublishedWebsiteRendererProps extends WebsiteTemplateProps {
     templateCode: string;
@@ -26,10 +24,6 @@ export function PublishedWebsiteRenderer({
     switch (templateCode) {
         case 'royal-heritage':
             return <RoyalHeritage wedding={wedding} isPreview={isPreview} />;
-        case 'modern-romance':
-            return <ModernRomance wedding={wedding} isPreview={isPreview} />;
-        case 'garden-of-love':
-            return <GardenOfLove wedding={wedding} isPreview={isPreview} />;
         default:
             return null;
     }
