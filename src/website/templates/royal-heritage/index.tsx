@@ -21,6 +21,9 @@ import './dastak.css';
    ============================================================================ */
 
 const OPENING_BASE = '/website-templates/royal-heritage/dastak/opening';
+/** Landing (hero) background: 16:9 for landscape screens, 9:16 for portrait. */
+const HERO_BASE = '/website-templates/royal-heritage/hero';
+const HERO_PORTRAIT_QUERY = '(max-aspect-ratio: 1/1)';
 const ART_BASE = '/website-templates/royal-heritage/dastak/art';
 const GALLERY_BASE = '/website-templates/royal-heritage/dastak/gallery';
 const DEFAULT_DASTAK_AUDIO = '/website-templates/royal-heritage/dastak/dastak-audio.mp3';
@@ -1484,11 +1487,11 @@ function MuhuratRangoliSweep({ date }: { date: string }) {
             >
                 <img
                     className={R.rgFloor}
-                    src={`${ART_BASE}/rangoli-floor.webp`}
+                    src="/website-templates/royal-heritage/muhurat/muhurat-floor.webp"
                     alt=""
                     aria-hidden="true"
-                    width={1100}
-                    height={1100}
+                    width={1200}
+                    height={1200}
                     loading="lazy"
                 />
                 <span className={R.rgSheen} aria-hidden="true" />
@@ -1613,98 +1616,38 @@ function CountdownSection({ date }: { date: string }) {
                         <span className={R.cdLatin}>Until the doors open</span>
                     </h2>
                 </RevealOnScroll>
-                <div className={R.cdStage}>
-                    <span className={R.cdWallWrap} aria-hidden="true">
+                {/* Same floor plate as the Shubh Muhurat date, with the countdown in its maroon disc */}
+                <div className="cd-plate">
+                    <div className={R.rgStage}>
                         <img
-                            className={R.cdWall}
-                            src={`${ART_BASE}/countdown-wall.webp`}
+                            className={R.rgFloor}
+                            src="/website-templates/royal-heritage/muhurat/countdown-floor.webp"
                             alt=""
-                            width={1000}
-                            height={1241}
+                            aria-hidden="true"
+                            width={1200}
+                            height={1200}
                             loading="lazy"
                             decoding="async"
                         />
-                    </span>
-                    <span className={R.cdToranWrap} aria-hidden="true">
-                        <img
-                            className={R.cdToran}
-                            src={`${ART_BASE}/toran.webp`}
-                            alt=""
-                            width={900}
-                            height={273}
-                            loading="lazy"
-                            decoding="async"
-                        />
-                    </span>
-                    <div className={R.cdRow} role="timer">
-                        {cells.map((cell, idx) => (
-                            <div
-                                key={cell.label}
-                                className={`${R.cdCell} ${idx === 1 || idx === 2 ? R.cdCellInner : ''}`.trim()}
-                            >
-                                <div className={R.cdHang}>
-                                    <span className={R.cdBellWrap} aria-hidden="true">
-                                        <img
-                                            className={R.cdBell}
-                                            src={`${ART_BASE}/countdown-bell.webp`}
-                                            alt=""
-                                            width={160}
-                                            height={267}
-                                            loading="lazy"
-                                            decoding="async"
-                                            data-ring={clock.past ? undefined : cell.value % 2}
-                                        />
-                                    </span>
-                                    <img
-                                        className={R.cdDisc}
-                                        src={`${ART_BASE}/countdown-medallion.webp`}
-                                        alt=""
-                                        aria-hidden="true"
-                                        width={340}
-                                        height={450}
-                                        loading="lazy"
-                                        decoding="async"
-                                    />
-                                    <span className={R.cdSheen} aria-hidden="true" />
-                                    <span className={R.cdDigits}>
-                                        <b className={R.cdNumber}>{String(cell.value).padStart(2, '0')}</b>
-                                        <i className={R.cdLabel}>{cell.label}</i>
-                                    </span>
-                                </div>
-                            </div>
+                        <div
+                            className="cd-plate-grid"
+                            role="timer"
+                            aria-label={`${clock.days} days, ${clock.hours} hours, ${clock.minutes} minutes and ${clock.seconds} seconds to go`}
+                        >
+                            {cells.map((cell) => (
+                                <span key={cell.label} className="cd-plate-cell" aria-hidden="true">
+                                    <b className="cd-plate-number">{String(cell.value).padStart(2, '0')}</b>
+                                    <i className="cd-plate-label">{cell.label}</i>
+                                </span>
+                            ))}
+                        </div>
+                        {[R.rgDiyaLeft, R.rgDiyaRight].map((side) => (
+                            <span key={side} className={`${R.rgDiya} ${side}`} aria-hidden="true">
+                                <span className={R.rgDiyaGlow} />
+                                <img src={`${ART_BASE}/diya.webp`} alt="" width={240} height={196} loading="lazy" />
+                            </span>
                         ))}
                     </div>
-                    {[0, 1].map((idx) => (
-                        <span
-                            key={idx}
-                            className={`${R.cdDiya} ${idx === 1 ? R.cdDiyaRight : ''}`.trim()}
-                            aria-hidden="true"
-                        >
-                            <span className={R.cdDiyaGlow} />
-                            <img
-                                className={R.cdDiyaArt}
-                                src={`${ART_BASE}/diya.webp`}
-                                alt=""
-                                width={240}
-                                height={196}
-                                loading="lazy"
-                                decoding="async"
-                            />
-                        </span>
-                    ))}
-                    {['petal-marigold-1', 'petal-rose-1', 'petal-marigold-3'].map((sprite, idx) => (
-                        <img
-                            key={sprite}
-                            className={`${R.cdPetal} ${R[`cdPetal${idx + 1}`]}`}
-                            src={`${ART_BASE}/${sprite}.webp`}
-                            alt=""
-                            aria-hidden="true"
-                            width={96}
-                            height={96}
-                            loading="lazy"
-                            decoding="async"
-                        />
-                    ))}
                 </div>
             </div>
         </section>
@@ -1911,6 +1854,67 @@ function EventDoorwayCard({
     const alcovePlate =
         ALCOVE_PLATES.find(({ match }) => match.test(event.name))?.plate ?? 'alcove-phere';
 
+    const renderEventCard = () => (
+        <div className={R.cardClip} ref={cardClipRef}>
+            <div className={R.eventCard} ref={eventCardRef} tabIndex={-1}>
+                <span className={R.eventPaper} aria-hidden="true" />
+                <img
+                    className={R.eventPetal}
+                    src={`${ART_BASE}/marigold-head-2.webp`}
+                    alt=""
+                    aria-hidden="true"
+                    width={96}
+                    height={96}
+                    loading="lazy"
+                    decoding="async"
+                />
+                <div className={R.eventCardInner}>
+                    <h3 className={R.eventName} id={titleId}>
+                        {event.name}
+                    </h3>
+                    <Divider className={R.eventRule} />
+                    {metaLine ? <p className={R.eventMeta}>{metaLine}</p> : null}
+                    {event.venue ? <p className={R.eventVenue}>{event.venue}</p> : null}
+                    {event.desc ? <p className={R.eventDesc}>{event.desc}</p> : null}
+                    {event.dressCodeColors && event.dressCodeColors.length > 0 ? (
+                        <div className={R.eventDress}>
+                            <span className={R.eventDressLabel}>Dress code</span>
+                            <span className={R.eventDressList}>
+                                {event.dressCodeColors.map((hex) => {
+                                    const colorName = getColorName(hex);
+                                    return (
+                                        <span key={hex} className={R.eventDressChip}>
+                                            <span
+                                                className={R.eventDressDot}
+                                                style={{ background: hex }}
+                                                aria-hidden="true"
+                                            />
+                                            {colorName ? (
+                                                <span className={R.eventDressName}>{colorName}</span>
+                                            ) : null}
+                                        </span>
+                                    );
+                                })}
+                            </span>
+                        </div>
+                    ) : null}
+                    {calLinks ? (
+                        <div className={R.eventActions}>
+                            <a href={calLinks.google} target="_blank" rel="noreferrer">
+                                Add to calendar
+                            </a>
+                            {calLinks.mapsUrl ? (
+                                <a href={calLinks.mapsUrl} target="_blank" rel="noreferrer">
+                                    Map
+                                </a>
+                            ) : null}
+                        </div>
+                    ) : null}
+                </div>
+            </div>
+        </div>
+    );
+
     return (
         <article
             className={R.doorway}
@@ -1918,16 +1922,6 @@ function EventDoorwayCard({
             data-revealed={isRevealed ? '' : undefined}
             aria-labelledby={titleId}
         >
-            <span className={R.toranWrap} aria-hidden="true">
-                <img
-                    className={R.toran}
-                    src={`${ART_BASE}/toran.webp`}
-                    alt=""
-                    width={900}
-                    height={273}
-                    loading="lazy"
-                />
-            </span>
             <div className={R.stage}>
                 <span className={R.revealMark} ref={revealMarkRef} aria-hidden="true" />
                 <div className={R.aperture} ref={apertureRef} aria-hidden="true">
@@ -1940,14 +1934,16 @@ function EventDoorwayCard({
                         loading="lazy"
                     />
                     <span className={R.alcoveGlow} />
+                    {/* lamp light glowing through the jali while the shutters are closed */}
+                    <span className="jh-lamp" />
                     <div className={R.leaves}>
                         <div className={`${R.leaf} ${R.leafLeft}`}>
                             <img
                                 className={R.leafArt}
-                                src={`${ART_BASE}/door-leaf-left.webp`}
+                                src={`${ART_BASE}/jharokha-shutter-left.webp`}
                                 alt=""
-                                width={420}
-                                height={1484}
+                                width={200}
+                                height={800}
                                 loading="lazy"
                             />
                             <span className={R.leafShade} />
@@ -1955,15 +1951,16 @@ function EventDoorwayCard({
                         <div className={`${R.leaf} ${R.leafRight}`}>
                             <img
                                 className={R.leafArt}
-                                src={`${ART_BASE}/door-leaf-right.webp`}
+                                src={`${ART_BASE}/jharokha-shutter-right.webp`}
                                 alt=""
-                                width={420}
-                                height={1483}
+                                width={200}
+                                height={800}
                                 loading="lazy"
                             />
                             <span className={R.leafShade} />
                         </div>
                     </div>
+                    <span className="jh-recess" />
                     <span
                         className={R.alcoveName}
                         ref={alcoveNameRef}
@@ -1973,14 +1970,29 @@ function EventDoorwayCard({
                     </span>
                 </div>
                 <img
-                    className={R.arch}
-                    src={`${ART_BASE}/arch-frame.webp`}
+                    className={`${R.arch} jh-frame`}
+                    src="/website-templates/royal-heritage/events/jharokha-frame.webp"
                     alt=""
                     aria-hidden="true"
-                    width={900}
-                    height={1350}
+                    width={720}
+                    height={1080}
                     loading="lazy"
                 />
+                {/* warm light spilling onto the carved stone once the shutters open, and a gold sheen */}
+                <span className="jh-spill" aria-hidden="true" />
+                <span className="jh-sheen" aria-hidden="true" />
+                {/* marigold strings hanging from both ends of the cornice */}
+                {(['left', 'right'] as const).map((side) => (
+                    <span key={side} className={`jh-mala jh-mala-${side}`} aria-hidden="true">
+                        <img
+                            src={`${ART_BASE}/garland-string.webp`}
+                            alt=""
+                            width={84}
+                            height={800}
+                            loading="lazy"
+                        />
+                    </span>
+                ))}
                 <span className={`${R.diya} ${R.diyaLeft}`} aria-hidden="true">
                     <span className={R.diyaGlow} />
                     <img
@@ -2013,64 +2025,7 @@ function EventDoorwayCard({
                     />
                 ) : null}
             </div>
-            <div className={R.cardClip} ref={cardClipRef}>
-                <div className={R.eventCard} ref={eventCardRef} tabIndex={-1}>
-                    <span className={R.eventPaper} aria-hidden="true" />
-                    <img
-                        className={R.eventPetal}
-                        src={`${ART_BASE}/marigold-head-2.webp`}
-                        alt=""
-                        aria-hidden="true"
-                        width={96}
-                        height={96}
-                        loading="lazy"
-                        decoding="async"
-                    />
-                    <div className={R.eventCardInner}>
-                        <h3 className={R.eventName} id={titleId}>
-                            {event.name}
-                        </h3>
-                        <Divider className={R.eventRule} />
-                        {metaLine ? <p className={R.eventMeta}>{metaLine}</p> : null}
-                        {event.venue ? <p className={R.eventVenue}>{event.venue}</p> : null}
-                        {event.desc ? <p className={R.eventDesc}>{event.desc}</p> : null}
-                        {event.dressCodeColors && event.dressCodeColors.length > 0 ? (
-                            <div className={R.eventDress}>
-                                <span className={R.eventDressLabel}>Dress code</span>
-                                <span className={R.eventDressList}>
-                                    {event.dressCodeColors.map((hex) => {
-                                        const colorName = getColorName(hex);
-                                        return (
-                                            <span key={hex} className={R.eventDressChip}>
-                                                <span
-                                                    className={R.eventDressDot}
-                                                    style={{ background: hex }}
-                                                    aria-hidden="true"
-                                                />
-                                                {colorName ? (
-                                                    <span className={R.eventDressName}>{colorName}</span>
-                                                ) : null}
-                                            </span>
-                                        );
-                                    })}
-                                </span>
-                            </div>
-                        ) : null}
-                        {calLinks ? (
-                            <div className={R.eventActions}>
-                                <a href={calLinks.google} target="_blank" rel="noreferrer">
-                                    Add to calendar
-                                </a>
-                                {calLinks.mapsUrl ? (
-                                    <a href={calLinks.mapsUrl} target="_blank" rel="noreferrer">
-                                        Map
-                                    </a>
-                                ) : null}
-                            </div>
-                        ) : null}
-                    </div>
-                </div>
-            </div>
+            {renderEventCard()}
         </article>
     );
 }
@@ -2928,6 +2883,7 @@ export default function RoyalHeritageTemplate({ wedding, isPreview = false }: We
     const [copiedAddr, setCopiedAddr] = useState(false);
     const [arrived, setArrived] = useState(false);
     const [canPlayHeroVideo, setCanPlayHeroVideo] = useState(false);
+    const [heroLayout, setHeroLayout] = useState<'desktop' | 'mobile' | null>(null);
     const [canShowAmbient, setCanShowAmbient] = useState(false);
     const [rsvpDroppedMarigold, setRsvpDroppedMarigold] = useState(false);
 
@@ -3145,15 +3101,26 @@ export default function RoyalHeritageTemplate({ wedding, isPreview = false }: We
         if (red) setArrived(true);
     }, []);
 
+    // Portrait screens (phones) get the 9:16 hero video, landscape screens
+    // (laptops, desktops, tablets on their side) get the 16:9 one. Re-checked on
+    // rotate/resize so the picture always fills the screen sharply.
     useLayoutEffect(() => {
-        if (!canPlayHeroVideo) return;
+        const mq = window.matchMedia(HERO_PORTRAIT_QUERY);
+        const pick = () => setHeroLayout(mq.matches ? 'mobile' : 'desktop');
+        pick();
+        mq.addEventListener('change', pick);
+        return () => mq.removeEventListener('change', pick);
+    }, []);
+
+    useLayoutEffect(() => {
+        if (!canPlayHeroVideo || !heroLayout) return;
         ensureHeroVideoPlaying();
         const onVis = () => {
             if (document.visibilityState === 'visible') ensureHeroVideoPlaying();
         };
         document.addEventListener('visibilitychange', onVis);
         return () => document.removeEventListener('visibilitychange', onVis);
-    }, [canPlayHeroVideo, ensureHeroVideoPlaying]);
+    }, [canPlayHeroVideo, heroLayout, ensureHeroVideoPlaying]);
 
     useEffect(() => {
         if (data.step === 'SUCCESS' || data.step === 'ALREADY_REGISTERED') {
@@ -3206,17 +3173,21 @@ export default function RoyalHeritageTemplate({ wedding, isPreview = false }: We
             {/* 3. Hero Courtyard Stage */}
             <header className={R.hero} id="cover">
                 <div className={R.heroStage} aria-hidden="true">
-                    <img
-                        className={R.heroMedia}
-                        src={`${OPENING_BASE}/loop-poster.webp`}
-                        alt=""
-                        fetchPriority="high"
-                    />
-                    {canPlayHeroVideo ? (
+                    <picture>
+                        <source media={HERO_PORTRAIT_QUERY} srcSet={`${HERO_BASE}/hero-mobile.webp`} />
+                        <img
+                            className={R.heroMedia}
+                            src={`${HERO_BASE}/hero-desktop.webp`}
+                            alt=""
+                            fetchPriority="high"
+                        />
+                    </picture>
+                    {canPlayHeroVideo && heroLayout ? (
                         <video
+                            key={heroLayout}
                             ref={heroVideoRef}
                             className={R.heroMedia}
-                            poster={`${OPENING_BASE}/loop-poster.webp`}
+                            poster={`${HERO_BASE}/hero-${heroLayout}.webp`}
                             autoPlay
                             muted
                             loop
@@ -3224,8 +3195,8 @@ export default function RoyalHeritageTemplate({ wedding, isPreview = false }: We
                             preload="auto"
                             disablePictureInPicture
                         >
-                            <source src={`${OPENING_BASE}/loop.webm`} type="video/webm" />
-                            <source src={`${OPENING_BASE}/loop.mp4`} type="video/mp4" />
+                            <source src={`${HERO_BASE}/hero-${heroLayout}.webm`} type="video/webm" />
+                            <source src={`${HERO_BASE}/hero-${heroLayout}.mp4`} type="video/mp4" />
                         </video>
                     ) : null}
                     <div className={R.heroVeil} />

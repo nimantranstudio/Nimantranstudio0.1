@@ -6,6 +6,7 @@
     "dev": "node --max-old-space-size=8192 ./node_modules/next/dist/bin/next dev",
     "local": "node --max-old-space-size=8192 ./node_modules/next/dist/bin/next dev",
     "build": "node --max-old-space-size=4096 ./node_modules/next/dist/bin/next build",
+    "prestart": "node scripts/ensure-build.js",
     "start": "node ./node_modules/next/dist/bin/next start",
     "lint": "eslint src/",
     "postinstall": "rm -rf node_modules/.prisma/client && prisma generate",
