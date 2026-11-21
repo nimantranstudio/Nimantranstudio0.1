@@ -1616,35 +1616,27 @@ function CountdownSection({ date }: { date: string }) {
                         <span className={R.cdLatin}>Until the doors open</span>
                     </h2>
                 </RevealOnScroll>
-                {/* Same floor plate as the Shubh Muhurat date, with the countdown in its maroon disc */}
-                <div className="cd-plate">
-                    <div className={R.rgStage}>
-                        <img
-                            className={R.rgFloor}
-                            src="/website-templates/royal-heritage/muhurat/countdown-floor.webp"
-                            alt=""
-                            aria-hidden="true"
-                            width={1200}
-                            height={1200}
-                            loading="lazy"
-                            decoding="async"
-                        />
-                        <div
-                            className="cd-plate-grid"
-                            role="timer"
-                            aria-label={`${clock.days} days, ${clock.hours} hours, ${clock.minutes} minutes and ${clock.seconds} seconds to go`}
-                        >
-                            {cells.map((cell) => (
-                                <span key={cell.label} className="cd-plate-cell" aria-hidden="true">
-                                    <b className="cd-plate-number">{String(cell.value).padStart(2, '0')}</b>
-                                    <i className="cd-plate-label">{cell.label}</i>
-                                </span>
-                            ))}
-                        </div>
-                        {[R.rgDiyaLeft, R.rgDiyaRight].map((side) => (
-                            <span key={side} className={`${R.rgDiya} ${side}`} aria-hidden="true">
-                                <span className={R.rgDiyaGlow} />
-                                <img src={`${ART_BASE}/diya.webp`} alt="" width={240} height={196} loading="lazy" />
+                {/* Horizontal scroll with the four countdown numbers in a row */}
+                <div className="cd-scroll">
+                    <img
+                        className="cd-scroll-img"
+                        src="/website-templates/royal-heritage/muhurat/countdown-scroll.webp"
+                        alt=""
+                        aria-hidden="true"
+                        width={1470}
+                        height={812}
+                        loading="lazy"
+                        decoding="async"
+                    />
+                    <div
+                        className="cd-scroll-grid"
+                        role="timer"
+                        aria-label={`${clock.days} days, ${clock.hours} hours, ${clock.minutes} minutes and ${clock.seconds} seconds to go`}
+                    >
+                        {cells.map((cell) => (
+                            <span key={cell.label} className="cd-scroll-cell" aria-hidden="true">
+                                <b className="cd-scroll-number">{String(cell.value).padStart(2, '0')}</b>
+                                <i className="cd-scroll-label">{cell.label}</i>
                             </span>
                         ))}
                     </div>

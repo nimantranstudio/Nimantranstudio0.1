@@ -3576,72 +3576,67 @@ to {
 
 
 /* ==========================================================================
-   Countdown on the muhurat floor plate (replaces toran + hanging medallions)
-   Reuses the Shubh Muhurat stage (.rgStage / .rgFloor / .rgDiya); the four
-   numbers sit in a 2x2 grid inside the plate's maroon disc.
+   Countdown on a horizontal scroll (cream parchment, red ends, gold frame):
+   the four numbers sit in a row inside the scroll, dark on cream.
    ========================================================================== */
-.cd-plate {
-  /* .rgStage zoom + edge fade read these; the fade blends into the sandstone band */
-  --dk-floor:207,145,74;
-  --rg-zoom:1.45;
-  --rg-cx:49.69%;
-  --rg-cy:50.31%;
+.cd-scroll {
   position:relative;
   z-index:2;
+  container-type:inline-size;
+  width:min(100%,46rem);
   margin:clamp(16px,4cqw,30px) auto 0;
-  padding:0 22px}
-.cd-plate-grid {
+  aspect-ratio:1470 / 812;
+  filter:drop-shadow(0 10px 16px rgba(70,34,6,.22))}
+.cd-scroll-img {
   position:absolute;
-  left:50%;
-  top:50%;
-  z-index:3;
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  grid-template-rows:1fr 1fr;
-  width:38%;
-  aspect-ratio:1;
-  translate:-50% -50%;
-  color:#F2D58F;
-  text-shadow:0 1px 2px rgba(40,4,12,.7);
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  user-select:none;
   pointer-events:none}
-@supports not (translate:1px) {
-  .cd-plate-grid {
-  transform:translate(-50%,-50%)}
-}
-.cd-plate-cell {
+.cd-scroll-grid {
+  position:absolute;
+  left:16%;
+  right:16%;
+  top:26%;
+  bottom:26%;
+  z-index:2;
+  display:flex;
+  align-items:center;
+  pointer-events:none}
+.cd-scroll-cell {
+  flex:1 1 0;
+  min-width:0;
   display:flex;
   flex-direction:column;
   align-items:center;
   justify-content:center;
-  border-color:rgba(242,213,143,.32);
-  border-style:solid;
-  border-width:0}
-.cd-plate-cell:nth-child(1) {
-  border-right-width:1px;
-  border-bottom-width:1px}
-.cd-plate-cell:nth-child(2) {
-  border-bottom-width:1px}
-.cd-plate-cell:nth-child(3) {
-  border-right-width:1px}
-.cd-plate-number {
+  text-align:center;
+  padding:0 1%}
+.cd-scroll-cell + .cd-scroll-cell {
+  border-left:1px solid rgba(100,22,34,.26)}
+.cd-scroll-number {
   display:block;
   font-family:var(--wed-font-display);
-  font-weight:500;
-  font-size:7.2cqw;
+  font-weight:600;
+  font-size:clamp(18px,6.6cqw,40px);
   line-height:1;
   letter-spacing:.01em;
-  font-variant-numeric:tabular-nums}
-.cd-plate-label {
+  font-variant-numeric:tabular-nums;
+  color:var(--wed-accent-deep)}
+.cd-scroll-label {
   display:block;
-  margin-top:.8cqw;
+  margin-top:.5cqw;
   font-family:var(--wed-font-label);
   font-style:normal;
   font-weight:600;
-  font-size:max(8px,2.2cqw);
+  font-size:clamp(8px,2cqw,13px);
   line-height:1.1;
-  letter-spacing:.18em;
-  text-indent:.18em;
-  text-transform:uppercase}
+  letter-spacing:.14em;
+  text-indent:.14em;
+  text-transform:uppercase;
+  color:var(--wed-gold-text,#7D5914)}
 
 /* ==========================================================================
    Event jharokha enhancements: lamp light through the jali, recessed opening,
