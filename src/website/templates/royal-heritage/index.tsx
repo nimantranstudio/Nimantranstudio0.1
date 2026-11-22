@@ -869,7 +869,7 @@ function AmbientPetalCanvas({
     count = 18,
     narrowScale = 0.6,
     colors = AMBIENT_COLORS,
-    sizeRange = [4, 8],
+    sizeRange = [9, 17],
     crossSeconds = [14, 23],
 }: {
     count?: number;
@@ -3036,26 +3036,6 @@ export default function RoyalHeritageTemplate({ wedding, isPreview = false }: We
         [wedding]
     );
 
-    const regardsPeople = useMemo(() => {
-        const list: Array<{ name: string; phone: string; telHref: string }> = [
-            {
-                name: data.brideParentsFormatted ? data.brideParentsFormatted.split('&')[0].trim() : 'Mr. Rajesh Sharma',
-                phone: data.rsvpContact || '98100 00000',
-                telHref: `tel:${(data.rsvpContact || '9810000000').replace(/[^0-9+]/g, '')}`,
-            },
-            {
-                name: 'Mrs. Sunita Sharma',
-                phone: '98200 00000',
-                telHref: 'tel:9820000000',
-            },
-            {
-                name: data.groomParentsFormatted ? data.groomParentsFormatted.split('&')[0].trim() : 'Mr. Anil Verma',
-                phone: '',
-                telHref: '',
-            },
-        ];
-        return list;
-    }, [data.brideParentsFormatted, data.groomParentsFormatted, data.rsvpContact]);
 
     const footerCalLinks = useMemo(() => {
         const start = new Date(`${isoDate}T00:00:00`);
@@ -3526,31 +3506,19 @@ export default function RoyalHeritageTemplate({ wedding, isPreview = false }: We
                 </div>
             </section>
 
-            {/* 16. With Warm Regards */}
+            {/* 16. Closing — Thank You & With Love */}
             <section className={R.section} id="regards">
                 <RevealOnScroll>
                     <div className={REGARDS_CSS.regards}>
                         <span className={REGARDS_CSS.rule} aria-hidden="true" />
-                        <p className={REGARDS_CSS.heading}>With warm regards</p>
                         <p className={REGARDS_CSS.note}>
-                            Awaiting your gracious presence — the Sharma &amp; Verma families
+                            Your presence and blessings will make our celebration complete. Thank you,
+                            with all our hearts, for being a part of our beginning.
                         </p>
-                        <ul className={REGARDS_CSS.people}>
-                            {regardsPeople.map((person, idx) => (
-                                <li key={`${person.name}-${idx}`} className={REGARDS_CSS.person}>
-                                    <span className={REGARDS_CSS.name}>{person.name}</span>
-                                    {person.telHref ? (
-                                        <a
-                                            className={REGARDS_CSS.phone}
-                                            href={person.telHref}
-                                            aria-label={`Call ${person.name}`}
-                                        >
-                                            {person.phone}
-                                        </a>
-                                    ) : null}
-                                </li>
-                            ))}
-                        </ul>
+                        <p className={REGARDS_CSS.heading}>With love</p>
+                        <p className={REGARDS_CSS.name}>
+                            {partnerOne} &amp; {partnerTwo}
+                        </p>
                     </div>
                 </RevealOnScroll>
             </section>

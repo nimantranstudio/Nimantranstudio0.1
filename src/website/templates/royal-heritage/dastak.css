@@ -656,7 +656,8 @@ to {
   display:block;
   margin-top:4px}
 .styles_rgBand__TDX56 {
-  --dk-floor:191,141,90;
+  /* match the countdown band colours (was 191,141,90) */
+  --dk-floor:207,145,70;
   --rg-zoom:1.45;
   --rg-cx:49.69%;
   --rg-cy:50.31%;
@@ -669,7 +670,7 @@ to {
   padding:clamp(30px,8cqw,56px) 0 clamp(32px,8cqw,58px);
   overflow:hidden;
   user-select:none;
-  background:linear-gradient(180deg,var(--wed-page-bg) 0,rgb(var(--dk-floor)) var(--rg-fade-top),rgb(var(--dk-floor)) calc(100% - var(--rg-fade-bottom)),var(--wed-page-bg) 100%)}
+  background:linear-gradient(180deg,var(--wed-page-bg) 0,rgb(236,172,88) var(--rg-fade-top),rgb(179,118,53) calc(100% - var(--rg-fade-bottom)),var(--wed-page-bg) 100%)}
 @supports not (width:1cqw) {
   .styles_rgBand__TDX56 {
   --rg-fade-top:56px;
