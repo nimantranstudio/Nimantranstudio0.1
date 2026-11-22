@@ -3736,50 +3736,22 @@ to {
 }
 
 /* ==========================================================================
-   Tall samai (standing brass lamp) flanking the Shubh Muhurat rangoli plate.
+   Vertical marigold toran hanging beside the Shubh Muhurat rangoli plate.
    ========================================================================== */
-.rg-samai {
+.rg-vtoran {
   position:absolute;
-  bottom:3%;
-  height:86%;
+  top:-4%;
+  height:104%;
   z-index:6;
   pointer-events:none}
-.rg-samai svg {
+.rg-vtoran img {
   display:block;
   height:100%;
   width:auto;
-  overflow:visible;
-  filter:drop-shadow(0 5px 7px rgba(60,28,4,.4))}
-.rg-samai-left {
-  left:-1.5%}
-.rg-samai-right {
-  right:-1.5%;
+  user-select:none;
+  filter:drop-shadow(0 5px 7px rgba(60,28,4,.3))}
+.rg-vtoran-left {
+  left:-3%}
+.rg-vtoran-right {
+  right:-3%;
   transform:scaleX(-1)}
-.rg-samai-glow {
-  position:absolute;
-  left:50%;
-  top:2%;
-  width:120%;
-  aspect-ratio:1;
-  translate:-50% -40%;
-  border-radius:50%;
-  pointer-events:none;
-  background:radial-gradient(circle,rgba(255,206,120,.6) 0,rgba(255,176,70,.22) 38%,rgba(255,168,70,0) 68%);
-  animation:rgSamaiGlow 3.1s ease-in-out infinite}
-.rg-samai-flame {
-  transform-origin:50% 100%;
-  animation:rgSamaiFlame 1.7s ease-in-out infinite alternate}
-@keyframes rgSamaiFlame {
-  0% { transform:scale(1) rotate(-2deg) }
-  50% { transform:scale(1.06,.95) rotate(1.5deg) }
-  100% { transform:scale(.94,1.07) rotate(-1deg) }
-}
-@keyframes rgSamaiGlow {
-  0%,100% { opacity:.75; transform:scale(1) }
-  50% { opacity:1; transform:scale(1.08) }
-}
-.rg-samai-right .rg-samai-glow { animation-delay:-1.5s }
-.rg-samai-right .rg-samai-flame { animation-delay:-.8s }
-@media (prefers-reduced-motion: reduce) {
-  .rg-samai-flame, .rg-samai-glow { animation:none }
-}
