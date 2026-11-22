@@ -1852,6 +1852,17 @@ function EventDoorwayCard({
         <div className={R.cardClip} ref={cardClipRef}>
             <div className={R.eventCard} ref={eventCardRef} tabIndex={-1}>
                 <span className={R.eventPaper} aria-hidden="true" />
+                {/* Marigold toran framing the top of the card */}
+                <span className="event-toran" aria-hidden="true">
+                    <img
+                        src="/website-templates/royal-heritage/events/eventtoran.webp"
+                        alt=""
+                        width={1907}
+                        height={1394}
+                        loading="lazy"
+                        decoding="async"
+                    />
+                </span>
                 <img
                     className={R.eventPetal}
                     src={`${ART_BASE}/marigold-head-2.webp`}

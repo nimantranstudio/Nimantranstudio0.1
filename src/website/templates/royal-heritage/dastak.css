@@ -1664,7 +1664,8 @@ to {
 .styles_eventCardInner__DEL6U {
   position:relative;
   z-index:1;
-  opacity:0}
+  opacity:0;
+  padding-top:clamp(52px,15cqw,86px)}
 .styles_eventCard__tzUtz:focus {
   outline:none}
 .styles_eventCard__tzUtz:after {
@@ -3756,3 +3757,32 @@ to {
 .rg-vtoran-right {
   right:-3%;
   transform:scaleX(-1)}
+
+/* ==========================================================================
+   Marigold toran framing the top of each event card (gentle natural sway).
+   Sits above the paper, below the card text (which is later in the DOM at z1).
+   ========================================================================== */
+.event-toran {
+  position:absolute;
+  left:50%;
+  top:-1%;
+  z-index:1;
+  width:103%;
+  transform:translateX(-50%);
+  transform-origin:50% 0;
+  pointer-events:none;
+  animation:rgEventToranSway 4.6s ease-in-out infinite alternate}
+.event-toran img {
+  display:block;
+  width:100%;
+  height:auto;
+  user-select:none}
+@keyframes rgEventToranSway {
+  0% { transform:translateX(-50%) rotate(-0.9deg) }
+  100% { transform:translateX(-50%) rotate(0.9deg) }
+}
+.styles_doorway__sylum:nth-child(3n+2) .event-toran { animation-delay:-1.5s; animation-duration:5.1s }
+.styles_doorway__sylum:nth-child(3n+3) .event-toran { animation-delay:-2.9s; animation-duration:4.2s }
+@media (prefers-reduced-motion: reduce) {
+  .event-toran { animation:none }
+}
