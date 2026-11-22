@@ -23,6 +23,8 @@ export interface WebsiteWedding {
     brideName: string;
     groomParents?: string;
     brideParents?: string;
+    /** "Creating Invite For" resolved to a boolean: true = bride shown first. */
+    brideFirst?: boolean;
     invitationMessage?: string;
     rsvpContact?: string;
     rsvpDeadline?: string | null;

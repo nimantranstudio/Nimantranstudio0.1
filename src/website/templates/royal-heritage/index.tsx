@@ -2882,10 +2882,16 @@ export default function RoyalHeritageTemplate({ wedding, isPreview = false }: We
     const [rsvpDroppedMarigold, setRsvpDroppedMarigold] = useState(false);
 
     // Map couple names (Dastak default: Anaya & Ishaan; uses dynamic wedding names when provided)
+    // "Creating Invite For" order (data.brideFirst): bride or groom shown first,
+    // applied consistently to names, monogram and the family cards below.
+    const brideFirst = data.brideFirst;
     const rawBride = cleanText(wedding?.brideName);
     const rawGroom = cleanText(wedding?.groomName);
-    const partnerOne = rawBride && rawBride !== 'Bride' ? rawBride : 'Anaya';
-    const partnerTwo = rawGroom && rawGroom !== 'Groom' ? rawGroom : 'Ishaan';
+    const brideDisplay = rawBride && rawBride !== 'Bride' ? rawBride : 'Anaya';
+    const groomDisplay = rawGroom && rawGroom !== 'Groom' ? rawGroom : 'Ishaan';
+    const [partnerOne, partnerTwo] = brideFirst
+        ? [brideDisplay, groomDisplay]
+        : [groomDisplay, brideDisplay];
     const coupleLabel = `${partnerOne} & ${partnerTwo}`;
     const monoFirst = partnerOne.charAt(0).toUpperCase() || 'A';
     const monoSecond = partnerTwo.charAt(0).toUpperCase() || 'I';
@@ -3265,14 +3271,21 @@ export default function RoyalHeritageTemplate({ wedding, isPreview = false }: We
                 </RevealOnScroll>
                 <RevealOnScroll delay={0.05}>
                     <div className={R.familyGrid}>
-                        <div className={R.familyCard}>
-                            <span>Daughter of</span>
-                            <strong>{brideParentsText}</strong>
-                        </div>
-                        <div className={R.familyCard}>
-                            <span>Son of</span>
-                            <strong>{groomParentsText}</strong>
-                        </div>
+                        {(brideFirst
+                            ? [
+                                  { role: 'Daughter of', parents: brideParentsText },
+                                  { role: 'Son of', parents: groomParentsText },
+                              ]
+                            : [
+                                  { role: 'Son of', parents: groomParentsText },
+                                  { role: 'Daughter of', parents: brideParentsText },
+                              ]
+                        ).map((card) => (
+                            <div key={card.role} className={R.familyCard}>
+                                <span>{card.role}</span>
+                                <strong>{card.parents}</strong>
+                            </div>
+                        ))}
                     </div>
                     <p className={R.blessing}>{familyBlessing}</p>
                 </RevealOnScroll>

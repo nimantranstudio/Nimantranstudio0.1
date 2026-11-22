@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { formatDisplayTime, parseWeddingDate } from '@/lib/format-date';
+import { resolveBrideFirst, orderByBrideFirst } from '@/lib/templates/name-order';
 import type { WebsiteEvent, WebsiteWedding } from '../types';
 
 export type RsvpStep = 'INVITE' | 'SUCCESS' | 'ALREADY_REGISTERED';
@@ -146,6 +147,20 @@ export function useWeddingTemplateData(wedding: WebsiteWedding, isPreview = fals
 
     const groomParentsFormatted = formatParentName(wedding?.groomParents);
     const brideParentsFormatted = formatParentName(wedding?.brideParents);
+
+    // "Creating Invite For": one resolved order drives every primary/secondary slot
+    // below, so no template section hard-codes its own ordering. Parents stay bound
+    // to their own person — only the display order changes.
+    const brideFirst = resolveBrideFirst(wedding as { brideFirst?: boolean });
+    const [primaryName, secondaryName] = orderByBrideFirst(brideFirst, brideName, groomName);
+    const [primaryInitial, secondaryInitial] = orderByBrideFirst(brideFirst, brideInitial, groomInitial);
+    const [primaryParentsFormatted, secondaryParentsFormatted] = orderByBrideFirst(
+        brideFirst,
+        brideParentsFormatted,
+        groomParentsFormatted
+    );
+    const orderedCoupleNames = [primaryName, secondaryName].filter(Boolean).join(' & ') || coupleNames;
+
     const invitationMessage = cleanText(wedding?.invitationMessage);
     const rsvpContact = cleanText(wedding?.rsvpContact);
 
@@ -544,6 +559,15 @@ export function useWeddingTemplateData(wedding: WebsiteWedding, isPreview = fals
         rawBrideParents: cleanText(wedding?.brideParents),
         groomParentsFormatted,
         brideParentsFormatted,
+        // "Creating Invite For" ordering (shared primary/secondary mapping)
+        brideFirst,
+        primaryName,
+        secondaryName,
+        primaryInitial,
+        secondaryInitial,
+        primaryParentsFormatted,
+        secondaryParentsFormatted,
+        orderedCoupleNames,
         invitationMessage,
         rsvpContact,
         formattedRsvpDeadline,

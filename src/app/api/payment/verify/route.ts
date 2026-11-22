@@ -8,6 +8,7 @@ import { toTenDigits } from '@/lib/messaging/types';
 import { sendWelcomeAndReceipt, sendRsvpLink } from '@/lib/notifications';
 import { ensureInvoiceNumber } from '@/lib/invoice/invoice-number';
 import { generateUniqueWeddingSlug } from '@/lib/slug';
+import { resolveBrideFirst } from '@/lib/templates/name-order';
 import sanitizeHtml from 'sanitize-html';
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://www.nimantranstudio.in';
@@ -275,6 +276,7 @@ export async function POST(req: NextRequest) {
                     brideName: sanitize(validated.brideName),
                     groomParents: sanitize(validated.groomParents),
                     brideParents: sanitize(validated.brideParents),
+                    brideFirst: resolveBrideFirst(formData),
                     rsvpContact: sanitize(validated.rsvpContact) || mobile,
                     rsvpDeadline: validated.rsvpDeadline ? new Date(validated.rsvpDeadline) : null,
                     invitationMessage: sanitize(validated.invitationMessage),

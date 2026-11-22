@@ -6,6 +6,7 @@ import { verifyAuth } from '@/lib/auth-server';
 import sanitizeHtml from 'sanitize-html';
 
 import { generateUniqueWeddingSlug } from '@/lib/slug';
+import { resolveBrideFirst } from '@/lib/templates/name-order';
 
 function sanitize(str: any): string {
     if (!str) return '';
@@ -43,6 +44,7 @@ export async function POST(req: NextRequest) {
                 brideName: sanitize(validatedData.brideName),
                 groomParents: sanitize(validatedData.groomParents),
                 brideParents: sanitize(validatedData.brideParents),
+                brideFirst: resolveBrideFirst(body.formData),
                 rsvpContact: sanitize(validatedData.rsvpContact),
                 rsvpDeadline: validatedData.rsvpDeadline ? new Date(validatedData.rsvpDeadline) : null,
                 invitationMessage: sanitize(validatedData.invitationMessage),

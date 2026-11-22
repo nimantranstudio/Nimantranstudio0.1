@@ -313,6 +313,7 @@ export default async function RSVPPage({
             brideName: wedding.brideName || '',
             groomParents: wedding.groomParents ?? undefined,
             brideParents: wedding.brideParents ?? undefined,
+            brideFirst: Boolean((wedding as any).brideFirst),
             invitationMessage: wedding.invitationMessage ?? undefined,
             rsvpContact: wedding.rsvpContact ?? undefined,
             rsvpDeadline:

@@ -1,5 +1,6 @@
 import type { WeddingFormData } from '@/lib/schemas/wedding-form';
 import { PREVIEW_DEFAULTS, resolvePreviewField } from '@/lib/templates/preview-defaults';
+import { resolveBrideFirst } from '@/lib/templates/name-order';
 import type { WebsiteEvent, WebsiteWedding } from '../templates/types';
 
 interface MapOptions {
@@ -62,6 +63,7 @@ export function formDataToWebsiteWedding(formData: WeddingFormData, options: Map
         brideName: field('brideName', PREVIEW_DEFAULTS.brideName),
         groomParents: field('groomParents', PREVIEW_DEFAULTS.groomParents),
         brideParents: field('brideParents', PREVIEW_DEFAULTS.brideParents),
+        brideFirst: resolveBrideFirst(formData),
         invitationMessage: text(formData.invitationMessage),
         rsvpContact: text(formData.rsvpContact),
         rsvpDeadline: text(formData.rsvpDeadline) || null,
